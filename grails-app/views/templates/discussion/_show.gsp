@@ -113,21 +113,22 @@
 										{{ } }}
 									</div>
 									<div class="col-sm-6">
-										<!-- Fix indentation after merge -->
-								{{ if (isFollowing) {  }}
-									<button id="follow-button-{{- discussionHash }}" onclick="followDiscussion({id: '{{- discussionHash }}', unfollow: true})">
-									<img src="/images/unfollow.png" alt="unfollow" >Unfollow
-								{{ } else { }}
-									<button id="follow-button-{{- discussionHash }}" onclick="followDiscussion({id: '{{- discussionHash }}' })">
-									<img src="/images/follow.png" alt="follow">Follow
-								{{ } }}
-								<button class="share-button" data-toggle="popover" data-placement="top" title="Share:"
-									data-content="<input class='share-link' type='text' value='{{- serverURL}}/home/social#discussions/{{- discussionHash }}'>">
-									<img src="/images/share.png" alt="share"> Share
-								</button>
-								<button class="comment-button" data-total-comments="{{- totalPostCount }}">
-									<img src="/images/comment.png" alt="comment"> Comment
-								</button>
+										{{ if (isFollowing) {  }}
+											<button id="follow-button-{{- discussionHash }}" onclick="followDiscussion({id: '{{- discussionHash }}', unfollow: true})">
+												<img src="/images/unfollow.png" alt="unfollow">Unfollow
+											</button>
+										{{ } else { }}
+											<button id="follow-button-{{- discussionHash }}" onclick="followDiscussion({id: '{{- discussionHash }}' })">
+												<img src="/images/follow.png" alt="follow">Follow
+											</button>
+										{{ } }}
+										<button class="share-button" data-toggle="popover" data-placement="top" title="Share:"
+											data-content="<input class='share-link' type='text' value='{{- serverURL}}/home/social#discussions/{{- discussionHash }}'>">
+											<img src="/images/share.png" alt="share"> Share
+										</button>
+										<button class="comment-button" data-total-comments="{{- totalPostCount }}">
+											<img src="/images/comment.png" alt="comment"> Comment
+										</button>
 									</div>
 								</div>
 							</div>

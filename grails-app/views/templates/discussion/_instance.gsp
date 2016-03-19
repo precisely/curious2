@@ -74,36 +74,35 @@
 		{{ } }}
 		<div class="comments media-list"></div>
 		{{var isCommentAllowed = discussionData.isAdmin || !discussionData.disableComments}}
-			<!-- TODO Fix indentation after merge -->
-			<div class="add-comment">
-				<form class="comment-form {{- isCommentAllowed ? '' : 'comment-disabled' }}">
-					{{ if (false) { }}
-						<p>Enter your details below</p>
-						<div>
-							<input type="text" id="postname" name="postname" value="" class="postInput" />Name
-						</div>
-						<div>
-							<input type="text" id="postemail" name="postemail" value="" class="postInput" />
-							Email (not publicly visible)
-						</div>
-						<div id="posturl">
-							<input type="text" id="postsite" name="postsite" value="" class="postInput" />
-							Website URL (optional)
-						</div>
-						<div id="postcomment">
-							<textarea rows="20" cols="100" style="border-style: solid" id="postcommentarea" name="message"></textarea>
-						</div><br />
-						<input type="button" class="submitButton" id="commentSubmitButton" value="submit" />
-						<!--p class="decorate">Comments must be approved, so will not appear immediately. </p-->
+		<div class="add-comment">
+			<form class="comment-form {{- isCommentAllowed ? '' : 'comment-disabled' }}">
+				{{ if (false) { }}
+					<p>Enter your details below</p>
+					<div>
+						<input type="text" id="postname" name="postname" value="" class="postInput" />Name
+					</div>
+					<div>
+						<input type="text" id="postemail" name="postemail" value="" class="postInput" />
+						Email (not publicly visible)
+					</div>
+					<div id="posturl">
+						<input type="text" id="postsite" name="postsite" value="" class="postInput" />
+						Website URL (optional)
+					</div>
+					<div id="postcomment">
+						<textarea rows="20" cols="100" style="border-style: solid" id="postcommentarea" name="message"></textarea>
+					</div><br />
+					<input type="button" class="submitButton" id="commentSubmitButton" value="submit" />
+					<!--p class="decorate">Comments must be approved, so will not appear immediately. </p-->
+				{{ } else { }}
+					{{ if (isCommentAllowed) { }}
+						<input type="text" placeholder="Add Comment..." id="post-comment" name="message" required autofocus>
 					{{ } else { }}
-						{{ if (isCommentAllowed) { }}
-							<input type="text" placeholder="Add Comment..." id="post-comment" name="message" required autofocus>
-						{{ } else { }}
-							<input type="text" placeholder="&#xf05e;  Comments disabled" id="post-comment" name="message" required>
-						{{ } }}
+						<input type="text" placeholder="&#xf05e;  Comments disabled" id="post-comment" name="message" required>
 					{{ } }}
-					<input type="hidden" name="discussionHash" value="{{- discussionData.hash }}">
-				</form>
-			</div>
+				{{ } }}
+				<input type="hidden" name="discussionHash" value="{{- discussionData.hash }}">
+			</form>
+		</div>
 	</div>
 </div>

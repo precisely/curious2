@@ -1,47 +1,28 @@
 package us.wearecurio.model
 
-import groovy.time.*
-import grails.compiler.GrailsCompileStatic
-import grails.converters.*
-
 import org.apache.commons.logging.LogFactory
-
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
+import org.joda.time.LocalDate
+import org.joda.time.LocalTime
 import us.wearecurio.collection.SingleCollection
-import us.wearecurio.datetime.LocalTimeRepeater
+import us.wearecurio.data.DataRetriever
+import us.wearecurio.data.DecoratedUnitRatio
+import us.wearecurio.data.DecoratedUnitRatio.AmountUnits
+import us.wearecurio.data.RepeatType
+import us.wearecurio.data.TagUnitStatsInterface
+import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.datetime.IncrementingDateTime
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.EntryParserService.ParseAmount
-import us.wearecurio.support.EntryStats
 import us.wearecurio.support.EntryCreateMap
-import us.wearecurio.utility.Utils
-import us.wearecurio.model.Tag
-import us.wearecurio.model.EntryGroup
-import us.wearecurio.data.DecoratedUnitRatio
-import us.wearecurio.data.RepeatType
-import us.wearecurio.data.TagUnitStatsInterface
-import us.wearecurio.data.UnitGroupMap
-import us.wearecurio.data.DecoratedUnitRatio.AmountUnits
-import us.wearecurio.data.UnitGroupMap.UnitGroup
-import us.wearecurio.data.UnitRatio
-import us.wearecurio.data.DataRetriever
-import us.wearecurio.datetime.IncrementingDateTime
+import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.TagUnitMap
+import us.wearecurio.utility.Utils
 
-import java.util.ArrayList
-import java.util.Date
-import java.util.HashSet
-import java.util.concurrent.ConcurrentHashMap
-import java.util.LinkedList
 import java.math.MathContext
-import java.math.RoundingMode
 import java.text.DateFormat
-import java.text.SimpleDateFormat
-
-import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
-import org.joda.time.LocalTime
-import org.joda.time.LocalDate
 
 class Entry implements Comparable {
 
@@ -117,7 +98,7 @@ class Entry implements Comparable {
 	
 	static {
 		def entryTimeZone = Utils.createTimeZone(0, "GMT", true)
-		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US)
 		dateFormat.setTimeZone(entryTimeZone)
 		theBookmarkBaseDate = dateFormat.parse("January 1, 2000 12:00 am")
 	}
@@ -1534,7 +1515,6 @@ class Entry implements Comparable {
 		long dayStartTime = currentBaseDate.getTime()
 		def now = nowDate.getTime()
 		long diff = now - dayStartTime
-		long thisDiff = this.date.getTime() - dayStartTime
 
 		def m = [:]
 		m['timeZoneName'] = timeZoneName
@@ -1582,7 +1562,6 @@ class Entry implements Comparable {
 		long dayStartTime = currentBaseDate.getTime()
 		def now = nowDate.getTime()
 		long diff = now - dayStartTime
-		long thisDiff = this.date.getTime() - dayStartTime
 
 		def m = [:]
 		m['timeZoneName'] = timeZoneName
@@ -1649,8 +1628,6 @@ class Entry implements Comparable {
 		Tag newBaseTag = amount.baseTag
 		DurationType newDurationType = amount.durationType
 
-		def descriptionChanged = tag.getId() != newTag.getId()
-		
 		amount.amount = amount.amount?.setScale(ENTRY_SCALE, BigDecimal.ROUND_HALF_UP)
 
 		TimeZoneId timeZoneId = TimeZoneId.look(m['timeZoneName'])
@@ -1772,9 +1749,6 @@ class Entry implements Comparable {
 	}
 
 	static def fetchListData(User user, String timeZoneName, Date baseDate, Date now) {
-		long nowTime = now.getTime()
-		long baseTime = baseDate.getTime()
-
 		DateTimeZone currentTimeZone = DateTimeZone.forID(timeZoneName)
 		DateTime baseDateTime = new DateTime(baseDate, currentTimeZone)
 		LocalDate baseLocalDate = baseDateTime.toLocalDate()
@@ -1919,14 +1893,12 @@ class Entry implements Comparable {
 			results.add(result)
 			log.debug "Entry id: " + result['id'] + " description: " + result['description']
 		}
-		
-		Long userId = user.id
 
 		return results
 	}
 	
 	String getSourceName() {
-		String setName = this.setIdentifier?.toString()
+		String setName = this.setIdentifier?.value
 		return setName == null ? null : TagUnitMap.setIdentifierToSource(setName)
 	}
 
