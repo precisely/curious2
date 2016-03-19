@@ -39,7 +39,13 @@ class OuraDataService extends DataService {
 
 	@Override
 	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
-		return null
+		log.debug("account " + account.getId() + " startDate: " + startDate + " refreshAll: " + refreshAll)
+		
+		getDataSleep(account, startDate, false)
+		getDataExercise(account, startDate, false)
+		getDataActivity(account, startDate, false)
+		
+		[success: true]
 	}
 
 	@Override
