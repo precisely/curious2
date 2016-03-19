@@ -822,7 +822,7 @@ class Entry implements Comparable {
 			Utils.save(entry, true)
 			stats.addEntry(entry)
 			
-			if (unGhost && newEntry.isGhost())
+			if (unGhost && newEntry?.isGhost())
 				newEntry.unGhost()
 
 			return newEntry
