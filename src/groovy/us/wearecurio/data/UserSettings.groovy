@@ -9,6 +9,7 @@ class UserSettings extends BitSet {
 	private static final int PRIVACY_NAME_POSITION = 2
 	private static final int CLOSED_EXPLANATION_CARD_CURIOSITIES = 3
 	private static final int CLOSED_EXPLANATION_CARD_TRACKATHON = 4
+	private static final int TRACKATHON_VISITED = 5
 
 	// Do not save following fields into the database
 	static transients = ["bioPublic", "namePublic", "value"]
@@ -69,5 +70,13 @@ class UserSettings extends BitSet {
 
 	boolean hasClosedTrackathonExplanation() {
 		return get(CLOSED_EXPLANATION_CARD_TRACKATHON)
+	}
+
+	boolean hasVisitedTrackathon() {
+		return get(TRACKATHON_VISITED)
+	}
+
+	boolean markTrackathonVisited() {
+		set(TRACKATHON_VISITED)
 	}
 }
