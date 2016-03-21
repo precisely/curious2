@@ -66,7 +66,8 @@ class JawboneUpDataService extends DataService {
 	}
 
 	@Override
-	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
+	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
+			InvalidAccessTokenException {
 		return null;
 	}
 
@@ -106,7 +107,6 @@ class JawboneUpDataService extends DataService {
 		SimpleDateFormat shortDateParser = new SimpleDateFormat("yyyyMMdd", Locale.US)
 		shortDateParser.setTimeZone(timeZone)
 
-		String accountId = account.accountId
 		Long userId = account.userId
 
 		EntryCreateMap creationMap = new EntryCreateMap()
@@ -188,7 +188,6 @@ class JawboneUpDataService extends DataService {
 		dateOnlyFormatter.setTimeZone(timeZone)
 		dateHourFormatter.setTimeZone(timeZone)
 
-		String accountId = account.accountId
 		Long userId = account.userId
 
 		EntryCreateMap creationMap = new EntryCreateMap()
@@ -411,7 +410,6 @@ class JawboneUpDataService extends DataService {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US)
 		formatter.setTimeZone(timeZone)
 
-		String accountId = account.accountId
 		Long userId = account.userId
 
 		EntryCreateMap creationMap = new EntryCreateMap()
@@ -509,8 +507,8 @@ class JawboneUpDataService extends DataService {
 
 		// Jawbone sends a hash of client id & app secret encoded with SHA256 for security
 		ConfigObject config = grailsApplication.config.oauth.providers.jawboneup
-		String cliendSecretID = config.key + config.secret
-		String hash = cliendSecretID.encodeAsSHA256()
+		String clientSecretID = config.key + config.secret
+		String hash = clientSecretID.encodeAsSHA256()
 
 		JSONObject notifications = JSON.parse(notificationData)
 

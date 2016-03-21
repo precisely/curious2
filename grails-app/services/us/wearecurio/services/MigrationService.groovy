@@ -19,6 +19,7 @@ import us.wearecurio.model.TagProperties
 import us.wearecurio.model.TagStats
 import us.wearecurio.model.TagUnitStats
 import us.wearecurio.model.TagValueStats
+import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
@@ -599,6 +600,9 @@ class MigrationService {
 		tryMigration("Mark all users email verified") {
 			sql("alter table _user drop column is_verified")
 			sql("update _user set email_verified = :status", [status: VerificationStatus.VERIFIED.id])
+		}
+		tryMigration("Set last polled for all Oura OAuthAccounts") {
+			sql("update oauth_account set last_polled = now() where type_id = :typeId", [typeId: ThirdParty.OURA.id])
 		}
 	}
 	

@@ -65,7 +65,8 @@ class WithingsDataService extends DataService {
 
 	@Override
 	@Transactional
-	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
+	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
+			InvalidAccessTokenException {
 		log.debug "WithingsDataService.getData() account:" + account + " refreshAll: " + refreshAll
 
 		Integer offset = 0

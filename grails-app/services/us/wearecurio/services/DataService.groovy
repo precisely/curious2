@@ -111,12 +111,14 @@ abstract class DataService {
 	 * Used to process actual data which may depends on service to service for different
 	 * third party. Needs to be implemented on each services.
 	 * @param account Instance of OAuthAccount
-	 * @param startDate  Start date for polling or null to get all new records
+	 * @param startDate Start date for polling or null to get all new records
+	 * @param endDate End date for polling or null to get all new records
 	 * @param refreshAll Boolean field used to clear all existing records.
 	 * @return	Returns a map with required data.
 	 */
 	@Transactional
-	abstract Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException
+	abstract Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
+			InvalidAccessTokenException
 
 	/**
 	 * Returns the OAuthAccount instance for given userId.
@@ -408,7 +410,7 @@ abstract class DataService {
 
 		OAuthAccount.withTransaction {
 			try {
-				getDataDefault(account, null, false)
+				getDataDefault(account, null, null, false)
 			} catch (InvalidAccessTokenException e) {
 				log.warn "Token expired while polling for & account: [$account]"
 			}
@@ -423,7 +425,7 @@ abstract class DataService {
 		OAuthAccount.findAllByTypeId(typeId).each { OAuthAccount account ->
 			DatabaseService.retry(account) {
 				try {
-					getDataDefault(account, null, refreshAll)
+					getDataDefault(account, account.lastPolled, new Date(), refreshAll)
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while polling account: [$account] for $typeId."
 					account.clearAccessToken()

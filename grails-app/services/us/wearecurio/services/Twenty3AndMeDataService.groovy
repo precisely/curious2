@@ -1,11 +1,8 @@
 package us.wearecurio.services
 
-import org.springframework.transaction.annotation.Transactional
-
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
 import org.scribe.model.Token
-
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
@@ -53,7 +50,8 @@ class Twenty3AndMeDataService extends DataService {
 	}
 
 	@Override
-	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
+	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
+			InvalidAccessTokenException {
 		Token tokenInstance = account.tokenInstance
 		JSONObject userInfo = getUserProfile(tokenInstance)
 		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
@@ -98,7 +96,7 @@ class Twenty3AndMeDataService extends DataService {
 	Map storeGenomesData(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		OAuthAccount account = getOAuthAccountInstance(userId)
 		checkNotNull(account)
-		getDataDefault(account, null, false)
+		getDataDefault(account, null, null, false)
 	}
 
 }
