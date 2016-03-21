@@ -73,6 +73,8 @@ class OuraDataService extends DataService {
 	}
 
 	void getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
+		log.debug "Get sleep data for account $account.id for $forDay"
+
 		// Backward support for set name
 		String setName = SET_NAME + "s" + forDay + "-1"
 		unsetOldEntries(account.userId, setName)
@@ -82,6 +84,12 @@ class OuraDataService extends DataService {
 
 	void getDataSleep(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
 			InvalidAccessTokenException {
+		log.debug "Get sleep data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
+
+		if (refreshAll) {
+			unsetAllOldEntries(account.userId, SET_NAME)
+		}
+
 		getDataSleep(account, getRequestURL("sleep", startDate, endDate))
 	}
 
@@ -123,6 +131,8 @@ class OuraDataService extends DataService {
 	}
 
 	void getDataExercise(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
+		log.debug "Get exercise data for account $account.id for $forDay"
+
 		// Backward support for set name
 		String setName = SET_NAME + "e" + forDay + "-1"
 		unsetOldEntries(account.userId, setName)
@@ -130,7 +140,14 @@ class OuraDataService extends DataService {
 		getDataExercise(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll)
 	}
 
-	void getDataExercise(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws InvalidAccessTokenException {
+	void getDataExercise(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
+			InvalidAccessTokenException {
+		log.debug "Get exercise data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
+
+		if (refreshAll) {
+			unsetAllOldEntries(account.userId, SET_NAME)
+		}
+
 		getDataExercise(account, getRequestURL("exercise", startDate, endDate))
 	}
 
@@ -220,6 +237,8 @@ class OuraDataService extends DataService {
 	}
 
 	void getDataActivity(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
+		log.debug "Get acitivity data for account $account.id for $forDay"
+
 		// Backward support for set name
 		String setName = SET_NAME + "ac" + forDay + "-1"
 		unsetOldEntries(account.userId, setName)
@@ -229,6 +248,10 @@ class OuraDataService extends DataService {
 
 	void getDataActivity(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
 			InvalidAccessTokenException {
+		log.debug "Get activity data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
+		if (refreshAll) {
+			unsetAllOldEntries(account.userId, SET_NAME)
+		}
 
 		getDataActivity(account, getRequestURL("activity", startDate, endDate))
 	}

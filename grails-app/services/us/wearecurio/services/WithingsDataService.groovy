@@ -74,11 +74,12 @@ class WithingsDataService extends DataService {
 		long serverTimestamp = 0
 		String setName
 		Long userId = account.getUserId()
-		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
+		startDate = startDate ?: earlyStartDate
 		log.debug "WithingsDataService.getData() start date:" + startDate
-		if (refreshAll)
-			Entry.executeUpdate("update Entry e set e.userId = null where e.setIdentifier like :setIdentifier and e.userId = :userId",
-					[setIdentifier: Identifier.look(SET_NAME), userId: userId]) // Using like for backward compatibility
+
+		if (refreshAll) {
+			unsetAllOldEntries(userId, SET_NAME)
+		}
 
 		Integer timeZoneId = getTimeZoneId(account)
 		
