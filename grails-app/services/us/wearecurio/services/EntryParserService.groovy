@@ -93,11 +93,11 @@ class EntryParserService {
 
 	protected static final Pattern timePattern    = ~/(?i)^(at )(([012]?[0-9])((:|h)([0-5]\d))?\s?((a|p)m?)?)\b\s*|([012]?[0-9])(:|h)([0-5]\d)\s?((a|p)m?)?\b\s*|([012]?[0-9])((:|h)([0-5]\d))?\s?(am|pm|a|p)\b\s*/
 	protected static final Pattern timeWordPattern    = ~/(?i)^(at noon|at midnight|noon|midnight)\b\s*/
-	protected static final Pattern tagWordPattern = ~/(?i)^([^0-9\(\)@\s\.=][^\(\)@\s=]*)($|\s*)/
+	protected static final Pattern tagWordPattern = ~/(?i)^([^0-9\(\)#@\s\.=][^\(\)#@\s=]*)($|\s*)/
 	protected static final Pattern commentWordPattern = ~/^([^\s]+)($|\s*)/
 	protected static final Pattern commentPattern = ~/^(\(.*\)|;.*|\/\/.*)$/
-	protected static final Pattern amountPattern = ~/(?i)^(=?\s*)(-?\.\d+|-?\d+[\d,]*\.\d+|-?\d[\d,]*+|_\b)(\s*\/\s*(-?\.\d+|-?\d+\.\d+|-?\d+|_\b))?\s*/
-	protected static final Pattern amountWordPattern = ~/(?i)^(none\b|zero\b|yes\b|no\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b)\s*/
+	protected static final Pattern amountPattern = ~/(?i)^(=?\s*)(-?\.\d+|-?\d+[\d,]*\.\d+|-?\d[\d,]*+)(\s*\/\s*(-?\.\d+|-?\d+\.\d+|-?\d+))?\s*/
+	protected static final Pattern amountWordPattern = ~/(?i)^(#($|\s)|_($|\s)|none\b|zero\b|yes\b|no\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b)\s*/
 	
 	protected static Map<String, List> numberMap = [
 		'zero' : [new BigDecimal(0, mc), DEFAULT_AMOUNTPRECISION],
@@ -113,6 +113,7 @@ class EntryParserService {
 		'yes' : [new BigDecimal(1, mc), 0],
 		'no' : [new BigDecimal(0, mc), 0],
 		'none' : [ null, -1],
+		'#' : [ null, -1],
 		'_' : [ null, -1],
 	]
 
@@ -599,7 +600,7 @@ class EntryParserService {
 			context.currentAmountIndex = context.amounts.size()
 			boolean twoDAmount = false
 			
-			amountStr = scanner.group(1).replace(",","")
+			amountStr = scanner.group(1).replace(",","").replaceFirst("\\s","")
 			
 			if (numberMap.containsKey(amountStr)) {
 				List num = numberMap.get(amountStr)
@@ -1015,3 +1016,4 @@ class EntryParserService {
 		return context.retVal
 	}
 }
+

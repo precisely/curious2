@@ -50,6 +50,29 @@ function TagStats(term, amount, amountPrecision, units, typicallyNoAmount) {
 		return { label:label, value:value };
 	}
 	
+	this.createText = function() {
+		var value = this.term;
+		var noAmt = true;
+		
+		if (this.amount != null && this.amountPrecision > 0) {
+			value += ' ' + this.amount;
+			noAmt = false;
+		} else if (this.amount == null && this.units.length == 0) {
+			value += ' ';
+		}
+		
+		if (this.units != null && this.units.length > 0) {
+			if (noAmt) {
+				value += ' ';
+			} else {
+				value += '#';
+			}
+			value += ' ' + this.units;
+		}
+		
+		return value;
+	}
+	
 	this.getAmountSelectionRange = function() {
 		var start = this.term.length;
 		var end = start;

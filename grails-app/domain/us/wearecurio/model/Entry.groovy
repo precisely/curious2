@@ -481,6 +481,11 @@ class Entry implements Comparable {
 						amount.update(amount.tag, m['baseTag'], newAmountUnits.amount, newAmountUnits.amountPrecision,
 								newAmountUnits.units + (amount.unitSuffix ? ' ' + amount.unitSuffix : ''), newAmountUnits.unitRatio, DurationType.NONE)
 						return null
+					} else {
+						m['durationType'] = DurationType.NONE
+						amount.update(amount.tag, m['baseTag'], null, 3,
+								amount.units + (amount.unitSuffix ? ' ' + amount.unitSuffix : ''), amount.unitRatio, DurationType.NONE)
+						return null
 					}
 				} else if (amount.unitRatio == null && amount.precision < 0) {
 					amount.durationType = durationType

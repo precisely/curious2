@@ -480,7 +480,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		if ((!tagStats) || tagStats.typicallyNoAmount) {
 			this.addEntry(userId, text, defaultToNow);
 		} else {
-			this.addEntry(userId, text, defaultToNow, null, null, function() {
+			this.addEntry(userId, tagStats.createText(), defaultToNow, null, null, function() {
 				var selectee = $('#' + self.editId + 'entryid' + self.latestEntryId);
 				self.selectEntry($(selectee));
 			});

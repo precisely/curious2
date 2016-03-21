@@ -132,6 +132,17 @@ class EntryParserServiceTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testNumberField() {
+		// make sure pinned durations do not complete each other
+		println("== Test creation of start entry ==")
+		
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep # hours", null, null, baseDate, true), new EntryStats())
+
+		assert entry.amount == null
+		assert entry.units == "hours"
+	}
+
+	@Test
 	void testDurationPinned() {
 		// make sure pinned durations do not complete each other
 		println("== Test creation of start entry ==")
@@ -453,14 +464,6 @@ class EntryParserServiceTests extends CuriousTestCase {
 		entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "what's going on???", null, null, baseDate, true), new EntryStats())
 		x = entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:what's going on???, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "snack#3", null, null, baseDate, true), new EntryStats())
-		x = entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:snack#3, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "snack#3", null, null, baseDate, true), new EntryStats())
-		x = entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:snack#3, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
 
 		entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "headache 8 at 4pm", null, null, baseDate, true), new EntryStats())
 		x = entry.valueString()

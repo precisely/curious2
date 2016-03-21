@@ -60,14 +60,14 @@ yum -y install unzip
 # install java
 
 cd /opt
-wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u51-b16/jdk-8u51-linux-x64.tar.gz"
-tar xvf jdk-8u51-linux-x64.tar.gz
-chown -R root.root jdk1.8.0_51
-alternatives --install /usr/bin/java java /opt/jdk1.8.0_51/bin/java 1
-alternatives --install /usr/bin/javac javac /opt/jdk1.8.0_51/bin/javac 1
-alternatives --install /usr/bin/jar jar /opt/jdk1.8.0_51/bin/jar 1
-rm -f jdk-8u51-linux-x64.tar.gz
-ln -s /opt/jdk1.8.0_51 /opt/jdk
+wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u73-b02/jdk-8u73-linux-x64.tar.gz"
+tar xvf jdk-8u73-linux-x64.tar.gz
+chown -R root.root jdk1.8.0_73
+alternatives --install /usr/bin/java java /opt/jdk1.8.0_73/bin/java 1
+alternatives --install /usr/bin/javac javac /opt/jdk1.8.0_73/bin/javac 1
+alternatives --install /usr/bin/jar jar /opt/jdk1.8.0_73/bin/jar 1
+rm -f jdk-8u73-linux-x64.tar.gz
+ln -s /opt/jdk1.8.0_73 /opt/jdk
 
 # install git, apache
 

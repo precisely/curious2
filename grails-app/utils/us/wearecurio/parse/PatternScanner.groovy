@@ -421,4 +421,8 @@ class PatternScanner<T> {
 	String group(int group) {
 		return matcher.group(group)
 	}
+	
+	String toString() {
+		"Pattern Scanner('" + nextString() + "')"
+	}
 }
