@@ -410,7 +410,7 @@ abstract class DataService {
 
 		OAuthAccount.withTransaction {
 			try {
-				getDataDefault(account, null, null, false)
+				getDataDefault(account, account.lastPolled, null, false)
 			} catch (InvalidAccessTokenException e) {
 				log.warn "Token expired while polling for & account: [$account]"
 			}
@@ -537,10 +537,21 @@ abstract class DataService {
 	 * Unset the userId from the older entries for the given setName to remove duplicacy from the data import
 	 * across the API.
 	 * @param userId Identifier of the user for which older entries need to be unset
-	 * @param setName Set name of the the entries
+	 * @param setName Set name of the entries
 	 */
 	void unsetOldEntries(Long userId, String setName) {
 		Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
 				e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
+	}
+
+	/**
+	 * Unset the userId from all the older entries for the given setName.
+	 * @param userId Identifier of the user for which older entries need to be unset
+	 * @param setNamePrefix Prefix of set name of the entries
+	 */
+	void unsetAllOldEntries(Long userId, String setNamePrefix) {
+		Entry.executeUpdate("update Entry e set e.userId = null where e.userId = :userId and e.setIdentifier in " +
+				"(select i.id from Identifier i where value like :setIdentifier)",
+				[setIdentifier: "${setNamePrefix}%", userId: userId])
 	}
 }
