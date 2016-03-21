@@ -12,7 +12,6 @@ import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.services.OuraDataService
-import us.wearecurio.services.UrlService
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
@@ -21,12 +20,10 @@ import us.wearecurio.utility.Utils
 class OuraDataServiceTests  extends CuriousServiceTestCase {
 	static transactional = true
 
-	UrlService urlService
 	OuraDataService ouraDataService
 	OAuthAccount account
 	User user2
 	TimeZone serverTimezone
-	TimeZone defaultTimezone
 
 	@Before
 	void setUp() {
@@ -123,6 +120,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		List<Entry> entryList = Entry.getAll()
 		assert entryList[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
 		assert entryList[0].description == "sleep [time: total]"
+		assert entryList[0].setIdentifier.value.startsWith("OURA sleep ")
 		assert entryList[6].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
 	}
 
@@ -210,6 +208,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[0].description == "sedentary exercise [time]"
 		assert entryList[0].amount == 0.333333333		// Minutes converted to hours
 		assert entryList[0].timeZoneId == TimeZoneId.look("America/New_York").id
+		assert entryList[0].setIdentifier.value.startsWith("OURA exercise ")
 
 		assert entryList[1].amount == 0.166666667
 		assert entryList[1].description == "light exercise [time]"
@@ -225,6 +224,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 
 		assert entryList[5].amount == 0.083333333
 		assert entryList[5].description == "light exercise [time]"
+		assert entryList[0].setIdentifier.value.startsWith("OURA exercise ")
 	}
 
 	@Test
@@ -252,6 +252,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[0].amount == 0.250000000
 		assert entryList[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
 		assert entryList[0].comment == "(Oura)"
+		assert entryList[0].setIdentifier.value.startsWith("OURA exercise ")
 
 		assert entryList[1].description == "sedentary exercise [time]"
 		assert entryList[1].amount == 0.166666667
@@ -316,5 +317,6 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		Entry entry2 = Entry.last()
 		assert entry1.timeZoneId == TimeZoneId.look("Europe/Stockholm").id
 		assert entry2.timeZoneId == TimeZoneId.look("Asia/Kolkata").id
+		assert entry1.setIdentifier.value.startsWith("OURA activity ")
 	}
 }

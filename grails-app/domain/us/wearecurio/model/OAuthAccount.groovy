@@ -85,4 +85,9 @@ class OAuthAccount {
 		removeAccessToken()
 		Utils.save(this, true)
 	}
+
+	void markLastPolled() {
+		this.lastPolled = new Date()
+		Utils.save(this, true)
+	}
 }

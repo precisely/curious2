@@ -1,12 +1,11 @@
 package us.wearecurio.services
+
 import grails.converters.JSON
 import groovyx.net.http.URIBuilder
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.springframework.transaction.annotation.Transactional
 import us.wearecurio.datetime.DateUtils
-import us.wearecurio.model.Entry
-import us.wearecurio.model.Identifier
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
@@ -15,9 +14,9 @@ import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
+import us.wearecurio.thirdparty.TagUnitMap
 import us.wearecurio.thirdparty.oura.OuraApi
 import us.wearecurio.thirdparty.oura.OuraTagUnitMap
-import us.wearecurio.thirdparty.TagUnitMap
 import us.wearecurio.utility.Utils
 
 import java.text.SimpleDateFormat
@@ -38,13 +37,16 @@ class OuraDataService extends DataService {
 	}
 
 	@Override
-	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
-		log.debug("account " + account.getId() + " startDate: " + startDate + " refreshAll: " + refreshAll)
-		
-		getDataSleep(account, startDate, false)
-		getDataExercise(account, startDate, false)
-		getDataActivity(account, startDate, false)
-		
+	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws InvalidAccessTokenException {
+		log.debug("getDataDefault $account.id startDate: $startDate endDate: $endDate refreshAll: $refreshAll")
+
+		endDate = endDate ?: new Date()
+
+		getDataSleep(account, startDate, endDate, false)
+		getDataExercise(account, startDate, endDate, false)
+		getDataActivity(account, startDate, endDate, false)
+
+		account.markLastPolled()
 		[success: true]
 	}
 
@@ -71,12 +73,21 @@ class OuraDataService extends DataService {
 	}
 
 	void getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
-		getDataSleep(account, refreshAll, getRequestURL("sleep", forDay), forDay, 1)
+		// Backward support for set name
+		String setName = SET_NAME + "s" + forDay + "-1"
+		unsetOldEntries(account.userId, setName)
+
+		getDataSleep(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll)
+	}
+
+	void getDataSleep(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
+			InvalidAccessTokenException {
+		getDataSleep(account, getRequestURL("sleep", startDate, endDate))
 	}
 
 	// Overloaded method to support pagination
-	void getDataSleep(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate, int pageNumber) throws InvalidAccessTokenException {
-		log.debug "Import sleep data for user id $account.userId for day $startDate"
+	void getDataSleep(OAuthAccount account, String requestURL) throws InvalidAccessTokenException {
+		log.debug "Import sleep data for user id $account.userId"
 		Long userId = account.userId
 
 		EntryCreateMap creationMap = new EntryCreateMap()
@@ -85,12 +96,11 @@ class OuraDataService extends DataService {
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
 		JSONArray sleepData = apiResponse["data"]
 
-		// pageNumber is only being used for changing the setName so that previous entries for the same date do not get deleted because of the pagination
-		String setName = SET_NAME + "s" + startDate + "-" + pageNumber
-		unsetOldEntries(userId, setName)
-
 		sleepData.each { sleepEntry ->
 			Date entryDate = convertTimeToDate(sleepEntry)
+			String setName = getSetName("sleep", entryDate)
+			unsetOldEntries(userId, setName)
+
 			Integer timeZoneIdNumber = getTimeZoneId(account, sleepEntry)
 			def sleepEntryData = sleepEntry["data"]
 
@@ -108,16 +118,24 @@ class OuraDataService extends DataService {
 
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
 			log.debug "Processing get sleep data for paginated URL"
-			getDataSleep(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate, ++pageNumber)
+			getDataSleep(account, apiResponse["links"]["nextPageURL"].toString())
 		}
 	}
 
 	void getDataExercise(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
-		getDataExercise(account, refreshAll, getRequestURL("exercise", forDay), forDay, 1)
+		// Backward support for set name
+		String setName = SET_NAME + "e" + forDay + "-1"
+		unsetOldEntries(account.userId, setName)
+
+		getDataExercise(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll)
 	}
 
-	Map getDataExercise(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate, int pageNumber) throws InvalidAccessTokenException {
-		log.debug "Import extercise data for user id $account.userId for day $startDate"
+	void getDataExercise(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws InvalidAccessTokenException {
+		getDataExercise(account, getRequestURL("exercise", startDate, endDate))
+	}
+
+	Map getDataExercise(OAuthAccount account, String requestURL) throws InvalidAccessTokenException {
+		log.debug "Import extercise data for user id $account.userId"
 		Long userId = account.userId
 
 		EntryCreateMap creationMap = new EntryCreateMap()
@@ -126,16 +144,13 @@ class OuraDataService extends DataService {
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
 		JSONArray exerciseData = apiResponse["data"]
 
-		// pageNumber is only being used for changing the setName so that previous entries for the same date do not get deleted because of the pagination
-		String setName = SET_NAME + "e" + startDate + "-" + pageNumber
-		unsetOldEntries(userId, setName)
-
 		JSONObject previousEntry = null
 
 		int thresholdDuration = 15 * 60		// 15 minutes or 900 seconds
 
 		exerciseData.each { currentEntry ->
 			if (!currentEntry["data"]) {
+				log.debug "No data found in current entry"
 				return		// Continue looping
 			}
 
@@ -167,17 +182,18 @@ class OuraDataService extends DataService {
 				 * should be between 15 minutes.
 				 */
 				if (durationBeEntries <= thresholdDuration) {
+					log.debug "Found two contiguous entries. Merging"
 					previousEntry["data"]["duration_m"] += currentEntryDuration
 					return		// Continue looping
 				}
 			}
 
-			buildExerciseEntry(creationMap, stats, previousEntry, userId, setName, account)
+			buildExerciseEntry(creationMap, stats, previousEntry, userId, account)
 			previousEntry = currentEntry
 		}
 
 		if (previousEntry) {
-			buildExerciseEntry(creationMap, stats, previousEntry, userId, setName, account)
+			buildExerciseEntry(creationMap, stats, previousEntry, userId, account)
 			previousEntry = null
 		}
 
@@ -185,14 +201,18 @@ class OuraDataService extends DataService {
 
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
 			log.debug "Processing get exercise data for paginated URL"
-			getDataExercise(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate, ++pageNumber)
+			getDataExercise(account, apiResponse["links"]["nextPageURL"].toString())
 		}
 	}
 
-	private void buildExerciseEntry(EntryCreateMap creationMap, EntryStats stats, JSONObject exerciseEntry, Long userId, String setName, OAuthAccount account) {
+	private void buildExerciseEntry(EntryCreateMap creationMap, EntryStats stats, JSONObject exerciseEntry,
+			Long userId, OAuthAccount account) {
 		def exerciseEntryData = exerciseEntry["data"]
 		Date entryDate = convertTimeToDate(exerciseEntry)
 		Integer timeZoneIdNumber = getTimeZoneId(account, exerciseEntry)
+
+		String setName = getSetName("exercise", entryDate)
+		unsetOldEntries(userId, setName)
 
 		Long amount = exerciseEntryData["duration_m"]
 		String tagName = "classification_" + exerciseEntryData["classification"]
@@ -200,11 +220,21 @@ class OuraDataService extends DataService {
 	}
 
 	void getDataActivity(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
-		getDataActivity(account, refreshAll, getRequestURL("activity", forDay), forDay, 1)
+		// Backward support for set name
+		String setName = SET_NAME + "ac" + forDay + "-1"
+		unsetOldEntries(account.userId, setName)
+
+		getDataActivity(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll)
 	}
 
-	void getDataActivity(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate, int pageNumber) throws InvalidAccessTokenException {
-		log.debug "Import activity data for user id $account.userId for day $startDate"
+	void getDataActivity(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
+			InvalidAccessTokenException {
+
+		getDataActivity(account, getRequestURL("activity", startDate, endDate))
+	}
+
+	void getDataActivity(OAuthAccount account, String requestURL) throws InvalidAccessTokenException {
+		log.debug "Import activity data for user id $account.userId"
 		Long userId = account.userId
 
 		EntryCreateMap creationMap = new EntryCreateMap()
@@ -213,12 +243,10 @@ class OuraDataService extends DataService {
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
 		JSONArray activityData = apiResponse["data"]
 
-		// pageNumber is only being used for changing the setName so that previous entries for the same date do not get deleted because of the pagination
-		String setName = SET_NAME + "ac" + startDate + "-" + pageNumber
-		unsetOldEntries(userId, setName)
-
 		activityData.each { activityEntry ->
 			Date entryDate = convertTimeToDate(activityEntry)
+			String setName = getSetName("activity", entryDate)
+			unsetOldEntries(userId, setName)
 			Integer timeZoneIdNumber = getTimeZoneId(account, activityEntry)
 
 			def exerciseEntryData = activityEntry["data"]
@@ -236,18 +264,27 @@ class OuraDataService extends DataService {
 
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
 			log.debug "Processing get activity data for paginated URL"
-			getDataActivity(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate, ++pageNumber)
+			getDataActivity(account, apiResponse["links"]["nextPageURL"].toString())
 		}
+	}
+
+	String getSetName(String type, Date summaryDate) {
+		return SET_NAME + " " + type + " " + summaryDate.format("MM/dd/yyyy HH:mm:ss")
 	}
 
 	/**
 	 * Construct request URL with query string for API call for the given date.
 	 * @param dataType One of "sleep", "activity", "exercise"
-	 * @param startDate Date for which Ouracloud data needs to be pulled
+	 * @param startDate Start date from which Ouracloud data needs to be pulled
+	 * @param endDate End date upto which Ouracloud data needs to be pulled
 	 */
-	String getRequestURL(String dataType, Date startDate) {
+	String getRequestURL(String dataType, Date startDate, Date endDate) {
+		if (!startDate || !endDate) {
+			throw new IllegalArgumentException("Both start & end date are required")
+		}
+
 		Long startTime = startDate.getTime()
-		Long endTime = DateUtils.getEndOfTheDay(startDate)
+		Long endTime = endDate.getTime()
 
 		URIBuilder builder = new URIBuilder("/api/$dataType")
 		builder.addQueryParam("max", 1000)

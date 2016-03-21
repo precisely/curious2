@@ -3,14 +3,19 @@ package us.wearecurio.services
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
 import org.springframework.transaction.annotation.Transactional
-import us.wearecurio.model.*
+import us.wearecurio.model.DurationType
+import us.wearecurio.model.Entry
+import us.wearecurio.model.Identifier
+import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.ThirdPartyNotification
+import us.wearecurio.model.TimeZoneId
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.TagUnitMap
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
-import us.wearecurio.utility.Utils
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -35,12 +40,13 @@ class MovesDataService extends DataService {
 
 	@Override
 	@Transactional
-	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
+	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
+			InvalidAccessTokenException {
 		log.debug("MovesDataService.getDataDefault(): account " + account.getId() + " startDate: " + startDate + " refreshAll: " + refreshAll)
 		
 		Long userId = account.userId
 
-		startDate = startDate ?: new Date() ?: earlyStartDate
+		startDate = startDate ?: earlyStartDate
 
 		Integer timeZoneId = getTimeZoneId(account)
 
@@ -148,9 +154,8 @@ class MovesDataService extends DataService {
 				processActivity(creationMap, stats, previousActivity, userId, timeZoneId, startEndTimeFormat, args)
 			}
 		}
-		account.lastPolled = new Date()
-		Utils.save(account, true)
 
+		account.markLastPolled()
 		stats.finish()
 
 		return [success: true]

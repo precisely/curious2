@@ -1,15 +1,13 @@
 package us.wearecurio.services.integration
 
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-
-import org.junit.*
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDateTime
-import org.joda.time.LocalTime
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 import org.scribe.model.Response
-
+import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
@@ -22,7 +20,9 @@ import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.utility.Utils
-import us.wearecurio.hashids.DefaultHashIDGenerator
+
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 
 class FitBitDataServiceTests extends CuriousServiceTestCase {
 	static transactional = true
@@ -122,7 +122,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		]
 		// When fitbit returns a non-zero response code
 		try {
-			fitBitDataService.getDataDefault(account, new Date(), false)
+			fitBitDataService.getDataDefault(account, new Date(), null, false)
 		} catch(e) {
 			assert e instanceof InvalidAccessTokenException
 		}
@@ -137,7 +137,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 			}
 		]
 
-		Map result = fitBitDataService.getDataDefault(account, new Date(), false)
+		Map result = fitBitDataService.getDataDefault(account, new Date(), null, false)
 
 		assert result.success == true
 	}
