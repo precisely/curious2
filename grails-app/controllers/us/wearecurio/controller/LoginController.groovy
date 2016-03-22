@@ -141,8 +141,7 @@ class LoginController extends SessionController {
 		def user = execLogin()
 		if (user) {
 			if (user.emailVerified == VerificationStatus.BANNED) {
-				renderJSONGet([success:false, message: "Sorry but your account has been blocked for some security reasons. " +
-						"\nPlease contact <a style='color:#428bca' href='mailto:support@wearecurio.us'>support@wearecurio.us</a> for further details."])
+				renderJSONGet([success:false, message: g.message(code: "user.account.banned")])
 				return
 			}
 			def uuid = session.persistentSession.fetchUuid()
@@ -247,11 +246,9 @@ class LoginController extends SessionController {
 			debug "auth failure"
 			return
 		}
-		
-		Long userId = user.id
-		
+
 		if (execVerifyUser(user) == EMAIL_CODE_SUCCESS) {
-			flash.message = "Account verification email sent. Please check your email; be sure to check your spam folder"
+			flash.message = "Account verification email sent. Please check your email; be sure to check your spam folder."
 			
 			render(view:"/home/userpreferences",
 					model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user,

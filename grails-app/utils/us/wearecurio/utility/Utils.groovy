@@ -1,25 +1,17 @@
 package us.wearecurio.utility
 
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-
+import grails.util.GrailsUtil
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-
-import us.wearecurio.model.User
-
-import org.codehaus.groovy.grails.web.context.ServletContextHolder as SCH
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GA
 import org.joda.time.DateTime
-
+import us.wearecurio.model.User
 import us.wearecurio.services.EmailService
-import us.wearecurio.services.SearchService;
-import grails.util.GrailsUtil
+import us.wearecurio.services.SearchService
 
-import java.io.ByteArrayOutputStream
-import java.io.IOException
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
-import java.util.zip.*
 
 /**
  * @author mitsu

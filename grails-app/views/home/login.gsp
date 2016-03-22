@@ -23,8 +23,8 @@
 								$("#indexformpersistentsessionid").val(localStorage['persistentSessionId']);
 								$("#curiousindexform").submit();
 							} else {
-								var message = data['message'] ? data['message'] : 'Username or password not correct, please try again'
-								console.log("message",message);
+								var message = data['message'] ? data['message'] :
+										'Username or password not correct, please try again';
 								showAlert(message);
 							}
 						});
