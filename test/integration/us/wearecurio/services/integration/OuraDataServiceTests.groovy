@@ -205,7 +205,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		List<Entry> entryList = Entry.getAll()
 
 		(1..3).each { index ->
-			// Update the set name to use old set names
+			// Update the set name to use old set names, so that we can simulate data for the test
 			entryList[index].setIdentifier = Identifier.look(ouraDataService.getOldSetName("s", new Date()))
 			Utils.save(entryList[index], true)
 		}
