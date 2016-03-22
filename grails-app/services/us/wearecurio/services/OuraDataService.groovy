@@ -75,10 +75,6 @@ class OuraDataService extends DataService {
 	void getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
 		log.debug "Get sleep data for account $account.id for $forDay"
 
-		// Backward support for set name
-		String setName = SET_NAME + "s" + forDay + "-1"
-		unsetOldEntries(account.userId, setName)
-
 		getDataSleep(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll)
 	}
 
@@ -89,6 +85,9 @@ class OuraDataService extends DataService {
 		if (refreshAll) {
 			unsetAllOldEntries(account.userId, SET_NAME)
 		}
+
+		// Backward support for old set name
+		unsetOldEntries(account.userId, getOldSetNames("s", startDate, endDate))
 
 		getDataSleep(account, getRequestURL("sleep", startDate, endDate))
 	}
@@ -133,10 +132,6 @@ class OuraDataService extends DataService {
 	void getDataExercise(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
 		log.debug "Get exercise data for account $account.id for $forDay"
 
-		// Backward support for set name
-		String setName = SET_NAME + "e" + forDay + "-1"
-		unsetOldEntries(account.userId, setName)
-
 		getDataExercise(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll)
 	}
 
@@ -147,6 +142,9 @@ class OuraDataService extends DataService {
 		if (refreshAll) {
 			unsetAllOldEntries(account.userId, SET_NAME)
 		}
+
+		// Backward support for old set name
+		unsetOldEntries(account.userId, getOldSetNames("e", startDate, endDate))
 
 		getDataExercise(account, getRequestURL("exercise", startDate, endDate))
 	}
@@ -237,11 +235,7 @@ class OuraDataService extends DataService {
 	}
 
 	void getDataActivity(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
-		log.debug "Get acitivity data for account $account.id for $forDay"
-
-		// Backward support for set name
-		String setName = SET_NAME + "ac" + forDay + "-1"
-		unsetOldEntries(account.userId, setName)
+		log.debug "Get activity data for account $account.id for $forDay"
 
 		getDataActivity(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll)
 	}
@@ -252,6 +246,9 @@ class OuraDataService extends DataService {
 		if (refreshAll) {
 			unsetAllOldEntries(account.userId, SET_NAME)
 		}
+
+		// Backward support for old set name
+		unsetOldEntries(account.userId, getOldSetNames("ac", startDate, endDate))
 
 		getDataActivity(account, getRequestURL("activity", startDate, endDate))
 	}
@@ -291,8 +288,29 @@ class OuraDataService extends DataService {
 		}
 	}
 
+	/**
+	 * Get new set name like "OURA activity 03/01/2016 00:00:00" for activity or "OURA sleep 03/02/2016 00:00:00" for
+	 * sleep.
+	 */
 	String getSetName(String type, Date summaryDate) {
 		return SET_NAME + " " + type + " " + summaryDate.format("MM/dd/yyyy HH:mm:ss")
+	}
+
+	/**
+	 * Get old set name like "OURAac2016-03-01 00:00:00.0-1" for activity or "OURAs2016-03-02 00:00:00.0-1" for sleep.
+	 * This is for backward compatibility.
+	 */
+	String getOldSetName(String type, Date forDay) {
+		// Hard coding pagination number
+		return SET_NAME + type + forDay.clearTime().format("yyyy-MM-dd HH:mm:ss.S") + "-1"
+	}
+
+	List<String> getOldSetNames(String type, Date startDate, Date endDate) {
+		List setNames = []
+		(startDate..endDate).each { Date date ->
+			setNames << getOldSetName(type, date)
+		}
+		return setNames
 	}
 
 	/**
@@ -332,5 +350,16 @@ class OuraDataService extends DataService {
 	 */
 	Date convertTimeToDate(Map rawEntry) {
 		return new Date(new Long(rawEntry["eventTime"]) * 1000)
+	}
+}
+
+enum OuraDataTypes {
+	SLEEP("s"),
+	ACTIVITY("ac"),
+	EXERCISE("e")
+
+	final oldSetName
+	OuraDataTypes(String oldSetName) {
+		this.oldSetName = oldSetName
 	}
 }

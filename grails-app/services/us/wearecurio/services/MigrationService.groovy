@@ -602,7 +602,9 @@ class MigrationService {
 			sql("update _user set email_verified = :status", [status: VerificationStatus.VERIFIED.id])
 		}
 		tryMigration("Set last polled for all Oura OAuthAccounts") {
-			sql("update oauth_account set last_polled = now() where type_id = :typeId", [typeId: ThirdParty.OURA.id])
+			// Set last polled to (now - 4 days)
+			sql("update oauth_account set last_polled = (now() - interval 4 day) where type_id = :typeId",
+					[typeId: ThirdParty.OURA.id])
 		}
 	}
 	
