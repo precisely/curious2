@@ -233,15 +233,15 @@ function initializeListing() {
 function processResults(data) {
 	var parentElement;
 
-	if (window.location.hash === "#discussions" || isSocialGSP) {
+	if (window.location.hash !== "#people" && (window.location.hash === "#discussions" || isSocialGSP)) {
 		/*
-		 * Adding "Create discussion" form on every sub tab of the social page and the discussions tab in the
+		 * Adding "Create discussion" form on every sub tab except the people tab of the social page and on the discussions tab in the
 		 * social page and search results.
 		 */
 		var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.groupName});
 		$("#feed").html(createDiscussionForm);
 		if (window.location.hash === "#discussions") {
-			//special handling for discussions tab.
+			// Special handling for discussions tab.
 			$("#feed").append('<div class="discussions"></div>');
 			parentElement = ".discussions";
 		}
