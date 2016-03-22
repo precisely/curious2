@@ -7,6 +7,7 @@
 		<div class="contents">
 			<div class="row">
 				<div class="col-xs-9 discussion-header">
+					<img src="/images/feed/discussion.png" class="helper-icon" />
 					<a href="/home/social#people/{{- discussionData.userHash }}">
 						<img src="{{- discussionData.userAvatarURL || '/images/avatar.png' }}" alt="avatar" class="avatar img-circle">
 						&nbsp; <span class="username">{{- discussionData.publicUserName ? (discussionData.userName + '(' + discussionData.publicUserName + ')') : discussionData.userName}}</span>

@@ -3252,11 +3252,28 @@ body {
 }
 
 .feed-item {
-	box-shadow: 0 4px 5px #dddddd;
+	background-color: #fff;
 }
 
-.feed-item.discussion {
+.feed-items .feed-item {
+	box-shadow: 0 4px 5px #dddddd;
 	margin-bottom: 20px;
+	border-left: 3px solid transparent;
+}
+
+.feed-item.sprint {
+	border-color: #FC3F28;
+}
+.feed-item.user {
+	border-color: #ff935f;
+}
+.feed-item.discussion {
+	border-color: #C25483;
+}
+
+.feed-item .helper-icon {
+	width: 21px;
+	margin-right: 10px;
 }
 
 .discussion .dark-comment {
@@ -3278,10 +3295,9 @@ body {
 	font-family: 'Open Sans', sans, sans-serif, 'FontAwesome';
 }
 
-.discussion-topic, .feed-item .sprint {
-	background-color: white;
+.discussion-topic, .feed-item.sprint {
 	color: #2d2d2d;
-	padding: 10px 7px;
+	padding: 15px;
 	font-size: 16px;
 }
 
@@ -3293,8 +3309,8 @@ body {
 	padding-top: 7px;
 }
 
-.feed-item .sprint {
-	padding: 18px 25px 20px 22px;
+.feed-item.sprint {
+	padding: 15px;
 	margin-right: 0;
 }
 
@@ -3314,10 +3330,6 @@ body {
 	color: #2d2d2d;
 	font-size: 15px;
 	font-weight: 600;
-}
-
-.discussion-header {
-	padding-left: 5px;
 }
 
 .discussion-header .dropdown {
@@ -3372,7 +3384,7 @@ body {
 	margin-left: 0;
 }
 
-.discussion .discussion-topic a, .feed-item .sprint a {
+.discussion .discussion-topic a, .feed-item.sprint a {
 	color: #2d2d2d;
 	font-size: 14px;
 }
@@ -3387,7 +3399,7 @@ body {
 	font-weight: 200;
 }
 
-.feed-item .sprint a {
+.feed-item.sprint a {
 	font-size: 15px;
 	font-weight: 800;
 }
@@ -3401,7 +3413,7 @@ body {
 	text-decoration: underline;
 }
 
-.feed-item .sprint .sprint-description {
+.feed-item.sprint .sprint-description {
 	font-size: 14px;
 	margin-top: 10px;
 	margin-right: 60px;
@@ -3459,7 +3471,7 @@ body {
 	width: 38px;
 }
 
-.discussion-topic .posting-time, .feed-item .sprint .posting-time {
+.discussion-topic .posting-time, .feed-item.sprint .posting-time {
 	font-size: 11px;
 	color: #a8a8a8;
 }
@@ -3525,10 +3537,6 @@ body {
 	height: 24px;
 	width: auto;
 	margin-right: 10px;
-}
-
-.discussion-topic .contents {
-	padding: 6px 14px;
 }
 
 .discussion-comments-wrapper {
@@ -4396,12 +4404,8 @@ body .modal-header button {
 	color: #ff935f; 
 }
 
-.people-wrapper {
-	background-color: #fff;
-	width: 100%;
-	padding: 15px 15px;
-	margin-bottom: 15px;
-	box-shadow: 0 4px 5px #dddddd;
+.feed-item.user {
+	padding: 15px;
 }
 
 .user-preference .container-fluid {
@@ -4458,7 +4462,7 @@ body .modal-header button {
 }
 
 .user-details-content {
-	margin: 5px 7px;
+	margin: 5px 0;
 	font-size: 12px;
 	color: #cacaca;
 }
