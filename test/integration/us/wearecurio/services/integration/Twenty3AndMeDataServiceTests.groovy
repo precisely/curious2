@@ -88,7 +88,7 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 				return new Response(new MockedHttpURLConnection(url.startsWith(Twenty3AndMeDataService.GENOME_URL) ? genomeResponse : profileResponse))
 			}]
 
-		Map response = twenty3AndMeDataService.getDataDefault(account, new Date(), false)
+		Map response = twenty3AndMeDataService.getDataDefault(account, new Date(), null, false)
 		assert response.success == true
 		
 		assert Twenty3AndMeData.countByAccountAndProfileId(account, 1) == 2

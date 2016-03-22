@@ -65,8 +65,6 @@ class FitBitDataService extends DataService {
 		String setName = SET_NAME
 		String requestUrl = String.format(BASE_URL, "/${accountId}/activities/date/${forDate}.json")
 
-		Map args = [setName: setName, comment: COMMENT]
-		
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
 
@@ -148,19 +146,10 @@ class FitBitDataService extends DataService {
 
 	@Override
 	@Transactional
-	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
+	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
+			InvalidAccessTokenException {
 		log.debug("FitBitDataService.getDataDefault() account " + account.getId() + " startDate: " + startDate + " refreshAll: " + refreshAll)
-		String accountId = account.accountId
 		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
-		
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
-		formatter.setTimeZone(TimeZoneId.getTimeZoneInstance(getTimeZoneId(account)))
-		String forDate = formatter.format(startDate)
-		String setName = SET_NAME + " " + forDate
-
-		Map args = [setName: setName, comment: COMMENT]
-
-		Long userId = account.userId
 
 		getDataActivities(account, startDate, false)
 		getDataBody(account, startDate, false)
@@ -198,8 +187,6 @@ class FitBitDataService extends DataService {
 		String setName = SET_NAME + " " + forDate
 		String requestUrl = String.format(BASE_URL, "/${accountId}/sleep/date/${forDate}.json")
 
-		Map args = [setName: setName, comment: COMMENT]
-		
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
 

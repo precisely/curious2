@@ -134,14 +134,14 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		// When withings returns a non-zero status code
 		setWithingsResourceRepsone(new MockedHttpURLConnection("""{"status": 2555}"""))
 		
-		Map result = withingsDataService.getDataDefault(account, new Date(), false)
+		Map result = withingsDataService.getDataDefault(account, new Date(), null, false)
 		
 		assert Entry.count() == 0
 		
 		try {
 			// When token expires with code 342
 			setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection("""{"status": 342}"""))
-			withingsDataService.getDataDefault(account, new Date(), false)
+			withingsDataService.getDataDefault(account, new Date(), null, false)
 		} catch(e) {
 			e.cause instanceof InvalidAccessTokenException
 		}
@@ -153,7 +153,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		def mockedResponseData = """status = unparsable-response"""
 		setWithingsResourceRepsone(new MockedHttpURLConnection(mockedResponseData))
 		
-		withingsDataService.getDataDefault(account, new Date(), false)
+		withingsDataService.getDataDefault(account, new Date(), null, false)
 		assert Entry.count() == 0
 	}
 	
@@ -163,7 +163,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(mockedResponseData))
 		setWithingsResourceRepsone(new MockedHttpURLConnection(mockedResponseData))
 		
-		withingsDataService.getDataDefault(account, new Date(), false)
+		withingsDataService.getDataDefault(account, new Date(), null, false)
 		assert Entry.count() > 0
 	}
 	
