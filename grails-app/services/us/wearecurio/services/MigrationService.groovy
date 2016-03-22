@@ -599,7 +599,9 @@ class MigrationService {
 			sql("ALTER TABLE `plot_data` CHANGE COLUMN `json_plot_data` `json_plot_data` MEDIUMTEXT NULL DEFAULT NULL")
 		}
 		tryMigration("Set last polled for all Oura OAuthAccounts") {
-			sql("update oauth_account set last_polled = now() where type_id = :typeId", [typeId: ThirdParty.OURA.id])
+			// Set last polled to (now - 4 days)
+			sql("update oauth_account set last_polled = (now() - interval 4 day) where type_id = :typeId",
+					[typeId: ThirdParty.OURA.id])
 		}
 	}
 	

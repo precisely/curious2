@@ -545,6 +545,24 @@ abstract class DataService {
 	}
 
 	/**
+	 * Unset the userId from the older entries for the given setNames to remove duplicacy from the data import
+	 * across the API.
+	 * @param userId Identifier of the user for which older entries need to be unset
+	 * @param setNames List of different set names of the entries
+	 */
+	void unsetOldEntries(Long userId, List<String> setNames) {
+		log.debug "Unself old entries for user $userId with set names $setNames"
+		if (!setNames) {
+			log.debug "Pass at least one set name"
+			return
+		}
+
+		Entry.executeUpdate("update Entry e set e.userId = null where e.userId = :userId and e.setIdentifier in " +
+				"(select i.id from Identifier i where value in (:setIdentifiers))",
+				[setIdentifiers: setNames, userId: userId])
+	}
+
+	/**
 	 * Unset the userId from all the older entries for the given setName.
 	 * @param userId Identifier of the user for which older entries need to be unset
 	 * @param setNamePrefix Prefix of set name of the entries
