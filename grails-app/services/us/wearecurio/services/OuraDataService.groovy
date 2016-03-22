@@ -83,6 +83,7 @@ class OuraDataService extends DataService {
 		log.debug "Get sleep data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
 		if (refreshAll) {
+			// Unsetting all historical data. Starting with the device set name prefix
 			unsetAllOldEntries(account.userId, SET_NAME)
 		}
 
@@ -140,6 +141,7 @@ class OuraDataService extends DataService {
 		log.debug "Get exercise data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
 		if (refreshAll) {
+			// Unsetting all historical data. Starting with the device set name prefix
 			unsetAllOldEntries(account.userId, SET_NAME)
 		}
 
@@ -244,6 +246,7 @@ class OuraDataService extends DataService {
 			InvalidAccessTokenException {
 		log.debug "Get activity data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 		if (refreshAll) {
+			// Unsetting all historical data. Starting with the device set name prefix
 			unsetAllOldEntries(account.userId, SET_NAME)
 		}
 
@@ -289,22 +292,47 @@ class OuraDataService extends DataService {
 	}
 
 	/**
-	 * Get new set name like "OURA activity 03/01/2016 00:00:00" for activity or "OURA sleep 03/02/2016 00:00:00" for
-	 * sleep.
+	 * Get set name which will be used while creating entries. This set name is constructed with the
+	 * device name prefix + the type of the data (like sleep, activity or exercise) + the event date of the summary
+	 * data received from the API.
+	 *
+	 * @param type Type of the data to use in the set name
+	 * @param summaryDate Event date of the summary data
+	 * @return The new set name as described above like "OURA activity 03/01/2016 00:00:00" for activity or
+	 * "OURA sleep 03/02/2016 00:00:00" for sleep data
 	 */
 	String getSetName(String type, Date summaryDate) {
 		return SET_NAME + " " + type + " " + summaryDate.format("MM/dd/yyyy HH:mm:ss")
 	}
 
 	/**
-	 * Get old set name like "OURAac2016-03-01 00:00:00.0-1" for activity or "OURAs2016-03-02 00:00:00.0-1" for sleep.
-	 * This is for backward compatibility.
+	 * Get old set name which will is used for backward compatibility by removing old entries with this set name.
+	 * This set name is not used for creating new entries. Use the method {@link "getSetName" getSetName} instead.
+	 *
+	 * @param type Type of the data to use in the set name (like "s", "ac", "e")
+	 * @return The old set name like "OURAac2016-03-01 00:00:00.0-1" for activity or "OURAs2016-03-02 00:00:00.0-1"
+	 * for sleep data.
 	 */
 	String getOldSetName(String type, Date forDay) {
-		// Hard coding pagination number
+		/*
+		 * In old set name, we were appending the pagination number to the set name to prevent data from deleting
+		 * when we process the next page. We are hard coding pagination to just "1" here since all the previous
+		 * entries (with old set name) were imported in the first page only (as we are pulling 1000 records from Oura
+		 * at a time).
+		 */
 		return SET_NAME + type + forDay.clearTime().format("yyyy-MM-dd HH:mm:ss.S") + "-1"
 	}
 
+	/**
+	 * Get a list of old set names for the given date range. This method basically constructs the set name of each
+	 * individual date lies between the given range so that we can remove old entries when we pull data for a same
+	 * date again. This is to support backward compatibility.
+	 *
+	 * @param type Type of the data for old set like "s", "ac", "e"
+	 * @param startDate Start date to get list of set names from
+	 * @param endDate End date for the list of set names
+	 * @return The list of old set names as described above
+	 */
 	List<String> getOldSetNames(String type, Date startDate, Date endDate) {
 		List setNames = []
 		(startDate..endDate).each { Date date ->
@@ -353,6 +381,10 @@ class OuraDataService extends DataService {
 	}
 }
 
+/**
+ * TODO Replace the use of String like "sleep", "s", "acitivity", "a" etc. with this enum to make the code more
+ * readable. This enum is not used anywhere currently.
+ */
 enum OuraDataTypes {
 	SLEEP("s"),
 	ACTIVITY("ac"),

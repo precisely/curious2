@@ -558,8 +558,8 @@ abstract class DataService {
 		}
 
 		Entry.executeUpdate("update Entry e set e.userId = null where e.userId = :userId and e.setIdentifier in " +
-				"(select i.id from Identifier i where value in (:setIdentifiers))",
-				[setIdentifiers: setNames, userId: userId])
+				"(select i.id from Identifier i where value in (:values))",
+				[values: setNames, userId: userId])
 	}
 
 	/**
@@ -569,7 +569,7 @@ abstract class DataService {
 	 */
 	void unsetAllOldEntries(Long userId, String setNamePrefix) {
 		Entry.executeUpdate("update Entry e set e.userId = null where e.userId = :userId and e.setIdentifier in " +
-				"(select i.id from Identifier i where value like :setIdentifier)",
-				[setIdentifier: "${setNamePrefix}%", userId: userId])
+				"(select i.id from Identifier i where value like :value)",
+				[value: "${setNamePrefix}%", userId: userId])
 	}
 }

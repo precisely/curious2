@@ -71,6 +71,7 @@ class SecurityService {
 		'termsofservice_home',
 		'notifyfitbit',
 		'notifyOura',
+		'notifyJawbone',
 		'homepage',
 		'getPeopleData',
 		'thirdPartySignUp',
