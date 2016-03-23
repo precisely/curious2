@@ -1103,116 +1103,8 @@ body.tags-displayed .floating-column {
 	color:#000000;
 }
 
-.sharePage .leftNav {
-	border: 0;
-	-moz-box-shadow: 0 0 0;
-	-webkit-box-shadow: 0 0 0;
-	box-shadow: 0 0 0;
-}
-
-body.discuss-page .red-header {
-	text-transform: none;
-}
-
 .feed-body .container-fluid {
 	padding: 0;
-}
-
-.discuss-page .container-fluid {
-	padding-left: 116px;
-	padding-right: 116px;
-}
-
-.sharePage h1 .bittext {
-	font-size:10px;
-	font-weight:normal;
-	text-transform:uppercase;
-	display:block;
-	padding: 0 0 0 0;
-}
-
-.sharePage h1 div {
-	width:225px;
-	float:right;
-}
-
-#discussTitleSpan {
-	font-size:20px;
-	width:500px;
-}
-
-.discusscomments {
-	width: 100%;
-}
-
-.discusscomments .description {
-	line-height:1.5em;
-	color:#666666;
-	font-size:12px;
-	font-weight:bold;
-	margin:2em 0;
-	border-top:2px solid #EF4B3A;
-	border-bottom:2px solid #EF4B3A;
-}
-
-.discusscomments .description p {
-	margin:1em 0;
-}
-
-.discusscomments .button {
-	text-align:right;
-	margin:2em 0;
-}
-
-.discusscomments .button a {
-	display:inline-block;
-	padding:2px 0;
-	text-align:center;
-	width:230px;
-	background-color:#08BBF1;
-	color:#ffffff;
-	font-weight:normal;
-	text-transform:uppercase;
-	font-size:10px;
-}
-
-.commentList h1 {
-	font-size:1em;
-	background-color:transparent;
-	color:#666666;
-	text-transform:uppercase;
-	padding: 0;
-	margin:1em 0;
-}
-
-.commentList .comment {
-	line-height:1.6em;
-	color:#666666;
-	font-size:12px;
-	font-weight:normal;
-	margin:2em 0;
-	border-bottom:1px solid #EAEAEA;
-}
-
-.commentList .comment {
-	padding-bottom: 20px;
-}
-
-.commentList .comment .message p {
-	margin: 0 0 1em 0;
-}
-
-.commentList .comment .message {
-	width:700px;
-	right:280px;
-	display:inline-block;
-	vertical-align:top;
-}
-
-.commentList .comment .messageInfo {
-	width:200px;
-	display:inline-block;
-	vertical-align:top;
 }
 
 * html .message {
@@ -3301,11 +3193,7 @@ body {
 	font-size: 16px;
 }
 
-.discusscomments .buttons {
-	margin-top: -10px;
-}
-
-.discusscomments .checkbox-orange {
+.discussion .checkbox-orange {
 	padding-top: 7px;
 }
 
@@ -3326,7 +3214,7 @@ body {
 	font-size: 14px;
 }
 
-.discusscomments .group {
+.discussion .group {
 	color: #2d2d2d;
 	font-size: 15px;
 	font-weight: 600;
@@ -3392,11 +3280,6 @@ body {
 .discussion .discussion-topic a {
 	margin-top: 0;
 	font-weight: 600;
-}
-
-.discusscomments .discussion .discussion-topic a {
-	font-size: 15px;
-	font-weight: 200;
 }
 
 .feed-item.sprint a {
@@ -3620,7 +3503,7 @@ body {
 	font-weight: 600;
 }
 
-.discusscomments .discussion-topic .username {
+.discuss-page .discussion-topic .username {
 	font-size: 16px;
 }
 
