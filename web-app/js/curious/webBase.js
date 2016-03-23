@@ -116,10 +116,11 @@ $(window).load(function(){
 		}
 		$('ul', $(e.target).parent()).toggle();
 	});
+
 	$('.red-header #actions ul').mouseleave(function(e) {
 		var $this = $(this);
 		$(e.target).closest('ul').toggle();
-		var $parent = $(this).parent();
+		var $parent = $this.parent();
 		if ($parent.find('.toggle').hasClass('icon-triangle')) {
 			$parent.find('.toggle').toggleClass('icon-triangle-right icon-triangle-down');
 		}

@@ -106,6 +106,7 @@
 		<c:renderJSTemplate template="/discussion/create" id="_createDiscussionForm" />
 		<c:renderJSTemplate template="/discussion/instance" id="_discussions" />
 		<c:renderJSTemplate template="/discussionPost/instance" id="_comments" />
+		<c:renderJSTemplate template="/discussionPost/editForm" id="_commentEditForm" />
 		<c:renderJSTemplate template="/people/instance" id="_people" />
 		<c:renderJSTemplate template="/sprint/instance" id="_sprints" />
 		<c:renderJSTemplate template="/people/show" id="_peopleDetails" />

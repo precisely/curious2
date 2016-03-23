@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Script contains Discussion & DiscussionPost (comment) related code.
  */
@@ -62,7 +64,7 @@ function getComments(discussionHash, args, callback) {
 		}
 
 		if ((commentsArgs.offset + commentsArgs.max) >= totalComments) {
-			$('.view-comment', discussionElementID).hide();
+			$('.view-comment', discussionElementID).remove();
 		}
 		renderComments(discussionHash, data.posts, data);
 
@@ -177,9 +179,33 @@ $(document).ready(function() {
 	});
 
 	/**
+	 * Click handler to execute when user clicks on the link to edit a post/comment.
+	 */
+	$(document).on("click", ".edit-post", function() {
+		var $this = $(this);
+		var $parent = $this.parents(".discussion-comment");
+		var $message = $parent.find(".message");
+		var previousMessage = $message.html().trim();
+		var postID = $this.data("postId");
+
+		var html = compileTemplate("_commentEditForm", {id: postID, message: previousMessage});
+		$parent.addClass("editing-comment");
+		$message.after(html);
+		$message.hide();
+		$this.hide();
+
+		return false;
+	});
+
+	$(document).on("click", ".cancel-comment", function() {
+		hideInlinePostEdit($(this).parents(".discussion-comment"));
+		return false;
+	});
+
+	/**
 	 * Click handler to execute when user hit enter i.e. submits the form of adding new DiscussionPost/comment.
 	 */
-	$(document).on("submit", ".comment-form", function() {
+	$(document).on("submit", ".new-comment-form", function() {
 		var $form = $(this);
 		// See base.js for implementation details of $.serializeObject()
 		var params = $form.serializeObject();
@@ -203,28 +229,39 @@ $(document).ready(function() {
 		return false;
 	});
 
-	$(document).on("submit", "#first-post-form", function() {
+	/**
+	 * According to the HTML specification, the form should have just one input type="text", and no textarea in
+	 * order to ENTER to submit a form. So adding a keydown event here so that when a user hit "Ctrl + Enter" in
+	 * the text area to add/edit a commit, the form should submit.
+	 *
+	 * http://www.alanflavell.org.uk/www/formquestion.html
+	 */
+	$(document).on("keydown", ".comment-message", function() {
+		// On pressing Ctrl + Enter in textarea for commenting "http://stackoverflow.com/a/9343095/2405040"
+		if ((event.keyCode == 10 || event.keyCode == 13) && event.ctrlKey) {
+			$(this).parents(".comment-form").submit();
+		}
+	});
+
+	/**
+	 * Form submit handler which will be executed when the user either submits the form for editing a post/comment
+	 * or sets the first post message/description of a discussion.
+	 */
+	$(document).on("submit", ".edit-comment-form", function() {
 		var $form = $(this);
 		// See base.js for implementation details of $.serializeObject()
 		var params = $form.serializeObject();
+		var $parentComment = $form.parents(".discussion-comment");
+		var isFirstPostUpdate = $parentComment.length === 0;
 
-		queueJSONAll('Adding Comment', '/api/discussionPost', getCSRFPreventionObject('addCommentCSRF', params),
-				function(data) {
-					if (!checkData(data)) {
-						return;
-					}
-					if (!data.success) {
-						showAlert(data.message);
-						return;
-					}
-
-					$(".first-post-container").html("").text(params.message);
-				}, function(xhr) {
-					console.log('Internal server error');
-					if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
-						showAlert(xhr.responseJSON.message);
-					}
-				}, 0, {requestMethod: "PUT"});
+		updatePost(params, function() {
+			if (isFirstPostUpdate) {
+				$(".first-post-container").html("").text(params.message);
+			} else {
+				hideInlinePostEdit($parentComment);
+				$parentComment.find(".message").html(params.message);
+			}
+		});
 
 		return false;
 	});
@@ -237,7 +274,7 @@ $(document).ready(function() {
 	// On click of comment button in the single discussion page
 	$(document).on("click", ".comment-button", function() {
 		// Just put focus on the comment box
-		$(this).parents(".discussion").find("input[name=message]").focus();
+		$(this).parents(".discussion").find(".comment-message").focus();
 		return false;
 	});
 
@@ -307,30 +344,6 @@ $(function() {
 	});
 });
 
-function infiniteScrollComments(discussionHash) {
-	$(".comments").infiniteScroll({
-		bufferPx: 360,
-		finalMessage: 'No more comments to show',
-		onScrolledToBottom: function(e, $element) {
-			// Pause the scroll event to not trigger again untill AJAX call finishes
-			// Can be also called as: $("#postList").infiniteScroll("pause")
-			this.pause();
-			var discussionElement = getDiscussionElement(discussionHash);
-			commentsArgs.offset = discussionElement.data('offset');
-
-			getComments(discussionHash, commentsArgs, function(data) {
-				if (!data.posts) {
-					this.finish();
-				} else {
-					commentsArgs.offset += commentsArgs.max;
-					discussionElement.data('offset', commentsArgs.offset);
-					this.resume();			// Re start scrolling event to fetch next page data on reaching to bottom
-				}
-			}.bind(this));
-		}
-	});
-}
-
 function discussionShow(hash) {
 	$('#feed').infiniteScroll("stop");
 
@@ -365,4 +378,31 @@ function discussionShow(hash) {
 		
 		setQueryHeader('Curious Discussions', true);
 	});
+}
+
+function updatePost(params, callback) {
+	queueJSONAll('Adding Comment', '/api/discussionPost', getCSRFPreventionObject('addCommentCSRF', params),
+			function(data) {
+				if (!checkData(data)) {
+					return;
+				}
+				if (!data.success) {
+					showAlert(data.message);
+					return;
+				}
+
+				callback && callback();
+			}, function(xhr) {
+				console.log('Internal server error');
+				if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+					showAlert(xhr.responseJSON.message);
+				}
+			}, 0, {requestMethod: "PUT"});
+}
+
+function hideInlinePostEdit($comment) {
+	$comment.removeClass("editing-comment");    // Remove the class to revert the UI
+	$comment.find(".edit-post").show();         // Show the pencil icon again to re-edit later
+	$comment.find(".message").show();           // Show the actual post message again
+	$comment.find(".comment-form").remove();    // Remove the added inline form
 }

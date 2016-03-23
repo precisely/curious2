@@ -38,6 +38,11 @@
 	user-select: none;
 }
 
+.btn-orange {
+	color: white;
+	background: #f48d5b;
+}
+
 .btn-orange.btn-outline {
 	color: #f48d5b;
 	border: 1px solid #f48d5b;

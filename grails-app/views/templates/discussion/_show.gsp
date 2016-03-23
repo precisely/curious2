@@ -38,7 +38,7 @@
 		<div id="preFooter"></div>
 	{{ } }}
 
-	<div class="main">
+	<div class="main" style="height: auto;">
 		<div class="feed-item discussion" id="discussion-{{- discussionHash }}">
 			<div class="discussion-topic">
 				<div class="contents">
@@ -87,7 +87,7 @@
 						{{ if (firstPost && firstPost.message) { }}
 							{{- firstPost.message }}
 						{{ } else if (isAdmin) { }}
-							<form id="first-post-form" action="#">
+							<form class="edit-comment-form" action="#">
 								<input type="hidden" name="id" value="{{- firstPost.id}}" />
 								<input type="text" placeholder="Add description..." name="message" required
 									autofocus />
@@ -134,49 +134,47 @@
 				</div>
 			</div>
 
-			<div class="discussion-comments-wrapper">
+			<div class="discussion-comments-wrapper clearfix">
 				{{ if ( totalPostCount > 5 ) { }}
 					<div class="view-comment" data-discussion-hash="{{- discussionHash }}">VIEW MORE COMMENTS</div>
 				{{ } }}
 
-				<div class="comments media-list"></div>
+				<!-- All comments will be inserted here -->
+				<div class="comments"></div>
 
 				<div class="add-comment {{- disableComments && (!isAdmin) ? 'hide' : ''}}">
 					{{var isCommentAllowed = !disableComments || isAdmin }}
-					<form method="post" class="comment-form {{- isCommentAllowed ? '' : 'comment-disabled' }}">
+
+					<form class="comment-form new-comment-form {{- isCommentAllowed ? '' : 'comment-disabled' }}">
 						{{ if (notLoggedIn) { }}
 							<p>Enter your details below</p>
 
-							<div>
-								<input type="text" id="postname" name="postname" value=""
-										class="postInput" /> Name
+							<div class="form-group">
+								<label>Name</label>
+								<input type="text" name="postname" class="comment-fields" />
 							</div>
-							<div>
-								<input type="text" id="postemail" name="postemail" value=""
-										class="postInput" /> Email (not publicly visible)
+
+							<div class="form-group">
+								<label>Email (not publicly visible)</label>
+								<input type="text" name="postemail" class="comment-fields" />
 							</div>
-							<div id="posturl">
-								<input type="text" id="postsite" name="postsite" value=""
-										class="postInput" /> Website URL (optional)
+
+							<div class="form-group">
+								<label>Website URL (optional)</label>
+								<input type="text" name="postsite" class="comment-fields" />
 							</div>
-							<div id="postcomment">
-								<textarea rows="20" cols="100" style="border-style: solid"
-										id="postcommentarea" name="message"></textarea>
+
+							<div class="form-group">
+								<label>Message</label>
+								<textarea name="message" rows="1" class="comment-fields"></textarea>
 							</div>
-							<br />
-							<input type="button" class="submitButton"
-									id="commentSubmitButton" value="submit" />
-									<!--p class="decorate">Comments must be approved, so will not appear immediately. </p> -->
 						{{ } else if (canWrite) { }}
-							{{ if (isCommentAllowed) { }}
-								<input type="text" placeholder="Add Comment to this discussion..."
-									id="post-comment" name="message" required>
-							{{ } else { }}
-								<input type="text" placeholder="&#xf05e;  Comments disabled"
-									id="post-comment" name="message" required>
-							{{ } }}
+							<textarea name="message" rows="1" class="comment-fields comment-message"
+								placeholder="{{= isCommentAllowed ? 'Add Comment to this discussion...' : '&#xf05e;  Comments disabled'}}"></textarea>
 						{{ } }}
+
 						<input type="hidden" name="discussionHash" value="{{- discussionHash }}">
+						<g:render template="/templates/discussionPost/formSubmit"/>
 					</form>
 				</div>
 			</div>
