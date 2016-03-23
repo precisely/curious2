@@ -26,6 +26,10 @@
 		return $element;
 	}
 
+	$(document).on("input", ".auto-size", function() {
+		_autoSize($(this));
+	});
+
 	jQuery.fn.extend({
 		autoSize: function () {
 			return this.each(function() {

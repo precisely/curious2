@@ -224,7 +224,12 @@ $(document).ready(function() {
 			var discussionElement = getDiscussionElement(params.discussionHash);
 			var currentOffset = discussionElement.data('offset') || maxCommentsPerDiscussion;
 			discussionElement.data('offset', ++currentOffset);
-		});
+		}, function(xhr) {
+			console.log('Internal server error');
+			if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+				showAlert(xhr.responseJSON.message);
+			}
+		}, 0, {spinnerTo: $form.parents(".add-comment")});
 
 		return false;
 	});
@@ -253,15 +258,30 @@ $(document).ready(function() {
 		var params = $form.serializeObject();
 		var $parentComment = $form.parents(".discussion-comment");
 		var isFirstPostUpdate = $parentComment.length === 0;
+		var args = {requestMethod: "PUT", spinnerTo: (isFirstPostUpdate ? $form : $parentComment)};
 
-		updatePost(params, function() {
-			if (isFirstPostUpdate) {
-				$(".first-post-container").html("").text(params.message);
-			} else {
-				hideInlinePostEdit($parentComment);
-				$parentComment.find(".message").html(params.message);
-			}
-		});
+		queueJSONAll('Adding Comment', '/api/discussionPost', getCSRFPreventionObject('addCommentCSRF', params),
+				function(data) {
+					if (!checkData(data)) {
+						return;
+					}
+					if (!data.success) {
+						showAlert(data.message);
+						return;
+					}
+
+					if (isFirstPostUpdate) {
+						$(".first-post-container").html("").text(params.message);
+					} else {
+						hideInlinePostEdit($parentComment);
+						$parentComment.find(".message").html(params.message);
+					}
+				}, function(xhr) {
+					console.log('Internal server error');
+					if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+						showAlert(xhr.responseJSON.message);
+					}
+				}, 0, args);
 
 		return false;
 	});
@@ -298,8 +318,15 @@ $(document).ready(function() {
 	var $modal = $("#edit-discussion-modal");
 
 	$(document).on("click", ".edit-discussion", function() {
-		var existingText = $(".discussion-title").text().trim();
-		$("#new-discussion-name").val(existingText);
+		var existingTitle = $(".discussion-title").text().trim();
+		var existingDescription = $(".first-post-message").html();
+		if (existingDescription) {
+			existingDescription = existingDescription.trim();
+		}
+
+		$("#new-discussion-name").val(existingTitle);
+		$("#new-description").val(existingDescription);
+
 		$modal.modal("show");
 		return false;
 	});
@@ -309,22 +336,30 @@ $(document).ready(function() {
 	});
 
 	$(document).on("submit", "#edit-discussion-form", function() {
+		var $form = $(this);
 		var newName = $("#new-discussion-name").val();
-		var existingName = $(".discussion-title").text();
-		var discussionHash = $("input[name=discussionHash]").val();
+		var newDescription = $("#new-description").val();
 
-		if (newName != existingName && newName !== undefined) {
-			queueJSON("setting discussion name", makeGetUrl('setDiscussionNameData'), makeGetArgs({ discussionHash: discussionHash, name:newName }), function(data) {
+		var existingName = $(".discussion-title").text();
+		var existingDescription = $(".first-post-message").html().trim();
+
+		var discussionHash = $("input[name=discussionHash]").val();
+		var params = {discussionHash: discussionHash, name: newName, message: newDescription};
+		var args = {requestMethod: "PUT", spinnerTo: $form};
+
+		if (newName && (newName !== existingName || newDescription !== existingDescription)) {
+			queueJSONAll("", "/api/discussion", makeGetArgs(params), function(data) {
 				if (checkData(data)) {
+					$("#edit-discussion-modal").modal("hide");
 					$(".discussion-title").text(newName);
+					$(".first-post-message").html(newDescription);
 					displayFlashMessage("#title-updated", 2500);
 				} else {
 					showAlert('Failed to set name');
 				}
-			});
+			}, function() {}, 0, args);
 		}
 
-		$("#edit-discussion-modal").modal("hide");
 		return false;
 	})
 });
@@ -378,26 +413,6 @@ function discussionShow(hash) {
 		
 		setQueryHeader('Curious Discussions', true);
 	});
-}
-
-function updatePost(params, callback) {
-	queueJSONAll('Adding Comment', '/api/discussionPost', getCSRFPreventionObject('addCommentCSRF', params),
-			function(data) {
-				if (!checkData(data)) {
-					return;
-				}
-				if (!data.success) {
-					showAlert(data.message);
-					return;
-				}
-
-				callback && callback();
-			}, function(xhr) {
-				console.log('Internal server error');
-				if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
-					showAlert(xhr.responseJSON.message);
-				}
-			}, 0, {requestMethod: "PUT"});
 }
 
 function hideInlinePostEdit($comment) {

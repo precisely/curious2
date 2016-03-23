@@ -1172,6 +1172,8 @@ class DataController extends LoginController {
 		renderStringGet('success')
 	}
 
+	// Use "update" action of "DiscussionController" instead
+	@Deprecated
 	def setDiscussionNameData() {
 		debug "DataController.setDiscussionNameData() params:" + params
 

@@ -270,41 +270,42 @@ var numJSONCalls = 0;
 var pendingJSONCalls = [];
 
 function backgroundPostJSON(description, url, args, successCallback, failCallback, delay) {
-	queueJSON(description, url, args, successCallback, failCallback, delay, true, true);
+	return queueJSON(description, url, args, successCallback, failCallback, delay, true, true);
 }
 
-function queuePostJSON(description, url, args, successCallback, failCallback, delay) {
-	queueJSON(description, url, args, successCallback, failCallback, delay, true, false);
+function queuePostJSON(description, url, data, successCallback, failCallback, delay, args) {
+	return queueJSON(description, url, data, successCallback, failCallback, delay, true, args, false);
 }
 
-function queueJSON(description, url, args, successCallback, failCallback, delay, post, background) {
-	var requestMethod = post ? 'POST' : 'GET';
-	queueJSONAll(description, url, args, successCallback, failCallback, delay, {requestMethod: requestMethod}, background);
+function queueJSON(description, url, data, successCallback, failCallback, delay, post, args, background) {
+	args = args || {};
+	args.requestMethod = post ? 'POST' : 'GET';
+	return queueJSONAll(description, url, data, successCallback, failCallback, delay, args, background);
 }
 
-function queueJSONAll(description, url, args, successCallback, failCallback, delay, httpArgs, background) {
+function queueJSONAll(description, url, data, successCallback, failCallback, delay, args, background) {
 	var currentLoginSession = _loginSessionNumber; // cache current login session
 	var stillRunning = true;
 	var alertShown = false;
-	var requestMethod = (httpArgs.requestMethod || 'get').toUpperCase();
+	var requestMethod = (args.requestMethod || 'get').toUpperCase();
 	var contentType;
 	var processData;
 
-	if (httpArgs.contentType == false) {
-		contentType = httpArgs.contentType;
+	if (args.contentType == false) {
+		contentType = args.contentType;
 	} else {
 		if (requestMethod === "PUT") {
 			contentType = "application/json; charset=UTF-8";
-			if (args instanceof Object) {
-				args = JSON.stringify(args);
+			if (data instanceof Object) {
+				data = JSON.stringify(data);
 			}
 		} else {
 			contentType = "application/x-www-form-urlencoded; charset=UTF-8";
 		}
 	}
 
-	if (httpArgs.processData == false) {
-		processData = httpArgs.processData;
+	if (args.processData == false) {
+		processData = args.processData;
 	} else {
 		processData = true;
 	}
@@ -315,16 +316,16 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 			showAlert(description + ": in progress");
 		}
 	}, 6000);
-	if (typeof args == "function") {
+	if (typeof data == "function") {
 		delay = failCallback;
 		failCallback = successCallback
-		successCallback = args;
-		args = undefined;
+		successCallback = data;
+		data = undefined;
 	}
-	if (args == undefined || args == null) {
-		args = {dateToken:new Date().getTime()};
-	} else if (!args['dateToken']) {
-		args['dateToken'] = new Date().getTime();
+	if (data == undefined || data == null) {
+		data = {dateToken:new Date().getTime()};
+	} else if (!data['dateToken']) {
+		data['dateToken'] = new Date().getTime();
 	}
 	if (url.indexOf('?') >= 0 && url.indexOf('dateToken=') < 0) {
 		url += '&dateToken=' + new Date().getTime();
@@ -375,21 +376,25 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 				showAlert("Server not responding... retrying " + description);
 			delay = (delay > 0 ? delay * 2 : 5000);
 			window.setTimeout(function() {
-				queueJSON(description, url, args, successCallback, failCallback, delay, background);
+				queueJSON(description, url, data, successCallback, failCallback, delay, background);
 			}, delay);
 		}
 	};
+
+	var jqXHR;
 	if ((!background) && (numJSONCalls > 0)) { // json call in progress
 		var jsonCall = function() {
-			$.ajax({
-				type: httpArgs.requestMethod,
+			jqXHR = $.ajax({
+				type: args.requestMethod,
 				dataType: "json",
 				url: url,
-				data: args,
+				data: data,
 				timeout: 20000 + (delay > 0 ? delay : 0)
 			})
 			.done(wrapSuccessCallback)
 			.fail(wrapFailCallback);
+
+			window.showSpinner && showSpinner(args.spinnerTo, jqXHR);
 		};
 		++numJSONCalls;
 		pendingJSONCalls.push(jsonCall);
@@ -397,18 +402,22 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 		if (!background)
 			++numJSONCalls;
 		// When using PUT method contentType needs to be set to application/json explicitly to be able to send json data
-		$.ajax({
-			type: httpArgs.requestMethod,
+		jqXHR = $.ajax({
+			type: args.requestMethod,
 			dataType: "json",
 			contentType: contentType,
 			processData: processData,
 			url: url,
-			data: args,
+			data: data,
 			timeout: 20000 + (delay > 0 ? delay : 0)
 		})
 		.done(wrapSuccessCallback)
 		.fail(wrapFailCallback);
+
+		window.showSpinner && showSpinner(args.spinnerTo, jqXHR);
 	}
+
+	return jqXHR;
 }
 
 function backgroundJSON(description, url, args, successCallback, failCallback, delay, post) {

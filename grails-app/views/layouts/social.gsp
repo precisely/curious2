@@ -124,8 +124,15 @@
 					</div>
 					<form action="#" id="edit-discussion-form">
 						<div class="modal-body">
-							<p>New Name</p>
-							<input type="text" class="form-control margin-bottom" id="new-discussion-name" required>
+							<div class="form-group">
+								<p>New Name</p>
+								<input type="text" class="form-control margin-bottom" id="new-discussion-name" required>
+							</div>
+							<div class="form-group">
+								<p>Description</p>
+								<textarea name="message" rows="1" class="form-control auto-size" id="new-description"
+									required></textarea>
+							</div>
 						</div>
 						<div class="modal-footer">
 							<button type="submit">Save Edit</button>

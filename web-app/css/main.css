@@ -3191,7 +3191,7 @@ body {
 }
 
 .discussion .checkbox-orange {
-	padding-top: 7px;
+	padding-top: 5px;
 }
 
 .feed-item.sprint {
@@ -3365,7 +3365,7 @@ body {
 }
 
 .discussion .discussion-topic hr {
-	margin-bottom: 25px;
+	margin-bottom: 15px;
 	border: 1px solid #e9e9e9;
 	margin-top: 0;
 }
@@ -3446,7 +3446,7 @@ body {
 }
 
 .add-comment {
-	padding: 0 15px 25px;
+	padding: 25px 15px;
 }
 
 .comment-form .comment-fields {
@@ -3476,8 +3476,8 @@ body {
 	margin-left: 35px;
 }
 
-.comments:not(:empty) + .add-comment {
-	margin-top: 25px;
+.discussion-comments-wrapper .comments:first-child .discussion-comment:first-child {
+	padding-top: 25px;
 }
 
 .discussion-comment.editing-comment {

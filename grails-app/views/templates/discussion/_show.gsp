@@ -85,7 +85,7 @@
 					</small>
 					<div class="first-post-container">
 						{{ if (firstPost && firstPost.message) { }}
-							{{- firstPost.message }}
+							<span class="first-post-message">{{- firstPost.message }}</span>
 						{{ } else if (isAdmin) { }}
 							<form class="edit-comment-form" action="#">
 								<input type="hidden" name="id" value="{{- firstPost.id}}" />
@@ -169,7 +169,7 @@
 								<textarea name="message" rows="1" class="comment-fields"></textarea>
 							</div>
 						{{ } else if (canWrite) { }}
-							<textarea name="message" rows="1" class="comment-fields comment-message"
+							<textarea name="message" rows="1" class="comment-fields comment-message auto-size"
 								placeholder="{{= isCommentAllowed ? 'Add Comment to this discussion...' : '&#xf05e;  Comments disabled'}}"></textarea>
 						{{ } }}
 

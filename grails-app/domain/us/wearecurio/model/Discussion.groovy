@@ -213,8 +213,6 @@ class Discussion {
 			
 			def groups = UserGroup.getGroupsForDiscussion(discussion)
 			
-			def userName = user.getUsername()
-			
 			def discussionSubject = "User '" + user.getUsername() + "' "
 			
 			if (!discussion.isModified()) {

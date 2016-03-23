@@ -126,3 +126,26 @@ $(window).load(function(){
 		}
 	});
 });
+
+function showSpinner($element, promise) {
+	if (!$element || !promise) {
+		return;
+	}
+
+	function _hideFeedback($element) {
+		$element.removeClass('disabled');
+		$element.find('.mask').remove();
+		$element.find('.msg-container').remove();
+	}
+
+	function _showFeedback($element) {
+		$element.addClass('feedback-container disabled');
+		$element.append('<div class="mask mask-white"></div>');
+		$element.append('<span class="msg-container"><i class="fa fa-spin fa-spinner fa-2x"></i></span>');
+	}
+
+	_showFeedback($element);
+	promise.always(function() {
+		_hideFeedback($element);
+	});
+}

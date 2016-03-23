@@ -13,7 +13,7 @@ import us.wearecurio.model.Model.Visibility
 
 class DiscussionController extends LoginController {
 
-	static allowedMethods = [save: "POST", update: "POST", delete: "DELETE"]
+	static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
 	// Not being used right now as all discussion lists are comming form feed
 	def index() {
@@ -127,7 +127,34 @@ class DiscussionController extends LoginController {
 
 	// This method will be called to update already created discussion
 	def update() {
+		Map requestData = request.JSON
+		debug "Update discussion data $requestData"
 
+		User user = sessionUser()
+
+		if (!user) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+
+		Discussion discussion = Discussion.findByHash(requestData.discussionHash)
+
+		if (!discussion) {
+			renderJSONGet([success: false, message: "No such discussion found"])
+			return
+		}
+
+		if (Discussion.update(discussion, requestData, user)) {
+			DiscussionPost firstPost = discussion.getFirstPost()
+			if (firstPost) {
+				DiscussionPost.update(user, discussion, firstPost, requestData.message?.toString())
+			}
+
+			renderJSONGet([success: true])
+		} else {
+			renderJSONGet([success: false, message: "Failed to update discussion name"])
+		}
 	}
 
 	def delete() {

@@ -213,7 +213,18 @@ class DiscussionPost {
 		unComment(user.id, discussion.id, postId)
 		return true
 	}
-	
+
+	static DiscussionPost update(User user, Discussion discussion, DiscussionPost post, String message) {
+		log.debug "$user updating $post"
+		post.setMessage(message)
+		Utils.save(post)
+
+		UserActivity.create(user.id, UserActivity.ActivityType.COMMENT, UserActivity.ObjectType.DISCUSSION,
+				discussion.id, UserActivity.ObjectType.DISCUSSION_POST, post.id)
+
+		return post
+	}
+
 	static def createComment(String message, User user, Discussion discussion, Long plotDataId, Map params)
 			throws CreationNotAllowedException {
 		return Discussion.withTransaction {
@@ -227,16 +238,7 @@ class DiscussionPost {
 				// first comment added to a discussion with a plot data at the top is
 				// assumed to be a caption on the plot data
 				log.debug("DiscussionPost.createComment: 1 post with plotData")
-				post.setMessage(message)
-				Utils.save(post)
-				UserActivity.create(
-					user.id, 
-					UserActivity.ActivityType.COMMENT, 
-					UserActivity.ObjectType.DISCUSSION, 
-					discussion.id,
-					UserActivity.ObjectType.DISCUSSION_POST,
-					post.id
-				)
+				update(user, discussion, post, message)
 			} else if (user) {
 				log.debug("DiscussionPost.createComment: 1st comment")
 				post = discussion.createPost(user, plotDataId, message)
