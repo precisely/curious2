@@ -45,9 +45,7 @@ class DiscussionController extends LoginController {
 		if (discussion != null) {
 			Utils.save(discussion, true)
 
-			if (discussionPost) {
-				discussion.createPost(user, discussionPost)
-			}
+			discussion.createPost(user, discussionPost ?: "")
 
 			Map model = discussion.getJSONDesc()
 			DateFormat df = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ssZ");
@@ -85,7 +83,7 @@ class DiscussionController extends LoginController {
 		Map model = discussion.getJSONDesc()
 		model.putAll([notLoggedIn: user ? false : true, userId: user?.id, associatedGroups: [],		// Public discussion
 				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion), isFollowing: discussion.isFollower(user.id),
-				templateVer: urlService.template(request), associatedGroups: [], discussionHash: discussion.hash, canWrite: UserGroup.canWriteDiscussion(user, discussion)])
+				templateVer: urlService.template(request), discussionHash: discussion.hash, canWrite: UserGroup.canWriteDiscussion(user, discussion)])
 
 		/*if (user) {
 			List associatedGroups = UserGroup.getGroupsForWriter(user)

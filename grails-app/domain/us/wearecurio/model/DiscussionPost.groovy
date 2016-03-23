@@ -4,9 +4,6 @@ package us.wearecurio.model
 import org.apache.commons.logging.LogFactory
 import us.wearecurio.exception.CreationNotAllowedException
 import us.wearecurio.utility.Utils
-import grails.converters.*
-import us.wearecurio.model.Model.Visibility
-
 import us.wearecurio.services.SearchService
 
 class DiscussionPost {
@@ -217,7 +214,7 @@ class DiscussionPost {
 		return true
 	}
 	
-	static def createComment(String message, User user, Discussion discussion, Long plotIdMessage, Map params)
+	static def createComment(String message, User user, Discussion discussion, Long plotDataId, Map params)
 			throws CreationNotAllowedException {
 		return Discussion.withTransaction {
 			if (!UserGroup.canWriteDiscussion(user, discussion)) {
@@ -226,7 +223,7 @@ class DiscussionPost {
 
 			DiscussionPost post = discussion.getFirstPost()
 
-			if (post && (!plotIdMessage) && discussion.getNumberOfPosts() == 1 && post.plotDataId && !post.message) {
+			if (post && (!plotDataId) && discussion.getNumberOfPosts() == 1 && post.plotDataId && !post.message) {
 				// first comment added to a discussion with a plot data at the top is
 				// assumed to be a caption on the plot data
 				log.debug("DiscussionPost.createComment: 1 post with plotData")
@@ -242,10 +239,10 @@ class DiscussionPost {
 				)
 			} else if (user) {
 				log.debug("DiscussionPost.createComment: 1st comment")
-				post = discussion.createPost(user, plotIdMessage, message)
+				post = discussion.createPost(user, plotDataId, message)
 			} else if (params.postname && params.postemail) {
 				post = discussion.createPost(params.postname, params.postemail, params.postsite,
-						plotIdMessage, message)
+						plotDataId, message)
 			}
 			return post
 		}

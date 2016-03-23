@@ -203,6 +203,32 @@ $(document).ready(function() {
 		return false;
 	});
 
+	$(document).on("submit", "#first-post-form", function() {
+		var $form = $(this);
+		// See base.js for implementation details of $.serializeObject()
+		var params = $form.serializeObject();
+
+		queueJSONAll('Adding Comment', '/api/discussionPost', getCSRFPreventionObject('addCommentCSRF', params),
+				function(data) {
+					if (!checkData(data)) {
+						return;
+					}
+					if (!data.success) {
+						showAlert(data.message);
+						return;
+					}
+
+					$(".first-post-container").html("").text(params.message);
+				}, function(xhr) {
+					console.log('Internal server error');
+					if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+						showAlert(xhr.responseJSON.message);
+					}
+				}, 0, {requestMethod: "PUT"});
+
+		return false;
+	});
+
 	$(document).on("click", ".share-button", function() {
 		$(this).popover({html: true}).popover('show');
 		$('.share-link').select();

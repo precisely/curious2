@@ -71,7 +71,7 @@
 											</a>
 											<ul class="dropdown-menu" role="menu">
 												<li>
-													<a href="#" class="delete-discussion" data-discussion-hash="{{- discussionHash }}"> 
+													<a href="#" class="delete-discussion" data-discussion-hash="{{- discussionHash }}">
 														<i class="fa fa-trash fa-fw"></i> Delete
 													</a>
 												</li>
@@ -92,9 +92,17 @@
 							<small id="title-updated" class="text-red hide margin-left">
 								<i class="fa fa-check-square-o"> Title updated!</i>
 							</small>
-							<p>
-								{{- firstPost ? firstPost.message : '' }}
-							</p>
+							<div class="first-post-container">
+								{{ if (firstPost && firstPost.message) { }}
+									{{- firstPost.message }}
+								{{ } else if (isAdmin) { }}
+									<form id="first-post-form" action="#">
+										<input type="hidden" name="id" value="{{- firstPost.id}}" />
+										<input type="text" placeholder="Add description..." name="message" required
+											autofocus />
+									</form>
+								{{ } }}
+							</div>
 							<hr>
 							<div class="buttons">
 								<div class="row">
@@ -203,4 +211,3 @@
 			</select>
 		</div>
 	</div>
-</div>

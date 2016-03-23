@@ -3476,7 +3476,7 @@ body {
 	color: #a8a8a8;
 }
 
-.discussion .discussion-topic p {
+.discussion .discussion-topic .first-post-container {
 	font-style: normal;
 	font-size: 14px;
 	margin: 5px 0 10px 0;

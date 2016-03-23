@@ -47,7 +47,6 @@ class SecurityFilters {
 	def filters = {
 		preCheck(controller:'(home|tag|mobiledata|data|correlation|search)', action:'*') {
 			before = {
-				def a = actionName
 				if (params.controller == null) {
 					flash.precontroller = 'home'
 					flash.preaction = 'index'

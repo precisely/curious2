@@ -293,7 +293,14 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 	if (httpArgs.contentType == false) {
 		contentType = httpArgs.contentType;
 	} else {
-		contentType = (requestMethod == 'PUT') ? 'application/json; charset=UTF-8' : 'application/x-www-form-urlencoded; charset=UTF-8'
+		if (requestMethod === "PUT") {
+			contentType = "application/json; charset=UTF-8";
+			if (args instanceof Object) {
+				args = JSON.stringify(args);
+			}
+		} else {
+			contentType = "application/x-www-form-urlencoded; charset=UTF-8";
+		}
 	}
 
 	if (httpArgs.processData == false) {

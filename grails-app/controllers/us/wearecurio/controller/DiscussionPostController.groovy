@@ -101,10 +101,10 @@ class DiscussionPostController extends LoginController{
 	}
 
 	def update() {
-		debug ("UserController.update() params:" + params)
 		Map requestData = request.JSON
+		debug ("UserController.update() params:" + requestData)
 		User user = sessionUser()
-		DiscussionPost discussionPost = DiscussionPost.get(params.id)
+		DiscussionPost discussionPost = DiscussionPost.get(requestData.id)
 		if (!discussionPost) {
 			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["Post"])])
 			return
@@ -121,7 +121,6 @@ class DiscussionPostController extends LoginController{
 			renderJSONGet([success: true])
 		} else {
 			renderJSONGet([success: false, message: g.message(code: "default.permission.denied")])
-			return
 		}
 	}
 }
