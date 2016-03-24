@@ -83,14 +83,17 @@
 					<small id="title-updated" class="text-red hide margin-left">
 						<i class="fa fa-check-square-o"> Title updated!</i>
 					</small>
+
 					<div class="first-post-container">
 						{{ if (firstPost && firstPost.message) { }}
-							<span class="first-post-message">{{- firstPost.message }}</span>
+							<span class="first-post-message">{{= _.escape(firstPost.message).newLineToBr() }}</span>
 						{{ } else if (isAdmin) { }}
 							<form class="edit-comment-form" action="#">
 								<input type="hidden" name="id" value="{{- firstPost.id}}" />
-								<input type="text" placeholder="Add description..." name="message" required
-									autofocus />
+
+								<textarea name="message" rows="1" class="comment-fields auto-size ctrl-enter"
+									placeholder="Add description..." autofocus style="width: 100%; resize: none"
+									maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"></textarea>
 							</form>
 						{{ } }}
 					</div>
@@ -166,10 +169,12 @@
 
 							<div class="form-group">
 								<label>Message</label>
-								<textarea name="message" rows="1" class="comment-fields"></textarea>
+								<textarea name="message" rows="1" class="comment-fields ctrl-enter"
+									maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"></textarea>
 							</div>
 						{{ } else if (canWrite) { }}
-							<textarea name="message" rows="1" class="comment-fields comment-message auto-size"
+							<textarea name="message" rows="1" class="comment-fields comment-message auto-size ctrl-enter"
+								maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"
 								placeholder="{{= isCommentAllowed ? 'Add Comment to this discussion...' : '&#xf05e;  Comments disabled'}}"></textarea>
 						{{ } }}
 

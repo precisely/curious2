@@ -84,6 +84,12 @@
 	background-color: #ED1D12;
 }
 
+.btn-red-outline {
+	background: white;
+	color: #ED1D12 !important;
+	border: 1px solid #ED1D12;
+}
+
 .btn-red-inverse {
 	color: #9d9d9d !important;
 	border-radius: 2px;

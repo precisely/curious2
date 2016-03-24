@@ -26,7 +26,7 @@
 		return $element;
 	}
 
-	$(document).on("input", ".auto-size", function() {
+	$(document).on("input focus", ".auto-size", function() {
 		_autoSize($(this));
 	});
 
@@ -35,7 +35,7 @@
 			return this.each(function() {
 				var $this = $(this);
 
-				_autoSize($this).on("input", function(e) {
+				_autoSize($this).on("input focus", function(e) {
 					_autoSize($this);
 				});
 			});

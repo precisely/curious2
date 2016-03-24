@@ -5,6 +5,20 @@ $(document).ready(function() {
 	$messageDialog = $("#alert-message-dialog");
 	$messageTextDialog = $("#alert-message-text", $messageDialog);
 	wrapPagination();
+
+	/**
+	 * According to the HTML specification, the form should have just one input type="text", and no textarea in
+	 * order to ENTER to submit a form. So adding a keydown event here so that when a user hit "Ctrl + Enter" in
+	 * the text area (like to add/edit a commit), the form should submit.
+	 *
+	 * http://www.alanflavell.org.uk/www/formquestion.html
+	 */
+	$(document).on("keydown", ".ctrl-enter", function() {
+		// On pressing Ctrl + Enter in textarea for commenting "http://stackoverflow.com/a/9343095/2405040"
+		if ((event.keyCode == 10 || event.keyCode == 13) && event.ctrlKey) {
+			$(this).parents("form").submit();
+		}
+	});
 });
 
 /**
@@ -147,5 +161,19 @@ function showSpinner($element, promise) {
 	_showFeedback($element);
 	promise.always(function() {
 		_hideFeedback($element);
+	});
+}
+
+function insertSpinner($element, promise) {
+	if (!$element || !promise) {
+		return;
+	}
+
+	$element.addClass("disabled");
+	$element.prepend('<i class="fa fa-fw fa-spin fa-spinner"></i>');
+
+	promise.always(function() {
+		$element.removeClass("disabled");
+		$element.find('fa.fa-spin').remove();
 	});
 }

@@ -2365,12 +2365,6 @@ div.graph-header-container .red-header {
 	width: 120px;
 }
 
-#invitePartcipants {
-	width: 200px;
-	text-align: center;
-	margin-top: 10px;
-}
-
 .feed .left-menu {
 	float: left;
 	background-color: #ebebeb;
@@ -2463,11 +2457,6 @@ div.graph-header-container .red-header {
 }
 
 #sprint-details::-webkit-input-placeholder, #sprint-details::-moz-placeholder, #sprint-details:-ms-input-placeholder {
-	color: #c04f7f;
-}
-
-.modal-body input::-webkit-input-placeholder, .modal-body input::-moz-placeholder, 
-.modal-body input:-ms-input-placeholder {
 	color: #c04f7f;
 }
 
@@ -3769,17 +3758,6 @@ body .modal-header button {
 	font-weight: normal;
 	font-size: 12px;
 	margin-bottom: 24px;
-}
-
-.modal-body textarea {
-	resize: none;
-	border-radius: 2px;
-	padding: 10px;
-	font-size: 11px;
-	font-style: italic;
-	border: 1px #c04f7f solid;
-	color: #c04f7f;
-	margin-bottom: 30px;
 }
 
 #takeSurveyOverlay .modal-body input {

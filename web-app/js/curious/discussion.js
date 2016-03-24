@@ -185,7 +185,7 @@ $(document).ready(function() {
 		var $this = $(this);
 		var $parent = $this.parents(".discussion-comment");
 		var $message = $parent.find(".message");
-		var previousMessage = $message.html().trim();
+		var previousMessage = $message.html().trim().brToNewLine();
 		var postID = $this.data("postId");
 
 		var html = compileTemplate("_commentEditForm", {id: postID, message: previousMessage});
@@ -235,20 +235,6 @@ $(document).ready(function() {
 	});
 
 	/**
-	 * According to the HTML specification, the form should have just one input type="text", and no textarea in
-	 * order to ENTER to submit a form. So adding a keydown event here so that when a user hit "Ctrl + Enter" in
-	 * the text area to add/edit a commit, the form should submit.
-	 *
-	 * http://www.alanflavell.org.uk/www/formquestion.html
-	 */
-	$(document).on("keydown", ".comment-message", function() {
-		// On pressing Ctrl + Enter in textarea for commenting "http://stackoverflow.com/a/9343095/2405040"
-		if ((event.keyCode == 10 || event.keyCode == 13) && event.ctrlKey) {
-			$(this).parents(".comment-form").submit();
-		}
-	});
-
-	/**
 	 * Form submit handler which will be executed when the user either submits the form for editing a post/comment
 	 * or sets the first post message/description of a discussion.
 	 */
@@ -271,10 +257,10 @@ $(document).ready(function() {
 					}
 
 					if (isFirstPostUpdate) {
-						$(".first-post-container").html("").text(params.message);
+						$(".first-post-container").html("").text(params.message.newLineToBr());
 					} else {
 						hideInlinePostEdit($parentComment);
-						$parentComment.find(".message").html(params.message);
+						$parentComment.find(".message").html(params.message.newLineToBr());
 					}
 				}, function(xhr) {
 					console.log('Internal server error');
@@ -321,7 +307,7 @@ $(document).ready(function() {
 		var existingTitle = $(".discussion-title").text().trim();
 		var existingDescription = $(".first-post-message").html();
 		if (existingDescription) {
-			existingDescription = existingDescription.trim();
+			existingDescription = existingDescription.trim().brToNewLine();
 		}
 
 		$("#new-discussion-name").val(existingTitle);
@@ -341,7 +327,10 @@ $(document).ready(function() {
 		var newDescription = $("#new-description").val();
 
 		var existingName = $(".discussion-title").text();
-		var existingDescription = $(".first-post-message").html().trim();
+		var existingDescription = $(".first-post-message").html();
+		if (existingDescription) {
+			existingDescription = existingDescription.trim().brToNewLine();
+		}
 
 		var discussionHash = $("input[name=discussionHash]").val();
 		var params = {discussionHash: discussionHash, name: newName, message: newDescription};
@@ -352,7 +341,7 @@ $(document).ready(function() {
 				if (checkData(data)) {
 					$("#edit-discussion-modal").modal("hide");
 					$(".discussion-title").text(newName);
-					$(".first-post-message").html(newDescription);
+					$(".first-post-message").html(newDescription.newLineToBr());
 					displayFlashMessage("#title-updated", 2500);
 				} else {
 					showAlert('Failed to set name');

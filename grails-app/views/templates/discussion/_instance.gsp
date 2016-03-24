@@ -79,12 +79,12 @@
 
 		<div class="add-comment">
 			<form class="comment-form {{- isCommentAllowed ? '' : 'comment-disabled' }}">
-				{{ if (isCommentAllowed) { }}
-					<input type="text" placeholder="Add Comment..." name="message" required autofocus>
-				{{ } else { }}
-					<input type="text" placeholder="&#xf05e;  Comments disabled" name="message" required>
-				{{ } }}
+				<textarea name="message" rows="1" class="comment-fields comment-message auto-size ctrl-enter"
+					maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"
+					placeholder="{{= isCommentAllowed ? 'Add Comment to this discussion...' : '&#xf05e;  Comments disabled'}}"></textarea>
+
 				<input type="hidden" name="discussionHash" value="{{- discussionData.hash }}">
+				<g:render template="/templates/discussionPost/formSubmit"/>
 			</form>
 		</div>
 	</div>
