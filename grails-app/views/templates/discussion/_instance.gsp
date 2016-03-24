@@ -79,7 +79,7 @@
 
 		<div class="add-comment">
 			<form class="comment-form {{- isCommentAllowed ? '' : 'comment-disabled' }}">
-				<textarea name="message" rows="1" class="comment-fields comment-message auto-size ctrl-enter"
+				<textarea name="message" rows="1" class="comment-fields comment-message auto-resize ctrl-enter"
 					maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"
 					placeholder="{{= isCommentAllowed ? 'Add Comment to this discussion...' : '&#xf05e;  Comments disabled'}}"></textarea>
 

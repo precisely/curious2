@@ -91,7 +91,7 @@
 							<form class="edit-comment-form" action="#">
 								<input type="hidden" name="id" value="{{- firstPost.id}}" />
 
-								<textarea name="message" rows="1" class="comment-fields auto-size ctrl-enter"
+								<textarea name="message" rows="1" class="comment-fields auto-resize ctrl-enter"
 									placeholder="Add description..." autofocus style="width: 100%; resize: none"
 									maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"></textarea>
 							</form>
@@ -173,7 +173,7 @@
 									maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"></textarea>
 							</div>
 						{{ } else if (canWrite) { }}
-							<textarea name="message" rows="1" class="comment-fields comment-message auto-size ctrl-enter"
+							<textarea name="message" rows="1" class="comment-fields comment-message auto-resize ctrl-enter"
 								maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"
 								placeholder="{{= isCommentAllowed ? 'Add Comment to this discussion...' : '&#xf05e;  Comments disabled'}}"></textarea>
 						{{ } }}

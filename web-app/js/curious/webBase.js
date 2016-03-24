@@ -174,6 +174,6 @@ function insertSpinner($element, promise) {
 
 	promise.always(function() {
 		$element.removeClass("disabled");
-		$element.find('fa.fa-spin').remove();
+		$element.find('.fa.fa-spin').remove();
 	});
 }

@@ -129,7 +129,7 @@ $(document).ready(function() {
 				} else {
 					showAlert(data.message);
 				}
-			}, function(xhr) {
+			}, function() {
 				showAlert('Internal server error occurred.');
 			}, null, httpArgs);
 		});
@@ -193,6 +193,7 @@ $(document).ready(function() {
 		$message.after(html);
 		$message.hide();
 		$this.hide();
+		$.autoResize.init();
 
 		return false;
 	});
@@ -229,7 +230,7 @@ $(document).ready(function() {
 			if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
 				showAlert(xhr.responseJSON.message);
 			}
-		}, 0, {spinnerTo: $form.parents(".add-comment")});
+		}, 0, {spinnerOn: $form.parents(".add-comment")});
 
 		return false;
 	});
@@ -244,7 +245,7 @@ $(document).ready(function() {
 		var params = $form.serializeObject();
 		var $parentComment = $form.parents(".discussion-comment");
 		var isFirstPostUpdate = $parentComment.length === 0;
-		var args = {requestMethod: "PUT", spinnerTo: (isFirstPostUpdate ? $form : $parentComment)};
+		var args = {requestMethod: "PUT", spinnerOn: (isFirstPostUpdate ? $form : $parentComment)};
 
 		queueJSONAll('Adding Comment', '/api/discussionPost', getCSRFPreventionObject('addCommentCSRF', params),
 				function(data) {
@@ -257,7 +258,7 @@ $(document).ready(function() {
 					}
 
 					if (isFirstPostUpdate) {
-						$(".first-post-container").html("").text(params.message.newLineToBr());
+						$(".first-post-container").html("").html(params.message.newLineToBr());
 					} else {
 						hideInlinePostEdit($parentComment);
 						$parentComment.find(".message").html(params.message.newLineToBr());
@@ -317,14 +318,15 @@ $(document).ready(function() {
 		return false;
 	});
 
-	$(document).on("shown.bs.modal", "#edit-discussion-modal", function() {
+	$(document).on("shown.bs.modal", $modal, function() {
 		$("#new-discussion-name").focus().select();
+		$.autoResize.init();
 	});
 
 	$(document).on("submit", "#edit-discussion-form", function() {
 		var $form = $(this);
 		var newName = $("#new-discussion-name").val();
-		var newDescription = $("#new-description").val();
+		var newDescription = $("#new-description").val().trim();
 
 		var existingName = $(".discussion-title").text();
 		var existingDescription = $(".first-post-message").html();
@@ -334,7 +336,7 @@ $(document).ready(function() {
 
 		var discussionHash = $("input[name=discussionHash]").val();
 		var params = {discussionHash: discussionHash, name: newName, message: newDescription};
-		var args = {requestMethod: "PUT", spinnerTo: $form};
+		var args = {requestMethod: "PUT", spinnerOn: $form};
 
 		if (newName && (newName !== existingName || newDescription !== existingDescription)) {
 			queueJSONAll("", "/api/discussion", makeGetArgs(params), function(data) {
@@ -382,6 +384,8 @@ function discussionShow(hash) {
 
 			showCommentAgeFromDate();
 			getComments(hash, commentsArgs);		// See feeds.js for "commentsArgs"
+			$.autoResize.init();
+
 			if (discussionDetails.firstPost && discussionDetails.firstPost.plotDataId) {
 				plot = new PlotWeb(tagList, discussionDetails.userId, discussionDetails.username, "#plotDiscussArea", true, true, new PlotProperties({
 					'startDate':'#startdatepicker1',

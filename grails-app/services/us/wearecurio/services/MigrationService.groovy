@@ -589,6 +589,16 @@ class MigrationService {
 			}
 			map = map
 		}
+		tryMigration("Add empty first post to all missing chart based discussions") {
+			Discussion.list().each { discussion ->
+				log.debug "Checking first post for $discussion"
+
+				if (!discussion.getFirstPost()) {
+					log.debug "No first post found for $discussion"
+					discussion.createPost(User.get(discussion.fetchUserId()), "")
+				}
+			}
+		}
 		tryMigration("Migrate PlotData") {
 			for (PlotData plotData in PlotData.list()) {
 				plotData.recompressAndSave()

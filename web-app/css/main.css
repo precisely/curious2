@@ -1,6 +1,13 @@
 input, optgroup, select, textarea {
 	color: black;
 }
+
+.form-control {
+	-webkit-border-radius: 0;
+	-moz-border-radius: 0;
+	border-radius: 0;
+}
+
 #addData input {
 	color: #474747;
 	font-size: 14px;

@@ -130,8 +130,8 @@
 							</div>
 							<div class="form-group">
 								<p>Description</p>
-								<textarea name="message" rows="1" class="form-control auto-size ctrl-enter" id="new-description"
-									required></textarea>
+								<textarea name="message" rows="1" class="form-control no-hr-resize auto-resize ctrl-enter"
+									id="new-description" required></textarea>
 							</div>
 						</div>
 						<div class="modal-footer">

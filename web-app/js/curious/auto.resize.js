@@ -9,7 +9,7 @@
 		return parseFloat(unit.toString().replace(/[^\d.]/g, "") || 0);
 	}
 
-	function _autoSize($element) {
+	function _autoResize($element) {
 		$element.css({"height": "auto", "overflow-y": "hidden"});
 
 		var scrollHeight = $element[0].scrollHeight - unitToNumber($element.css("paddingTop")) -
@@ -26,19 +26,34 @@
 		return $element;
 	}
 
-	$(document).on("input focus", ".auto-size", function() {
-		_autoSize($(this));
-	});
-
 	jQuery.fn.extend({
-		autoSize: function () {
+		autoResize: function () {
 			return this.each(function() {
 				var $this = $(this);
 
-				_autoSize($this).on("input focus", function(e) {
-					_autoSize($this);
+				if (this.nodeName.toLowerCase() !== "textarea") return;
+
+				_autoResize($this);
+				if ($this.data("autoResizeEnabled")) {
+					return;
+				}
+
+				$this.on("input focus", function() {
+					_autoResize($this);
 				});
+
+				$this.data("autoResizeEnabled", true);
+				$this.addClass("auto-resize");
 			});
 		}
+	});
+
+	jQuery.autoResize = {};
+	jQuery.autoResize.init = function() {
+		$(".auto-resize").autoResize();
+	};
+
+	$(document).ready(function() {
+		jQuery.autoResize.init();
 	});
 })();

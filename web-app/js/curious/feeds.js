@@ -441,11 +441,13 @@ $(document).ready(function() {
 		}
 	});
 
-	$('#submitSprint').submit(function(event) {
+	$('#submitSprint').submit(function() {
+		var $form = $(this);
 		// See base.js for implementation details of $.serializeObject()
-		var params = $(this).serializeObject();
+		var params = $form.serializeObject();
 		var id = $('#sprintIdField').val();
-		var httpArgs = { requestMethod: 'PUT' };
+		var args = {requestMethod: 'PUT', spinnerOn: $form};
+
 		queueJSONAll('Updating sprint', '/api/sprint/' + id + '?' + getCSRFPreventionURI('updateSprintDataCSRF'), JSON.stringify(params),
 				function(data) {
 			if (!checkData(data))
@@ -466,7 +468,8 @@ $(document).ready(function() {
 				$('#createSprintOverlay').modal('hide');
 			}
 		}, function(xhr) {
-		}, null, httpArgs);
+		}, null, args);
+
 		return false;
 	});
 
@@ -846,13 +849,13 @@ function createSprint() {
 			autocompleteWidget = new AutocompleteWidget('autocomplete1', 'sprint-tags');
 		}, function(xhr) {
 			console.log('error: ', xhr);
-		}
+		}, 0, {spinnerOn: $('.create-new-sprint')}
 	);
 }
 
 function editSprint(sprintHash) {
 	queueJSON("Getting sprint data", '/api/sprint/' + sprintHash + '?' + getCSRFPreventionURI("fetchSprintDataCSRF") + "&callback=?",
-			function(data) {
+			null, function(data) {
 		if (!checkData(data))
 			return;
 
@@ -897,7 +900,7 @@ function editSprint(sprintHash) {
 			$('#createSprintOverlay').modal({show: true});
 		}
 		autocompleteWidget = new AutocompleteWidget('autocomplete1', 'sprint-tags');
-	});
+	}, null, 0, false, {spinnerIn: $("#edit-sprint")});
 }
 
 function deleteSprint(sprintHash) {

@@ -137,3 +137,7 @@
 	top: calc(50% - 14px);
 	left: calc(50% - 12.5px);
 }
+
+.no-hr-resize {
+	resize: vertical;
+}
