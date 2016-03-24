@@ -281,5 +281,96 @@ class InitialLoginConfigurationSpec extends Specification {
 		result.today4Example == newILC.today4Example
 		result.interestTags.equals(newILC.interestTags)
 		result.bookmarks.equals(newILC.bookmarks)
-	}		
+	}
+	
+	void "test copy"() {
+		given: "an InitialLoginConfiguration"
+		InitialLoginConfiguration to = new InitialLoginConfiguration()
+		to.promoCode = "to-promo-code"
+		
+		and: "another InitialLoginConfiguration"
+		InitialLoginConfiguration from = new InitialLoginConfiguration()
+		from.promoCode = "from-promo-code"
+		
+		when: "first InitialLoginConfiguration has properties assigned"
+		to.customQuestion1 = "to"
+		to.customQuestion2 = "to"
+		to.trackExample1 = "to"
+		to.trackExample2 = "to"
+		to.trackExample3 = "to"
+		to.deviceExample = "to"
+		to.sampleQuestionDuration = "to"
+		to.sampleQuestionDurationExampleAnswers = "to"
+		to.sampleQuestionRating = "to"
+		to.sampleQuestionRatingRange = "to"
+		to.sampleQuestionRatingExampleAnswer1 = "to"
+		to.sampleQuestionRatingExampleAnswer2 = "to"
+		to.sampleQuestionRatingExampleAnswer3 = "to"
+		to.today1 = "to"
+		to.today1Example = "to"
+		to.today2 = "to"
+		to.today2Example = "to"
+		to.today3 = "to"
+		to.today3Example = "to"
+		to.today4 = "to"
+		to.today4Example = "to"
+		to.interestTags = ["to"]
+		to.bookmarks = ["to"]
+		
+		and: "second InitialLoginConfiguration has different properties assigned"
+		from.customQuestion1 = "from"
+		from.customQuestion2 = "from"
+		from.trackExample1 = "from"
+		from.trackExample2 = "from"
+		from.trackExample3 = "from"
+		from.deviceExample = "from"
+		from.sampleQuestionDuration = "from"
+		from.sampleQuestionDurationExampleAnswers = "from"
+		from.sampleQuestionRating = "from"
+		from.sampleQuestionRatingRange = "from"
+		from.sampleQuestionRatingExampleAnswer1 = "from"
+		from.sampleQuestionRatingExampleAnswer2 = "from"
+		from.sampleQuestionRatingExampleAnswer3 = "from"
+		from.today1 = "from"
+		from.today1Example = "from"
+		from.today2 = "from"
+		from.today2Example = "from"
+		from.today3 = "from"
+		from.today3Example = "from"
+		from.today4 = "from"
+		from.today4Example = "from"
+		from.interestTags = ["from"]
+		from.bookmarks = ["from"]
+		
+		and: "second is copied to first"
+		InitialLoginConfiguration.copy(from, to)
+		
+		then: "promo code is not copied"
+		to.promoCode != from.promoCode
+		
+		and: "all other properties are copied"
+		to.customQuestion1 == from.customQuestion1
+		to.customQuestion2 == from.customQuestion2
+		to.trackExample1 == from.trackExample1
+		to.trackExample2 == from.trackExample2
+		to.trackExample3 == from.trackExample3
+		to.deviceExample == from.deviceExample
+		to.sampleQuestionDuration == from.sampleQuestionDuration
+		to.sampleQuestionDurationExampleAnswers == from.sampleQuestionDurationExampleAnswers
+		to.sampleQuestionRating == from.sampleQuestionRating
+		to.sampleQuestionRatingRange == from.sampleQuestionRatingRange
+		to.sampleQuestionRatingExampleAnswer1 == from.sampleQuestionRatingExampleAnswer1
+		to.sampleQuestionRatingExampleAnswer2 == from.sampleQuestionRatingExampleAnswer2
+		to.sampleQuestionRatingExampleAnswer3 == from.sampleQuestionRatingExampleAnswer3
+		to.today1 == from.today1
+		to.today1Example == from.today1Example
+		to.today2 == from.today2
+		to.today2Example == from.today2Example
+		to.today3 == from.today3
+		to.today3Example == from.today3Example
+		to.today4 == from.today4
+		to.today4Example == from.today4Example
+		to.interestTags.equals(from.interestTags)
+		to.bookmarks.equals(from.bookmarks)		
+	}
 }
