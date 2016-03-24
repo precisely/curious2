@@ -599,6 +599,11 @@ class MigrationService {
 				}
 			}
 		}
+		tryMigration("Remove version from Survey domains") {
+			["survey_question", "survey_answer", "user_survey_answer"].each { table ->
+				sql ("alter table ${table} drop column version")
+			}
+		}
 		tryMigration("Migrate PlotData") {
 			for (PlotData plotData in PlotData.list()) {
 				plotData.recompressAndSave()
