@@ -24,6 +24,7 @@ function showPreviousParticipants() {
 
 function showMoreParticipants(sprintInstance, infiniteScroll) {
 	var participantsCount = sprintInstance.totalParticipants;
+	console.log("participantsCount", participantsCount, "offsete: ", offset);
 	if ((participantsCount - offset) > 0) {
 		queueJSON("Getting more participants", "/data/getSprintParticipantsData?id=" + sprintInstance.hash
 				+ "&offset=" + offset + "&max=10&"
@@ -96,11 +97,14 @@ function sprintShow(hash) {
 				}
 				sprintInstance.entries = entries;
 				sprintInstance.participants = data.participants;
+				sprintInstance.description = replaceURLsWithLinks(_.escape(sprintInstance.description));
 				sprintInstance.lines = sprintInstance.description ? sprintInstance.description.split("\n") : [];
 				var compiledHTML = compileTemplate("_showSprints", sprintInstance);
 				$('#feed').html(compiledHTML);
 
 				showDiscussionData(data.discussions, sprintInstance.hash);
+				offset = 10;
+				console.log("offste outside  : ", offset);
 				$('#participants-list ul>li>ul').infiniteScroll({
 					bufferPx: 15,
 					scrollHorizontally: true,
@@ -122,6 +126,11 @@ function sprintShow(hash) {
 	});
 }
 
+function replaceURLsWithLinks(text) {
+	"use strict";
+	var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+	return text.replace(exp,"<a href='$1' style='color:#428bca;'>$1</a>");
+}
 function startSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
@@ -138,6 +147,7 @@ function startSprint(sprintHash) {
 			$('#join-sprint').hide();
 			$('#start-sprint').hide();
 			$('#stop-sprint').show();
+			sprintShow(sprintHash);
 		} else {
 			showAlert(data.message);
 		}
@@ -160,6 +170,7 @@ function stopSprint(sprintHash) {
 			$('#join-sprint').hide();
 			$('#stop-sprint').hide();
 			$('#start-sprint').show();
+			//sprintShow(sprintHash);
 		} else {
 			showAlert(data.message);
 		}
@@ -183,6 +194,7 @@ function leaveSprint(sprintHash) {
 			$('#stop-sprint').hide();
 			$('#start-sprint').show();
 			getSprintElement(sprintHash).addClass('not-following').removeClass('following');
+			sprintShow(sprintHash);
 		} else {
 			showAlert(data.message);
 		}
@@ -202,6 +214,7 @@ function joinSprint(sprintHash) {
 			$('#stop-sprint').hide();
 			$('#start-sprint').show();
 			getSprintElement(sprintHash).removeClass('not-following').addClass('following');
+			sprintShow(sprintHash);
 		} else {
 			showAlert(data.message);
 		}

@@ -21,6 +21,71 @@ function __removePrefix(str, prefix) {
 	return str;
 }
 
+var oldScrollTop = 0;
+
+$('#recordList').scroll(function() {
+	var $popover = $('.popover');
+	var popoverPosition = $popover.position();
+	$selectee = $('.ui-selected');
+	if (!$selectee.length || !popoverPosition) {
+		return;
+	}
+	$popoverLauncher = $selectee.find('.track-input-modifiers');
+	var listPosition = $(this).position();
+	var entryPosition = $('.ui-selected').position();
+	entryPosition.bottom = entryPosition.top + $('.ui-selected').outerHeight(true)
+	listPosition.bottom = listPosition.top + $(this).outerHeight(true);
+	if (entryPosition && ((entryPosition.top <= listPosition.top) || (entryPosition.bottom >= listPosition.bottom))) {
+		$popover.css({'visibility': 'hidden'});
+		return
+	}
+	var offset = $popoverLauncher.offset().top + $popoverLauncher.outerHeight(true);
+	$popover.css({'top': offset, 'visibility': 'visible'});
+});
+
+function hidePopover(element) {
+	"use strict";
+	if (!element) {
+		element = $('[data-toggle="popover"]');
+	}
+	element.popover('hide');
+}
+
+function createPopover(element, content, containerId) {
+	"use strict";
+	//hidePopover();
+	element.popover({
+		trigger: 'click manual',
+		placement: 'bottom',
+		html: true,
+		container:containerId,
+		content: content,
+		template: '<div class="popover dropdown-menu" style="max-width:290px"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content" style="padding:0px;"></div></div>'
+	});
+}
+
+$(document).on('shown.bs.popover', function() {
+	"use strict";
+	$('.choose-date-input').datepicker();
+	var $selectee = $('.ui-selected');
+	if ($selectee.length) {
+		var entry = $selectee.data('entry');
+		if (entry.repeatEnd) {
+			var oldRepeatEndDate = new Date(entry.repeatEnd);
+			$(".choose-date-input").datepicker('setDate', oldRepeatEndDate);
+		}
+	}
+});
+
+$(document).click(function() {
+	"use strict";
+	hidePopover();
+});
+
+$(document).on('mousedown click', '.popover, .track-input-modifiers', function(e) {
+	"use strict";
+	e.stopPropagation();
+});
 function EntryListWidget(divIds, autocompleteWidget) {
 	var self = this;
 
@@ -295,7 +360,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				+ escapehtml(dateStr) + '</span>' : '') + commentHTML + '</div>' + commentLabel;
 
 		if (!isDeviceSummaryEntry) {
-			var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': id + '-'});
+			var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': id + '-', 'entryId': this.editId+ "entryid" +id});
 
 			innerHTMLContent += '<button class="edit">Edit</button><button class="btn-purple save save-entry hide">Save' +
 					' Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' +
@@ -597,6 +662,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	}
 
 	this.deleteEntryId = function(entryId) {
+		hidePopover($('#input0entryid' + entryId).find('.track-input-modifiers'));
 		this.cacheNow();
 
 		if (entryId == undefined) {
@@ -857,6 +923,8 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	this.unselectEntry = function($unselectee, displayNewText, displaySpinner) {
 		console.log('Unselect Entry:', $unselectee.attr('id'));
 
+		hidePopover($unselectee.find('.track-input-modifiers'));
+
 		var $contentWrapper = $unselectee.find(".content-wrapper");
 		var displayText = $unselectee.data('contentHTML');
 
@@ -890,6 +958,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	 * Used to select an entry.
 	 */
 	this.selectEntry = function($selectee) {
+		hidePopover();
 		console.debug('Select Entry:', $selectee.attr("id"));
 		var entry = $selectee.data("entry");
 
@@ -937,37 +1006,35 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		$contentWrapper.hide();
 
 		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' +
-				this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0; width: calc(100% - 75px);" /></span>');
+				this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0px; width: calc(100% - 75px);" /></span>');
 		$('#' + $selectee.attr('id') + ' .track-input-dropdown').show();
 
+		var popoverContent = _.template($('#entry-details-popover-content').html())({'editType': currentEntryId + '-' ,entryId: $selectee.attr('id')});
+		$('.entry-details-popover-temp-container').html(popoverContent);
+
 		if (RepeatType.isRemind(repeatType)) {
-			$('#' + currentEntryId + '-remind-checkbox').prop('checked', true);
+			$('#' + currentEntryId + '-remind-checkbox').attr('checked', 'checked');
 		}
 		if (RepeatType.isRepeat(repeatType)) {
-			$('#' + currentEntryId + '-repeat-checkbox').prop('checked', true);
-			$('#' + $selectee.attr('id') + ' .repeat-modifiers').toggleClass('hide');
+			$('#' + currentEntryId + '-repeat-checkbox').attr('checked', 'checked');
+			$('[data-for-entry="' + $selectee.attr('id') + '"] .repeat-modifiers').toggleClass('hide');
 		}
 		if (RepeatType.isDaily(repeatType)) {
-			$('#' + currentEntryId + '-daily').prop('checked', true);
+			$('#' + currentEntryId + '-daily').attr('checked', 'checked');
 		} else if (RepeatType.isWeekly(repeatType)) {
-			$('#' + currentEntryId + '-weekly').prop('checked', true);
+			$('#' + currentEntryId + '-weekly').attr('checked', 'checked');
 		} else if (RepeatType.isMonthly(repeatType)) {
-			$('#' + currentEntryId + '-monthly').prop('checked', true);
+			$('#' + currentEntryId + '-monthly').attr('checked', 'checked');
 		}
 		if (RepeatType.isGhost(repeatType)) {
-			$('#' + entry.id + '-confirm-each-repeat').prop('checked', true);
+			$('#' + entry.id + '-confirm-each-repeat').attr('checked', 'checked');
 		}
 
-		$(".choose-date-input").datepicker();
-		if (entry.repeatEnd) {
-			var oldRepeatEndDate = new Date(entry.repeatEnd);
-			$(".choose-date-input").datepicker('setDate', oldRepeatEndDate);
-		}
-		$('#' + $selectee.attr('id') + ' .repeat-entry-checkbox').change(function() {
-			$('#' + $selectee.attr('id') + ' .repeat-modifiers').toggleClass('hide');
+		$(document).on('change', '[data-for-entry="' + $selectee.attr('id') + '"] .repeat-entry-checkbox', function() {
+			"use strict";
+			$('[data-for-entry="' + $selectee.attr('id') + '"] .repeat-modifiers').toggleClass('hide');
 			return;
-		});
-
+		})
 
 		$('#' + self.editId + 'tagTextInput')
 			.val(entryText).focus()
@@ -983,6 +1050,14 @@ function EntryListWidget(divIds, autocompleteWidget) {
 
 		if (selectRange) {
 			$('#' + self.editId + 'tagTextInput').selectRange(selectRange[0], selectRange[1]);
+		}
+		createPopover($selectee.find('.track-input-dropdown'), $('.entry-details-popover-temp-container').html(), '#recordList');
+		$('.entry-details-popover-temp-container').html('');
+
+		$(".choose-date-input").datepicker();
+		if (entry.repeatEnd) {
+			var oldRepeatEndDate = new Date(entry.repeatEnd);
+			$(".choose-date-input").datepicker('setDate', oldRepeatEndDate);
 		}
 	}
 
@@ -1005,7 +1080,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		}
 		var currentEntryId = $unselectee.data('entryId');
 		var repeatTypeId = this.getRepeatTypeId(currentEntryId + '-');
-		var repeatEnd = $('#' + this.editId + 'entryid' + currentEntryId + ' .choose-date-input').val();
+		var repeatEnd = $('.choose-date-input').val();
 		var oldRepeatEnd = $unselectee.data('entry').repeatEnd;
 		var oldRepeatEndMidnightTime = oldRepeatEnd ? oldRepeatEnd.setHours(0, 0, 0, 0) : null;
 		var isOldRepeatEndChanged = false;

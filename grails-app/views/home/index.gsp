@@ -120,16 +120,25 @@
 
 		$(document).ready(function() {
 			var newEntryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': 'new'});
-			
+
 			$('#addData').prepend(newEntryDetailsPopover);
 			$('#addData .track-input-dropdown').show();
+			newEntryDetailsPopoverContent = _.template($('#entry-details-popover-content').clone().html())({'editType': 'new', entryId: ""});
+			createPopover($('.track-input-modifiers'), newEntryDetailsPopoverContent,'#addData');
 			$("#addData .choose-date-input").datepicker({changeYear: true, changeMonth: true, yearRange: "-120:+0"});
 
-			$('#addData .repeat-entry-checkbox').change(function() {
+			$(document).on('change', '#addData .repeat-entry-checkbox', function() {
 				$('#addData .repeat-modifiers').toggleClass('hide');
 			});
+			$('#addData .track-input-modifiers').click(function() {
+				if ($('.ui-selected').length) {
+					entryListWidget.unselectEntry($('.ui-selected'));
+				}
+			})
 		});
 	</script>
 	<g:render template="/templates/track/entryDetailsPopover" />
-	</body>
+	<g:render template="/templates/track/entryDetailsPopoverContent"/>
+	<div class="entry-details-popover-temp-container test"></div>
+</body>
 </html>
