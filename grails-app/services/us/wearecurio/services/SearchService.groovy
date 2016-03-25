@@ -365,7 +365,7 @@ class SearchService {
 		
 		def tags = user.getInterestTags()
 		if (tags?.size() > 0) {
-			def tagsOr = Utils.orifyList(tags.collect{ it.description })
+			def tagsOr = Utils.orifyList(tags.collect{ SearchQueryService.escapeString(it.description) })
 			if ((type & DISCUSSION_TYPE) > 0) {
 				filters << "(_type:discussion AND visibility:PUBLIC AND ((name:$tagsOr) OR (posts:$tagsOr)))"
 			}

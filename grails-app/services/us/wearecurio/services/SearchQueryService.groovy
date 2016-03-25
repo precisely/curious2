@@ -7,16 +7,31 @@ import us.wearecurio.model.User
 import us.wearecurio.utility.Utils
 
 class SearchQueryService {
-	static String normalizeQuery(String query) {
-		if (!query || query == "") {
+	static String escapeString(String s) {
+		if (!s || s == "") {
 			return ""
 		}
 		
-		if (query.trim().matches(/^".*"$/)) {
-			return  query.replaceAll(/([\+\-=><!&\|\(\)\{\}\[\]\^~\*\?:\/])/,$/\\$1/$)
+		return  s.replaceAll(/([\+\-=><!&\|"\(\)\{\}\[\]\^~\*\?:\/])/,$/\\$1/$)		
+	}
+	
+	static String normalizeQuery(String query) {
+		if (!query) {
+			return ""
+		} 
+		String trimmed = query.trim()
+		
+		if (trimmed == "" || trimmed.matches(/^""$/)) {
+			return ""
 		}
 		
-		def tokens = query.replaceAll(/([\+\-=><!&\|"\(\)\{\}\[\]\^~\*\?:\/])/,$/\\$1/$).split().toUnique()
+		if (trimmed.matches(/^".*"$/)) {
+			return "\"${escapeString(trimmed[1..(trimmed.size()-2)])}\""
+//			return  query.replaceAll(/([\+\-=><!&\|\(\)\{\}\[\]\^~\*\?:\/])/,$/\\$1/$)
+		}
+		
+		//def tokens = query.replaceAll(/([\+\-=><!&\|"\(\)\{\}\[\]\^~\*\?:\/])/,$/\\$1/$).split().toUnique()
+		def tokens = escapeString(query.trim()).split().toUnique()
 		def normalizedTokens = []
 		tokens.each {
 			if (it.matches($/(^[oO][rR]$|^[aA][nN][dD]$|^[nN][oO][tT]$)/$)) {
