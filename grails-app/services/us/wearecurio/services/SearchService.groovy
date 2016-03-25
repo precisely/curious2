@@ -365,7 +365,7 @@ class SearchService {
 		
 		def tags = user.getInterestTags()
 		if (tags?.size() > 0) {
-			def tagsOr = Utils.orifyList(tags.collect{ it.description })
+			def tagsOr = Utils.orifyList(tags.collect{ SearchQueryService.escapeString(it.description) })
 			if ((type & DISCUSSION_TYPE) > 0) {
 				filters << "(_type:discussion AND visibility:PUBLIC AND ((name:$tagsOr) OR (posts:$tagsOr)))"
 			}
@@ -712,13 +712,13 @@ class SearchService {
 		def queryGroup1 = getSearchQuery(1, user, queryAnd, readerGroups, adminGroups, followedUsers, followedSprints, type)
 		def queryGroup2 = getSearchQuery(2, user, queryAnd, readerGroups, adminGroups, followedUsers, followedSprints, type)
 		
-//		println "=============================================="
-//		println "=============================================="
-//		println "queryGroup1: $queryGroup1"
-//		println "=============================================="
-//		println "queryGroup2: $queryGroup2"
-//		println "=============================================="
-//		println "=============================================="
+		println "=============================================="
+		println "=============================================="
+		println "queryGroup1: $queryGroup1"
+		println "=============================================="
+		println "queryGroup2: $queryGroup2"
+		println "=============================================="
+		println "=============================================="
 		
 		def group1Count = searchCount(queryGroup1, type)
 		def group2Count = searchCount(queryGroup2, type)

@@ -300,4 +300,33 @@ class GetSuggestionsSprintsIntegrationSpec extends SearchServiceIntegrationSpecB
         results.success
         results.listItems.find{it.type == "spr" && it.hash == unedited.hash} == null
 	}
+	
+	//@spock.lang.IgnoreRest
+	void "Test getSuggestions with multi-word interest tags"(){
+		given: "many interest tags for user2"
+		String tag1Text = "chronic granulomatous disease"
+		String tag2Text = "endometriosis"
+		String tag3Text = "me/cfs"
+		String tag4Text = "newuser"
+		String tag5Text = "primary immune deficiency disorders"
+		String tag6Text = "raynaud's"
+		user2.addInterestTag(Tag.create(tag1Text))
+		user2.addInterestTag(Tag.create(tag2Text))
+		user2.addInterestTag(Tag.create(tag3Text))
+		user2.addInterestTag(Tag.create(tag4Text))
+		user2.addInterestTag(Tag.create(tag5Text))
+		user2.addInterestTag(Tag.create(tag6Text))
+		Utils.save(user2, true)
+		
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+		
+		and: "getSuggestions is called for user2"
+		def results = searchService.getSuggestions(SearchService.SPRINT_TYPE, user2)
+		
+		then: "result is a success and has no errors"
+		results
+		results.success
+	}
 }
