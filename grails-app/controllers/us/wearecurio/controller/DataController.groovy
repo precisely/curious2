@@ -6,6 +6,7 @@ import org.joda.time.DateTimeZone
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
+import us.wearecurio.annotations.EmailVerificationRequired
 import us.wearecurio.data.DecoratedUnitRatio
 import us.wearecurio.data.RepeatType
 import us.wearecurio.data.UnitGroupMap
@@ -1030,7 +1031,8 @@ class DataController extends LoginController {
 
 		renderJSONGet(Utils.listJSONDesc(entries))
 	}
-	
+
+	@EmailVerificationRequired
 	def saveSnapshotData() {
 		debug "DataController.saveSnapshotData() params:" + params
 

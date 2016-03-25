@@ -523,11 +523,8 @@ $(document).ready(function() {
 				if (data.success) {
 					addAllFeedItems({listItems: [data.discussion]}, '.discussions', true);
 					$('#create-discussion')[0].reset();
-				}
-			}, function(xhr) {
-				console.log('Internal server error', xhr);
-				if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
-					showAlert(xhr.responseJSON.message);
+				} else {
+					showAlert(data.message);
 				}
 			});
 

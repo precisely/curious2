@@ -2,6 +2,7 @@ package us.wearecurio.controller
 
 import grails.converters.JSON
 import org.springframework.http.HttpStatus
+import us.wearecurio.annotations.EmailVerificationRequired
 import us.wearecurio.exception.CreationNotAllowedException
 import us.wearecurio.model.*
 import us.wearecurio.utility.*
@@ -37,6 +38,7 @@ class DiscussionPostController extends LoginController{
 		}
 	}
 
+	@EmailVerificationRequired
 	def save() {
 		debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + params.plotIdMessage + 
 				"for discussion with hash: ${params.discussionHash}"
@@ -73,8 +75,9 @@ class DiscussionPostController extends LoginController{
 		}
 	}
 
+	@EmailVerificationRequired
 	def delete(DiscussionPost post) {
-		debug "Attemtping to delete post id " + params.id
+		debug "Attempting to delete post id " + params.id
 		Discussion discussion
 		User user = sessionUser()
 		if (!post) {

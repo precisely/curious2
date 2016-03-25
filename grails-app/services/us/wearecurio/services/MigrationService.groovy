@@ -1,9 +1,9 @@
 package us.wearecurio.services
+
 import grails.util.Environment
 import grails.util.Holders
 import org.apache.commons.logging.LogFactory
 import org.grails.plugins.elasticsearch.ElasticSearchService
-import org.hibernate.SessionFactory
 import org.springframework.transaction.annotation.Transactional
 import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.hashids.DefaultHashIDGenerator
@@ -22,6 +22,7 @@ import us.wearecurio.model.TagValueStats
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
+import us.wearecurio.model.VerificationStatus
 import us.wearecurio.server.Migration
 import us.wearecurio.utility.Utils
 
@@ -68,13 +69,11 @@ class MigrationService {
 	public static final long ADD_TAG_UNIT_STATS_AGAIN = 90L
 	public static final long SHARED_TAG_GROUP = 91L
 	public static final long MIGRATION_CODES = 92L
-	
-	SessionFactory sessionFactory
+
 	DatabaseService databaseService
 	WithingsDataService withingsDataService
 	ElasticSearchService elasticSearchService
 	EntryParserService entryParserService
-	def elasticSearchHelper
 	def elasticSearchAdminService
 	
 	boolean skipMigrations = false
@@ -596,6 +595,10 @@ class MigrationService {
 		}
 		tryMigration("Migrate PlotData 2") {
 			sql("ALTER TABLE `plot_data` CHANGE COLUMN `json_plot_data` `json_plot_data` MEDIUMTEXT NULL DEFAULT NULL")
+		}
+		tryMigration("Mark all users email verified") {
+			sql("alter table _user drop column is_verified")
+			sql("update _user set email_verified = :status", [status: VerificationStatus.VERIFIED.id])
 		}
 	}
 	
