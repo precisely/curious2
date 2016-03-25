@@ -589,7 +589,7 @@ class MigrationService {
 			}
 			map = map
 		}
-		tryMigration("Add empty first post to all missing chart based discussions") {
+		tryMigration("Add empty first post to all discussions") {
 			Discussion.list().each { discussion ->
 				log.debug "Checking first post for $discussion"
 

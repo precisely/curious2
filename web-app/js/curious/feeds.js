@@ -448,7 +448,7 @@ $(document).ready(function() {
 		var id = $('#sprintIdField').val();
 		var args = {requestMethod: 'PUT', spinnerOn: $form};
 
-		queueJSONAll('Updating sprint', '/api/sprint/' + id + '?' + getCSRFPreventionURI('updateSprintDataCSRF'), JSON.stringify(params),
+		queueJSONAll('Updating sprint', '/api/sprint/' + id + '?' + getCSRFPreventionURI('updateSprintDataCSRF'), params,
 				function(data) {
 			if (!checkData(data))
 				return;
@@ -939,6 +939,7 @@ function toggleCommentsList(discussionHash) {
 		getComments(discussionHash, commentsArgs);
 		$('.discussion .view-comment').show();
 		$element.show();
+		$.autoResize.init();
 	}
 }
 

@@ -88,18 +88,19 @@
 						{{ if (firstPost && firstPost.message) { }}
 							<span class="first-post-message">{{= _.escape(firstPost.message).newLineToBr() }}</span>
 						{{ } else if (isAdmin) { }}
-							<form class="edit-comment-form add-description-form" action="#">
+							<form class="edit-comment-form add-description-form relative" action="#">
 								<input type="hidden" name="id" value="{{- firstPost.id}}" />
 
 								<textarea name="message" rows="1" class="auto-resize ctrl-enter"
-									placeholder="Add description..." autofocus style="display: block; resize: none"
+									placeholder="Add description..." autofocus
 									maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"></textarea>
 
 								<div class="edit-options hide text-right">
 									<button type="submit" class="btn-clear" title="Update description">
 										<i class="fa fa-check fa-fw"></i>
 									</button>
-									<a href="#" onclick="$('.edit-comment-form').find('textarea').val(''); return false;">
+									<a href="#" onclick="$('.edit-comment-form').find('textarea').val(''); return false;"
+										title="Clear description">
 										<i class="fa fa-times-circle fa-fw"></i>
 									</a>
 								</div>

@@ -77,8 +77,8 @@ function callLogoutCallbacks() {
 }
 
 //Create custom onEnter event
-$(document).ready(function () {
-	$(document.body).on('keyup', ':input', function (e) {
+$(document).ready(function() {
+	$(document.body).on('keyup', ':input', function(e) {
 		if (e.which == 13)
 			$(this).trigger("enter");
 	});
@@ -87,12 +87,8 @@ $(document).ready(function () {
 /*
  * Add universal startsWith method to all String classes
  */
-String.prototype.startsWith = function (str) {
-	return this.substring(0, str.length) === str;
-}
-String.prototype.endsWith = function (str) {
-	return this.length >= str.length && this.substr(this.length - str.length) == str;
-};
+String.prototype.startsWith = function(str) { return this.substring(0, str.length) === str; }
+String.prototype.endsWith = function(str) { return this.length >= str.length && this.substr(this.length - str.length) == str; }
 
 /**
  * Helper method to convert all new line characters to <br>.
@@ -117,7 +113,7 @@ String.prototype.brToNewLine = function() {
 /**
  * Universal indexOf method to get index by passing regex as argument
  */
-String.prototype.indexOfRegex = function (regex) {
+String.prototype.indexOfRegex = function(regex) {
 	var match = this.match(regex);
 	return match ? this.indexOf(match[0]) : -1;
 }
@@ -126,7 +122,7 @@ String.prototype.indexOfRegex = function (regex) {
  * This function will capitalize first letter of a String
  * Reference: http://stackoverflow.com/questions/1026069/capitalize-the-first-letter-of-string-in-javascript
  */
-String.prototype.capitalizeFirstLetter = function () {
+String.prototype.capitalizeFirstLetter = function() {
 	return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
@@ -153,8 +149,7 @@ String.prototype.capitalizeFirstLetter = function () {
  * 
  */
 function inherit(subclass, superclass) {
-	function TempClass() {
-	}
+	function TempClass() {}
 
 	TempClass.prototype = superclass.prototype;
 	var newSubPrototype = new TempClass();
@@ -175,7 +170,7 @@ function arrayEmpty(arr) {
 }
 
 function removeElem(arr, elem) {
-	return jQuery.grep(arr, function (v) {
+	return jQuery.grep(arr, function(v) {
 		return v != elem;
 	});
 }
@@ -185,7 +180,7 @@ function removeElem(arr, elem) {
 function getSearchParams() {
 	var vars = {};
 	var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,
-			function (m, key, value) {
+			function(m, key, value) {
 				vars[key] = value;
 			}
 	);
@@ -196,9 +191,9 @@ function getSearchParams() {
  * This method will return javascript object by mapping form input fields as name: value
  * See this for reference: http://stackoverflow.com/a/17784656/4395233
  */
-jQuery.fn.serializeObject = function () {
+jQuery.fn.serializeObject = function() {
 	var params = {};
-	$(this).serializeArray().map(function (x) {
+	$(this).serializeArray().map(function(x) {
 		params[x.name] = x.value;
 	});
 	return params;
@@ -226,7 +221,7 @@ function dateToTime(date) {
 function prettyDate(time) {
 	var date = new Date(time);
 	var diff = (((new Date()).getTime() - date.getTime()) / 1000),
-			day_diff = Math.floor(diff / 86400);
+	day_diff = Math.floor(diff / 86400);
 
 	if (isNaN(day_diff) || day_diff < 0)
 		return;
@@ -247,7 +242,7 @@ function prettyDate(time) {
 }
 
 function showCommentAgeFromDate() {
-	$('.posting-time').each(function () {
+	$('.posting-time').each(function() {
 		var time = $(this).data("time");
 		if (time) {
 			$(this).html(prettyDate(time));
@@ -255,7 +250,7 @@ function showCommentAgeFromDate() {
 	});
 }
 
-$(document).ready(function () {
+$(document).ready(function() {
 	showCommentAgeFromDate();
 });
 
@@ -290,7 +285,7 @@ function DateUtil() {
 	this.now = new Date();
 }
 
-DateUtil.prototype.getDateRangeForToday = function () {
+DateUtil.prototype.getDateRangeForToday = function() {
 	var now = this.now;
 	var start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
 	var end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
@@ -344,7 +339,7 @@ function queueJSONAll(description, url, data, successCallback, failCallback, del
 		processData = true;
 	}
 
-	window.setTimeout(function () {
+	window.setTimeout(function() {
 		if (stillRunning) {
 			alertShown = true;
 			showAlert(description + ": in progress");
@@ -364,7 +359,7 @@ function queueJSONAll(description, url, data, successCallback, failCallback, del
 	if (url.indexOf('?') >= 0 && url.indexOf('dateToken=') < 0) {
 		url += '&dateToken=' + new Date().getTime();
 	}
-	var wrapSuccessCallback = function (data, msg) {
+	var wrapSuccessCallback = function(data, msg) {
 		stillRunning = false;
 		if (alertShown)
 			closeAlert();
@@ -382,7 +377,7 @@ function queueJSONAll(description, url, data, successCallback, failCallback, del
 			}
 		}
 	};
-	var wrapFailCallback = function (data, msg) {
+	var wrapFailCallback = function(data, msg) {
 		stillRunning = false;
 		if (alertShown)
 			closeAlert();
@@ -409,7 +404,7 @@ function queueJSONAll(description, url, data, successCallback, failCallback, del
 			if (!(delay > 0))
 				showAlert("Server not responding... retrying " + description);
 			delay = (delay > 0 ? delay * 2 : 5000);
-			window.setTimeout(function () {
+			window.setTimeout(function() {
 				queueJSON(description, url, data, successCallback, failCallback, delay, background);
 			}, delay);
 		}
@@ -417,16 +412,16 @@ function queueJSONAll(description, url, data, successCallback, failCallback, del
 
 	var jqXHR;
 	if ((!background) && (numJSONCalls > 0)) { // json call in progress
-		var jsonCall = function () {
+		var jsonCall = function() {
 			jqXHR = $.ajax({
-						type: args.requestMethod,
-						dataType: "json",
-						url: url,
-						data: data,
-						timeout: 20000 + (delay > 0 ? delay : 0)
-					})
-					.done(wrapSuccessCallback)
-					.fail(wrapFailCallback);
+				type: args.requestMethod,
+				dataType: "json",
+				url: url,
+				data: data,
+				timeout: 20000 + (delay > 0 ? delay : 0)
+			})
+			.done(wrapSuccessCallback)
+			.fail(wrapFailCallback);
 
 			window.showSpinner && showSpinner(args.spinnerOn, jqXHR);
 			window.insertSpinner && insertSpinner(args.spinnerIn, jqXHR);
@@ -438,21 +433,22 @@ function queueJSONAll(description, url, data, successCallback, failCallback, del
 			++numJSONCalls;
 		// When using PUT method contentType needs to be set to application/json explicitly to be able to send json data
 		jqXHR = $.ajax({
-					type: args.requestMethod,
-					dataType: "json",
-					contentType: contentType,
-					processData: processData,
-					url: url,
-					data: data,
-					timeout: 20000 + (delay > 0 ? delay : 0)
-				})
-				.done(wrapSuccessCallback)
-				.fail(wrapFailCallback);
+			type: args.requestMethod,
+			dataType: "json",
+			contentType: contentType,
+			processData: processData,
+			url: url,
+			data: data,
+			timeout: 20000 + (delay > 0 ? delay : 0)
+		})
+		.done(wrapSuccessCallback)
+		.fail(wrapFailCallback);
 
 		window.showSpinner && showSpinner(args.spinnerOn, jqXHR);
 		window.insertSpinner && insertSpinner(args.spinnerIn, jqXHR);
 	}
 
+	// Return the promise for registering further callbacks
 	return jqXHR;
 }
 
@@ -507,7 +503,7 @@ function getCSRFPreventionObject(key, data) {
 }
 
 //Singleton Class function.
-var RepeatType = new function () {
+var RepeatType = new function() {
 	this.DAILY_BIT = 1;
 	this.WEEKLY_BIT = 2;
 	this.REMIND_BIT = 4;
@@ -533,45 +529,45 @@ var RepeatType = new function () {
 	this.WEEKLYCONCRETEGHOSTGHOST = this.CONCRETEGHOST_BIT | this.GHOST_BIT | this.WEEKLY_BIT;
 	this.DURATIONGHOST = this.GHOST_BIT | this.DURATION_BIT;
 
-	this.isConcreteGhost = function (repeatType) {
+	this.isConcreteGhost = function(repeatType) {
 		return (repeatType & this.CONCRETEGHOST_BIT) != 0;
 	}
-	this.isAnyGhost = function (repeatType) {
+	this.isAnyGhost = function(repeatType) {
 		return (repeatType & (this.GHOST_BIT | this.CONCRETEGHOST_BIT)) != 0
 	}
-	this.isContinuous = function (repeatType) {
+	this.isContinuous = function(repeatType) {
 		return (repeatType & this.CONTINUOUS_BIT) != 0;
 	}
-	this.isGhost = function (repeatType) {
+	this.isGhost = function(repeatType) {
 		return (repeatType & this.GHOST_BIT) != 0;
 	}
-	this.isRemind = function (repeatType) {
+	this.isRemind = function(repeatType) {
 		return (repeatType & this.REMIND_BIT) != 0;
 	}
-	this.isRepeat = function (repeatType) {
+	this.isRepeat = function(repeatType) {
 		return (repeatType & this.REPEAT_BIT) != 0;
 	}
-	this.isHourly = function (repeatType) {
+	this.isHourly = function(repeatType) {
 		return (repeatType & this.HOURLY_BIT) != 0
 	}
-	this.isDaily = function (repeatType) {
+	this.isDaily = function(repeatType) {
 		return (repeatType & this.DAILY_BIT) != 0
 	}
-	this.isHourlyOrDaily = function (repeatType) {
+	this.isHourlyOrDaily = function(repeatType) {
 		return (repeatType & (this.HOURLY_BIT | this.DAILY_BIT)) != 0
 	}
-	this.isWeekly = function (repeatType) {
+	this.isWeekly = function(repeatType) {
 		return (repeatType & this.WEEKLY_BIT) != 0
 	}
-	this.isMonthly = function (repeatType) {
+	this.isMonthly = function(repeatType) {
 		return (repeatType & this.MONTHLY_BIT) != 0
 	}
-	this.isYearly = function (repeatType) {
+	this.isYearly = function(repeatType) {
 		return (repeatType & this.YEARLY_BIT) != 0
 	}
 }
 
-$.datepicker._gotoToday = function (id) {
+$.datepicker._gotoToday = function(id) {
 	var target = $(id);
 	var inst = this._getInst(target[0]);
 	if (this._get(inst, 'gotoCurrent') && inst.currentDay) {
@@ -605,14 +601,14 @@ function showBootstrapAlert($element, message, delay) {
 	$element.slideDown();
 
 	if (delay != 0) {
-		setTimeout(function () {
+		setTimeout(function() {
 			$element.slideUp();
 		}, delay);
 	}
 }
 
 // On click of any close button with attribute [data-dismiss="alert"] inside an alert
-$(document).on("click", '[data-dismiss="alert"]', function () {
+$(document).on("click", '[data-dismiss="alert"]', function() {
 	// Close it's parent alert message (if any)
 	$(this).parents(".alert").slideUp();
 });
@@ -625,18 +621,18 @@ $(document).on("click", '[data-dismiss="alert"]', function () {
  * Max 1:    ""
  * Max 2:    ""
  * Max 5:    "The"
- * Max 15:    "The quick brown"
- * Max 21:    "The quick brown fox"
- * Max 70:    "The quick brown fox jumps over the lazy dog"
+ * Max 15:   "The quick brown"
+ * Max 21:   "The quick brown fox"
+ * Max 70:   "The quick brown fox jumps over the lazy dog"
  *
  * (Now consider includeLastWord = true}
  *
  * Max 1:    "The"
  * Max 2:    "The"
  * Max 5:    "The quick"
- * Max 15:    "The quick brown"
- * Max 21:    "The quick brown fox jumps"
- * Max 70:    "The quick brown fox jumps over the lazy dog"
+ * Max 15:   "The quick brown"
+ * Max 21:   "The quick brown fox jumps"
+ * Max 70:   "The quick brown fox jumps over the lazy dog"
  *
  * http://stackoverflow.com/questions/5454235/javascript-shorten-string-without-cutting-words
  */
@@ -677,12 +673,12 @@ function dataURItoBlob(dataURI) {
 }
 
 /*$(document).ajaxStart(function() {
- $('#spinner-feedback').show();
- });
+	$('#spinner-feedback').show();
+});
 
- $(document).ajaxComplete(function() {
- $('#spinner-feedback').hide();
- });*/
+$(document).ajaxComplete(function() {
+	$('#spinner-feedback').hide();
+});*/
 
 /*
  * Some browser do not supports String.startsWith method.
@@ -690,7 +686,7 @@ function dataURItoBlob(dataURI) {
  */
 if (typeof String.prototype.startsWith != 'function') {
 	console.log('Adding startsWith method to the string');
-	String.prototype.startsWith = function (str) {
+	String.prototype.startsWith = function(str) {
 		return this.slice(0, str.length) == str;
 	};
 }

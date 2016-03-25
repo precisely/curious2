@@ -12,14 +12,26 @@ import org.joda.time.format.DateTimeFormatter
  */
 class DummyController {
 
-	def ouraDataService
-
 	def beforeInterceptor = [action: this.&onlyDevelopment]
 
 	// This is just an edge condition. This controller will not be available in any WAR files.
 	private onlyDevelopment() {
 		if (!Environment.isDevelopmentMode()) {
 			throw new Exception("Trying to run an application in non-development environment.")
+		}
+	}
+
+	/**
+	 * Useful for development environment to test any service method. Directly use the service name (without
+	 * injecting the service using "def xyzService") and this method will autoinject that service using Groovy's
+	 * propertyMissing logic to do the same.
+	 */
+	def propertyMissing(String name) {
+		if (name.endsWith("Service")) {
+			return grailsApplication.mainContext[name]
+		}
+		if (name == "currentUser") {
+			return securityService.getCurrentUser()
 		}
 	}
 
@@ -36,6 +48,10 @@ class DummyController {
 	def ouraProcessor() {
 		log.debug "Process Oura notifications"
 		ouraDataService.notificationProcessor()
+	}
+
+	def runMigrations() {
+		migrationService.doMigrations()
 	}
 
 	def test() {

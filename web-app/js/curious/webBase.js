@@ -20,9 +20,13 @@ $(document).ready(function() {
 		}
 	});
 
+	/**
+	 * Submit the parent form whenever a user hits enter in any input field with class "enter-submit".
+	 */
 	$(document).on("keydown", ".enter-submit", function() {
 		if (event.keyCode == 10 || event.keyCode == 13) {
 			$(this).parents("form").submit();
+			return false;
 		}
 	})
 });
@@ -147,6 +151,16 @@ $(window).load(function(){
 	});
 });
 
+/**
+ * A helper method to show a spinner in the center (vertically + horizontally) of the given $element until the
+ * given jQuery promise resolves. This method also inserts a white backdrop in the given element which helps in
+ * blocking the element for any other operation. Useful when doing any AJAX call like form submission and we want to
+ * disable the form by giving user a feedback that some operation is being performed.
+ *
+ * @param $element Given element in the above description
+ * @param promise jQuery promise like one returned by the jQuery.ajax() method
+ * @author Shashank Agrawal
+ */
 function showSpinner($element, promise) {
 	if (!$element || !promise) {
 		return;
@@ -170,6 +184,15 @@ function showSpinner($element, promise) {
 	});
 }
 
+/**
+ * A helper method to insert a spinner in the given $element until the given jQuery promise resolves. Useful when
+ * doing any AJAX call like on a button click to disable that button and also show a spinner in the same button to
+ * let the user know that some operation is being performed.
+ *
+ * @param $element Given element in the above description
+ * @param promise jQuery promise like one returned by the jQuery.ajax() method
+ * @author Shashank Agrawal
+ */
 function insertSpinner($element, promise) {
 	if (!$element || !promise) {
 		return;

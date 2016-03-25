@@ -2,6 +2,10 @@
 	padding: 15px;
 }
 
+.relative {
+	position: relative;
+}
+
 .margin-top {
 	margin-top: 15px;
 }

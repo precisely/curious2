@@ -45,6 +45,10 @@ class DiscussionController extends LoginController {
 		if (discussion != null) {
 			Utils.save(discussion, true)
 
+			/*
+			 * Always create a first post (i.e. DiscussionPost) which will be used as the description of the discussion.
+			 * https://github.com/syntheticzero/curious2/issues/924
+			 */
 			discussion.createPost(user, discussionPost ?: "")
 
 			Map model = discussion.getJSONDesc()

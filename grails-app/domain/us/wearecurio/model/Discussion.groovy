@@ -403,7 +403,7 @@ class Discussion {
 
 	/**
 	 * Get the list of {@link us.wearecurio.model.DiscussionPost posts} excluding the very first post "X" of the
-	 * discussion if the discussion is associated with a graph and the post "X" is having plot ID of that graph.
+	 * discussion, because the first post of discussion is treated as the description of the discussion.
 	 * 
 	 * @param args.max OPTIONAL Pagination parameter to limit the returning results.
 	 * @param args.offset OPTIONAL Pagination parameter to get the results after given position
@@ -415,8 +415,8 @@ class Discussion {
 	List<DiscussionPost> getFollowupPosts(Map args) {
 		DiscussionPost firstPostInstance = getFirstPost()
 
-		// If first post of this discussion is associated with a Graph
-		if (firstPostInstance?.plotDataId) {
+		// If there is a first post then it is treated as the description of the discussion
+		if (firstPostInstance) {
 			args.firstPostID = firstPostInstance.id
 		}
 
@@ -691,7 +691,7 @@ class Discussion {
 	}
 	
 	Long getPostCount() {
-		return DiscussionPost.findAllByDiscussionId(id).size()	- (isFirstPostPlot ? 1 : 0)
+		return DiscussionPost.findAllByDiscussionId(id).size() - (getFirstPost() ? 1 : 0)
 	}
 	
 	String getUserHash() {

@@ -196,20 +196,47 @@ $(document).ready(function() {
 		return false;
 	});
 
+	/**
+	 * Hide/remove the inline comment/post edit form on click.
+	 */
 	$(document).on("click", ".cancel-edit-post", function() {
 		hideInlinePostEdit($(this).parents(".discussion-comment"));
 		return false;
 	});
 
-	$(document).on("focus", ".edit-comment-form textarea", function() {
+	/**
+	 * When user put the focus on the description input field of a discussion, then display the controls i.e. update
+	 * & cancel buttons/icons.
+	 */
+	$(document).on("focus", ".add-description-form textarea", function() {
 		$(this).parents("form").find(".edit-options").slideDown();
 	});
 
+	/**
+	 * When user removes the focus on the description input field of a discussion by clicking somewhere else.
+	 */
 	$(document).on("blur", ".edit-comment-form textarea", function() {
+		function hideEditOptions() {
+			$(".add-description-form").find(".edit-options").slideUp();
+		}
+
+		/*
+		 * One millisecond timeout to delay examination of activeElement until after blur/focus events have been
+		 * processed.
+		 *
+		 * http://stackoverflow.com/a/121708/2405040
+		 */
 		setTimeout(function() {
 			var $focusedElement = $(document.activeElement);
-			if ($focusedElement.closest(".edit-options").length === 0) {
-				$(this).parents("form").find(".edit-options").slideUp();
+			// Check if blur event processed due to click on the edit options like on "submit" or "cancel" icons
+			if ($focusedElement.closest(".edit-options").length !== 0) {
+				// Then, hide those icons/options after half a second
+				setTimeout(function() {
+					hideEditOptions();
+				}, 500)
+			} else {
+				// Else hide them manually
+				hideEditOptions();
 			}
 		}.bind(this), 1);
 	});
@@ -241,7 +268,7 @@ $(document).ready(function() {
 			if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
 				showAlert(xhr.responseJSON.message);
 			}
-		}, 0, {spinnerOn: $form.parents(".add-comment")});
+		}, 0, {spinnerOn: $form});
 
 		return false;
 	});
@@ -258,7 +285,7 @@ $(document).ready(function() {
 		var isFirstPostUpdate = $parentComment.length === 0;
 		var args = {requestMethod: "PUT", spinnerOn: (isFirstPostUpdate ? $form : $parentComment)};
 
-		queueJSONAll('Adding Comment', '/api/discussionPost', getCSRFPreventionObject('addCommentCSRF', params),
+		queueJSONAll('Updating Comment', '/api/discussionPost', getCSRFPreventionObject('addCommentCSRF', params),
 				function(data) {
 					if (!checkData(data)) {
 						return;
@@ -272,7 +299,7 @@ $(document).ready(function() {
 						$(".first-post-container").html("").html(params.message.newLineToBr());
 					} else {
 						hideInlinePostEdit($parentComment);
-						$parentComment.find(".message").html(params.message.newLineToBr());
+						$parentComment.find(".message").html(params.message);
 					}
 				}, function(xhr) {
 					console.log('Internal server error');
@@ -315,6 +342,10 @@ $(document).ready(function() {
 
 	var $modal = $("#edit-discussion-modal");
 
+	/**
+	 * Click handler for editing a discussion's title and the description (the first post). Executes when user
+	 * clicks on the edit link in the discussion detail/show page.
+	 */
 	$(document).on("click", ".edit-discussion", function() {
 		var existingTitle = $(".discussion-title").text().trim();
 		var existingDescription = $(".first-post-message").html();
@@ -368,6 +399,7 @@ $(document).ready(function() {
 	$(document).keyup(function(e) {
 		// esc key press
 		if (e.keyCode === 27) {
+			// Hide any inline comment edit form
 			hideInlinePostEdit($(".discussion-comment.editing-comment"));
 		}
 	});
@@ -426,6 +458,10 @@ function discussionShow(hash) {
 	});
 }
 
+/**
+ * Hide/remove the inline form added to update any comment (i.e. DiscussionPost).
+ * @param $comment The top level parent element of a single comment to remove the inline edit form.
+ */
 function hideInlinePostEdit($comment) {
 	if (!$comment || $comment.length === 0) {
 		return;

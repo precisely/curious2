@@ -78,8 +78,8 @@
 		{{var isCommentAllowed = discussionData.isAdmin || !discussionData.disableComments}}
 
 		<div class="add-comment">
-			<form class="comment-form {{- isCommentAllowed ? '' : 'comment-disabled' }}">
-				<textarea name="message" rows="1" class="comment-fields comment-message auto-resize ctrl-enter"
+			<form class="comment-form new-comment-form {{- isCommentAllowed ? '' : 'comment-disabled' }}">
+				<textarea name="message" rows="1" class="comment-fields comment-message auto-resize enter-submit"
 					maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"
 					placeholder="{{= isCommentAllowed ? 'Add Comment to this discussion...' : '&#xf05e;  Comments disabled'}}"></textarea>
 

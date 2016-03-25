@@ -16,7 +16,7 @@
 			</span>-->
 		{{ } }}
 
-		{{ if (discussionPost.authorUserId == userId || discussionDetails.isAdmin) { }}
+		{{ if (discussionPost.authorUserId == userId) { }}
 			<span class="pull-right">
 				<a href="#" class="cancel-edit-post comment-buttons hide" data-post-id="{{- discussionPost.id}}"
 					data-discussion-hash="{{-discussionPost.hash}}" title="Cancel editing">
@@ -33,7 +33,7 @@
 			</span>
 		{{ } }}
 		<div class="message">
-			{{= _.escape(discussionPost.message).newLineToBr() }}
+			{{- discussionPost.message }}
 		</div>
 	</div>
 </div>

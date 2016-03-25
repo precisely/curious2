@@ -1,3 +1,14 @@
+/**
+ * A simply jQuery library which will auto resize a textarea vertically as the user starts typing and hits enter or
+ * text wraps automatically. Additionally, if the "max-height" CSS is set for that textarea, then after reaching
+ * that height of textarea, the textarea will not increase in height anymore and the vertical scroll bar will appear.
+ *
+ * If a textarea has a class "auto-resize", the script will automatically initialize this feature after page load.
+ *
+ * @author Shashank Agrawal
+ * @example
+ *     $(".foo").autoResize();
+ */
 (function() {
 	"use strict";
 
@@ -31,14 +42,16 @@
 			return this.each(function() {
 				var $this = $(this);
 
+				// This feature will only work for textarea form element
 				if (this.nodeName.toLowerCase() !== "textarea") return;
 
 				_autoResize($this);
 				if ($this.data("autoResizeEnabled")) {
+					// Do not bind the below events again if we already have initialized it
 					return;
 				}
 
-				$this.on("input focus", function() {
+				$this.on("input focus change blur", function() {
 					_autoResize($this);
 				});
 
@@ -49,6 +62,7 @@
 	});
 
 	jQuery.autoResize = {};
+	// Helper method to initialize the autoresize feature in all textarea with class "auto-resize"
 	jQuery.autoResize.init = function() {
 		$(".auto-resize").autoResize();
 	};
