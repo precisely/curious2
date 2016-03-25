@@ -712,13 +712,13 @@ class SearchService {
 		def queryGroup1 = getSearchQuery(1, user, queryAnd, readerGroups, adminGroups, followedUsers, followedSprints, type)
 		def queryGroup2 = getSearchQuery(2, user, queryAnd, readerGroups, adminGroups, followedUsers, followedSprints, type)
 		
-		println "=============================================="
-		println "=============================================="
-		println "queryGroup1: $queryGroup1"
-		println "=============================================="
-		println "queryGroup2: $queryGroup2"
-		println "=============================================="
-		println "=============================================="
+//		println "=============================================="
+//		println "=============================================="
+//		println "queryGroup1: $queryGroup1"
+//		println "=============================================="
+//		println "queryGroup2: $queryGroup2"
+//		println "=============================================="
+//		println "=============================================="
 		
 		def group1Count = searchCount(queryGroup1, type)
 		def group2Count = searchCount(queryGroup2, type)
