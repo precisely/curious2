@@ -191,16 +191,27 @@ $(document).ready(function() {
 		var html = compileTemplate("_commentEditForm", {id: postID, message: previousMessage});
 		$parent.addClass("editing-comment");
 		$message.after(html);
-		$message.hide();
-		$this.hide();
 		$.autoResize.init();
 
 		return false;
 	});
 
-	$(document).on("click", ".cancel-comment", function() {
+	$(document).on("click", ".cancel-edit-post", function() {
 		hideInlinePostEdit($(this).parents(".discussion-comment"));
 		return false;
+	});
+
+	$(document).on("focus", ".edit-comment-form textarea", function() {
+		$(this).parents("form").find(".edit-options").slideDown();
+	});
+
+	$(document).on("blur", ".edit-comment-form textarea", function() {
+		setTimeout(function() {
+			var $focusedElement = $(document.activeElement);
+			if ($focusedElement.closest(".edit-options").length === 0) {
+				$(this).parents("form").find(".edit-options").slideUp();
+			}
+		}.bind(this), 1);
 	});
 
 	/**
@@ -352,7 +363,14 @@ $(document).ready(function() {
 		}
 
 		return false;
-	})
+	});
+
+	$(document).keyup(function(e) {
+		// esc key press
+		if (e.keyCode === 27) {
+			hideInlinePostEdit($(".discussion-comment.editing-comment"));
+		}
+	});
 });
 
 var plot = null;
@@ -409,8 +427,10 @@ function discussionShow(hash) {
 }
 
 function hideInlinePostEdit($comment) {
+	if (!$comment || $comment.length === 0) {
+		return;
+	}
+
 	$comment.removeClass("editing-comment");    // Remove the class to revert the UI
-	$comment.find(".edit-post").show();         // Show the pencil icon again to re-edit later
-	$comment.find(".message").show();           // Show the actual post message again
 	$comment.find(".comment-form").remove();    // Remove the added inline form
 }

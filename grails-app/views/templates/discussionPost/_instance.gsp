@@ -17,13 +17,20 @@
 		{{ } }}
 
 		{{ if (discussionPost.authorUserId == userId || discussionDetails.isAdmin) { }}
-			<a href="#" class="delete-post pull-right" data-post-id="{{-discussionPost.id}}" data-discussion-hash="{{-discussionPost.hash}}">
-				<i class="fa fa-times-circle"></i>
-			</a>
-			<a href="#" class="edit-post pull-right" data-post-id="{{-discussionPost.id}}"
-				data-discussion-hash="{{-discussionPost.hash}}">
-				<i class="fa fa-pencil fa-fw"></i>
-			</a>
+			<span class="pull-right">
+				<a href="#" class="cancel-edit-post comment-buttons hide" data-post-id="{{- discussionPost.id}}"
+					data-discussion-hash="{{-discussionPost.hash}}" title="Cancel editing">
+					<i class="fa fa-times-circle fa-fw"></i>
+				</a>
+				<a href="#" class="edit-post comment-buttons hide" data-post-id="{{- discussionPost.id}}"
+					data-discussion-hash="{{-discussionPost.hash}}" title="Edit comment">
+					<i class="fa fa-pencil fa-fw"></i>
+				</a>
+				<a href="#" class="delete-post comment-buttons hide" data-post-id="{{- discussionPost.id}}"
+					data-discussion-hash="{{-discussionPost.hash}}" title="Delete comment">
+					<i class="fa fa-trash"></i>
+				</a>
+			</span>
 		{{ } }}
 		<div class="message">
 			{{= _.escape(discussionPost.message).newLineToBr() }}

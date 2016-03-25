@@ -88,12 +88,21 @@
 						{{ if (firstPost && firstPost.message) { }}
 							<span class="first-post-message">{{= _.escape(firstPost.message).newLineToBr() }}</span>
 						{{ } else if (isAdmin) { }}
-							<form class="edit-comment-form" action="#">
+							<form class="edit-comment-form add-description-form" action="#">
 								<input type="hidden" name="id" value="{{- firstPost.id}}" />
 
-								<textarea name="message" rows="1" class="comment-fields auto-resize ctrl-enter"
-									placeholder="Add description..." autofocus style="width: 100%; resize: none"
+								<textarea name="message" rows="1" class="auto-resize ctrl-enter"
+									placeholder="Add description..." autofocus style="display: block; resize: none"
 									maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"></textarea>
+
+								<div class="edit-options hide text-right">
+									<button type="submit" class="btn-clear" title="Update description">
+										<i class="fa fa-check fa-fw"></i>
+									</button>
+									<a href="#" onclick="$('.edit-comment-form').find('textarea').val(''); return false;">
+										<i class="fa fa-times-circle fa-fw"></i>
+									</a>
+								</div>
 							</form>
 						{{ } }}
 					</div>
@@ -173,13 +182,12 @@
 									maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"></textarea>
 							</div>
 						{{ } else if (canWrite) { }}
-							<textarea name="message" rows="1" class="comment-fields comment-message auto-resize ctrl-enter"
-								maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"
+							<textarea name="message" rows="1" class="comment-fields comment-message auto-resize enter-submit"
+								maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}" required
 								placeholder="{{= isCommentAllowed ? 'Add Comment to this discussion...' : '&#xf05e;  Comments disabled'}}"></textarea>
 						{{ } }}
 
 						<input type="hidden" name="discussionHash" value="{{- discussionHash }}">
-						<g:render template="/templates/discussionPost/formSubmit"/>
 					</form>
 				</div>
 			</div>

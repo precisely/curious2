@@ -1392,12 +1392,6 @@ body.tags-displayed .floating-column {
 .text-danger, a.text-danger, a.text-dager:link {
 	color: #a94442;
 }
-.text-center {
-	text-align: center;
-}
-.text-right {
-	text-align: right;
-}
 .red-strip {
 	background-color: #EF4B3A;
 	width: 100%;
@@ -3355,7 +3349,7 @@ body {
 .discussion .discussion-topic .first-post-container {
 	font-style: normal;
 	font-size: 14px;
-	margin: 5px 0 10px 0;
+	margin-top: 5px;
 	color: #2d2d2d;
 	text-align: justify;
 }
@@ -3423,17 +3417,61 @@ body {
 
 .discussion-comment {
 	padding: 0 15px;
+	margin-top: 25px !important;
 }
 
-.discussion-comment .edit-post {
-	margin-right: 7px;
+.discussion-comment:last-child {
+	margin-bottom: 25px;
+}
+
+.discussion-comment:last-child:hover, .discussion-comment.editing-comment:last-child {
+	margin-bottom: 10px;
+}
+
+.discussion-comment:hover, .discussion-comment.editing-comment {
+	background-color: #ddd;
+	padding-top: 15px;
+	padding-bottom: 15px;
+	margin-top: 10px !important;
+}
+
+.discussion-comment:hover + .discussion-comment {
+	margin-top: 10px !important;
+}
+
+.discussion-comment.editing-comment + .discussion-comment {
+	margin-top: 15px !important;
+}
+
+.discussion-comment.editing-comment + .discussion-comment:hover {
+	margin-top: 0 !important;
+}
+
+.discussion-comment:hover + .discussion-comment.editing-comment {
+	margin-top: 0 !important;
+}
+
+.discussion-comment:hover .comment-buttons.cancel-edit-post,
+.discussion-comment.editing-comment .comment-buttons.edit-post,
+.discussion-comment.editing-comment .message{
+	display: none;
+}
+
+.discussion-comment:hover .comment-buttons,
+.discussion-comment.editing-comment .comment-buttons,
+.discussion-comment.editing-comment .comment-buttons.cancel-edit-post {
+	display: inline-block;
+}
+
+.discussion-comment .comment-buttons + .comment-buttons {
+	margin-left: 7px;
 }
 
 .discussion-comments-wrapper .view-comment {
 	color: #555555;
 	font-size: 11px;
 	cursor: pointer;
-	margin: 25px 0;
+	margin-top: 25px;
 	padding: 0 15px;
 }
 
@@ -3442,7 +3480,11 @@ body {
 }
 
 .add-comment {
-	padding: 25px 15px;
+	padding: 0 15px 25px;
+}
+
+.add-description-form textarea:focus {
+	border: 1px solid
 }
 
 .comment-form .comment-fields {
@@ -3458,7 +3500,7 @@ body {
 
 .comment-form textarea.comment-fields {
 	max-height: 300px;
-	resize: vertical;
+	resize: none;
 }
 
 .discussions .discussion-comments-wrapper .comment-form input {
@@ -3472,18 +3514,13 @@ body {
 	margin-left: 35px;
 }
 
-.discussion-comments-wrapper .comments:first-child .discussion-comment:first-child {
+.comments:first-child .discussion-comment:first-child:hover, .comments:first-child .discussion-comment.editing-comment:first-child {
+	margin-top: 0 !important;
 	padding-top: 25px;
 }
 
-.discussion-comment.editing-comment {
-	background-color: #ddd;
-	padding-top: 15px;
-	padding-bottom: 15px;
-}
-
 .discussion-comment .comment-form {
-	margin-top: 15px;
+	margin-top: 5px;
 }
 
 .discussion-comment .posting-time {

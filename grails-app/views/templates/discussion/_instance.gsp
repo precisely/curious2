@@ -84,7 +84,6 @@
 					placeholder="{{= isCommentAllowed ? 'Add Comment to this discussion...' : '&#xf05e;  Comments disabled'}}"></textarea>
 
 				<input type="hidden" name="discussionHash" value="{{- discussionData.hash }}">
-				<g:render template="/templates/discussionPost/formSubmit"/>
 			</form>
 		</div>
 	</div>

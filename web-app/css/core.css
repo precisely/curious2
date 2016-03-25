@@ -38,6 +38,10 @@
 	user-select: none;
 }
 
+.btn-clear {
+	background: transparent;
+}
+
 .btn-orange {
 	color: white;
 	background: #f48d5b;

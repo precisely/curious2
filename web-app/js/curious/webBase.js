@@ -19,6 +19,12 @@ $(document).ready(function() {
 			$(this).parents("form").submit();
 		}
 	});
+
+	$(document).on("keydown", ".enter-submit", function() {
+		if (event.keyCode == 10 || event.keyCode == 13) {
+			$(this).parents("form").submit();
+		}
+	})
 });
 
 /**
