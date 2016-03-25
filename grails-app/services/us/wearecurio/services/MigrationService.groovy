@@ -70,6 +70,7 @@ class MigrationService {
 	public static final long ADD_TAG_UNIT_STATS_AGAIN = 90L
 	public static final long SHARED_TAG_GROUP = 91L
 	public static final long MIGRATION_CODES = 92L
+	public static final long FIX_TYPO_VIRTUAL_OBJECT = 93L
 
 	DatabaseService databaseService
 	WithingsDataService withingsDataService
@@ -620,6 +621,15 @@ class MigrationService {
 			// Set last polled to (now - 4 days)
 			sql("update oauth_account set last_polled = (now() - interval 4 day) where type_id = :typeId",
 					[typeId: ThirdParty.OURA.id])
+		}
+
+		tryMigration(FIX_TYPO_VIRTUAL_OBJECT) {
+			UserGroup.withCriteria {
+				ilike("fullName", "%grouo%")
+			}.each { userGroup ->
+				userGroup.fullName = userGroup.fullName.replace("grouo", "group")
+				userGroup.save(flush: true)
+			}
 		}
 	}
 	
