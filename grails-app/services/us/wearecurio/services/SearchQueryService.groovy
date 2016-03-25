@@ -26,7 +26,7 @@ class SearchQueryService {
 		}
 		
 		if (trimmed.matches(/^".*"$/)) {
-			return escapeString(trimmed[1..(trimmed.length-2)])
+			return escapeString(trimmed[1..(trimmed.size()-2)])
 //			return  query.replaceAll(/([\+\-=><!&\|\(\)\{\}\[\]\^~\*\?:\/])/,$/\\$1/$)
 		}
 		
