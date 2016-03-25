@@ -352,7 +352,7 @@ a, a:link,a:hover, a:visited {
 
 #trackmain .dropdown-menu{
 	background-color: #fff;
-	left: auto;
+	left: auto !important;
 	right: 10px;
 	text-align: center;
 	width: 290px;
@@ -397,7 +397,7 @@ a, a:link,a:hover, a:visited {
 }
 
 #recordList .dropdown-menu {
-	right: 135px;
+	right: 199px;
 }
 
 /**
@@ -1224,6 +1224,11 @@ body.tags-displayed .floating-column {
 /**
  * Generic & common stuff, useful for every where. Starts here.
  */
+
+.click-link {
+	color:#428bca !important;
+}
+
 .red-header {
 	background-color: #fc3f28;
 	vertical-align: middle;
@@ -1784,6 +1789,10 @@ body.tags-displayed .floating-column {
 	height: 30px;
 	right: 135px;
 	padding: 0;
+}
+
+.arrow {
+	left:80% !important;
 }
 
 #addData .dropdown-menu .divider, .entry-details-dropdown-menu .divider {

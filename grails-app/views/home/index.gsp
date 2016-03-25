@@ -36,7 +36,7 @@
 
 	<!-- MAIN -->
 	<!-- TODO Fix indentation after merge -->
-			<div class="main entry-container clearfix">
+			<div class="main entry-container clearfix" id="trackmain">
 				<div id="autocomplete" style="position: absolute; top: 10px; right: 10px;"></div>
 				<div id="area0">
 					<div id="addData" class="input-affordance addon">
@@ -125,10 +125,8 @@
 			$('#addData .track-input-dropdown').show();
 			newEntryDetailsPopoverContent = _.template($('#entry-details-popover-content').clone().html())({'editType': 'new', entryId: ""});
 			createPopover($('.track-input-modifiers'), newEntryDetailsPopoverContent,'#addData');
-			$("#addData .choose-date-input").datepicker({changeYear: true, changeMonth: true, yearRange: "-120:+0"});
-
-			$(document).on('change', '#addData .repeat-entry-checkbox', function() {
-				$('#addData .repeat-modifiers').toggleClass('hide');
+			$(document).on('change', '.repeat-entry-checkbox', function() {
+				$('.repeat-modifiers').toggleClass('hide');
 			});
 			$('#addData .track-input-modifiers').click(function() {
 				if ($('.ui-selected').length) {

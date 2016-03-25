@@ -97,7 +97,7 @@ function sprintShow(hash) {
 				}
 				sprintInstance.entries = entries;
 				sprintInstance.participants = data.participants;
-				sprintInstance.description = replaceURLsWithLinks(_.escape(sprintInstance.description));
+				sprintInstance.description = Autolinker.link(_.escape(sprintInstance.description), {className: 'click-link'});
 				sprintInstance.lines = sprintInstance.description ? sprintInstance.description.split("\n") : [];
 				var compiledHTML = compileTemplate("_showSprints", sprintInstance);
 				$('#feed').html(compiledHTML);
@@ -126,11 +126,6 @@ function sprintShow(hash) {
 	});
 }
 
-function replaceURLsWithLinks(text) {
-	"use strict";
-	var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-	return text.replace(exp,"<a href='$1' style='color:#428bca;'>$1</a>");
-}
 function startSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();

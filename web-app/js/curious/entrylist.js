@@ -21,26 +21,29 @@ function __removePrefix(str, prefix) {
 	return str;
 }
 
-var oldScrollTop = 0;
-
+/**
+ * Updating the popover position on scrolling the recordList.
+ */
 $('#recordList').scroll(function() {
 	var $popover = $('.popover');
 	var popoverPosition = $popover.position();
-	$selectee = $('.ui-selected');
+	var $selectee = $('.ui-selected');
 	if (!$selectee.length || !popoverPosition) {
+		// Returning if there is no popover.
 		return;
 	}
 	$popoverLauncher = $selectee.find('.track-input-modifiers');
 	var listPosition = $(this).position();
-	var entryPosition = $('.ui-selected').position();
-	entryPosition.bottom = entryPosition.top + $('.ui-selected').outerHeight(true)
+	var entryPosition = $selectee.position();
+	entryPosition.bottom = entryPosition.top + $selectee.outerHeight(true);
 	listPosition.bottom = listPosition.top + $(this).outerHeight(true);
 	if (entryPosition && ((entryPosition.top <= listPosition.top) || (entryPosition.bottom >= listPosition.bottom))) {
+		// Hiding popover when it exceeds the bounds of the list.
 		$popover.css({'visibility': 'hidden'});
 		return
 	}
-	var offset = $popoverLauncher.offset().top + $popoverLauncher.outerHeight(true);
-	$popover.css({'top': offset, 'visibility': 'visible'});
+	var top = $popoverLauncher.offset().top + $popoverLauncher.outerHeight(true);
+	$popover.css({'top': top, 'visibility': 'visible'});
 });
 
 function hidePopover(element) {
@@ -53,20 +56,25 @@ function hidePopover(element) {
 
 function createPopover(element, content, containerId) {
 	"use strict";
-	//hidePopover();
 	element.popover({
 		trigger: 'click manual',
 		placement: 'bottom',
 		html: true,
 		container:containerId,
 		content: content,
-		template: '<div class="popover dropdown-menu" style="max-width:290px"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content" style="padding:0px;"></div></div>'
+		template: '<div class="popover dropdown-menu" style="max-width:290px"><div class="arrow"></div><h3 class="popover-title">' +
+				'</h3><div class="popover-content" style="padding:0px;"></div></div>'
 	});
 }
 
 $(document).on('shown.bs.popover', function() {
 	"use strict";
-	$('.choose-date-input').datepicker();
+	/*
+	 * Setting the datepicker options here. The popover in the new entry affordance has both changeYear as well as
+	 * changeMonth enabled.
+	 */
+	var datepickerOptions = ($('.entry-details-dropdown-menu').data('for-entry')) ? undefined : {changeYear: true, changeMonth: true}
+	$('.choose-date-input').datepicker(datepickerOptions);
 	var $selectee = $('.ui-selected');
 	if ($selectee.length) {
 		var entry = $selectee.data('entry');
@@ -77,15 +85,6 @@ $(document).on('shown.bs.popover', function() {
 	}
 });
 
-$(document).click(function() {
-	"use strict";
-	hidePopover();
-});
-
-$(document).on('mousedown click', '.popover, .track-input-modifiers', function(e) {
-	"use strict";
-	e.stopPropagation();
-});
 function EntryListWidget(divIds, autocompleteWidget) {
 	var self = this;
 
@@ -850,7 +849,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		if (text == "") return; // no entry data
 		$field.val("");
 		var repeatTypeId = this.getRepeatTypeId('new');
-		var repeatEnd = $('#addData .choose-date-input').val();
+		var repeatEnd = $('.choose-date-input').val();
 		$('.entry-details-form').trigger('reset');
 		this.addEntry(currentUserId, text, this.defaultToNow, repeatTypeId, repeatEnd);
 		return true;
@@ -1030,12 +1029,6 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			$('#' + entry.id + '-confirm-each-repeat').attr('checked', 'checked');
 		}
 
-		$(document).on('change', '[data-for-entry="' + $selectee.attr('id') + '"] .repeat-entry-checkbox', function() {
-			"use strict";
-			$('[data-for-entry="' + $selectee.attr('id') + '"] .repeat-modifiers').toggleClass('hide');
-			return;
-		})
-
 		$('#' + self.editId + 'tagTextInput')
 			.val(entryText).focus()
 			.data('entryTextSet', true)
@@ -1102,7 +1095,6 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			this.unselectEntry($unselectee, true, true);
 			this.updateEntry(currentEntryId, newText, this.defaultToNow, repeatTypeId, repeatEnd);
 		}
-		$('.entry-details-form').trigger('reset');
 	}
 
 	/**
@@ -1164,7 +1156,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		}
 
 		if ($target.closest('.dropdown-menu').length == 0 && $target.closest('#ui-datepicker-div').length == 0) {
-			$('.entry-details-dropdown-menu').parent().removeClass('open');
+			hidePopover();
 		} else {
 			return;
 		}
@@ -1236,6 +1228,19 @@ function EntryListWidget(divIds, autocompleteWidget) {
 
 	$(window).resize(function(e) {
 		self.adjustDatePicker();
+
+		var $popover = $('.popover');
+
+		if(!$popover.length) {
+			return;
+		}
+
+		// Adjusting the position of the popover on window resize.
+		var $popoverlauncher = $('.ui-selected').find('.track-input-modifiers');
+		var top = $popoverlauncher.offset().top + $popoverlauncher.outerHeight(true);
+		var right = $(window).innerWidth() - ($popoverlauncher.offset().left + $popoverlauncher.outerWidth(true));
+		$popover.css('top', top);
+		$popover.css('right', right);
 	});
 	self.adjustDatePicker();
 
