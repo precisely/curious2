@@ -70,7 +70,6 @@ class MigrationService {
 	public static final long ADD_TAG_UNIT_STATS_AGAIN = 90L
 	public static final long SHARED_TAG_GROUP = 91L
 	public static final long MIGRATION_CODES = 92L
-	public static final long FIX_TYPO_VIRTUAL_OBJECT = 93L
 
 	DatabaseService databaseService
 	WithingsDataService withingsDataService
@@ -608,12 +607,13 @@ class MigrationService {
 					[typeId: ThirdParty.OURA.id])
 		}
 
-		tryMigration(FIX_TYPO_VIRTUAL_OBJECT) {
+		tryMigration("Fix typo in fullName in user_group") {
 			UserGroup.withCriteria {
 				ilike("fullName", "%grouo%")
 			}.each { userGroup ->
+				log.debug "Fixing typo in $userGroup"
 				userGroup.fullName = userGroup.fullName.replace("grouo", "group")
-				userGroup.save(flush: true)
+				Utils.save(userGroup, true)
 			}
 		}
 	}
