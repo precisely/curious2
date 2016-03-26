@@ -2,9 +2,12 @@
 package us.wearecurio.model
 
 import org.apache.commons.logging.LogFactory
+import us.wearecurio.exception.AccessDeniedException
 import us.wearecurio.exception.CreationNotAllowedException
-import us.wearecurio.utility.Utils
+import us.wearecurio.exception.InstanceNotFoundException
+import us.wearecurio.exception.OperationNotAllowedException
 import us.wearecurio.services.SearchService
+import us.wearecurio.utility.Utils
 
 class DiscussionPost {
 	
@@ -135,23 +138,25 @@ class DiscussionPost {
 		this.message = comment
 	}
 	
-	static def create(Discussion discussion, Long authorUserId, String message) {
+	static DiscussionPost create(Discussion discussion, Long authorUserId, String message) {
 		return create(discussion, authorUserId, null, message)
 	}
 	
-	static def create(Discussion discussion, Long authorUserId, Long plotDataId, String comment) {
+	static DiscussionPost create(Discussion discussion, Long authorUserId, Long plotDataId, String comment) {
 		return create(discussion, authorUserId, plotDataId, comment, new Date())
 	}
 	
-	static def create(Discussion discussion, Long authorUserId, Long plotDataId, String comment, Date created) {
+	static DiscussionPost create(Discussion discussion, Long authorUserId, Long plotDataId, String comment, Date created) {
 		log.debug "DiscussionPost.create() discussionId:" + discussion.id + ", authorUserId:" + authorUserId + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'" + ", created:" + created
 		boolean isFirstPost = !discussion.hasFirstPost()
-		def post = new DiscussionPost(discussion, authorUserId, plotDataId, comment, created ?: new Date(), isFirstPost)
+		DiscussionPost post = new DiscussionPost(discussion, authorUserId, plotDataId, comment, created ?: new Date(), isFirstPost)
 		Utils.save(post, true)
+
 		if (isFirstPost) {
 			discussion.setFirstPostId(post.id)
 			Utils.save(discussion, true)
 		}
+
 		UserActivity.create(
 			post.authorUserId, 
 			UserActivity.ActivityType.CREATE, 
@@ -189,29 +194,50 @@ class DiscussionPost {
 		)
 	}
 
-	static void delete(DiscussionPost post) {
+	static void delete(DiscussionPost post, Discussion discussion = null) {
 		log.debug "DiscussionPost.delete() postId:" + post.getId()
-		Discussion discussion = Discussion.get(post.discussionId)
+		discussion = discussion ?: post.getDiscussion()
 		discussion.setUpdated(new Date())
-		def postId = post.id
-		post.delete(flush:true)
+
+		Long postId = post.id
+		post.delete(flush: true)
+		Utils.save(discussion, true)
+
 		unComment(null, discussion.id, postId)
         SearchService.get().deindex(post)
 	}
-	
-	static boolean deleteComment(Long clearPostId, User user, Discussion discussion) {
-		DiscussionPost post = DiscussionPost.get(clearPostId)
-		def postId = post.id
-		if (post != null && (user == null || post.getUserId() != user.getId())) {
-			return false
-		} else if (post == null) {
-			return false
-		} else {
-			DiscussionPost.delete(post)
+
+	static DiscussionPost deleteComment(Long postId, User user, Discussion discussion) throws InstanceNotFoundException,
+			AccessDeniedException, OperationNotAllowedException {
+		log.debug "Delete comment, post id $postId"
+		DiscussionPost post = DiscussionPost.get(postId)
+
+		if (!post) {
+			throw new InstanceNotFoundException()
 		}
-		Utils.save(discussion, true)
-		unComment(user.id, discussion.id, postId)
-		return true
+		return deleteComment(post, user, discussion)
+	}
+
+	static DiscussionPost deleteComment(DiscussionPost post, User user, Discussion discussion) throws
+			AccessDeniedException, OperationNotAllowedException {
+		if (!post) {
+			throw new IllegalArgumentException("Post is required.")
+		}
+		if (!user) {
+			throw new IllegalArgumentException("User is required.")
+		}
+
+		discussion = discussion ?: post.getDiscussion()
+		if (post.getUserId() != user.id && (!UserGroup.canAdminDiscussion(user, discussion))) {
+			throw new AccessDeniedException()
+		}
+
+		if (post.isFirstPost()) {
+			throw new OperationNotAllowedException()
+		}
+
+		DiscussionPost.delete(post, discussion)
+		return post
 	}
 
 	static DiscussionPost update(User user, Discussion discussion, DiscussionPost post, String message) {

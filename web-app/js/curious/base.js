@@ -423,8 +423,7 @@ function queueJSONAll(description, url, data, successCallback, failCallback, del
 			.done(wrapSuccessCallback)
 			.fail(wrapFailCallback);
 
-			window.showSpinner && showSpinner(args.spinnerOn, jqXHR);
-			window.insertSpinner && insertSpinner(args.spinnerIn, jqXHR);
+			window.showSpinner && showSpinner(args.spinner, jqXHR);
 		};
 		++numJSONCalls;
 		pendingJSONCalls.push(jsonCall);
@@ -444,8 +443,7 @@ function queueJSONAll(description, url, data, successCallback, failCallback, del
 		.done(wrapSuccessCallback)
 		.fail(wrapFailCallback);
 
-		window.showSpinner && showSpinner(args.spinnerOn, jqXHR);
-		window.insertSpinner && insertSpinner(args.spinnerIn, jqXHR);
+		window.showSpinner && showSpinner(args.spinner, jqXHR);
 	}
 
 	// Return the promise for registering further callbacks

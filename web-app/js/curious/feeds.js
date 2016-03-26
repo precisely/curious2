@@ -446,7 +446,7 @@ $(document).ready(function() {
 		// See base.js for implementation details of $.serializeObject()
 		var params = $form.serializeObject();
 		var id = $('#sprintIdField').val();
-		var args = {requestMethod: 'PUT', spinnerOn: $form};
+		var args = {requestMethod: 'PUT', spinner: {selector: $form, withMask: true}};
 
 		queueJSONAll('Updating sprint', '/api/sprint/' + id + '?' + getCSRFPreventionURI('updateSprintDataCSRF'), params,
 				function(data) {
@@ -849,7 +849,7 @@ function createSprint() {
 			autocompleteWidget = new AutocompleteWidget('autocomplete1', 'sprint-tags');
 		}, function(xhr) {
 			console.log('error: ', xhr);
-		}, 0, {spinnerOn: $('.create-new-sprint')}
+		}, 0, {spinner: {selector: $('.create-new-sprint'), withMask: true}}
 	);
 }
 
@@ -900,7 +900,7 @@ function editSprint(sprintHash) {
 			$('#createSprintOverlay').modal({show: true});
 		}
 		autocompleteWidget = new AutocompleteWidget('autocomplete1', 'sprint-tags');
-	}, null, 0, false, {spinnerIn: $("#edit-sprint")});
+	}, null, 0, false, {spinner: {selector: $("#edit-sprint")}});
 }
 
 function deleteSprint(sprintHash) {

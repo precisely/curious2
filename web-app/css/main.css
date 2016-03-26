@@ -3523,12 +3523,6 @@ body {
 	resize: none;
 }
 
-.discussions .discussion-comments-wrapper .comment-form input {
-	max-width: 320px;
-	height: 34px;
-	padding: 10px;
-}
-
 .discussion-comments-wrapper #finished-msg {
 	margin-top: 15px;
 	margin-left: 35px;

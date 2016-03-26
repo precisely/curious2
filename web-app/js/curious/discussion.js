@@ -268,7 +268,7 @@ $(document).ready(function() {
 			if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
 				showAlert(xhr.responseJSON.message);
 			}
-		}, 0, {spinnerOn: $form});
+		}, 0, {spinner: {selector: $form, withMask: true}});
 
 		return false;
 	});
@@ -283,7 +283,7 @@ $(document).ready(function() {
 		var params = $form.serializeObject();
 		var $parentComment = $form.parents(".discussion-comment");
 		var isFirstPostUpdate = $parentComment.length === 0;
-		var args = {requestMethod: "PUT", spinnerOn: (isFirstPostUpdate ? $form : $parentComment)};
+		var args = {requestMethod: "PUT", spinner: {selector: (isFirstPostUpdate ? $form : $parentComment), withMask: true}};
 
 		queueJSONAll('Updating Comment', '/api/discussionPost', getCSRFPreventionObject('addCommentCSRF', params),
 				function(data) {
@@ -378,7 +378,7 @@ $(document).ready(function() {
 
 		var discussionHash = $("input[name=discussionHash]").val();
 		var params = {discussionHash: discussionHash, name: newName, message: newDescription};
-		var args = {requestMethod: "PUT", spinnerOn: $form};
+		var args = {requestMethod: "PUT", spinner: {selector: $form, withMask: true}};
 
 		if (newName && (newName !== existingName || newDescription !== existingDescription)) {
 			queueJSONAll("", "/api/discussion", makeGetArgs(params), function(data) {

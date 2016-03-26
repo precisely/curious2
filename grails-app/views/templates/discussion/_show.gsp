@@ -185,7 +185,7 @@
 						{{ } else if (canWrite) { }}
 							<textarea name="message" rows="1" class="comment-fields comment-message auto-resize enter-submit"
 								maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}" required
-								placeholder="{{= isCommentAllowed ? 'Add Comment to this discussion...' : '&#xf05e;  Comments disabled'}}"></textarea>
+								placeholder="{{= isCommentAllowed ? 'Add a comment to this discussion...' : '&#xf05e;  Comments disabled'}}"></textarea>
 						{{ } }}
 
 						<input type="hidden" name="discussionHash" value="{{- discussionHash }}">

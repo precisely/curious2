@@ -8,7 +8,7 @@ package us.wearecurio.exception
  */
 class AccessDeniedException extends Exception {
 
-	AccessDeniedException(String message = null) {
+	AccessDeniedException(String message = "") {
 		super(message)
 	}
 }

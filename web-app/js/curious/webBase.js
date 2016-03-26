@@ -161,7 +161,7 @@ $(window).load(function(){
  * @param promise jQuery promise like one returned by the jQuery.ajax() method
  * @author Shashank Agrawal
  */
-function showSpinner($element, promise) {
+function showSpinnerWithMask($element, promise) {
 	if (!$element || !promise) {
 		return;
 	}
@@ -189,13 +189,21 @@ function showSpinner($element, promise) {
  * doing any AJAX call like on a button click to disable that button and also show a spinner in the same button to
  * let the user know that some operation is being performed.
  *
- * @param $element Given element in the above description
+ * @param spinner {object} An object which can have two values
+ *                  selector: REQUIRED Given element in the above description
+ *                  withMask: OPTIONAL true to also display a white backdrop with spinner in the center.
+ *                            See the "showSpinnerWithMask" method.
  * @param promise jQuery promise like one returned by the jQuery.ajax() method
  * @author Shashank Agrawal
  */
-function insertSpinner($element, promise) {
-	if (!$element || !promise) {
+function showSpinner(spinner, promise) {
+	if (!spinner || !spinner.selector || !promise) {
 		return;
+	}
+
+	var $element = spinner.selector;
+	if (spinner.withMask) {
+		return showSpinnerWithMask($element, promise);
 	}
 
 	$element.addClass("disabled");

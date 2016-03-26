@@ -3,9 +3,15 @@ package us.wearecurio.controller
 import grails.converters.JSON
 import org.springframework.http.HttpStatus
 import us.wearecurio.annotations.EmailVerificationRequired
+import us.wearecurio.exception.AccessDeniedException
 import us.wearecurio.exception.CreationNotAllowedException
-import us.wearecurio.model.*
-import us.wearecurio.utility.*
+import us.wearecurio.exception.InstanceNotFoundException
+import us.wearecurio.exception.OperationNotAllowedException
+import us.wearecurio.model.Discussion
+import us.wearecurio.model.DiscussionPost
+import us.wearecurio.model.User
+import us.wearecurio.model.UserGroup
+import us.wearecurio.utility.Utils
 
 class DiscussionPostController extends LoginController{
 
@@ -76,27 +82,32 @@ class DiscussionPostController extends LoginController{
 	}
 
 	@EmailVerificationRequired
-	def delete(DiscussionPost post) {
-		debug "Attempting to delete post id " + params.id
-		Discussion discussion
+	def delete(Long id) {
 		User user = sessionUser()
-		if (!post) {
+		debug "$user attempting to delete post $params"
+
+		DiscussionPost post
+		try {
+			post = DiscussionPost.deleteComment(id, user, null)
+		} catch (InstanceNotFoundException e) {
 			renderJSONPost([success: false, message: g.message(code: "not.found.message", args: ["Post"])])
-		} else {
-			discussion = Discussion.get(post.discussionId)
-			if (post && (!user || (post.getUserId() != user.id && (!UserGroup.canAdminDiscussion(user, discussion))))) {
-				renderJSONPost([success: false, message: g.message(code: "default.permission.denied")])
-			} else {
-				discussion.setUpdated(new Date())
-				DiscussionPost.delete(post)
-				Utils.save(discussion, true)
-				Map nextFollowupPost = discussion.getFollowupPosts([offset: params.offset ?: 0, max: 1, order: 'desc'])[0]?.getJSONDesc()
-				boolean isAdmin = UserGroup.canAdminDiscussion(sessionUser(), discussion)
-				JSON.use("jsonDate") {
-					renderJSONPost([success: true, message: g.message(code: "default.deleted.message", args: ["Discussion", "comment"]), 
-							nextFollowupPost: nextFollowupPost, isAdmin: isAdmin, discussionHash: discussion.hash])
-				}
-			}
+			return
+		} catch (AccessDeniedException e) {
+			renderJSONPost([success: false, message: g.message(code: "default.permission.denied")])
+			return
+		} catch (OperationNotAllowedException e) {
+			renderJSONPost([success: false, message: g.message(code: "discussion.description.can.not.deleted")])
+			return
+		}
+
+		Discussion discussion = post.getDiscussion()
+
+		Map nextFollowupPost = discussion.getFollowupPosts([offset: params.offset ?: 0, max: 1, order: 'desc'])[0]?.getJSONDesc()
+		boolean isAdmin = UserGroup.canAdminDiscussion(sessionUser(), discussion)
+
+		JSON.use("jsonDate") {
+			renderJSONPost([success: true, message: g.message(code: "default.deleted.message", args: ["Discussion", "comment"]),
+					nextFollowupPost: nextFollowupPost, isAdmin: isAdmin, discussionHash: discussion.hash])
 		}
 	}
 
