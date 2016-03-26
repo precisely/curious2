@@ -230,8 +230,15 @@ function initializeListing() {
 	$(".nav a[href=" + window.location.hash + "]").tab("show");
 }
 
+function removeNewPostUI() {
+	$(".new-post").remove();
+}
+
 function processResults(data) {
 	var parentElement;
+
+	$("#feed").html("");      // Remove spinner
+	removeNewPostUI();
 
 	if (window.location.hash !== "#people" && (window.location.hash === "#discussions" || isSocialGSP)) {
 		/*
@@ -239,16 +246,9 @@ function processResults(data) {
 		 * social page and search results.
 		 */
 		var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.groupName});
-		$("#feed").html(createDiscussionForm);
-		if (window.location.hash === "#discussions") {
-			// Special handling for discussions tab.
-			$("#feed").append('<div class="discussions"></div>');
-			parentElement = ".discussions";
-		}
-	} else {
-		$("#feed").html("");      // Remove spinner
+		$("#feed").before(createDiscussionForm);
 	}
-	
+
 	if (!checkData(data)) {
 		return;
 	}
@@ -375,6 +375,7 @@ function displaySearchPage() {
 
 function displayDetail() {
 	$("#feed").removeClass("feed-items");
+	removeNewPostUI();
 	$(".nav").hide();
 	var hash = window.location.hash;
 
@@ -534,7 +535,8 @@ $(document).ready(function() {
 				if (!checkData(data))
 					return;
 				if (data.success) {
-					addAllFeedItems({listItems: [data.discussion]}, '.discussions', true);
+					var element = $(".discussions").length !== 0 ? ".discussions" : "#feed";
+					addAllFeedItems({listItems: [data.discussion]}, element, true);
 					var $discussionForm = $('#create-discussion')[0];
 					if ($discussionForm) {
 						$discussionForm.reset();

@@ -81,7 +81,7 @@
 					</div>
 					<span class="discussion-title"> {{- discussionTitle || '(No Title)' }}</span>
 					<small id="title-updated" class="text-red hide margin-left">
-						<i class="fa fa-check-square-o"> Title updated!</i>
+						<i class="fa fa-check-square-o"> Discussion updated.</i>
 					</small>
 
 					<div class="first-post-container">
@@ -119,7 +119,7 @@
 										<small>Disable Comments</small>
 
 										<small id="flash-message" class="text-red hide margin-left">
-											<i class="fa fa-check-square-o"> Preference saved!</i>
+											<i class="fa fa-check-square-o"> Preference saved.</i>
 										</small>
 									</span>
 								{{ } }}

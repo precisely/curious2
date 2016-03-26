@@ -646,21 +646,7 @@ class Discussion {
 	Map getJSONDesc() {
 		DiscussionPost firstPostInstance = getFirstPost()
 
-		Map args = [:]
-		if (firstPostInstance?.plotDataId) {
-			args.firstPostID = firstPostInstance.id
-		}
-
-		Closure criteria = getPostsCriteria(args)
-
-		// Merge the above posts criteria closure with another criteria closure to only get the total count of posts
-		criteria = criteria << {
-			projections {
-				count()
-			}
-		}
-
-		Long totalPostCount = DiscussionPost.createCriteria().get(criteria)
+		Long totalPostCount = getPostCount()
 
 		DatabaseService databaseService = DatabaseService.get()
 
