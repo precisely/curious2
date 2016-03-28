@@ -21,14 +21,19 @@ $(document).ready(function() {
 	});
 
 	/**
-	 * Submit the parent form whenever a user hits enter in any input field with class "enter-submit".
+	 * Submit the parent form whenever a user hits enter in any input field with class "enter-submit". Adding this
+	 * class will also prevent "Shift + Enter" to insert a new line and will submit the parent form. To allow "Shift
+	 * + Enter" to insert a new line, add class "allow-shift" also.
 	 */
 	$(document).on("keydown", ".enter-submit", function() {
-		if (event.keyCode == 10 || event.keyCode == 13) {
-			$(this).parents("form").submit();
+		var $this = $(this);
+		var doesntAllowShiftEnter = !$this.hasClass("allow-shift");
+
+		if ((event.keyCode == 13) && (doesntAllowShiftEnter || !event.shiftKey)) {
+			$this.parents("form").submit();
 			return false;
 		}
-	})
+	});
 });
 
 /**

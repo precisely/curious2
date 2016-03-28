@@ -33,7 +33,7 @@
 			</span>
 		{{ } }}
 		<div class="message">
-			{{- discussionPost.message }}
+			{{= _.escape(discussionPost.message).newLineToBr() }}
 		</div>
 	</div>
 </div>

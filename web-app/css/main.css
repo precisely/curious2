@@ -3456,6 +3456,14 @@ body {
 	margin-top: 0 !important;
 }
 
+a.comment-buttons {
+	color: #737373;
+	font-size: 16px;
+}
+
+a.comment-buttons:hover {
+	color: #000000;
+}
 .discussion-comment:hover .comment-buttons.cancel-edit-post,
 .discussion-comment.editing-comment .comment-buttons.edit-post,
 .discussion-comment.editing-comment .message{
@@ -3493,18 +3501,19 @@ body {
 	resize: none;
 	overflow-y: hidden;
 	width: 100%;
+	min-height: 19px;
 }
 
 .add-description-form textarea:focus {
 	border: 2px solid #e9e9e9;
 	border-bottom: 0;
-	padding: 5px 5px 20px;
+	padding: 5px 23px 5px 5px;
 }
 
 .add-description-form .edit-options {
 	position: absolute;
-	bottom: 2px;
-	right: 5px;
+	top: 6px;
+	right: 6px;
 }
 
 .comment-form .comment-fields {

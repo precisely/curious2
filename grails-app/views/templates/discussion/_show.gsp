@@ -87,25 +87,25 @@
 					<div class="first-post-container">
 						{{ if (firstPost && firstPost.message) { }}
 							<span class="first-post-message">{{= _.escape(firstPost.message).newLineToBr() }}</span>
-						{{ } else if (isAdmin) { }}
-							<form class="edit-comment-form add-description-form relative" action="#">
-								<input type="hidden" name="id" value="{{- firstPost.id}}" />
-
-								<textarea name="message" rows="1" class="auto-resize ctrl-enter"
-									placeholder="Add description..." autofocus
-									maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"></textarea>
-
-								<div class="edit-options hide text-right">
-									<button type="submit" class="btn-clear" title="Update description">
-										<i class="fa fa-check fa-fw"></i>
-									</button>
-									<a href="#" onclick="$('.edit-comment-form').find('textarea').val(''); return false;"
-										title="Clear description">
-										<i class="fa fa-times-circle fa-fw"></i>
-									</a>
-								</div>
-							</form>
+						{{ } else { }}
+							<span class="first-post-message"></span>
 						{{ } }}
+
+						<form action="#"
+							class="edit-comment-form add-description-form relative {{- (isAdmin && (!firstPost || !firstPost.message)) ? '' : 'hide'}}">
+							<input type="hidden" name="id" value="{{- firstPost.id}}" />
+
+							<textarea name="message" rows="1" class="auto-resize enter-submit allow-shift"
+								placeholder="Add description..." autofocus
+								maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"></textarea>
+
+							<div class="edit-options hide text-right">
+								<a href="#" title="Clear description"
+									onclick="$('.edit-comment-form').find('textarea').val('').trigger('change'); return false;">
+									<i class="fa fa-times-circle fa-fw"></i>
+								</a>
+							</div>
+						</form>
 					</div>
 					<hr>
 					<div class="buttons">
@@ -179,13 +179,10 @@
 
 							<div class="form-group">
 								<label>Message</label>
-								<textarea name="message" rows="1" class="comment-fields ctrl-enter"
-									maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"></textarea>
+								<g:render template="/templates/discussionPost/commentField" ></g:render>
 							</div>
 						{{ } else if (canWrite) { }}
-							<textarea name="message" rows="1" class="comment-fields comment-message auto-resize enter-submit"
-								maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}" required
-								placeholder="{{= isCommentAllowed ? 'Add a comment to this discussion...' : '&#xf05e;  Comments disabled'}}"></textarea>
+							<g:render template="/templates/discussionPost/commentField" ></g:render>
 						{{ } }}
 
 						<input type="hidden" name="discussionHash" value="{{- discussionHash }}">

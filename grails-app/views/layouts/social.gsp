@@ -130,7 +130,8 @@
 							</div>
 							<div class="form-group">
 								<p>Description</p>
-								<textarea name="message" rows="1" class="form-control no-hr-resize auto-resize ctrl-enter"
+								<textarea name="message" rows="1"
+									class="form-control no-hr-resize auto-resize enter-submit allow-shift"
 									id="new-description"></textarea>
 							</div>
 						</div>

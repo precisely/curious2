@@ -49,7 +49,7 @@ function showShareDialog(discussionHash) {
 /**
  * Used to get the DiscussionPost/comments data associated with a Discussion of given hash.
  * @param discussionHash
- * @param args Supported values: max, offset, sort, order 
+ * @param args Supported values: max, offset, sort, order
  * @param callback Callback to execute when response are rendered in the DOM.
  */
 function getComments(discussionHash, args, callback) {
@@ -59,7 +59,12 @@ function getComments(discussionHash, args, callback) {
 	var url = "/api/discussionPost?" + $.param(getCSRFPreventionObject("getCommentsCSRF", args)) + "&callback=?";
 
 	queueJSON("fetching more comments", url, function(data) {
-		if (!checkData(data) || !data.posts) {
+		if (!checkData(data)) {
+			return;
+		}
+
+		if (!data.posts) {      // If no more posts available
+			$('.view-comment', discussionElementID).remove();
 			return;
 		}
 
@@ -76,7 +81,7 @@ function getComments(discussionHash, args, callback) {
 
 /**
  * This method is used to render the new comments data to the DOM/UI using the Lodash template.
- * 
+ *
  * @param discussionHash Hash ID of the discussion to render comments for.
  * @param posts list of posts to render
  * @param data {discussionDetails: {isAdmin: true/false}, userId: 1234}}
@@ -209,15 +214,15 @@ $(document).ready(function() {
 	 * & cancel buttons/icons.
 	 */
 	$(document).on("focus", ".add-description-form textarea", function() {
-		$(this).parents("form").find(".edit-options").slideDown();
+		$(this).parents("form").find(".edit-options").show();
 	});
 
 	/**
 	 * When user removes the focus on the description input field of a discussion by clicking somewhere else.
 	 */
-	$(document).on("blur", ".edit-comment-form textarea", function() {
+	$(document).on("blur", ".add-description-form textarea", function() {
 		function hideEditOptions() {
-			$(".add-description-form").find(".edit-options").slideUp();
+			$(".add-description-form").find(".edit-options").hide();
 		}
 
 		/*
@@ -246,8 +251,7 @@ $(document).ready(function() {
 	 */
 	$(document).on("submit", ".new-comment-form", function() {
 		var $form = $(this);
-		// See base.js for implementation details of $.serializeObject()
-		var params = $form.serializeObject();
+		var params = getCommentFormData($form);
 
 		queuePostJSON('Adding Comment', '/api/discussionPost', getCSRFPreventionObject('addCommentCSRF', params),
 				function(data) {
@@ -279,8 +283,8 @@ $(document).ready(function() {
 	 */
 	$(document).on("submit", ".edit-comment-form", function() {
 		var $form = $(this);
-		// See base.js for implementation details of $.serializeObject()
-		var params = $form.serializeObject();
+		var params = getCommentFormData($form);
+
 		var $parentComment = $form.parents(".discussion-comment");
 		var isFirstPostUpdate = $parentComment.length === 0;
 		var args = {requestMethod: "PUT", spinner: {selector: (isFirstPostUpdate ? $form : $parentComment), withMask: true}};
@@ -296,10 +300,10 @@ $(document).ready(function() {
 					}
 
 					if (isFirstPostUpdate) {
-						$(".first-post-container").html("").html(params.message.newLineToBr());
+						setDescription(params.message);
 					} else {
 						hideInlinePostEdit($parentComment);
-						$parentComment.find(".message").html(params.message);
+						$parentComment.find(".message").html(params.message.newLineToBr());
 					}
 				}, function(xhr) {
 					console.log('Internal server error');
@@ -385,7 +389,7 @@ $(document).ready(function() {
 				if (checkData(data)) {
 					$("#edit-discussion-modal").modal("hide");
 					$(".discussion-title").text(newName);
-					$(".first-post-message").html(newDescription.newLineToBr());
+					setDescription(newDescription);
 					displayFlashMessage("#title-updated", 2500);
 				} else {
 					showAlert('Failed to set name');
@@ -424,8 +428,8 @@ function discussionShow(hash) {
 	$('#feed').infiniteScroll("stop");
 
 	queueJSON('Getting discussion', '/api/discussion/' + hash + '?' + getCSRFPreventionURI('getDiscussionList') + '&callback=?',
-			function(data) { 
-		if (data.success) { 
+			function(data) {
+		if (data.success) {
 			$('.container-fluid').removeClass('main');
 			var discussionDetails = data.discussionDetails;
 			discussionDetails.serverURL = serverURL;
@@ -453,7 +457,7 @@ function discussionShow(hash) {
 		} else {
 			$('.alert').text(data.message);
 		}
-		
+
 		setQueryHeader('Curious Discussions', true);
 	});
 }
@@ -469,4 +473,37 @@ function hideInlinePostEdit($comment) {
 
 	$comment.removeClass("editing-comment");    // Remove the class to revert the UI
 	$comment.find(".comment-form").remove();    // Remove the added inline form
+}
+
+/**
+ * Get the input values of the given comment form as the object by trimming any white spaces from the comment message.
+ * @param $form The given comment form.
+ */
+function getCommentFormData($form) {
+	// See base.js for implementation details of $.serializeObject()
+	var params = $form.serializeObject();
+	if (params.message) {
+		params.message = params.message.trim();
+	}
+
+	return params;
+}
+
+/**
+ * Update the description message of the current discussion. This also displays the inline form to add description
+ * if the given message is empty else hides that form.
+ * @param message The description message of the discussion.
+ */
+function setDescription(message) {
+	message = message || "";
+	$(".first-post-message").html(message.newLineToBr());
+
+	if (message) {
+		$(".first-post-message").show();
+		$(".add-description-form").hide();
+	} else {
+		$(".first-post-message").hide();
+		$(".add-description-form").show();
+	}
+	$(".add-description-form textarea").val("");
 }

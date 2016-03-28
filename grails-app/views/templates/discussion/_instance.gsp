@@ -79,9 +79,7 @@
 
 		<div class="add-comment">
 			<form class="comment-form new-comment-form {{- isCommentAllowed ? '' : 'comment-disabled' }}">
-				<textarea name="message" rows="1" class="comment-fields comment-message auto-resize enter-submit"
-					maxlength="${us.wearecurio.model.DiscussionPost.MAXMESSAGELEN}"
-					placeholder="{{= isCommentAllowed ? 'Add a comment to this discussion...' : '&#xf05e;  Comments disabled'}}"></textarea>
+				<g:render template="/templates/discussionPost/commentField" ></g:render>
 
 				<input type="hidden" name="discussionHash" value="{{- discussionData.hash }}">
 			</form>
