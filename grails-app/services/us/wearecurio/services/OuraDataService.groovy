@@ -82,6 +82,8 @@ class OuraDataService extends DataService {
 			InvalidAccessTokenException {
 		log.debug "Get sleep data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
+		endDate = endDate ?: new Date()
+		
 		if (refreshAll) {
 			// Unsetting all historical data. Starting with the device set name prefix
 			unsetAllOldEntries(account.userId, SET_NAME)
@@ -140,6 +142,8 @@ class OuraDataService extends DataService {
 			InvalidAccessTokenException {
 		log.debug "Get exercise data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
+		endDate = endDate ?: new Date()
+		
 		if (refreshAll) {
 			// Unsetting all historical data. Starting with the device set name prefix
 			unsetAllOldEntries(account.userId, SET_NAME)
@@ -245,6 +249,9 @@ class OuraDataService extends DataService {
 	void getDataActivity(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
 			InvalidAccessTokenException {
 		log.debug "Get activity data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
+		
+		endDate = endDate ?: new Date()
+		
 		if (refreshAll) {
 			// Unsetting all historical data. Starting with the device set name prefix
 			unsetAllOldEntries(account.userId, SET_NAME)
@@ -335,7 +342,8 @@ class OuraDataService extends DataService {
 	 */
 	List<String> getOldSetNames(String type, Date startDate, Date endDate) {
 		List setNames = []
-		(startDate..endDate).each { Date date ->
+		
+		for (Date date = startDate; date <= endDate; date = date + 1) {
 			setNames << getOldSetName(type, date)
 		}
 		return setNames
