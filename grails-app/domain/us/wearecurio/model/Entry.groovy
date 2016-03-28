@@ -2166,7 +2166,7 @@ class Entry implements Comparable {
 			def userId = entry.getUserId();
 			if (userId != user.getId()) {
 				User entryOwner = User.get(userId)
-				if (entryOwner.virtual && Sprint.findByVirtualUserId(userId)?.hasAdmin(user.getId())) {
+				if (entryOwner?.virtual && Sprint.findByVirtualUserId(userId)?.hasAdmin(user.getId())) {
 					result = [canDelete: true]
 				} else {
 					result = [canDelete: false, messageCode: "delete.entry.permission.denied"]
