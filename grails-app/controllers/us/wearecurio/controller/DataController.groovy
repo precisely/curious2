@@ -21,6 +21,7 @@ import us.wearecurio.model.SurveyQuestion
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagProperties
 import us.wearecurio.model.TagStats
+import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
@@ -387,7 +388,7 @@ class DataController extends LoginController {
 	}
 
 
-	def getListData() {
+	def getListData(Boolean respondAsMap) {
 		debug "DataController.getListData() userId:" + params.userId + " date: " + params.date + " timeZoneName:" + params.timeZoneName
 
 		def user = userFromIdStr(params.userId)
@@ -422,6 +423,10 @@ class DataController extends LoginController {
 		debug "DataController.getListData() Returning entries "+entries.dump()
 		// skip continuous repeat entries with entries within the usage threshold
 
+		if (respondAsMap) {
+			renderJSONGet([entries: entries, deviceSettings: user.settings.getDeviceSettings()])
+			return
+		}
 		renderJSONGet(entries)
 	}
 	
@@ -1332,7 +1337,7 @@ class DataController extends LoginController {
 		if (params.searchString) {
 			params.max = params.max ? Math.min(params.int('max'), 50) : 4
 			List searchResults = User.withCriteria {
-				projections{
+				projections {
 					property("username")
 					property("name")
 					property("id")
@@ -1360,23 +1365,11 @@ class DataController extends LoginController {
 				}
 			}
 
-			renderJSONGet([success: true, usernameList: searchResults.collect { it.getAt(0) },
-					userIdList: searchResults.collect { it.getAt(2) }, displayNames: displayNames])
+			renderJSONGet([success   : true, usernameList: searchResults.collect { it.getAt(0) },
+						   userIdList: searchResults.collect { it.getAt(2) }, displayNames: displayNames])
 		} else {
 			renderJSONGet([success: false])
 		}
-	}
-
-	def deleteDiscussionData() {
-		Discussion discussion = Discussion.get(params.discussionHash)
-		if (discussion == null) {
-			debug "DiscussionId not found: " + params.discussionHash
-			renderJSONGet([success: false, message: "That discussion topic no longer exists."])
-			return
-		}
-		Map result = Discussion.delete(discussion, sessionUser())
-		renderJSONGet(result)
-		return
 	}
 
 	def saveSurveyData() {
@@ -1422,5 +1415,32 @@ class DataController extends LoginController {
 		}
 
 		renderJSONGet([success: true, participants: sprint.getParticipants(max, offset)])
+	}
+
+	def saveDeviceEntriesStateData(Boolean isCollapsed, String device) {
+		User user = sessionUser()
+		log.debug "Save collapse/expand state of device entries for $user with $params"
+
+		if (!user) {
+			log.warn "No logged in user found"
+			return
+		}
+
+		ThirdParty thirdPartyDevice
+
+		try {
+			thirdPartyDevice = ThirdParty.lookup(device)
+		} catch (IllegalArgumentException e) {
+			renderJSONPost([success: false, message: e.message])
+		}
+
+		if (isCollapsed) {
+			user.settings.collapseDeviceEntries(thirdPartyDevice)
+		} else {
+			user.settings.expandDeviceEntries(thirdPartyDevice)
+		}
+
+		Utils.save(user, true)
+		renderJSONPost([success: true])
 	}
 }

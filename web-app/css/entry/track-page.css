@@ -1,0 +1,21 @@
+#entry0 .entry.device-summary-entry {
+    padding-left: 36px;
+}
+
+#entry0 .entry.device-tag-entry {
+    padding-left: 65px;
+    border-left: none;
+}
+
+.device-entry .toggle-icon, .device-summary-entry .toggle-icon {
+    margin-right: 2px;
+}
+
+.entry.device-entry, .entry.device-summary-entry {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.entry.device-summary-entry .content-wrapper {
+    font-weight: bold;
+}

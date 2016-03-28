@@ -1,14 +1,15 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<meta name="layout" content="menu" />
-<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
-<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
+	<meta name="layout" content="menu" />
+	<link type="text/css" href="/css/entry/track-page.css" rel="stylesheet">
+	<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
+	<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
 		deleteTagGroupDataCSRF, addTagToTagGroupDataCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, 
 		updateEntrySDataCSRF,removeTagFromTagGroupCSRF, removeTagFromTagGroupDataCSRF, addTagGroupToTagGroupCSRF, 
-		removeTagGroupFromTagGroupCSRF, pingDataCSRF,showTagGroupDataCSRF, 
+		removeTagGroupFromTagGroupCSRF, pingDataCSRF,showTagGroupDataCSRF, saveDeviceEntriesStateDataCSRF,
 		createTagGroupDataCSRF, excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getInterestTagsDataCSRF, 
 		addInterestTagDataCSRF, deleteInterestTagDataCSRF, updateInterestTagDataCSRF" />
 </head>
@@ -68,7 +69,7 @@
 
 	<!-- /MAIN -->
 	<script type="text/javascript" src="/js/curious/entrylist.js?ver=27"></script>
-	<script type="text/javascript" src="/js/curious/entry/test.data.js?ver=27"></script>
+	<script type="text/javascript" src="/js/curious/state.view.js?ver=27"></script>
 	<script type="text/javascript" src="/js/curious/entry/entry.data.js?ver=27"></script>
 	<script type="text/javascript" src="/js/curious/entry/entry.device.data.js?ver=27"></script>
 	<script type="text/javascript" src="/js/curious/entry/entry.device.data.summary.js?ver=27"></script>

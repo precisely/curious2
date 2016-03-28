@@ -71,15 +71,23 @@ function EntryListWidget(divIds, autocompleteWidget) {
 
 	this.refresh = function() {
 		this.cacheNow();
+		var params = {
+			date: this.cachedDateUTC,
+			currentTime: this.currentTimeUTC,
+			userId: currentUserId,
+			timeZoneName: this.timeZoneName,
+			// TODO Fix this later
+			respondAsMap: true
+		};
 
-		// TODO Remove this later. This is to save time by hardcoding the server response
-		self.refreshEntries(testEntries);
-		return;
-		queueJSON("getting entries", "/home/getListData?date="+ this.cachedDateUTC + "&currentTime=" + this.currentTimeUTC + "&userId=" + currentUserId + "&timeZoneName=" + this.timeZoneName + "&callback=?",
-				getCSRFPreventionObject("getListDataCSRF"),
-				function(entries) {
-			if (checkData(entries))
-				self.refreshEntries(entries);
+		queueJSON("getting entries", "/home/getListData?callback=?", getCSRFPreventionObject("getListDataCSRF", params),
+				function(data) {
+			if (!checkData(data)) {
+				return;
+			}
+
+			self.deviceSettings = data.deviceSettings;
+			self.refreshEntries(data.entries);
 		});
 	}
 
@@ -125,17 +133,18 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		var datePrecisionSecs = entry.datePrecisionSecs;
 		var description = entry.description;
 		var comment = entry.comment;
-		var classes = "entry " + ((entry.repeatType)?'' : 'no-tag') + " ";
+		var classes = ["entry"];
 		var $entryToReplace, $appendAfterEntry;
 
-		args = args || {};
-		if (args) {
-			if (args.replaceEntry) {
-				$entryToReplace = $(args.replaceEntry);
-			}
-			if (args.appendAfterEntry) {
-				$appendAfterEntry = $(args.appendAfterEntry);
-			}
+		if (args.replaceEntry) {
+			$entryToReplace = $(args.replaceEntry);
+		}
+		if (args.appendAfterEntry) {
+			$appendAfterEntry = $(args.appendAfterEntry);
+		}
+		if (args.classes) {
+			// Push all the classes
+			classes.push.apply(classes, args.classes);
 		}
 
 		var isGhost = false, isConcreteGhost = false, isAnyGhost = false, isContinuous = false, isTimed = false, isRepeat = false, isRemind = false, isPlain = true;
@@ -145,39 +154,45 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				isPlain = false;
 				isGhost = true;
 				isAnyGhost = true;
-				classes += " ghost anyghost";
+				classes.push("ghost", "anyghost");
 			}
 			if (RepeatType.isConcreteGhost(repeatType)) {
 				isConcreteGhost = true;
 				isPlain = false;
 				isAnyGhost = true;
-				classes += " concreteghost anyghost";
+				classes.push("concreteghost", "anyghost");
 			}
 			if (RepeatType.isContinuous(repeatType)) {
 				isContinuous = true;
 				isPlain = false;
-				classes += " continuous"
+				classes.push("continuous");
 			}
 			if (RepeatType.isRemind(repeatType)) {
 				isRemind = true;
 				isPlain = false;
-				classes += " remind"
+				classes.push("remind");
 			}
 			if (RepeatType.isRepeat(repeatType) || RepeatType.isDaily(repeatType) || RepeatType.isWeekly(repeatType) || 
 					RepeatType.isMonthly(repeatType)) {
 				isRepeat = true;
 				isPlain = false;
-				classes += " repeat"
+				classes.push("repeat");
 			}
+		} else {
+			classes.push("no-tag");
 		}
+
 		if (isPlain) {
-			classes += " plain"
+			classes.push("plain");
 		}
 		if (isDeviceSummaryEntry) {
-			classes += " device-summary-entry " + entry.sourceName.sanitizeTitle();
+			classes.push("device-summary-entry", entry.sourceName.sanitizeTitle());
 		}
 		if (isDeviceTagEntry) {
-			classes += " device-tag-entry hide " + args.deviceDataSummaryInstance.getAssociatedEntriesClass();
+			classes.push("device-tag-entry");
+			if (!args.singleDeviceTagEntry) {
+				classes.push("hide", args.deviceDataSummaryInstance.getAssociatedEntriesClass());
+			}
 		}
 
 		if (isContinuous) {
@@ -198,8 +213,8 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				'<b class="caret"></b></a><ul class="dropdown-menu" role="menu"><li>' + 
 				'<a href="#" id="#entrydelid' + this.editId + id + '" onclick="entryListWidget.deleteEntryId(' + id + ');return false;">' +
 				'<img src="/images/pin-x.png" width="auto" height="23">Delete</a></li></ul></li></div>';
+
 			$("#pinned-tag-list").append(pinnedTagButtonHTMLContent);
-			
 			return;
 		}
 		
@@ -291,7 +306,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			entryEditItem = $("#" + elementId);
 			entryEditItem.html(innerHTMLContent);
 		} else {
-			var newEntryContent = '<li id="' + elementId + '" class="' + classes + '">' + innerHTMLContent + '</li>';
+			var newEntryContent = '<li id="' + elementId + '" class="' + classes.join(" ") + '">' + innerHTMLContent + '</li>';
 			if ($entryToReplace) {
 				$entryToReplace.replaceWith(newEntryContent);
 			} else if ($appendAfterEntry) {
@@ -318,10 +333,10 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	};
 
 	this.displayDeviceNameEntry = function(deviceEntry) {
-		var entryDeviceDataInstance = new EntryDeviceData(deviceEntry);
+		var entryDeviceDataInstance = new EntryDeviceData(deviceEntry, this.deviceSettings);
 		var groupedData = entryDeviceDataInstance.group();
 
-		var id = deviceEntry[0].sourceName.sanitizeTitle();
+		var id = entryDeviceDataInstance.getSanitizedSourceName();
 		var html = '<li class="entry no-tag device-entry plain" id="' + id + '"><div class="no-tag">' +
 				entryDeviceDataInstance.getDisplayText() + '</div></li>';
 
@@ -329,15 +344,32 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		$("#" + id).data({instance: entryDeviceDataInstance});
 
 		jQuery.each(groupedData, function(index, groupedEntry) {
-			this.displayDeviceSummaryEntry(groupedEntry);
+			this.displayDeviceSummaryEntry(groupedEntry, entryDeviceDataInstance);
 		}.bind(this));
 	};
 
-	this.displayDeviceSummaryEntry = function(groupedEntry) {
-		var deviceDataSummaryEntry = new EntryDeviceDataSummary(groupedEntry);
-		this.displayEntry(deviceDataSummaryEntry);
-		groupedEntry.forEach(function(entry) {
-			this.displayEntry(entry, false, {deviceTagEntry: true, deviceDataSummaryInstance: deviceDataSummaryEntry});
+	this.displayDeviceSummaryEntry = function(groupedEntries, entryDeviceDataInstance) {
+		var classes = [];
+		if (entryDeviceDataInstance.isCollapsed()) {
+			classes.push("hide");
+		}
+
+		// If there is only single entry for a base tag. For example: single entry for "walk"
+		if (groupedEntries.length === 1) {
+			// Then do not display that as expandable entry instead show it as simple entry (but indented)
+			classes.push(entryDeviceDataInstance.getSanitizedSourceName());
+
+			this.displayEntry(groupedEntries[0], false, {deviceTagEntry: true, singleDeviceTagEntry: true, classes:
+					classes});
+			return;
+		}
+
+		var deviceDataSummaryEntry = new EntryDeviceDataSummary(groupedEntries);
+		this.displayEntry(deviceDataSummaryEntry, false, {classes: classes});
+
+		groupedEntries.forEach(function(entry) {
+			this.displayEntry(entry, false, {deviceTagEntry: true, deviceDataSummaryInstance: deviceDataSummaryEntry,
+				classes: classes});
 		}.bind(this));
 	};
 
@@ -392,7 +424,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	 */
 	this.toggleDeviceEntry = function($target) {
 		var entryDeviceDataInstance = $target.data("instance");        // Instance of EntryDeviceData
-		var elementsToToggle = $(".device-summary-entry." + $target.attr("id"));
+		var elementsToToggle = $("." + $target.attr("id"));
 
 		if (entryDeviceDataInstance.isCollapsed()) {
 			entryDeviceDataInstance.expand();
@@ -400,8 +432,17 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		} else {
 			entryDeviceDataInstance.collapse();
 			elementsToToggle.slideUp();
+
 			jQuery.each(elementsToToggle, function(index, element) {
-				this.toggleDeviceSummaryEntry($(element), true);
+				var $element = $(element);
+				if (!$element.data("instance")) {
+					/*
+					 * It might not be summary entry since we do not create a summary entry if there is only entry
+					 * for a base tag.
+					 */
+					return;
+				}
+				this.toggleDeviceSummaryEntry($element, true);
 			}.bind(this));
 		}
 
@@ -417,7 +458,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	 */
 	this.toggleDeviceSummaryEntry = function($target, forceCollapse) {
 		var entryDeviceSummaryInstance = $target.data("instance");        // Instance of EntryDeviceDataSummary
-		var elementsToToggle = $(".device-tag-entry." + $target.attr("id"));
+		var elementsToToggle = $("." + $target.attr("id"));
 
 		if (!forceCollapse && entryDeviceSummaryInstance.isCollapsed()) {
 			entryDeviceSummaryInstance.expand();

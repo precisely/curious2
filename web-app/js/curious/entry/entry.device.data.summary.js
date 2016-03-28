@@ -7,6 +7,8 @@
  */
 function EntryDeviceDataSummary(deviceTagEntries) {
 
+    StateView.call(this);
+
     var aggregatedUnitAmounts;
     var groupedData = {};
     var collapsed = true;
@@ -27,7 +29,7 @@ function EntryDeviceDataSummary(deviceTagEntries) {
     };
 
     this.getAssociatedEntriesClass = function() {
-        return this.getDeviceName().sanitizeTitle() + "-" + this.getBaseTag();
+        return this.getDeviceName().sanitizeTitle() + "-" + this.getBaseTag().sanitizeTitle();
     };
 
     this.getTriangle = function () {
@@ -85,6 +87,12 @@ function EntryDeviceDataSummary(deviceTagEntries) {
             if (!shouldSum) {
                 calculatedAmount.amount = calculatedAmount.amount / groupedUnitData.length;
             }
+
+            // If there is decimal value
+            if ((calculatedAmount.amount % 1) !== 0) {
+                // Then only round to 2 decimal
+                calculatedAmount.amount = calculatedAmount.amount.toFixed(2);
+            }
             aggregateIndex++;
         }
     };
@@ -101,3 +109,5 @@ function EntryDeviceDataSummary(deviceTagEntries) {
         return collapsed;
     }
 }
+
+inherit(EntryDeviceDataSummary, StateView);

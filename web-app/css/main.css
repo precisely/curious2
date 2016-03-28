@@ -1083,7 +1083,7 @@ body.tags-displayed .floating-column {
 	background: url(/images/track-list-bg.png);
 }
 
-#entry0 li {
+#entry0 li.entry {
 	position: relative;
 	margin-bottom: 1px;
 	padding: 10px;
