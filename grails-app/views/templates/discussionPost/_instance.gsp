@@ -30,7 +30,7 @@
 			</span>
 		{{ } }}
 		<div class="message">
-			{{= _.escape(discussionPost.message).newLineToBr() }}
+			{{= _.linkify(_.escape(discussionPost.message).newLineToBr()) }}
 		</div>
 	</div>
 </div>

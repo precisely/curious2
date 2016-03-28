@@ -24,7 +24,6 @@ function showPreviousParticipants() {
 
 function showMoreParticipants(sprintInstance, infiniteScroll) {
 	var participantsCount = sprintInstance.totalParticipants;
-	console.log("participantsCount", participantsCount, "offsete: ", offset);
 	if ((participantsCount - offset) > 0) {
 		queueJSON("Getting more participants", "/data/getSprintParticipantsData?id=" + sprintInstance.hash
 				+ "&offset=" + offset + "&max=10&"
@@ -97,14 +96,13 @@ function sprintShow(hash) {
 				}
 				sprintInstance.entries = entries;
 				sprintInstance.participants = data.participants;
-				sprintInstance.description = Autolinker.link(_.escape(sprintInstance.description), {className: 'click-link'});
+				sprintInstance.description = _.linkify(sprintInstance.description);
 				sprintInstance.lines = sprintInstance.description ? sprintInstance.description.split("\n") : [];
 				var compiledHTML = compileTemplate("_showSprints", sprintInstance);
 				$('#feed').html(compiledHTML);
 
 				showDiscussionData(data.discussions, sprintInstance.hash);
 				offset = 10;
-				console.log("offste outside  : ", offset);
 				$('#participants-list ul>li>ul').infiniteScroll({
 					bufferPx: 15,
 					scrollHorizontally: true,
@@ -165,7 +163,6 @@ function stopSprint(sprintHash) {
 			$('#join-sprint').hide();
 			$('#stop-sprint').hide();
 			$('#start-sprint').show();
-			//sprintShow(sprintHash);
 		} else {
 			showAlert(data.message);
 		}

@@ -137,6 +137,6 @@
 	</script>
 	<g:render template="/templates/track/entryDetailsPopover" />
 	<g:render template="/templates/track/entryDetailsPopoverContent"/>
-	<div class="entry-details-popover-temp-container test"></div>
+	<div class="entry-details-popover-temp-container"></div>
 </body>
 </html>
