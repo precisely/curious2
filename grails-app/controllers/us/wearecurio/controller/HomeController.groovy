@@ -3,11 +3,13 @@ package us.wearecurio.controller
 import grails.gsp.PageRenderer
 import org.codehaus.groovy.grails.web.json.JSONObject
 import us.wearecurio.model.Discussion
+import us.wearecurio.model.InitialLoginConfiguration
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.DataService
 import us.wearecurio.services.FitBitDataService
+import us.wearecurio.services.UserRegistrationService
 import us.wearecurio.services.JawboneService
 import us.wearecurio.services.MovesDataService
 import us.wearecurio.services.OuraDataService
@@ -26,6 +28,8 @@ class HomeController extends DataController {
 
 	static allowedMethods = [notifyJawbone: "POST", notifyfitbit: "POST"]
 
+	UserRegistrationService userRegistrationService
+	
 	TwitterDataService twitterDataService
 	WithingsDataService withingsDataService
 	FitBitDataService fitBitDataService
@@ -519,9 +523,11 @@ class HomeController extends DataController {
 	}
 
 	def index() {
-		debug "HomeController.index()"
+		debug "HomeController.index() called with params: $params"
 		def user = sessionUser()
-		[prefs:user.getPreferences(), showTime:params.showTime?:0, templateVer:urlService.template(request)]
+		[	prefs:user.getPreferences(), 
+			showTime:params.showTime?:0, templateVer:urlService.template(request),
+			initialConfig:userRegistrationService.register(user, params?.promoCode).initialLoginConfig]
 	}
 
 	def load() {

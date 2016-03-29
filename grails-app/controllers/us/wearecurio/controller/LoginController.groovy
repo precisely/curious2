@@ -1,7 +1,7 @@
 package us.wearecurio.controller
 import grails.converters.JSON
 import org.springframework.http.HttpStatus
-import us.wearecurio.model.InitialLoginConfiguration
+//import us.wearecurio.model.InitialLoginConfiguration
 import us.wearecurio.model.PasswordRecovery
 import us.wearecurio.model.PushNotificationDevice
 import us.wearecurio.model.Tag
@@ -472,28 +472,30 @@ class LoginController extends SessionController {
 				user.addMetaTag(p.metaTagName3, p.metaTagValue3)
 			}
 			
-			String promo = p.promo_code?.trim()?.toLowerCase()
-			InitialLoginConfiguration promoLogin
-			if( promo != null && promo != "") {
-				promoLogin = InitialLoginConfiguration.findByPromoCode(promo)
-				if (promoLogin == null) {
-					flash.message = "'$promo' is an invalid promo code"
-				} else {
-					flash.message = "registered with promo code:'$promo'"
-				}
-			} else {
-				flash.message = "registered without promo code"
-			}
-			if (promoLogin == null) {
-				promoLogin = InitialLoginConfiguration.defaultConfiguration()
-			}
-			promoLogin.interestTags?.each{user.addInterestTag(Tag.create(it))}
-			promoLogin.bookmarks?.each{Entry.createBookmark(user.id,it)}
-			params.initialConfig = promoLogin
+//			String promo = p.promo_code?.trim()?.toLowerCase()
+//			InitialLoginConfiguration promoLogin
+//			if( promo != null && promo != "") {
+//				promoLogin = InitialLoginConfiguration.findByPromoCode(promo)
+//				if (promoLogin == null) {
+//					flash.message = "'$promo' is an invalid promo code"
+//				} else {
+//					flash.message = "registered with promo code:'$promo'"
+//				}
+//			} else {
+//				flash.message = "registered without promo code"
+//			}
+//			if (promoLogin == null) {
+//				promoLogin = InitialLoginConfiguration.defaultConfiguration()
+//			}
+//			promoLogin.interestTags?.each{user.addInterestTag(Tag.create(it))}
+//			promoLogin.bookmarks?.each{Entry.createBookmark(user.id,it)}
+//			params.initialConfig = promoLogin
+			params.promoCode = p.promo_code?.trim()?.toLowerCase()
 			
 			setLoginUser(user)
 			execVerifyUser(user)
 			retVal['success'] = true
+			//retVal['initialConfig'] = promoLogin
 			//params.precontroller = "home"
 			//params.preaction = "sprint"
 			return retVal
@@ -509,9 +511,10 @@ class LoginController extends SessionController {
 			return
 		}
 		def retVal = execRegister(params)
+		debug "params: $params"
 		if (retVal['success']) {
 			session.showHelp = true
-			redirect(url:toUrl(controller: params.precontroller ?: 'home', action: params.preaction ?: 'index'), params: [initialConfig: params.initialConfig])
+			redirect(url:toUrl(controller: params.precontroller ?: 'home', action: params.preaction ?: 'index', params: params))
 		} else if (retVal['errorCode'] == REGISTER_ERROR_USER_ALREADY_EXISTS) {
 			flash.message = "User " + params.username + " already exists"
 			redirect(url:toUrl(action:"register",

@@ -28,11 +28,10 @@ class UserRegistrationService {
 			return id
 		}
 	}
-	
-	
+		
 	static transactional = false
 	
-    Map getInitialLoginConfiguration(User user, String promoCode=null) {
+    Map register(User user, String promoCode=null) {
 		String promo = promoCode?.trim()?.toLowerCase()
 		PromoCodeLookupResult lookupResult
 		InitialLoginConfiguration loginConfig
@@ -40,15 +39,13 @@ class UserRegistrationService {
 			loginConfig = InitialLoginConfiguration.findByPromoCode(promo)
 			if (loginConfig == null) {
 				lookupResult = PromoCodeLookupResult.INVALID
-				//message = messageSource.getMessage("promo.code.invalid",["$promo"],null)
 			} else {
 				lookupResult = PromoCodeLookupResult.FOUND
-				//message = messageSource.getMessage("promo.code.found",["$promo"],null)
 			}
 		} else {
-			lookupResult = PromoCodeLookupResult.UNSPECIFIED			
-			//message = messageSource.getMessage("promo.code.missing",null,null)
+			lookupResult = PromoCodeLookupResult.UNSPECIFIED
 		}
+		
 		if (loginConfig == null) {
 			loginConfig = InitialLoginConfiguration.defaultConfiguration()
 		}

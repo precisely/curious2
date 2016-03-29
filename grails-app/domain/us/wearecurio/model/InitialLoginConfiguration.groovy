@@ -14,6 +14,7 @@ class InitialLoginConfiguration {
 	String trackExample1
 	String trackExample2
 	String trackExample3
+	String trackExample4
 	String deviceExample
 	String sampleQuestionDuration
 	String sampleQuestionDurationExampleAnswers
@@ -38,17 +39,18 @@ class InitialLoginConfiguration {
 	private setDefaults() {
 		customQuestion1 = "Does caffeine affect my sleep?"
 		customQuestion2 = "Does exercise really affect my mood?"
-		trackExample1 = "your mood"
-		trackExample2 = "how much sleep you get"
-		trackExample3 = "the coffee you drink"
+		trackExample1 = "your <strong><i>mood</i></strong>"
+		trackExample2 = "how much <strong><i>sleep</i></strong> you get"
+		trackExample3 = "the <strong><i>coffee</i></strong> you drink"
+		trackExample4 = "the <strong><i>steps</i></strong> you take"
 		deviceExample = "the Oura ring (via your user profile)"
 		sampleQuestionDuration = "How many hours did you sleep last night?"
 		sampleQuestionDurationExampleAnswers = "e.g. 8 hours 10 minutes or 8hrs 10 mins"
 		sampleQuestionRating = "How's your mood right now?"
 		sampleQuestionRatingRange = "a number from 1 to 10"
 		sampleQuestionRatingExampleAnswer1 = "1 would mean 'Not the best day'"
-		sampleQuestionRatingExampleAnswer2 = "2>5 would mean 'Just so-so'"
-		sampleQuestionRatingExampleAnswer3 = "3>10 would mean 'Super stoked'"
+		sampleQuestionRatingExampleAnswer2 = "5 would mean 'Just so-so'"
+		sampleQuestionRatingExampleAnswer3 = "10 would mean 'Super stoked'"
 		today1 = "DRINK"
 		today1Example = "e.g. coffee 1 cup 8am"
 		today2 = "EXERCISE"
@@ -68,6 +70,7 @@ class InitialLoginConfiguration {
 		to.trackExample1 = from.trackExample1
 		to.trackExample2 = from.trackExample2
 		to.trackExample3 = from.trackExample3
+		to.trackExample4 = from.trackExample4
 		to.deviceExample = from.deviceExample
 		to.sampleQuestionDuration = from.sampleQuestionDuration
 		to.sampleQuestionDurationExampleAnswers = from.sampleQuestionDurationExampleAnswers
@@ -136,6 +139,7 @@ class InitialLoginConfiguration {
 		trackExample1(maxSize:64, unique:false, blank:false, nullable:false)
 		trackExample2(maxSize:64, unique:false, blank:false, nullable:false)
 		trackExample3(maxSize:64, unique:false, blank:false, nullable:false)
+		trackExample4(maxSize:64, unique:false, blank:false, nullable:false)
 		deviceExample(maxSize:64, unique:false, blank:false, nullable:false)
 		sampleQuestionDuration(maxSize:64, unique:false, blank:false, nullable:false)
 		sampleQuestionDurationExampleAnswers(maxSize:64, unique:false, blank:false, nullable:false)
