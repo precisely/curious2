@@ -46,11 +46,11 @@ class DiscussionPostController extends LoginController{
 
 	@EmailVerificationRequired
 	def save() {
-		debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + params.plotIdMessage + 
+		debug "Attempting to add comment '" + params.message +
 				"for discussion with hash: ${params.discussionHash}"
 
 		Discussion discussion = Discussion.findByHash(params.discussionHash)
-		if (!discussion){
+		if (!discussion) {
 			renderJSONPost([success: false, message: g.message(code: "not.found.message", args: ["Discussion"])])
 			return
 		}
@@ -58,14 +58,11 @@ class DiscussionPostController extends LoginController{
 		User user = sessionUser()
 		def comment
 		try {
-			comment = DiscussionPost.createComment(params.message, user, discussion, params.plotIdMessage, params)
+			comment = DiscussionPost.createComment(params.message, user, discussion, params)
 		} catch (CreationNotAllowedException e) {
 			respond([message: g.message(code: "discussion.comment.disabled")], HttpStatus.NOT_ACCEPTABLE)
 			return
-		}
-
-		// If user does not have permission to add comment response will be 'false'
-		if (comment instanceof String) {
+		} catch (AccessDeniedException e) {
 			renderJSONPost([success: false, message: g.message(code: "default.permission.denied")])
 			return
 		}

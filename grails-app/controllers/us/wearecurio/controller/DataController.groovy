@@ -1076,7 +1076,7 @@ class DataController extends LoginController {
 			if (group) {
 				group.addDiscussion(discussion)
 			}
-			DiscussionPost.createComment(null, user, discussion, plotDataObj.id, null)
+			DiscussionPost.createFirstPost(null, user, discussion, plotDataObj.id)
 		}
 		renderJSONPost([success: true, discussionHash: discussion.hash])
 	}

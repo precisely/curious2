@@ -149,6 +149,8 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test save for ajax request"() {
 		assert discussion
+		DiscussionPost.createFirstPost("", user, discussion, null)
+		assert DiscussionPost.count() == 1
 
 		controller.session.userId = user2.id
 		controller.params.discussionHash = discussion.hash
@@ -159,7 +161,51 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 		controller.save()
 
 		assert controller.response.json.success
-		assert DiscussionPost.count() == 1
+		assert DiscussionPost.count() == 2
+		DiscussionPost comment = DiscussionPost.last()
+		comment.isFirstPost() == false
+		comment.message == "test message"
+		comment.userId == user2.id
+	}
+
+	@Test
+	void "test comment where there is no first post of a discussion"() {
+		assert discussion
+		// User2 created the discussion
+		assert discussion.userId == user2.id
+
+		assert Discussion.count() == 1
+		assert DiscussionPost.count() == 0
+
+		testGroup.addWriter(user)
+
+		// But user 1 is adding a comment
+		controller.session.userId = user.id
+		controller.params.discussionHash = discussion.hash
+		controller.params.message = "test message"
+		controller.request.method = "POST"
+
+		controller.save()
+
+		assert controller.response.json.success
+		// The comment should be created and also the first post should also be created
+		assert DiscussionPost.count() == 2
+		assert discussion.firstPostId != null
+		DiscussionPost firstPost = discussion.getFirstPost()
+		assert firstPost.message == ""
+		// Important: The empty first being created should have user id of original author not the one who is commenting
+		assert firstPost.userId == user2.id
+		assert firstPost.isFirstPost() == true
+
+		// Comment should be created
+		DiscussionPost comment = DiscussionPost.list()[1]
+		assert comment.message == "test message"
+		assert comment.discussionId == discussion.id
+		assert comment.userId == user.id
+		assert comment.isFirstPost() == false
+
+		// Added comment should not be added as the first post
+		assert discussion.firstPostId != comment.id
 	}
 
 	@Test

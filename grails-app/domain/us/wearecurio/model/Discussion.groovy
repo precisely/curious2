@@ -380,6 +380,10 @@ class Discussion {
 		return post?.getAuthor()?.getUserId()
 	}
 
+	User fetchAuthor() {
+		return User.get(fetchUserId())
+	}
+
 	/**
 	 * Constructs a common criteria closure which can be applied on {@link us.wearecurio.model.DiscussionPost}
 	 * using <code>createCriteria().list()</code> or <code>withCriteria</code> method to perform various operations.

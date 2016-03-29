@@ -251,31 +251,63 @@ class DiscussionPost {
 		return post
 	}
 
-	static def createComment(String message, User user, Discussion discussion, Long plotDataId, Map params)
-			throws CreationNotAllowedException {
+	/**
+	 * Create a comment (instance of {@link DiscussionPost} for a given discussion. Note: this method confirms that
+	 * the given discussion should have a first post then only it creates a new comment. To create the first
+	 * post/description of a discussion, use the {@link #createFirstPost} method instead.
+	 *
+	 * @param message Message of the comment
+	 * @param user Author of the comment being added
+	 * @param discussion Original discussion on which comment being added
+	 * @param params Additional parameters passed
+	 * @return New created comment i.e. instance of DiscussionPost
+	 * @throws CreationNotAllowedException If commenting is not allowed for the discussion
+	 * @throws AccessDeniedException If user don't have permission to write to the discussion
+	 */
+	static DiscussionPost createComment(String message, User user, Discussion discussion, Map params)
+			throws CreationNotAllowedException, AccessDeniedException {
 		return Discussion.withTransaction {
 			if (!UserGroup.canWriteDiscussion(user, discussion)) {
-				return "No permissions"
+				throw new AccessDeniedException()
 			}
 
-			DiscussionPost post = discussion.getFirstPost()
+			DiscussionPost firstPost = discussion.getFirstPost()
+			/*
+			 * This is an very extreme edge condition that a discussion does not have a first post because the first
+			 * post is always being created while creating a discussion. This is to avoid using the user's first comment
+			 * as the description for this edge case.
+			 */
+			if (!firstPost) {
+				// Create an empty first post/description
+				createFirstPost("", discussion.fetchAuthor(), discussion, null)
+			}
 
-			if (post && (!plotDataId) && discussion.getNumberOfPosts() == 1 && post.plotDataId && !post.message) {
-				// first comment added to a discussion with a plot data at the top is
-				// assumed to be a caption on the plot data
-				log.debug("DiscussionPost.createComment: 1 post with plotData")
-				update(user, discussion, post, message)
-			} else if (user) {
-				log.debug("DiscussionPost.createComment: 1st comment")
-				post = discussion.createPost(user, plotDataId, message)
+			DiscussionPost post
+
+			if (user) {
+				post = discussion.createPost(user, null, message)
 			} else if (params.postname && params.postemail) {
 				post = discussion.createPost(params.postname, params.postemail, params.postsite,
-						plotDataId, message)
+						null, message)
 			}
 			return post
 		}
 	}
-	
+
+	/**
+	 * This is an helper method to create first discussion post (which will be treated as the description of the
+	 * discussion) to avoid confusions.
+	 * @param message Message of the first post or description
+	 * @param user Author of the discussion
+	 * @param discussion
+	 * @param plotDataId Plot data id of the chart
+	 * @return Created first post
+	 */
+	static DiscussionPost createFirstPost(String message, User user, Discussion discussion, Long plotDataId) {
+		log.debug "Create first post for discussion id $discussion.id, plotDataId $plotDataId, user id $user.id"
+		return discussion.createPost(user, plotDataId, message)
+	}
+
 	String toString() {
 		return "DiscussionPost(discussionId:" + discussionId + ", author:" + author + ", created:" + Utils.dateToGMTString(created) + ", plotDataId:" + plotDataId + ", message:'" + message + "')"
 	}
