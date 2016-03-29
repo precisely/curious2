@@ -12,8 +12,14 @@ _.templateSettings.interpolate = /\{\{=(.+?)\}\}/g;
 var closedExplanationCardCuriosity, closedExplanationCardTrackathon;
 var isMobile = false; //initiate as false
 // device detection
-if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent)
-		|| /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(navigator.userAgent.substr(0,4))) isMobile = true;
+if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent)
+		|| /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(navigator.userAgent.substr(0, 4))) isMobile = true;
+
+_.formatDate = function(stamp, pattern) {
+	var date = new Date(stamp);
+	return $.datepicker.formatDate(pattern, date)
+};
+
 /*
  * A simple helper method to return the compiled lodash based HTML template available in any script tag with given "id".
  * data is passed to the compile the HTML template.
@@ -73,7 +79,7 @@ function callLogoutCallbacks() {
 //Create custom onEnter event
 $(document).ready(function() {
 	$(document.body).on('keyup', ':input', function(e) {
-		if(e.which == 13)
+		if (e.which == 13)
 			$(this).trigger("enter");
 	});
 });
@@ -82,12 +88,32 @@ $(document).ready(function() {
  * Add universal startsWith method to all String classes
  */
 String.prototype.startsWith = function(str) { return this.substring(0, str.length) === str; }
-String.prototype.endsWith = function (str) { return this.length >= str.length && this.substr(this.length - str.length) == str; }
+String.prototype.endsWith = function(str) { return this.length >= str.length && this.substr(this.length - str.length) == str; }
+
+/**
+ * Helper method to convert all new line characters to <br>.
+ * @returns {string} Converted string with <br>
+ * @example
+ *     "Welcome to\n We Are Curious".newLineToBr() == "Welcome to<br /> We Are Curious"
+ */
+String.prototype.newLineToBr = function() {
+	// http://stackoverflow.com/a/784547/2405040
+	return this.replace(/(?:\r\n|\r|\n)/g, '<br />');
+};
+
+/**
+ * Helper method to convert all <br /> to new line character.
+ * @returns {string} Converted string with \n
+ */
+String.prototype.brToNewLine = function() {
+	// http://stackoverflow.com/a/5959455/2405040
+	return this.replace(/<br\s*[\/]?>/gi, "\n");
+};
 
 /**
  * Universal indexOf method to get index by passing regex as argument
  */
-String.prototype.indexOfRegex = function(regex){
+String.prototype.indexOfRegex = function(regex) {
 	var match = this.match(regex);
 	return match ? this.indexOf(match[0]) : -1;
 }
@@ -124,6 +150,7 @@ String.prototype.capitalizeFirstLetter = function() {
  */
 function inherit(subclass, superclass) {
 	function TempClass() {}
+
 	TempClass.prototype = superclass.prototype;
 	var newSubPrototype = new TempClass();
 	newSubPrototype.$super = superclass.prototype;
@@ -153,9 +180,9 @@ function removeElem(arr, elem) {
 function getSearchParams() {
 	var vars = {};
 	var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,
-			function(m,key,value) {
-		vars[key] = value;
-	}
+			function(m, key, value) {
+				vars[key] = value;
+			}
 	);
 	return vars;
 }
@@ -166,7 +193,9 @@ function getSearchParams() {
  */
 jQuery.fn.serializeObject = function() {
 	var params = {};
-	$(this).serializeArray().map(function(x) {params[x.name] = x.value;});
+	$(this).serializeArray().map(function(x) {
+		params[x.name] = x.value;
+	});
 	return params;
 }
 
@@ -270,34 +299,42 @@ var numJSONCalls = 0;
 var pendingJSONCalls = [];
 
 function backgroundPostJSON(description, url, args, successCallback, failCallback, delay) {
-	queueJSON(description, url, args, successCallback, failCallback, delay, true, true);
+	return queueJSON(description, url, args, successCallback, failCallback, delay, true, true);
 }
 
-function queuePostJSON(description, url, args, successCallback, failCallback, delay) {
-	queueJSON(description, url, args, successCallback, failCallback, delay, true, false);
+function queuePostJSON(description, url, data, successCallback, failCallback, delay, args) {
+	return queueJSON(description, url, data, successCallback, failCallback, delay, true, args, false);
 }
 
-function queueJSON(description, url, args, successCallback, failCallback, delay, post, background) {
-	var requestMethod = post ? 'POST' : 'GET';
-	queueJSONAll(description, url, args, successCallback, failCallback, delay, {requestMethod: requestMethod}, background);
+function queueJSON(description, url, data, successCallback, failCallback, delay, post, args, background) {
+	args = args || {};
+	args.requestMethod = post ? 'POST' : 'GET';
+	return queueJSONAll(description, url, data, successCallback, failCallback, delay, args, background);
 }
 
-function queueJSONAll(description, url, args, successCallback, failCallback, delay, httpArgs, background) {
+function queueJSONAll(description, url, data, successCallback, failCallback, delay, args, background) {
 	var currentLoginSession = _loginSessionNumber; // cache current login session
 	var stillRunning = true;
 	var alertShown = false;
-	var requestMethod = (httpArgs.requestMethod || 'get').toUpperCase();
+	var requestMethod = (args.requestMethod || 'get').toUpperCase();
 	var contentType;
 	var processData;
 
-	if (httpArgs.contentType == false) {
-		contentType = httpArgs.contentType;
+	if (args.contentType == false) {
+		contentType = args.contentType;
 	} else {
-		contentType = (requestMethod == 'PUT') ? 'application/json; charset=UTF-8' : 'application/x-www-form-urlencoded; charset=UTF-8'
+		if (requestMethod === "PUT") {
+			contentType = "application/json; charset=UTF-8";
+			if (data instanceof Object) {
+				data = JSON.stringify(data);
+			}
+		} else {
+			contentType = "application/x-www-form-urlencoded; charset=UTF-8";
+		}
 	}
 
-	if (httpArgs.processData == false) {
-		processData = httpArgs.processData;
+	if (args.processData == false) {
+		processData = args.processData;
 	} else {
 		processData = true;
 	}
@@ -308,16 +345,16 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 			showAlert(description + ": in progress");
 		}
 	}, 6000);
-	if (typeof args == "function") {
+	if (typeof data == "function") {
 		delay = failCallback;
 		failCallback = successCallback
-		successCallback = args;
-		args = undefined;
+		successCallback = data;
+		data = undefined;
 	}
-	if (args == undefined || args == null) {
-		args = {dateToken:new Date().getTime()};
-	} else if (!args['dateToken']) {
-		args['dateToken'] = new Date().getTime();
+	if (data == undefined || data == null) {
+		data = {dateToken: new Date().getTime()};
+	} else if (!data['dateToken']) {
+		data['dateToken'] = new Date().getTime();
 	}
 	if (url.indexOf('?') >= 0 && url.indexOf('dateToken=') < 0) {
 		url += '&dateToken=' + new Date().getTime();
@@ -368,21 +405,25 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 				showAlert("Server not responding... retrying " + description);
 			delay = (delay > 0 ? delay * 2 : 5000);
 			window.setTimeout(function() {
-				queueJSON(description, url, args, successCallback, failCallback, delay, background);
+				queueJSON(description, url, data, successCallback, failCallback, delay, background);
 			}, delay);
 		}
 	};
+
+	var jqXHR;
 	if ((!background) && (numJSONCalls > 0)) { // json call in progress
 		var jsonCall = function() {
-			$.ajax({
-				type: httpArgs.requestMethod,
+			jqXHR = $.ajax({
+				type: args.requestMethod,
 				dataType: "json",
 				url: url,
-				data: args,
+				data: data,
 				timeout: 20000 + (delay > 0 ? delay : 0)
 			})
 			.done(wrapSuccessCallback)
 			.fail(wrapFailCallback);
+
+			window.showSpinner && showSpinner(args.spinner, jqXHR);
 		};
 		++numJSONCalls;
 		pendingJSONCalls.push(jsonCall);
@@ -390,18 +431,23 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 		if (!background)
 			++numJSONCalls;
 		// When using PUT method contentType needs to be set to application/json explicitly to be able to send json data
-		$.ajax({
-			type: httpArgs.requestMethod,
+		jqXHR = $.ajax({
+			type: args.requestMethod,
 			dataType: "json",
 			contentType: contentType,
 			processData: processData,
 			url: url,
-			data: args,
+			data: data,
 			timeout: 20000 + (delay > 0 ? delay : 0)
 		})
 		.done(wrapSuccessCallback)
 		.fail(wrapFailCallback);
+
+		window.showSpinner && showSpinner(args.spinner, jqXHR);
 	}
+
+	// Return the promise for registering further callbacks
+	return jqXHR;
 }
 
 function backgroundJSON(description, url, args, successCallback, failCallback, delay, post) {
@@ -428,7 +474,7 @@ App.CSRF.SyncTokenUriName = "SYNCHRONIZER_URI"; // From org.codehaus.groovy.grai
  */
 function getCSRFPreventionURI(key) {
 	var preventionURI = App.CSRF.SyncTokenKeyName + "=" + App.CSRF[key] + "&" + App.CSRF.SyncTokenUriName + "=" + key;
-	if(App.CSRF[key] == undefined) {
+	if (App.CSRF[key] == undefined) {
 		console.error("Missing csrf prevention token for key", key);
 	}
 	return preventionURI;
@@ -444,7 +490,7 @@ function getCSRFPreventionURI(key) {
  */
 function getCSRFPreventionObject(key, data) {
 	var CSRFPreventionObject = new Object();
-	if(App.CSRF[key]) {
+	if (App.CSRF[key]) {
 		CSRFPreventionObject[App.CSRF.SyncTokenKeyName] = App.CSRF[key];
 	} else {
 		console.error("Missing csrf prevention token for key", key);
@@ -466,14 +512,14 @@ var RepeatType = new function() {
 	this.GHOST_BIT = 0x200;
 	this.CONCRETEGHOST_BIT = 0x400;
 	this.DURATION_BIT = 0x0800;
-	this.REPEAT_BIT = this. DAILY_BIT | this.WEEKLY_BIT | this.HOURLY_BIT | this.MONTHLY_BIT | this.YEARLY_BIT;
+	this.REPEAT_BIT = this.DAILY_BIT | this.WEEKLY_BIT | this.HOURLY_BIT | this.MONTHLY_BIT | this.YEARLY_BIT;
 	this.DAILYGHOST = this.DAILY_BIT | this.GHOST_BIT;
 	this.WEEKLYGHOST = this.WEEKLY_BIT | this.GHOST_BIT;
 	this.REMINDDAILY = this.REMIND_BIT | this.DAILY_BIT;
 	this.REMINDWEEKLY = this.REMIND_BIT | this.WEEKLY_BIT;
 	this.REMINDDAILYGHOST = this.REMIND_BIT | this.DAILY_BIT | this.GHOST_BIT;
 	this.REMINDWEEKLYGHOST = this.REMIND_BIT | this.WEEKLY_BIT | this.GHOST_BIT;
-	this.CONTINUOUSGHOST = this.CONTINUOUS_BIT|  this.GHOST_BIT;
+	this.CONTINUOUSGHOST = this.CONTINUOUS_BIT | this.GHOST_BIT;
 	this.DAILYCONCRETEGHOST = this.CONCRETEGHOST_BIT | this.DAILY_BIT;
 	this.MONTHLYCONCRETEGHOST = this.CONCRETEGHOST_BIT | this.MONTHLY_BIT;
 	this.DAILYCONCRETEGHOSTGHOST = this.CONCRETEGHOST_BIT | this.GHOST_BIT | this.DAILY_BIT;
@@ -569,23 +615,23 @@ $(document).on("click", '[data-dismiss="alert"]', function() {
  * A method used to trim a given text upto the given length including or excluding the last word at boundary.
  * For example: Trimming a string "The quick brown fox jumps over the lazy dog" with following max length should result
  * something (consider includeLastWord = false}
- * 
- * Max 1:	""
- * Max 2:	""
- * Max 5:	"The"
- * Max 15:	"The quick brown"
- * Max 21:	"The quick brown fox"
- * Max 70:	"The quick brown fox jumps over the lazy dog"
- * 
+ *
+ * Max 1:    ""
+ * Max 2:    ""
+ * Max 5:    "The"
+ * Max 15:   "The quick brown"
+ * Max 21:   "The quick brown fox"
+ * Max 70:   "The quick brown fox jumps over the lazy dog"
+ *
  * (Now consider includeLastWord = true}
- * 
- * Max 1:	"The"
- * Max 2:	"The"
- * Max 5:	"The quick"
- * Max 15:	"The quick brown"
- * Max 21:	"The quick brown fox jumps"
- * Max 70:	"The quick brown fox jumps over the lazy dog"
- * 
+ *
+ * Max 1:    "The"
+ * Max 2:    "The"
+ * Max 5:    "The quick"
+ * Max 15:   "The quick brown"
+ * Max 21:   "The quick brown fox jumps"
+ * Max 70:   "The quick brown fox jumps over the lazy dog"
+ *
  * http://stackoverflow.com/questions/5454235/javascript-shorten-string-without-cutting-words
  */
 function shorten(text, maxLength, includeLastWord) {
@@ -598,7 +644,7 @@ function shorten(text, maxLength, includeLastWord) {
 		return text.replace(regex, "$1") + '...';
 	} else {
 		var trimmedText = text.substring(0, maxLength + 1);
-		return trimmedText +  '...';
+		return trimmedText + '...';
 	}
 }
 
@@ -621,7 +667,7 @@ function dataURItoBlob(dataURI) {
 	for (var i = 0; i < byteString.length; i++) {
 		ia[i] = byteString.charCodeAt(i);
 	}
-	return new Blob([ia], {type:mimeString});
+	return new Blob([ia], {type: mimeString});
 }
 
 /*$(document).ajaxStart(function() {
@@ -638,7 +684,7 @@ $(document).ajaxComplete(function() {
  */
 if (typeof String.prototype.startsWith != 'function') {
 	console.log('Adding startsWith method to the string');
-	String.prototype.startsWith = function(str){
+	String.prototype.startsWith = function(str) {
 		return this.slice(0, str.length) == str;
 	};
 }

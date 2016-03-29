@@ -589,6 +589,21 @@ class MigrationService {
 			}
 			map = map
 		}
+		tryMigration("Add empty first post to all discussions") {
+			Discussion.list().each { discussion ->
+				log.debug "Checking first post for $discussion"
+
+				if (!discussion.getFirstPost()) {
+					log.debug "No first post found for $discussion"
+					discussion.createPost(User.get(discussion.fetchUserId()), "")
+				}
+			}
+		}
+		tryMigration("Remove version from Survey domains") {
+			["survey_question", "survey_answer", "user_survey_answer"].each { table ->
+				sql ("alter table ${table} drop column version")
+			}
+		}
 		tryMigration("Migrate PlotData") {
 			for (PlotData plotData in PlotData.list()) {
 				plotData.recompressAndSave()

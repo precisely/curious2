@@ -119,7 +119,7 @@
 							onclick="startSprint('{{- hash }}')">Start</button>
 				{{ } }}
 				{{ if (hasAdmin) { }}
-					<button class="sprint-button" onclick="editSprint('{{- hash }}')">Edit</button>
+					<button id="edit-sprint" class="sprint-button" onclick="editSprint('{{- hash }}')">Edit</button>
 					<button class="sprint-button" onclick="deleteSprint('{{- hash }}')">Delete</button>
 				{{ } }}
 			</div>

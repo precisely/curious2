@@ -141,7 +141,7 @@ function startSprint(sprintHash) {
 		} else {
 			showAlert(data.message);
 		}
-	});
+	}, null, 0, false, {spinner: {selector: $("#start-sprint")}});
 }
 
 function stopSprint(sprintHash) {
@@ -163,7 +163,7 @@ function stopSprint(sprintHash) {
 		} else {
 			showAlert(data.message);
 		}
-	});
+	}, null, 0, false, {spinner: {selector: $("#stop-sprint")}});
 }
 
 function leaveSprint(sprintHash) {
@@ -205,7 +205,7 @@ function joinSprint(sprintHash) {
 		} else {
 			showAlert(data.message);
 		}
-	});
+	}, null, 0, false, {spinner: {selector: $("#join-sprint")}});
 }
 
 function getSprintElement(hash) {

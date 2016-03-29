@@ -1,13 +1,13 @@
 package us.wearecurio.controller.integration
 
-import static org.junit.Assert.*
-import org.junit.*
-import org.scribe.model.Response
-
-import us.wearecurio.model.Model.Visibility
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 import us.wearecurio.controller.DiscussionPostController
-import us.wearecurio.model.*
-import us.wearecurio.test.common.MockedHttpURLConnection
+import us.wearecurio.model.Discussion
+import us.wearecurio.model.DiscussionPost
+import us.wearecurio.model.User
+import us.wearecurio.model.UserGroup
 import us.wearecurio.utility.Utils
 
 class DiscussionPostControllerTests extends CuriousControllerTestCase {
@@ -74,10 +74,11 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test delete"() {
+	void "Test delete a normal post"() {
 		assert discussion
 		
-		DiscussionPost post = DiscussionPost.create(discussion, user.id, "Test comment") 
+		DiscussionPost post = DiscussionPost.create(discussion, user.id, "Test comment")
+		post.isFirstPost = false
 		Utils.save(post, true)
 
 		assert DiscussionPost.count() == 1
@@ -92,6 +93,25 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 		assert controller.response.json.message == messageSource.getMessage("default.deleted.message", 
 			["Discussion", "comment"] as Object[], null)
 		assert !DiscussionPost.count()
+	}
+
+	@Test
+	void "Test delete first post"() {
+		assert discussion
+
+		DiscussionPost post = DiscussionPost.create(discussion, user.id, "Test comment")
+		assert post.isFirstPost() == true
+		assert DiscussionPost.count() == 1
+
+		controller.session.userId = user.id
+		controller.params.id = post.id
+		controller.request.method = "DELETE"
+
+		controller.delete()
+
+		assert controller.response.json.message == "Sorry, you can not delete the description of a discussion."
+		assert !controller.response.json.success
+		assert DiscussionPost.count() == 1
 	}
 
 	@Test

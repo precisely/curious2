@@ -16,6 +16,7 @@
 	<script type="text/javascript" src="/js/jstz-1.0.4.min.js"></script>
 	<script type="text/javascript" src="/js/curious/base.js?ver=22"></script>
 	<script type="text/javascript" src="/js/curious/webBase.js?ver=22"></script>
+	<script type="text/javascript" src="/js/curious/auto.resize.js?ver=22"></script>
 	<script type="text/javascript" src="/js/curious/curious.js?ver=22"></script>
 	<script type="text/javascript" src="/js/jquery/jquery.json-2.2.js"></script>
 	<!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->

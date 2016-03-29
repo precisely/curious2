@@ -5,6 +5,35 @@ $(document).ready(function() {
 	$messageDialog = $("#alert-message-dialog");
 	$messageTextDialog = $("#alert-message-text", $messageDialog);
 	wrapPagination();
+
+	/**
+	 * According to the HTML specification, the form should have just one input type="text", and no textarea in
+	 * order to ENTER to submit a form. So adding a keydown event here so that when a user hit "Ctrl + Enter" in
+	 * the text area (like to add/edit a commit), the form should submit.
+	 *
+	 * http://www.alanflavell.org.uk/www/formquestion.html
+	 */
+	$(document).on("keydown", ".ctrl-enter", function() {
+		// On pressing Ctrl + Enter in textarea for commenting "http://stackoverflow.com/a/9343095/2405040"
+		if ((event.keyCode == 10 || event.keyCode == 13) && event.ctrlKey) {
+			$(this).parents("form").submit();
+		}
+	});
+
+	/**
+	 * Submit the parent form whenever a user hits enter in any input field with class "enter-submit". Adding this
+	 * class will also prevent "Shift + Enter" to insert a new line and will submit the parent form. To allow "Shift
+	 * + Enter" to insert a new line, add class "allow-shift" also.
+	 */
+	$(document).on("keydown", ".enter-submit", function() {
+		var $this = $(this);
+		var doesntAllowShiftEnter = !$this.hasClass("allow-shift");
+
+		if ((event.keyCode == 13) && (doesntAllowShiftEnter || !event.shiftKey)) {
+			$this.parents("form").submit();
+			return false;
+		}
+	});
 });
 
 /**
@@ -116,12 +145,77 @@ $(window).load(function(){
 		}
 		$('ul', $(e.target).parent()).toggle();
 	});
+
 	$('.red-header #actions ul').mouseleave(function(e) {
 		var $this = $(this);
 		$(e.target).closest('ul').toggle();
-		var $parent = $(this).parent();
+		var $parent = $this.parent();
 		if ($parent.find('.toggle').hasClass('icon-triangle')) {
 			$parent.find('.toggle').toggleClass('icon-triangle-right icon-triangle-down');
 		}
 	});
 });
+
+/**
+ * A helper method to show a spinner in the center (vertically + horizontally) of the given $element until the
+ * given jQuery promise resolves. This method also inserts a white backdrop in the given element which helps in
+ * blocking the element for any other operation. Useful when doing any AJAX call like form submission and we want to
+ * disable the form by giving user a feedback that some operation is being performed.
+ *
+ * @param $element Given element in the above description
+ * @param promise jQuery promise like one returned by the jQuery.ajax() method
+ * @author Shashank Agrawal
+ */
+function showSpinnerWithMask($element, promise) {
+	if (!$element || !promise) {
+		return;
+	}
+
+	function _hideFeedback($element) {
+		$element.removeClass('disabled');
+		$element.find('.mask').remove();
+		$element.find('.msg-container').remove();
+	}
+
+	function _showFeedback($element) {
+		$element.addClass('feedback-container disabled');
+		$element.append('<div class="mask mask-white"></div>');
+		$element.append('<span class="msg-container"><i class="fa fa-spin fa-spinner fa-2x"></i></span>');
+	}
+
+	_showFeedback($element);
+	promise.always(function() {
+		_hideFeedback($element);
+	});
+}
+
+/**
+ * A helper method to insert a spinner in the given $element until the given jQuery promise resolves. Useful when
+ * doing any AJAX call like on a button click to disable that button and also show a spinner in the same button to
+ * let the user know that some operation is being performed.
+ *
+ * @param spinner {object} An object which can have two values
+ *                  selector: REQUIRED Given element in the above description
+ *                  withMask: OPTIONAL true to also display a white backdrop with spinner in the center.
+ *                            See the "showSpinnerWithMask" method.
+ * @param promise jQuery promise like one returned by the jQuery.ajax() method
+ * @author Shashank Agrawal
+ */
+function showSpinner(spinner, promise) {
+	if (!spinner || !spinner.selector || !promise) {
+		return;
+	}
+
+	var $element = spinner.selector;
+	if (spinner.withMask) {
+		return showSpinnerWithMask($element, promise);
+	}
+
+	$element.addClass("disabled");
+	$element.prepend('<i class="fa fa-fw fa-spin fa-spinner"></i>');
+
+	promise.always(function() {
+		$element.removeClass("disabled");
+		$element.find('.fa.fa-spin').remove();
+	});
+}

@@ -2,12 +2,12 @@
 package us.wearecurio.model
 
 import org.apache.commons.logging.LogFactory
+import us.wearecurio.exception.AccessDeniedException
 import us.wearecurio.exception.CreationNotAllowedException
-import us.wearecurio.utility.Utils
-import grails.converters.*
-import us.wearecurio.model.Model.Visibility
-
+import us.wearecurio.exception.InstanceNotFoundException
+import us.wearecurio.exception.OperationNotAllowedException
 import us.wearecurio.services.SearchService
+import us.wearecurio.utility.Utils
 
 class DiscussionPost {
 	
@@ -138,23 +138,25 @@ class DiscussionPost {
 		this.message = comment
 	}
 	
-	static def create(Discussion discussion, Long authorUserId, String message) {
+	static DiscussionPost create(Discussion discussion, Long authorUserId, String message) {
 		return create(discussion, authorUserId, null, message)
 	}
 	
-	static def create(Discussion discussion, Long authorUserId, Long plotDataId, String comment) {
+	static DiscussionPost create(Discussion discussion, Long authorUserId, Long plotDataId, String comment) {
 		return create(discussion, authorUserId, plotDataId, comment, new Date())
 	}
 	
-	static def create(Discussion discussion, Long authorUserId, Long plotDataId, String comment, Date created) {
+	static DiscussionPost create(Discussion discussion, Long authorUserId, Long plotDataId, String comment, Date created) {
 		log.debug "DiscussionPost.create() discussionId:" + discussion.id + ", authorUserId:" + authorUserId + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'" + ", created:" + created
 		boolean isFirstPost = !discussion.hasFirstPost()
-		def post = new DiscussionPost(discussion, authorUserId, plotDataId, comment, created ?: new Date(), isFirstPost)
+		DiscussionPost post = new DiscussionPost(discussion, authorUserId, plotDataId, comment, created ?: new Date(), isFirstPost)
 		Utils.save(post, true)
+
 		if (isFirstPost) {
 			discussion.setFirstPostId(post.id)
 			Utils.save(discussion, true)
 		}
+
 		UserActivity.create(
 			post.authorUserId, 
 			UserActivity.ActivityType.CREATE, 
@@ -192,32 +194,64 @@ class DiscussionPost {
 		)
 	}
 
-	static void delete(DiscussionPost post) {
+	static void delete(DiscussionPost post, Discussion discussion = null) {
 		log.debug "DiscussionPost.delete() postId:" + post.getId()
-		Discussion discussion = Discussion.get(post.discussionId)
+		discussion = discussion ?: post.getDiscussion()
 		discussion.setUpdated(new Date())
-		def postId = post.id
-		post.delete(flush:true)
+
+		Long postId = post.id
+		post.delete(flush: true)
+		Utils.save(discussion, true)
+
 		unComment(null, discussion.id, postId)
         SearchService.get().deindex(post)
 	}
-	
-	static boolean deleteComment(Long clearPostId, User user, Discussion discussion) {
-		DiscussionPost post = DiscussionPost.get(clearPostId)
-		def postId = post.id
-		if (post != null && (user == null || post.getUserId() != user.getId())) {
-			return false
-		} else if (post == null) {
-			return false
-		} else {
-			DiscussionPost.delete(post)
+
+	static DiscussionPost deleteComment(Long postId, User user, Discussion discussion) throws InstanceNotFoundException,
+			AccessDeniedException, OperationNotAllowedException {
+		log.debug "Delete comment, post id $postId"
+		DiscussionPost post = DiscussionPost.get(postId)
+
+		if (!post) {
+			throw new InstanceNotFoundException()
 		}
-		Utils.save(discussion, true)
-		unComment(user.id, discussion.id, postId)
-		return true
+		return deleteComment(post, user, discussion)
 	}
-	
-	static def createComment(String message, User user, Discussion discussion, Long plotIdMessage, Map params)
+
+	static DiscussionPost deleteComment(DiscussionPost post, User user, Discussion discussion) throws
+			AccessDeniedException, OperationNotAllowedException {
+		if (!post) {
+			throw new IllegalArgumentException("Post is required.")
+		}
+		if (!user) {
+			throw new IllegalArgumentException("User is required.")
+		}
+
+		discussion = discussion ?: post.getDiscussion()
+		if (post.getUserId() != user.id && (!UserGroup.canAdminDiscussion(user, discussion))) {
+			throw new AccessDeniedException()
+		}
+
+		if (post.isFirstPost()) {
+			throw new OperationNotAllowedException()
+		}
+
+		DiscussionPost.delete(post, discussion)
+		return post
+	}
+
+	static DiscussionPost update(User user, Discussion discussion, DiscussionPost post, String message) {
+		log.debug "$user updating $post"
+		post.setMessage(message)
+		Utils.save(post)
+
+		UserActivity.create(user.id, UserActivity.ActivityType.COMMENT, UserActivity.ObjectType.DISCUSSION,
+				discussion.id, UserActivity.ObjectType.DISCUSSION_POST, post.id)
+
+		return post
+	}
+
+	static def createComment(String message, User user, Discussion discussion, Long plotDataId, Map params)
 			throws CreationNotAllowedException {
 		return Discussion.withTransaction {
 			if (!UserGroup.canWriteDiscussion(user, discussion)) {
@@ -226,26 +260,17 @@ class DiscussionPost {
 
 			DiscussionPost post = discussion.getFirstPost()
 
-			if (post && (!plotIdMessage) && discussion.getNumberOfPosts() == 1 && post.plotDataId && !post.message) {
+			if (post && (!plotDataId) && discussion.getNumberOfPosts() == 1 && post.plotDataId && !post.message) {
 				// first comment added to a discussion with a plot data at the top is
 				// assumed to be a caption on the plot data
 				log.debug("DiscussionPost.createComment: 1 post with plotData")
-				post.setMessage(message)
-				Utils.save(post)
-				UserActivity.create(
-					user.id, 
-					UserActivity.ActivityType.COMMENT, 
-					UserActivity.ObjectType.DISCUSSION, 
-					discussion.id,
-					UserActivity.ObjectType.DISCUSSION_POST,
-					post.id
-				)
+				update(user, discussion, post, message)
 			} else if (user) {
 				log.debug("DiscussionPost.createComment: 1st comment")
-				post = discussion.createPost(user, plotIdMessage, message)
+				post = discussion.createPost(user, plotDataId, message)
 			} else if (params.postname && params.postemail) {
 				post = discussion.createPost(params.postname, params.postemail, params.postsite,
-						plotIdMessage, message)
+						plotDataId, message)
 			}
 			return post
 		}

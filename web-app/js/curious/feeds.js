@@ -230,8 +230,15 @@ function initializeListing() {
 	$(".nav a[href=" + window.location.hash + "]").tab("show");
 }
 
+function removeNewPostUI() {
+	$(".new-post").remove();
+}
+
 function processResults(data) {
 	var parentElement;
+
+	$("#feed").html("");      // Remove spinner
+	removeNewPostUI();
 
 	if (window.location.hash !== "#people" && (window.location.hash === "#discussions" || isSocialGSP)) {
 		/*
@@ -239,16 +246,9 @@ function processResults(data) {
 		 * social page and search results.
 		 */
 		var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.groupName});
-		$("#feed").html(createDiscussionForm);
-		if (window.location.hash === "#discussions") {
-			// Special handling for discussions tab.
-			$("#feed").append('<div class="discussions"></div>');
-			parentElement = ".discussions";
-		}
-	} else {
-		$("#feed").html("");      // Remove spinner
+		$("#feed").before(createDiscussionForm);
 	}
-	
+
 	if (!checkData(data)) {
 		return;
 	}
@@ -375,6 +375,7 @@ function displaySearchPage() {
 
 function displayDetail() {
 	$("#feed").removeClass("feed-items");
+	removeNewPostUI();
 	$(".nav").hide();
 	var hash = window.location.hash;
 
@@ -441,12 +442,14 @@ $(document).ready(function() {
 		}
 	});
 
-	$('#submitSprint').submit(function(event) {
+	$('#submitSprint').submit(function() {
+		var $form = $(this);
 		// See base.js for implementation details of $.serializeObject()
-		var params = $(this).serializeObject();
+		var params = $form.serializeObject();
 		var id = $('#sprintIdField').val();
-		var httpArgs = { requestMethod: 'PUT' };
-		queueJSONAll('Updating sprint', '/api/sprint/' + id + '?' + getCSRFPreventionURI('updateSprintDataCSRF'), JSON.stringify(params),
+		var args = {requestMethod: 'PUT', spinner: {selector: $form, withMask: true}};
+
+		queueJSONAll('Updating sprint', '/api/sprint/' + id + '?' + getCSRFPreventionURI('updateSprintDataCSRF'), params,
 				function(data) {
 			if (!checkData(data))
 				return;
@@ -466,7 +469,8 @@ $(document).ready(function() {
 				$('#createSprintOverlay').modal('hide');
 			}
 		}, function(xhr) {
-		}, null, httpArgs);
+		}, null, args);
+
 		return false;
 	});
 
@@ -531,7 +535,8 @@ $(document).ready(function() {
 				if (!checkData(data))
 					return;
 				if (data.success) {
-					addAllFeedItems({listItems: [data.discussion]}, '.discussions', true);
+					var element = $(".discussions").length !== 0 ? ".discussions" : "#feed";
+					addAllFeedItems({listItems: [data.discussion]}, element, true);
 					var $discussionForm = $('#create-discussion')[0];
 					if ($discussionForm) {
 						$discussionForm.reset();
@@ -846,13 +851,13 @@ function createSprint() {
 			autocompleteWidget = new AutocompleteWidget('autocomplete1', 'sprint-tags');
 		}, function(xhr) {
 			console.log('error: ', xhr);
-		}
+		}, 0, {spinner: {selector: $('.create-new-sprint'), withMask: true}}
 	);
 }
 
 function editSprint(sprintHash) {
 	queueJSON("Getting sprint data", '/api/sprint/' + sprintHash + '?' + getCSRFPreventionURI("fetchSprintDataCSRF") + "&callback=?",
-			function(data) {
+			null, function(data) {
 		if (!checkData(data))
 			return;
 
@@ -897,7 +902,7 @@ function editSprint(sprintHash) {
 			$('#createSprintOverlay').modal({show: true});
 		}
 		autocompleteWidget = new AutocompleteWidget('autocomplete1', 'sprint-tags');
-	});
+	}, null, 0, false, {spinner: {selector: $("#edit-sprint")}});
 }
 
 function deleteSprint(sprintHash) {
@@ -936,6 +941,7 @@ function toggleCommentsList(discussionHash) {
 		getComments(discussionHash, commentsArgs);
 		$('.discussion .view-comment').show();
 		$element.show();
+		$.autoResize.init();
 	}
 }
 

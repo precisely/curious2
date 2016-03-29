@@ -13,7 +13,7 @@ import us.wearecurio.model.Model.Visibility
 
 class DiscussionController extends LoginController {
 
-	static allowedMethods = [save: "POST", update: "POST", delete: "DELETE"]
+	static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
 	// Not being used right now as all discussion lists are comming form feed
 	def index() {
@@ -45,9 +45,11 @@ class DiscussionController extends LoginController {
 		if (discussion != null) {
 			Utils.save(discussion, true)
 
-			if (discussionPost) {
-				discussion.createPost(user, discussionPost)
-			}
+			/*
+			 * Always create a first post (i.e. DiscussionPost) which will be used as the description of the discussion.
+			 * https://github.com/syntheticzero/curious2/issues/924
+			 */
+			discussion.createPost(user, discussionPost ?: "")
 
 			Map model = discussion.getJSONDesc()
 			DateFormat df = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ssZ");
@@ -85,7 +87,7 @@ class DiscussionController extends LoginController {
 		Map model = discussion.getJSONDesc()
 		model.putAll([notLoggedIn: user ? false : true, userId: user?.id, associatedGroups: [],		// Public discussion
 				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion), isFollowing: discussion.isFollower(user.id),
-				templateVer: urlService.template(request), associatedGroups: [], discussionHash: discussion.hash, canWrite: UserGroup.canWriteDiscussion(user, discussion)])
+				templateVer: urlService.template(request), discussionHash: discussion.hash, canWrite: UserGroup.canWriteDiscussion(user, discussion)])
 
 		/*if (user) {
 			List associatedGroups = UserGroup.getGroupsForWriter(user)
@@ -129,7 +131,34 @@ class DiscussionController extends LoginController {
 
 	// This method will be called to update already created discussion
 	def update() {
+		Map requestData = request.JSON
+		debug "Update discussion data $requestData"
 
+		User user = sessionUser()
+
+		if (!user) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+
+		Discussion discussion = Discussion.findByHash(requestData.discussionHash)
+
+		if (!discussion) {
+			renderJSONGet([success: false, message: "No such discussion found"])
+			return
+		}
+
+		if (Discussion.update(discussion, requestData, user)) {
+			DiscussionPost firstPost = discussion.getFirstPost()
+			if (firstPost) {
+				DiscussionPost.update(user, discussion, firstPost, requestData.message?.toString())
+			}
+
+			renderJSONGet([success: true])
+		} else {
+			renderJSONGet([success: false, message: "Failed to update discussion name"])
+		}
 	}
 
 	def delete() {
