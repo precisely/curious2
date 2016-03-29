@@ -197,15 +197,8 @@ $(document).ready(function() {
 		$parent.addClass("editing-comment");
 		$message.after(html);
 		$.autoResize.init();
+		$parent.find(".comment-message").focus();
 
-		return false;
-	});
-
-	/**
-	 * Hide/remove the inline comment/post edit form on click.
-	 */
-	$(document).on("click", ".cancel-edit-post", function() {
-		hideInlinePostEdit($(this).parents(".discussion-comment"));
 		return false;
 	});
 
@@ -284,6 +277,12 @@ $(document).ready(function() {
 	$(document).on("submit", ".edit-comment-form", function() {
 		var $form = $(this);
 		var params = getCommentFormData($form);
+
+		// If message of the comment is empty or missing
+		if (!params.message) {
+			showAlert("Comment message can not be empty.");
+			return false;
+		}
 
 		var $parentComment = $form.parents(".discussion-comment");
 		var isFirstPostUpdate = $parentComment.length === 0;

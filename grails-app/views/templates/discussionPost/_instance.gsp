@@ -18,10 +18,6 @@
 
 		{{ if (discussionPost.authorUserId == userId) { }}
 			<span class="pull-right">
-				<a href="#" class="cancel-edit-post comment-buttons hide" data-post-id="{{- discussionPost.id}}"
-					data-discussion-hash="{{-discussionPost.hash}}" title="Cancel editing">
-					<i class="fa fa-times-circle fa-fw"></i>
-				</a>
 				<a href="#" class="edit-post comment-buttons hide" data-post-id="{{- discussionPost.id}}"
 					data-discussion-hash="{{-discussionPost.hash}}" title="Edit comment">
 					<i class="fa fa-pencil fa-fw"></i>

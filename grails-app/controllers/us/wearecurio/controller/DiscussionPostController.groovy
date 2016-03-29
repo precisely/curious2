@@ -123,8 +123,14 @@ class DiscussionPostController extends LoginController{
 			return
 		}
 
+		// If message of the comment is empty or missing
+		if (!requestData.message) {
+			renderJSONGet([success: false, message: g.message(code: "discussion.comment.empty")])
+			return
+		}
+
 		if (user.id == discussionPost.authorUserId) {
-			discussionPost.message = requestData.message
+			discussionPost.message = requestData.message ?: ""
 			discussionPost.updated = new Date()
 			Utils.save(discussionPost, true)
 			renderJSONGet([success: true])

@@ -3464,15 +3464,14 @@ a.comment-buttons {
 a.comment-buttons:hover {
 	color: #000000;
 }
-.discussion-comment:hover .comment-buttons.cancel-edit-post,
+
 .discussion-comment.editing-comment .comment-buttons.edit-post,
 .discussion-comment.editing-comment .message{
 	display: none;
 }
 
 .discussion-comment:hover .comment-buttons,
-.discussion-comment.editing-comment .comment-buttons,
-.discussion-comment.editing-comment .comment-buttons.cancel-edit-post {
+.discussion-comment.editing-comment .comment-buttons {
 	display: inline-block;
 }
 
