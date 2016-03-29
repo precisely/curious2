@@ -14,8 +14,6 @@
 							</div>
 							<hr>
 							<div>
-								<small>?${session.firstRun}?</small>
-								<small>?${prefs}?</small>
 								<small>Welcome to</small>
 							</div>
 							<h4 class="company-name">We Are Curious!</h4>
@@ -23,8 +21,8 @@
 								We Are Curious helps you investigate <strong>questions</strong> about yourself.
 								For example,<br><br>
 								<ul class="ul-fix">
-									<li>Does caffeine affect my sleep?</li>
-									<li>Does exercise really affect my mood?</li>
+									<li>${raw(initialConfig.customQuestion1)}</li>
+									<li>${raw(initialConfig.customQuestion2)}</li>
 								</ul>
 							</div>
 						</div>
@@ -34,10 +32,8 @@
 							<div>
 								<strong>Track</strong> bits of your life for a few days or weeks using <strong>tags
 								</strong> based on your questions.
-								For instance, you could track your <strong><i>mood</i></strong>, how much <strong><i>
-								sleep</i></strong> you get, the <strong><i>coffee</i></strong> you drink, and the
-								<strong><i>steps</i></strong> you take. You can track automatically using <strong>
-								devices</strong> such as the Oura ring (via your user profile).
+								For instance, you could track ${raw(initialConfig.trackExample1)}, ${raw(initialConfig.trackExample2)}, ${raw(initialConfig.trackExample3)}, and ${raw(initialConfig.trackExample4)}. You can track automatically using <strong>
+								devices</strong> such as ${raw(initialConfig.deviceExample)}.
 							</div>
 						</div>
 
@@ -61,27 +57,27 @@
 								</p>
 								<hr>
 								<h3 class="questions">
-									How many hours did you sleep last night?
+									${raw(initialConfig.sampleQuestionDuration)}
 								</h3>
 								<div class="alert alert-danger hide help-alert" role="alert">
 									Some error has occurred while performing the operation.
 								</div>
 								<input type="text" id="sleep-hour"
-										placeholder="e.g. 8 hours 10 minutes or 8hrs 10 mins" />
+										placeholder="${raw(initialConfig.sampleQuestionDurationExampleAnswers)}" />
 								<h4 class="entry-label"><span id="sleep-entry-label" class="label"></span></h4>
 								<input type="hidden" name="entry.0" id="sleep-hour-entry" />
 							</div>
 
 							<div class="item mood">
-								<h3 class="questions">How's your mood right now?</h3>
+								<h3 class="questions">${raw(initialConfig.sampleQuestionRating)}</h3>
 								<p>
-									Please enter a number from 1 to 10<br><br>Examples:<br>1 would mean 'Not the best day'<br>
-									5 would mean 'Just so-so'<br>10 would mean 'Super stoked'<br><br>
+									Please enter ${raw(initialConfig.sampleQuestionRatingRange)}<br><br>Examples:<br>${raw(initialConfig.sampleQuestionRatingExampleAnswer1)}<br>
+									${raw(initialConfig.sampleQuestionRatingExampleAnswer2)}<br>${raw(initialConfig.sampleQuestionRatingExampleAnswer3)}<br><br>
 								</p>
 								<div class="alert alert-danger hide mood-help-alert" role="alert">
 									Some error has occurred while performing the operation.
 								</div>
-								<input type="number" min="1" max="10" id="mood-box" placeholder="Click to enter a number from 1 to 10"/> 
+								<input type="number" min="1" max="10" id="mood-box" placeholder="Click to enter ${raw(initialConfig.sampleQuestionRatingRange)}"/> 
 								<h4 class="entry-label"><span id="mood-entry-label" class="label"></span></h4>
 								<input type="hidden" name="entry.1" id="mood-entry"/>
 							</div>
@@ -93,25 +89,25 @@
 								<h3 class="questions">What have you done today (all are optional)?</h3>
 								<form id="helpWizardExerciseForm">
 									<label for="cardio">
-										DRINK
+										${raw(initialConfig.today1)}
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="cardio"
-											placeholder="e.g. coffee 1 cup 8am" autofocus />
+											placeholder="${raw(initialConfig.today1Example)}" autofocus />
 									<label for="resistance">
-										EXERCISE
+										${raw(initialConfig.today2)}
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="resistance"
-											placeholder="e.g. walk 9500 steps" />
+											placeholder="${raw(initialConfig.today2Example)}" />
 									<label for="stretch">
-										WORK
+										${raw(initialConfig.today3)}
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="stretch"
-											placeholder="e.g. work 7 hours 30 minutes" />
+											placeholder="${raw(initialConfig.today3Example)}" />
 									<label for="metabolic">
-										SUPPLEMENTS
+										${raw(initialConfig.today4)}
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="metabolic"
-											placeholder="e.g. aspirin 400 mg, or vitamin c 200 mg " />
+											placeholder="${raw(initialConfig.today4Example)}" />
 									<input type="hidden" name="currentTime" id="current-time-input" />
 									<input type="hidden" name="baseDate" id="base-date-input" />
 									<input type="hidden" name="timeZoneName" id="time-zone-name-input" />
