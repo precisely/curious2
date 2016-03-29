@@ -228,7 +228,7 @@ class TagStats {
 	}
 	
 	static sharedTagEntries = [
-		/*["sleep 8 hours", 11],
+		["sleep 8 hours", 11],
 		["walk 3.5 miles 11000 steps", 11],
 		["mood 5", 11],
 		["exercise 2.5 hours", 11],
@@ -362,7 +362,7 @@ class TagStats {
 		["studying 2 hours", 2],
 		["yogurt", 2],
 		["swim 1 hour", 2],
-		["stuffy nose", 2],*/
+		["stuffy nose", 2],
 	]
 	
 	static Date defaultEntryDate = new Date(1277942400L) // July 1, 2010 GMT
