@@ -49,7 +49,7 @@ class DiscussionController extends LoginController {
 			 * Always create a first post (i.e. DiscussionPost) which will be used as the description of the discussion.
 			 * https://github.com/syntheticzero/curious2/issues/924
 			 */
-			discussion.createPost(user, discussionPost ?: "")
+			DiscussionPost.createFirstPost(discussionPost ?: "", user, discussion, null)
 
 			Map model = discussion.getJSONDesc()
 			DateFormat df = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ssZ");

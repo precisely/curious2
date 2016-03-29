@@ -522,8 +522,8 @@ class JawboneUpDataService extends DataService {
 				return false	// continue looping
 			}
 
-			if (notification["secret_hash"] != hash) {
-				log.debug "Notification hash does not match"
+			if (notifications["secret_hash"] != hash) {
+				log.debug "Hash do not match. Received: [${notification["secret_hash"]}], generated: [$hash]"
 				return false
 			}
 

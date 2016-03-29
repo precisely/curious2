@@ -550,7 +550,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 
 		controller.unregisterOura()
 		assert controller.flash.message == messageSource.getMessage("thirdparty.unsubscribe.failure.message",
-				["Oura"] as Object[], null)
+				["Oura", ""] as Object[], null)
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 }

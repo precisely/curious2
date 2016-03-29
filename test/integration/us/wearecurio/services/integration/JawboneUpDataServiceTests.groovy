@@ -1,24 +1,21 @@
 package us.wearecurio.services.integration
 
 import grails.test.spock.IntegrationSpec
-
-import java.text.SimpleDateFormat
-
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
 import org.scribe.model.Response
-
-import spock.lang.*
+import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
+import us.wearecurio.model.ThirdPartyNotification.Status
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
-import us.wearecurio.model.ThirdPartyNotification.Status
 import us.wearecurio.services.JawboneUpDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.utility.Utils
-import us.wearecurio.hashids.DefaultHashIDGenerator
+
+import java.text.SimpleDateFormat
 
 class JawboneUpDataServiceTests extends IntegrationSpec {
 
@@ -303,7 +300,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		when: "Invalid secret hash received"
 		jawboneUpDataService.notificationHandler("""{"notification_timestamp":"1372787949","events":[
 				{"user_xid":"RGaCBFg9CsB83FsEcMY44A","event_xid":"EJpCkyAtwoO0XTdkYyuTNw","type":"move",
-				"action":"creation","timestamp":"1372787849","secret_hash":"e570b3071a0964f9e2e69d13nd9ba19535392aaa"}]}""")
+				"action":"creation","timestamp":"1372787849"}],"secret_hash":"e570b3071a0964f9e2e69d13nd9ba19535392aaa"}""")
 
 		then: "No instance will be created"
 		ThirdPartyNotification.count() == 0
@@ -318,8 +315,8 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		jawboneUpDataService.notificationHandler("""{"notification_timestamp":"1372787949","events":[
 				{"user_xid":"RGaCBFg9CsB83FsEcMY44A","event_xid":"EJpCkyAtwoO0XTdkYyuTNw","type":"move",
 				"action":"creation","timestamp":"1372787849","secret_hash":"$hash"},{"user_xid":"RGaCBFg9CsB83FsEcMY44A",
-				"event_xid":"blaHyAtwoO0XTdkYyuTNw","type":"sleep","action":"updation","timestamp":"1372787859",
-				"secret_hash":"$hash"}]}""")
+				"event_xid":"blaHyAtwoO0XTdkYyuTNw","type":"sleep","action":"updation","timestamp":"1372787859"}],
+				"secret_hash":"$hash"}""")
 
 		then: "Two notification will be created"
 		ThirdPartyNotification.count() == 2

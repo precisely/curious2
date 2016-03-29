@@ -1,9 +1,9 @@
 package us.wearecurio.controller
+
 import grails.gsp.PageRenderer
 import org.codehaus.groovy.grails.web.json.JSONObject
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.Sprint
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.DataService
@@ -327,7 +327,7 @@ class HomeController extends DataController {
 			flash.message = g.message(code: "thirdparty." + action + ".success.message", args: [thirdPartyType])
 		} else {
 			debug "Failure in ${(action == 'unsubscribe') ? 'unsubscribing' : 'subscribing'}: " + result.message
-			flash.message = g.message(code: "thirdparty." + action + ".failure.message", args: [thirdPartyType])
+			flash.message = g.message(code: "thirdparty." + action + ".failure.message", args: [thirdPartyType, ""])
 			flash.args = []
 			flash.args = [(result.message ?: "")]
 		}
@@ -368,11 +368,10 @@ class HomeController extends DataController {
 
 	def notifyJawbone() {
 		def requestBodyData = request.JSON
-		def requestFileData = request.getFile("file")?.inputStream?.text
 
-		debug "notifyJawbone() from IP: [$request.remoteAddr] params:" + params + ", body: $requestBodyData & file: $requestFileData"
+		debug "notifyJawbone() from IP: [$request.remoteAddr] params:" + params + ", body: $requestBodyData"
 
-		jawboneUpDataService.notificationHandler(requestBodyData?.file ?: requestFileData)
+		jawboneUpDataService.notificationHandler(requestBodyData.toString())
 
 		renderStringGet('success')
 	}
