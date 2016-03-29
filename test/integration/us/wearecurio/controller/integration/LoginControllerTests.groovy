@@ -22,7 +22,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		super.tearDown()
 	}
 	
-	//@Test
+	@Test
 	void testDologinDataSuccess() {
 		LoginController controller = new LoginController()
 		
@@ -36,7 +36,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert controller.response.contentAsString.startsWith('callback({"user":{"id":' + user.id + ',"virtual":false,"avatarURL":null,"username":"y"')
 	}
 
-	//@Test
+	@Test
 	void testDologinDataFailure() {
 		LoginController controller = new LoginController()
 		
@@ -50,7 +50,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert controller.response.contentAsString.equals('callback({"success":false})')
 	}
 
-	//@Test
+	@Test
 	void testLogin() {
 		LoginController controller = new LoginController()
 		
@@ -65,7 +65,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert model.message == null
 	}
 
-	//@Test
+	@Test
 	void testDologinSuccess() {
 		LoginController controller = new LoginController()
 		
@@ -82,7 +82,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert rU.endsWith("/login/index")
 	}
 
-	//@Test
+	@Test
 	void testDologinFailure() {
 		LoginController controller = new LoginController()
 		
@@ -99,7 +99,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert rU.endsWith("/home/login")
 	}
 
-	//@Test
+	@Test
 	void testForgot() {
 		LoginController controller = new LoginController()
 		
@@ -112,7 +112,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert rU.endsWith("/login/forgot")
 	}
 
-	//@Test
+	@Test
 	void testDoforgotSuccess() {
 		LoginController controller = new LoginController()
 		
@@ -126,7 +126,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert rU.endsWith("/login/login")
 	}
 
-	//@Test
+	@Test
 	void testDoforgotFailure() {
 		LoginController controller = new LoginController()
 		
@@ -140,7 +140,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert rU.endsWith("/login/forgot")
 	}
 	
-	//@Test
+	@Test
 	void testDoforgotDataEmailSuccess() {
 		LoginController controller = new LoginController()
 		
@@ -155,7 +155,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert x == 'callback({"success":true})'
 	}
 
-	//@Test
+	@Test
 	void testDoforgotDataUsernameSuccess() {
 		LoginController controller = new LoginController()
 		
@@ -170,7 +170,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert x == 'callback({"success":true})'
 	}
 
-	//@Test
+	@Test
 	void testDoforgotDataEmailFailures() {
 		LoginController controller = new LoginController()
 		
@@ -185,7 +185,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert x.endsWith('"success":false})')
 	}
 
-	//@Test
+	@Test
 	void testDoforgotDataUsernameFailure() {
 		LoginController controller = new LoginController()
 		
@@ -200,7 +200,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert x.endsWith('"success":false})')
 	}
 
-	//@Test
+	@Test
 	void testRecoverSuccess() {
 		LoginController controller = new LoginController()
 		
@@ -220,7 +220,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert model.code?.length() > 0
 	}
 
-	//@Test
+	@Test
 	void testRecoverFailure() {
 		LoginController controller = new LoginController()
 		
@@ -237,7 +237,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert rU.endsWith("/login/forgot")
 	}
 
-	//@Test
+	@Test
 	void testDorecoverSuccess() {
 		LoginController controller = new LoginController()
 		
@@ -257,7 +257,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert user.checkPassword('w')
 	}
 
-	//@Test
+	@Test
 	void testDorecoverFailure() {
 		LoginController controller = new LoginController()
 		
@@ -275,7 +275,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert rU.endsWith("/login/recover")
 	}
 
-	//@Test
+	@Test
 	void testDorecoverNoPassword() {
 		LoginController controller = new LoginController()
 		
@@ -292,7 +292,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert rU.endsWith("/login/recover")
 	}
 
-	//@Test
+	@Test
 	void testRegister() {
 		LoginController controller = new LoginController()
 		
@@ -344,7 +344,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert rU.endsWith('/home/index')
 	}
 
-	//@Test
+	@Test
 	void testDoregisterNoUsername() {
 		LoginController controller = new LoginController()
 		
@@ -388,7 +388,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert controller.response.contentAsString.startsWith('{"success":true')
 	}
 
-	//@Test
+	@Test
 	void "test doregisterData when email and confirm email fields are different"() {
 		LoginController controller = new LoginController()
 		
@@ -427,7 +427,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert controller.response.contentAsString.startsWith('{"success":false')
 	}
 
-	//@Test
+	@Test
 	void testDoregisterDifferentEmailIds() {
 		LoginController controller = new LoginController()
 		
@@ -452,7 +452,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert rU.endsWith('/login/register')
 	}
 
-	//@Test
+	@Test
 	void testDoregisterDataNoPassword() {
 		LoginController controller = new LoginController()
 		
@@ -469,7 +469,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert controller.response.contentAsString.startsWith('{"success":false')
 	}
 
-	//@Test
+	@Test
 	void testLogout() {
 		LoginController controller = new LoginController()
 		
