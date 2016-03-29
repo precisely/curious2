@@ -273,7 +273,7 @@ class DiscussionPost {
 
 			DiscussionPost firstPost = discussion.getFirstPost()
 			/*
-			 * This is an very extreme edge condition that a discussion does not have a first post because the first
+			 * This is an edge condition that a discussion does not have a first post because the first
 			 * post is always being created while creating a discussion. This is to avoid using the user's first comment
 			 * as the description for this edge case.
 			 */
@@ -305,6 +305,14 @@ class DiscussionPost {
 	 */
 	static DiscussionPost createFirstPost(String message, User user, Discussion discussion, Long plotDataId) {
 		log.debug "Create first post for discussion id $discussion.id, plotDataId $plotDataId, user id $user.id"
+
+		DiscussionPost firstPost = discussion.getFirstPost()
+		if (firstPost) {
+			log.debug "First post already exists for discussion id $discussion.id"
+			update(user, discussion, firstPost, message)
+			return firstPost
+		}
+
 		return discussion.createPost(user, plotDataId, message)
 	}
 

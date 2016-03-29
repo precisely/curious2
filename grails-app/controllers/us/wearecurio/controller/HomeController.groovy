@@ -368,11 +368,10 @@ class HomeController extends DataController {
 
 	def notifyJawbone() {
 		def requestBodyData = request.JSON
-		def requestFileData = request.getFile("file")?.inputStream?.text
 
-		debug "notifyJawbone() from IP: [$request.remoteAddr] params:" + params + ", body: $requestBodyData & file: $requestFileData"
+		debug "notifyJawbone() from IP: [$request.remoteAddr] params:" + params + ", body: $requestBodyData"
 
-		jawboneUpDataService.notificationHandler(requestBodyData?.file ?: requestFileData)
+		jawboneUpDataService.notificationHandler(requestBodyData.toString())
 
 		renderStringGet('success')
 	}

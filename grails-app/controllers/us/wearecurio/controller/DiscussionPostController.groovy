@@ -130,7 +130,7 @@ class DiscussionPostController extends LoginController{
 		}
 
 		if (user.id == discussionPost.authorUserId) {
-			discussionPost.message = requestData.message ?: ""
+			discussionPost.message = requestData.message
 			discussionPost.updated = new Date()
 			Utils.save(discussionPost, true)
 			renderJSONGet([success: true])
