@@ -63,6 +63,11 @@ class WithingsDataService extends DataService {
 		saveNotification(earlyStartDate, account.accountId)
 	}
 
+	@Transactional
+	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
+		return getDataDefault(account, startDate, null, refreshAll)
+	}
+
 	@Override
 	@Transactional
 	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws

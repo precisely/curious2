@@ -4,6 +4,9 @@ import grails.converters.JSON
 import groovyx.net.http.URIBuilder
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
+import org.joda.time.LocalDateTime
 import org.springframework.transaction.annotation.Transactional
 import us.wearecurio.datetime.DateUtils
 import us.wearecurio.model.OAuthAccount
@@ -40,6 +43,13 @@ class OuraDataService extends DataService {
 	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws InvalidAccessTokenException {
 		log.debug("getDataDefault $account.id startDate: $startDate endDate: $endDate refreshAll: $refreshAll")
 
+		if (!startDate) {
+			DateTimeZone timezone = TimeZoneId.fromId(account.timeZoneId).toDateTimeZone()
+			DateTime now = new DateTime().withZone(timezone)
+			LocalDateTime localTime = now.toLocalDateTime()
+			startDate = localTime.toDate().clearTime()
+			log.debug "Start date $startDate"
+		}
 		endDate = endDate ?: new Date()
 
 		getDataSleep(account, startDate, endDate, false)

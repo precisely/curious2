@@ -408,15 +408,10 @@ environments {
 					key = "96de99b2227025cacb6807e28df20367"
 					secret = "f00f94c857cba5d166463ad6f2c1aab0"
 				}
-				// temporary fix to use development app key
 				withings {
-					key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
-					secret = "767464759048b87ef4d6e4d2f8456010bb085eefbfd83215e5f147626fc24"
+					key = "2ef70026d181d3eb3cd9800186bc19b9d0525de83cf6527d4b2f08dc9e38f1b"
+					secret = "c2fe6d781329f53e53b85c6944eb48ccc08fc555d497cd1b6291350de3d80f9"
 				}
-				/* withings {
-					key = "74b17c41e567dc3451092829e04c342f5c68c04806980936e1ec9cfeb8f3"
-					secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
-				}*/
 				jawboneup {
 					key = "zNg9SWw1G74"
 					secret = "55de868ea52b843d07400c3dc79f5e533a478006"
