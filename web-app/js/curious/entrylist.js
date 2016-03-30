@@ -86,14 +86,14 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				return;
 			}
 
-			self.setDeviceSettings(data.deviceSettings);
+			self.storeDeviceEntryStates(data.deviceEntryStates);
 			self.refreshEntries(data.entries);
 		});
 	};
 
-	this.setDeviceSettings = function(deviceSettings) {
-		console.log("Device settings", deviceSettings);
-		this.deviceSettings = deviceSettings;
+	this.storeDeviceEntryStates = function(states) {
+		console.log("Device entries states", states);
+		this.deviceEntryStates = states;
 	};
 
 	this.clearEntries = function() {
@@ -120,6 +120,12 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		self.currentDragTag = null;
 	});
 
+	/**
+	 * Render the given entry data or instance into the view.
+	 * @param {Object} entryInstance
+	 * @param {boolean} isUpdating
+	 * @param {Object} args
+	 */
 	this.displayEntry = function(entryInstance, isUpdating, args) {
 		args = args || {};
 
@@ -298,9 +304,14 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		if (!isDeviceSummaryEntry) {
 			var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': id + '-'});
 
-			innerHTMLContent += '<button class="edit">Edit</button><button class="save save-entry hide">Save' +
+			innerHTMLContent += '<button class="edit">Edit</button><button class="btn-purple save save-entry hide">Save' +
 					' Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' +
-					this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>' + entryDetailsPopover;
+					this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>';
+
+			// Do not display the entry details button and popover for device entries
+			if (!isDeviceTagEntry) {
+				innerHTMLContent += entryDetailsPopover;
+			}
 		}
 
 		var entryEditItem;
@@ -341,7 +352,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	};
 
 	this.displayDeviceNameEntry = function(deviceEntry) {
-		var entryDeviceDataInstance = new EntryDeviceData(deviceEntry, this.deviceSettings);
+		var entryDeviceDataInstance = new EntryDeviceData(deviceEntry, this.deviceEntryStates);
 		var groupedData = entryDeviceDataInstance.group();
 
 		var id = entryDeviceDataInstance.getSanitizedSourceName();
@@ -390,10 +401,10 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		}.bind(this));
 	};
 
-	/*
+	/**
 	 * This method iterates through list of entries and displays them
-	 * @param entries list of entries to display
-	 * @param onlyPinned to display only pinned entries 
+	 * @param {Array} entries list of entries to display
+	 * @param {boolean} onlyPinned to display only pinned entries
 	 */
 	this.displayEntries = function(entries, onlyPinned) {
 		self.entrySelectData = {};
@@ -406,12 +417,17 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				return;
 			}
 			self.displayEntry(this, false);
-			return true;
 		});
 
-		jQuery.each(entryDataInstance.getDeviceEntries(), function(index, deviceEntry) {
-			this.displayDeviceNameEntry(deviceEntry);
-		}.bind(this));
+		/*
+		 * Do not display device entry when creating bookmark entry because creating bookmark entry only updates the
+		 * bookmark entry container, otherwise it will duplicate the device data.
+		 */
+		if (!onlyPinned) {
+			jQuery.each(entryDataInstance.getDeviceEntries(), function(index, deviceEntry) {
+				this.displayDeviceNameEntry(deviceEntry);
+			}.bind(this));
+		}
 
 		$('#pinned-tag-list').children('div').each(function () {
 			$(this).hover(
@@ -622,7 +638,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 					+ getCSRFPreventionURI("deleteEntryDataCSRF") + "&callback=?",
 					function(entries) {
 				if (checkData(entries, 'success', "Error deleting entry")) {
-					self.setDeviceSettings(entries[3]);
+					self.storeDeviceEntryStates(entries[3]);
 					self.refreshEntries(entries[0]);
 
 					if (entries[1] != null)
@@ -647,7 +663,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				+ getCSRFPreventionURI("updateEntrySDataCSRF") + "&allFuture=" + (allFuture? '1':'0') + "&callback=?",
 				function(entries) {
 			if (checkData(entries, 'success', "Error updating entry")) {
-				self.setDeviceSettings(entries[3]);
+				self.storeDeviceEntryStates(entries[3]);
 				self.refreshEntries(entries[0]);
 
 				if (self.nextSelectionId) {
@@ -723,7 +739,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				if (RepeatType.isContinuous(entries[3].repeatType)) {
 					self.refreshPinnedEntries(entries[0]);
 				} else {
-					self.setDeviceSettings(entries[4]);
+					self.storeDeviceEntryStates(entries[4]);
 					self.refreshEntries(entries[0]);
 				}
 				if (entries[2] != null)

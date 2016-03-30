@@ -424,7 +424,7 @@ class DataController extends LoginController {
 		 * support the mobile code.
 		 */
 		if (respondAsMap) {
-			renderJSONGet([entries: entries, deviceSettings: user.settings.getDeviceSettings()])
+			renderJSONGet([entries: entries, deviceEntryStates: user.settings.getDeviceEntryStates()])
 			return
 		}
 		renderJSONGet(entries)
@@ -670,7 +670,7 @@ class DataController extends LoginController {
 				result[2]?.getJSONDesc(),
 				result[0].getJSONDesc(),
 				// TODO respond this as map instead of passing data based on index
-				user.settings.getDeviceSettings()
+				user.settings.getDeviceEntryStates()
 			])
 		} else {
 			renderStringGet('error')
@@ -690,7 +690,7 @@ class DataController extends LoginController {
 			renderJSONGet([listEntries(userFromId(entry.getUserId()), params.timeZoneName, baseDate, currentTime),
 					oldTagStats?.getJSONDesc(), newTagStats?.getJSONDesc(),
 					// TODO respond this as map instead of passing data based on index
-					user.settings.getDeviceSettings()])
+					user.settings.getDeviceEntryStates()])
 		} else {
 			debug "Error while updating: " + message
 			renderStringGet(message)
@@ -727,7 +727,7 @@ class DataController extends LoginController {
 				tagStats[0]?.getJSONDesc(),
 				tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null,
 				// TODO respond this as map instead of passing data based on index
-				user.settings.getDeviceSettings()])
+				user.settings.getDeviceEntryStates()])
 		}
 	}
 

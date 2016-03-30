@@ -20,7 +20,7 @@ class UserSettings extends BitSet {
 	private static final int OURA_COLLAPSED = 10
 
 	// Do not save following fields into the database
-	static transients = ["bioPublic", "namePublic", "value", "deviceSettings"]
+	static transients = ["bioPublic", "namePublic", "value", "deviceEntryStates"]
 
 	UserSettings() {
 		super(0)
@@ -109,7 +109,7 @@ class UserSettings extends BitSet {
 		return UserSettings[thirdParty.name() + "_COLLAPSED"]
 	}
 
-	Map<String, Boolean> getDeviceSettings() {
+	Map<String, Boolean> getDeviceEntryStates() {
 		List<ThirdParty> supportedDevices = [ThirdParty.WITHINGS, ThirdParty.FITBIT, ThirdParty.JAWBONE,
 				ThirdParty.MOVES, ThirdParty.OURA]
 

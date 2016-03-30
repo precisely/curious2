@@ -1,6 +1,6 @@
 "use strict";
 
-function EntryDeviceData(deviceEntries, settings) {
+function EntryDeviceData(deviceEntries, savedStates) {
 
 	StateView.call(this);
 
@@ -16,7 +16,7 @@ function EntryDeviceData(deviceEntries, settings) {
 	var sourceName = deviceEntries[0].sourceName;
 	var source = sourceName.split(" ")[0].toUpperCase();
 
-	if (settings[source]) {     // If user has previously collapsed the device top level entry
+	if (savedStates[source]) {     // If user has previously collapsed the device top level entry
 		collapsed = true;
 	}
 

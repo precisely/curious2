@@ -102,20 +102,20 @@
 
 				{{ if (hasMember) { }}
 					{{ if (hasStarted && !hasEnded) { }}
-						<button id="stop-sprint" class="sprint-button prompted-action" 
+						<button id="stop-sprint" class="btn-purple sprint-button prompted-action"
 								onclick="stopSprint('{{- hash }}')">Stop</button>
-						<button id="start-sprint" class="prompted-action sprint-button hidden"
+						<button id="start-sprint" class="btn-purple prompted-action sprint-button hidden"
 								onclick="startSprint('{{- hash }}')">Start</button>
 					{{ } else { }}
-						<button id="start-sprint" class="prompted-action sprint-button"
+						<button id="start-sprint" class="btn-purple prompted-action sprint-button"
 								onclick="startSprint('{{- hash }}')">Start</button>
-						<button id="stop-sprint" class="sprint-button prompted-action hidden"
+						<button id="stop-sprint" class="btn-purple sprint-button prompted-action hidden"
 								onclick="stopSprint('{{- hash }}')">Stop</button>
 					{{ } }}
 				{{ } else { }}
-					<button id="stop-sprint" class="sprint-button prompted-action hidden"
+					<button id="stop-sprint" class="btn-purple sprint-button prompted-action hidden"
 							onclick="stopSprint('{{- hash }}')">Stop</button>
-					<button id="start-sprint" class="prompted-action sprint-button"
+					<button id="start-sprint" class="btn-purple prompted-action sprint-button"
 							onclick="startSprint('{{- hash }}')">Start</button>
 				{{ } }}
 				{{ if (hasAdmin) { }}
