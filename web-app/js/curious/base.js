@@ -677,13 +677,19 @@ function dataURItoBlob(dataURI) {
 	return new Blob([ia], {type: mimeString});
 }
 
-/*$(document).ajaxStart(function() {
-	$('#spinner-feedback').show();
-});
+/**
+ * Compare if two date objects are of same day. http://stackoverflow.com/a/4293084/2405040
+ * @param date1 {Date} First date object
+ * @param date2 {Date} Second date object
+ * @returns {boolean} <true> if both are same (ignoring the time)
+ */
+function areSameDate(date1, date2) {
+	if (!date1 || !date2) {
+		return false;
+	}
 
-$(document).ajaxComplete(function() {
-	$('#spinner-feedback').hide();
-});*/
+	return date1.toDateString() === date2.toDateString();
+}
 
 /*
  * Some browser do not supports String.startsWith method.

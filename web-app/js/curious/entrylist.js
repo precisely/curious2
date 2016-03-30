@@ -1,8 +1,8 @@
 /**
  * Entry editor widget
- * 
+ *
  * This widget depends on jstz
- * 
+ *
  * formatAmount(), escapehtml(), checkData() from curious.js
  * makeGetUrl() from the template or mobileBase.js
  * dateToTimeStr(), getCSRFPreventionObject(), callLogoutCallbacks() from base.js
@@ -23,9 +23,9 @@ function __removePrefix(str, prefix) {
 
 function EntryListWidget(divIds, autocompleteWidget) {
 	var self = this;
-	
+
 	if (!divIds) divIds = {};
-	
+
 	divIds = $.extend({editId:"input0", listId:"entry0", calendarId:"datepicker", dragId:"drag", areaId:"area"}, divIds);
 
 	this.entryListItems = [];
@@ -41,11 +41,11 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	if (!autocompleteWidget) {
 		autocompleteWidget = new AutocompleteWidget("autocomplete", this.editId);
 	}
-	
+
 	this.autocompleteWidget = autocompleteWidget;
-	
+
 	var dayDuration = 86400000;
-	
+
 	this.defaultToNow = true;
 
 	this.cacheDate = function() {
@@ -119,7 +119,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		}
 		self.currentDragTag = null;
 	});
-	
+
 	this.displayEntry = function(entryInstance, isUpdating, args) {
 		args = args || {};
 
@@ -177,7 +177,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				isPlain = false;
 				classes.push("remind");
 			}
-			if (RepeatType.isRepeat(repeatType) || RepeatType.isDaily(repeatType) || RepeatType.isWeekly(repeatType) || 
+			if (RepeatType.isRepeat(repeatType) || RepeatType.isDaily(repeatType) || RepeatType.isWeekly(repeatType) ||
 					RepeatType.isMonthly(repeatType)) {
 				isRepeat = true;
 				isPlain = false;
@@ -192,6 +192,8 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		}
 		if (isDeviceSummaryEntry) {
 			classes.push("device-summary-entry", entry.sourceName.sanitizeTitle());
+		} else {
+			classes.push("editable-entry");
 		}
 		if (isDeviceTagEntry) {
 			classes.push("device-tag-entry");
@@ -211,18 +213,19 @@ function EntryListWidget(divIds, autocompleteWidget) {
 					nullAmount = true;
 				}
 			}
-			var pinnedTagButtonHTMLContent = '<div class="pin-button" id="' + this.editId + 'entryid' + id + '">' + 
-				' <button class="pin-entry" id="pin-button' + id + '" onclick="entryListWidget.createEntryFromPinnedEntry(' + currentUserId 
+
+			var pinnedTagButtonHTMLContent = '<div class="pin-button" id="' + this.editId + 'entryid' + id + '">' +
+				' <button class="pin-entry" id="pin-button' + id + '" onclick="entryListWidget.createEntryFromPinnedEntry(' + currentUserId
 				+',' + id + ',\'' + buttonText +'\',' + this.defaultToNow +',' + (nullAmount ? 'true' : 'false') + ')">'+
 				buttonText + '</button>' + '<li class="dropdown hide-important"><a href="#" data-toggle="dropdown">' +
-				'<b class="caret"></b></a><ul class="dropdown-menu" role="menu"><li>' + 
+				'<b class="caret"></b></a><ul class="dropdown-menu" role="menu"><li>' +
 				'<a href="#" id="#entrydelid' + this.editId + id + '" onclick="entryListWidget.deleteEntryId(' + id + ');return false;">' +
 				'<img src="/images/pin-x.png" width="auto" height="23">Delete</a></li></ul></li></div>';
 
 			$("#pinned-tag-list").append(pinnedTagButtonHTMLContent);
 			return;
 		}
-		
+
 		var diff = date.getTime() - this.cachedDate.getTime();
 		if (diff < 0 ||  diff >= dayDuration) {
 			return; // skip items outside display
@@ -236,7 +239,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				dateStr = dateStr + ' ';
 			}
 		}
-		
+
 		var innerHTMLContent = '<div class="content-wrapper '+ ((entry.repeatType) ? '' : 'no-tag') +'">';
 
 		if (isDeviceSummaryEntry) {
@@ -247,36 +250,36 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				+ escapehtml(description) + '</span>';
 
 		var amounts = entry.amounts;
-		
+
 		var selectStart = null;
 		var selectEnd = null;
-		
+
 		var i = 0, iString;
 		while ((iString = (i++).toString()) in amounts) {
 			var amountEntry = amounts[iString];
 			var amount = amountEntry.amount;
 			var amountPrecision = amountEntry.amountPrecision;
 			var units = amountEntry.units;
-			
+
 			var formattedAmount = formatAmount(amount, amountPrecision);
-			
+
 			// store first amount for post-selection highlighting
 			if (selectStart == null) {
 				selectStart = (timeAfterTag ? 0 : dateStr.length) + description.length + 1 + (formattedAmount.length == 0 ? 1 : 0);
 				selectEnd = selectStart + formattedAmount.length - 1;
 				self.entrySelectData[id] = [selectStart, selectEnd, amountPrecision < 0 && amount != null]; // if third item is true, insert extra space at cursor
 			}
-			
+
 			innerHTMLContent += '<span class="entryAmount">' + escapehtml(formattedAmount) + '</span>'
 					+ '<span class="entryUnits">' + escapehtml(formatUnits(units)) + '</span>'
 		}
-		
+
 		comment = __removePrefix(comment, 'repeat');
 		comment = __removePrefix(comment, 'remind');
 		comment = __removePrefix(comment, 'daily');
 		comment = __removePrefix(comment, 'weekly');
 		comment = __removePrefix(comment, 'monthly');
-		
+
 		var commentHTML = comment ? ' <span class="entryComment">' + escapehtml(comment) : '</span>';
 		var commentLabel = '';
 		if (isRemind && isRepeat) {
@@ -299,7 +302,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 					' Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' +
 					this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>' + entryDetailsPopover;
 		}
-		
+
 		var entryEditItem;
 
 		var elementId = "" + this.editId + "entryid" + id;
@@ -432,19 +435,29 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	}
 
 	/**
-	 * Click handler to execute when someone clicks on the top level device entry like "Moves Data".
+	 * Click handler to execute when someone clicks on the device entry (top level) like "Moves Data".
 	 *
 	 * @param $target jQuery DOM element object for above said entry
 	 */
 	this.toggleDeviceEntry = function($target) {
+		/**
+		 * @type {EntryDeviceData}
+		 */
 		var entryDeviceDataInstance = $target.data("instance");        // Instance of EntryDeviceData
+
+		// This will be all device summary entries under the current device entry
 		var elementsToToggle = $("." + $target.attr("id"));
 
+		// We have to save the collapse/expand state of device entries only when on the current day entry page
+		var shouldSaveState = areSameDate(this.cachedDate, new Date());
+
+		// Is already collapsed
 		if (entryDeviceDataInstance.isCollapsed()) {
-			entryDeviceDataInstance.expand();
+			entryDeviceDataInstance.expand(shouldSaveState);
 			elementsToToggle.slideDown();
 		} else {
-			entryDeviceDataInstance.collapse();
+			// Collapse device entry
+			entryDeviceDataInstance.collapse(shouldSaveState);
 			elementsToToggle.slideUp();
 
 			jQuery.each(elementsToToggle, function(index, element) {
@@ -456,6 +469,8 @@ function EntryListWidget(divIds, autocompleteWidget) {
 					 */
 					return;
 				}
+
+				// And collapse device summary entries also
 				this.toggleDeviceSummaryEntry($element, true);
 			}.bind(this));
 		}
@@ -464,13 +479,16 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	};
 
 	/**
-	 * Click handler to execute when someone clicks on the 2nd level device summary entry like
+	 * Click handler to execute when someone clicks on the device summary entry (2nd level) like
 	 * "walk 3760 steps 70.23 mins 1.6 mi 12:28am (Moves)"
 	 *
 	 * @param $target jQuery DOM element object for above said entry
-	 * @param forceCollapse Confirms the entries are collapsed
+	 * @param {boolean} forceCollapse Confirms the entries are collapsed
 	 */
 	this.toggleDeviceSummaryEntry = function($target, forceCollapse) {
+		/**
+		 * @type {EntryDeviceDataSummary}
+		 */
 		var entryDeviceSummaryInstance = $target.data("instance");        // Instance of EntryDeviceDataSummary
 		var elementsToToggle = $("." + $target.attr("id"));
 
@@ -548,10 +566,10 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		$passiveElement.removeClass("active");
 		$passiveElement.find("img").addClass(" hide");
 		$passiveElement.find("img").attr("src","");
-		
+
 		if (!$activeElement.hasClass("active")) {
 			$activeElement.addClass("active");
-		} 
+		}
 		if (isAscending) {
 			$activeElement.find("img").removeClass("hide");
 			$activeElement.find("img").attr("src", "/images/asc.png");
@@ -563,7 +581,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 
 	this.deleteGhost = function($entryToDelete, isContinuous, entryId, allFuture) {
 		this.cacheNow();
-		
+
 		queueJSON("deleting entry", makeGetUrl("deleteGhostEntryData"), makeGetArgs(getCSRFPreventionObject("deleteGhostEntryDataCSRF", {entryId:entryId,
 			all:(allFuture ? "true" : "false"), currentTime:this.cachedDateUTC, baseDate:this.cachedDateUTC})),
 			function(ret) {
@@ -724,7 +742,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 					contentWrapper.css('color', '#fff');
 					setTimeout(function() {
 						scrollTo.css('background-color', originalBackgroundColor);
-						contentWrapper.css('color', ''); 
+						contentWrapper.css('color', '');
 					}, 1000);
 				}
 			}
@@ -746,7 +764,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			}
 			repeatEndParam = "&repeatEnd=" + new Date(repeatEnd).toUTCString();
 		}
-		return repeatEndParam + repeatTypeParam;	
+		return repeatEndParam + repeatTypeParam;
 	}
 
 	this.initInput = function() {
@@ -878,7 +896,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			var elementToCollapse = $("#tagNav");
 			var isHidden = elementToCollapse.is(":hidden");
 			var triangleElement = $("span.icon-triangle");
-			
+
 			if (!isHidden) {	// Means tags going to hide.
 				$("body").toggleClass("tags-collapsed", true);
 				$("body").toggleClass("tags-displayed", false);
@@ -911,11 +929,11 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			}
 		}
 		var repeatType = $selectee.data("entry").repeatType;
-		
+
 		$selectee.data('originalText', entryText); // store entry text for comparison
 		$contentWrapper.hide();
 
-		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' + 
+		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' +
 				this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0; width: calc(100% - 75px);" /></span>');
 		$('#' + $selectee.attr('id') + ' .track-input-dropdown').show();
 
@@ -932,7 +950,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			$('#' + currentEntryId + '-weekly').prop('checked', true);
 		} else if (RepeatType.isMonthly(repeatType)) {
 			$('#' + currentEntryId + '-monthly').prop('checked', true);
-		} 
+		}
 		if (RepeatType.isGhost(repeatType)) {
 			$('#' + entry.id + '-confirm-each-repeat').prop('checked', true);
 		}
@@ -964,7 +982,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			$('#' + self.editId + 'tagTextInput').selectRange(selectRange[0], selectRange[1]);
 		}
 	}
-	
+
 	/**
 	 * Checks if text is different from original text.
 	 * IF different than call updateEntry() method to notify
@@ -997,7 +1015,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			console.debug('Is a continuous entry:', $unselectee.attr('id'));
 			this.unselectEntry($unselectee, true, true);
 			this.updateEntry(currentEntryId, newText, this.defaultToNow, repeatTypeId, repeatEnd);
-		} else if (!$unselectee.data('isGhost') && ($unselectee.data('originalText') == newText && 
+		} else if (!$unselectee.data('isGhost') && ($unselectee.data('originalText') == newText &&
 				$unselectee.data("entry").repeatType == repeatTypeId && !isOldRepeatEndChanged)) {
 			console.debug('Is not remind & no change in entry.');
 			this.unselectEntry($unselectee);
@@ -1031,18 +1049,6 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			return;
 		}
 
-		var $deviceEntry = $target.closest(".device-entry");
-		if ($deviceEntry.length) {
-			self.toggleDeviceEntry($deviceEntry);
-			return false;
-		}
-
-		var $deviceSummaryEntry = $target.closest(".device-summary-entry");
-		if ($deviceSummaryEntry.length !== 0) {
-			self.toggleDeviceSummaryEntry($deviceSummaryEntry);
-			return false;
-		}
-
 		var $alreadySelectedEntry = $("li.entry.ui-selected");
 
 		// Checking if any entry is already selected when mousedown event triggered.
@@ -1056,6 +1062,27 @@ function EntryListWidget(divIds, autocompleteWidget) {
 
 		if (isEventToCancel) {
 			return;
+		}
+
+		var $deviceEntry = $target.closest(".device-entry");
+		var $deviceSummaryEntry = $target.closest(".device-summary-entry");
+		var isClickedOnDeviceEntry = $deviceEntry.length !== 0;
+		var isClickedOnDeviceSummaryEntry = $deviceSummaryEntry.length !== 0;
+
+		// If a device entry (example: "Moves Data") or device summary entry is clicked
+		if (isClickedOnDeviceEntry || isClickedOnDeviceSummaryEntry) {
+			if (isClickedOnDeviceEntry) {
+				self.toggleDeviceEntry($deviceEntry);
+			} else if (isClickedOnDeviceSummaryEntry) {
+				self.toggleDeviceSummaryEntry($deviceSummaryEntry);
+			}
+
+			if (isAnyEntrySelected) {
+				console.debug('Device entry clicked. Will now unselect selected entry.');
+				self.unselectEntry($alreadySelectedEntry);
+			}
+
+			return false;
 		}
 
 		if ($target.closest('.dropdown-menu').length == 0 && $target.closest('#ui-datepicker-div').length == 0) {
@@ -1101,9 +1128,14 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		} else {
 			datepickerFormat = 'D MM dd, yy';
 		}
-		$datepicker.val($.datepicker.formatDate(datepickerFormat, currentDate));
-	}
-	
+
+		/*
+		 * Update the date picker with already selected date (if any) or to the currentDate to avoid re-setting the
+		 * date to "today" since this method also being called on window resize.
+		 */
+		$datepicker.val($.datepicker.formatDate(datepickerFormat, this.cachedDate || currentDate));
+	};
+
 	$("#" + self.editId).droppable({
 		drop : function(event, ui) {
 			var droppedItem = $(ui.draggable[0]).data(DATA_KEY_FOR_ITEM_VIEW).getData();
@@ -1165,11 +1197,19 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		if (!$unselectee) {
 			return false;
 		}
+
+		/**
+		 * Only select the previous/next entry on Keyboard Up/Down key which is editable and visible. This is to
+		 * avoid selecting either the device entry, device summary entry or any simple entry collapsed inside the
+		 * device summary entry.
+		 * @type {string}
+		 */
+		var selector = ".editable-entry:visible:first";
 		var $selectee;
-		if (e.keyCode == 40) { 
-			$selectee = $unselectee.next();
-		} else if (e.keyCode == 38) { 
-			$selectee = $unselectee.prev();
+		if (e.keyCode == 40) {
+			$selectee = $unselectee.nextAll(selector);
+		} else if (e.keyCode == 38) {
+			$selectee = $unselectee.prevAll(selector);
 		}
 		if ($selectee) {
 			self.nextSelectionId  = $selectee.attr('id');
@@ -1178,6 +1218,6 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		}
 		return false;
 	});
-	
+
 	self.refresh();
 }

@@ -93,15 +93,12 @@ class DataController extends LoginController {
 	protected def doUpdateEntry(Map parms) {
 		debug "DataController.doUpdateEntry() params:" + parms
 
-		def p = [defaultToNow:'1', allFuture:'1']
+		Map p = [defaultToNow:'1', allFuture:'1']
 		p.putAll(parms)
-				
-		boolean defaultToNow = (p.defaultToNow == '1')
+
 		boolean allFuture = (p.allFuture == '1')
 		
 		Entry entry = Entry.get(Long.parseLong(p.entryId))
-
-		Entry oldEntry = entry
 
 		if (entry.getUserId() == 0L) {
 			debug "Attempting to edit a deleted entry."
@@ -567,11 +564,7 @@ class DataController extends LoginController {
 		
 		def plotEntries = Entry.fetchPlotData(sessionUser(), tagIds, startDateStr ? parseDate(startDateStr) : null,
 			endDateStr ? parseDate(endDateStr) : null, new Date(), plotInfo)
-		
-		for (def entry : plotEntries) {
-			
-		}
-		
+
 		return [entries:plotEntries, tagIds:tagIds, unitGroupId:plotInfo.unitGroupId,
 				valueScale:plotInfo.valueScale]
 	}
@@ -1189,35 +1182,6 @@ class DataController extends LoginController {
 		renderStringGet('success')
 	}
 
-	// Use "update" action of "DiscussionController" instead
-	@Deprecated
-	def setDiscussionNameData() {
-		debug "DataController.setDiscussionNameData() params:" + params
-
-		def user = sessionUser()
-
-		if (user == null) {
-			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
-			return
-		}
-
-		debug "Trying to set discussion name " + params.name
-
-		def discussion = Discussion.findByHash(params.discussionHash)
-
-		if (discussion == null) {
-			renderStringGet('No such discussion hash ' + params.discussionHash)
-			return;
-		}
-
-		if (Discussion.update(discussion, params, user)) {
-			renderStringGet('success')
-		} else {
-			renderStringGet('Failed to update discussion name')
-		}
-	}
-
 	def createSingleHelpEntrysData() {
 		debug("DataController.createSingleHelpEntrysData() params:" + params)
 
@@ -1378,8 +1342,8 @@ class DataController extends LoginController {
 				}
 			}
 
-			renderJSONGet([success   : true, usernameList: searchResults.collect { it.getAt(0) },
-						   userIdList: searchResults.collect { it.getAt(2) }, displayNames: displayNames])
+			renderJSONGet([success: true, usernameList: searchResults.collect { it.getAt(0) },
+							userIdList: searchResults.collect { it.getAt(2) }, displayNames: displayNames])
 		} else {
 			renderJSONGet([success: false])
 		}

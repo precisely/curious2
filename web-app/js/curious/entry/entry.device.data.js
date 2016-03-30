@@ -57,14 +57,18 @@ function EntryDeviceData(deviceEntries, settings) {
 		return groupedData;
 	};
 
-	this.collapse = function() {
+	this.collapse = function(saveState) {
 		collapsed = true;
-		this.saveState();
+		if (saveState) {
+			this.saveState();
+		}
 	};
 
-	this.expand = function() {
+	this.expand = function(saveState) {
 		collapsed = false;
-		this.saveState();
+		if (saveState) {
+			this.saveState(saveState);
+		}
 	};
 
 	this.isCollapsed = function() {
