@@ -2,96 +2,96 @@
 
 function EntryDeviceData(deviceEntries, settings) {
 
-    StateView.call(this);
+	StateView.call(this);
 
-    if (!deviceEntries || !deviceEntries[0]) {
-        throw "At least one entry need to passed."
-    }
+	if (!deviceEntries || !deviceEntries[0]) {
+		throw "At least one entry need to passed."
+	}
 
-    /* Private members start */
+	/* Private members start */
 
-    var groupedData = {};
-    var collapsed = false;
+	var groupedData = {};
+	var collapsed = false;
 
-    var sourceName = deviceEntries[0].sourceName;
-    var source = sourceName.split(" ")[0].toUpperCase();
+	var sourceName = deviceEntries[0].sourceName;
+	var source = sourceName.split(" ")[0].toUpperCase();
 
-    if (settings[source]) {     // If user has previously collapsed the device top level entry
-        collapsed = true;
-    }
+	if (settings[source]) {     // If user has previously collapsed the device top level entry
+		collapsed = true;
+	}
 
-    /* Private members end */
+	/* Private members end */
 
-    /* Getters start */
+	/* Getters start */
 
-    this.getSanitizedSourceName = function() {
-        return sourceName.sanitizeTitle();
-    };
+	this.getSanitizedSourceName = function() {
+		return sourceName.sanitizeTitle();
+	};
 
-    this.getTriangle = function () {
-        if (collapsed) {
-            return '<i class="fa fa-fw toggle-icon fa-chevron-right"></i>';
-        }
+	this.getTriangle = function () {
+		if (collapsed) {
+			return '<i class="fa fa-fw toggle-icon fa-chevron-right"></i>';
+		}
 
-        return '<i class="fa fa-fw toggle-icon fa-chevron-down"></i>';
-    };
+		return '<i class="fa fa-fw toggle-icon fa-chevron-down"></i>';
+	};
 
-    this.getDisplayText = function () {
-        var text = this.getTriangle();
-        return text + ' ' + deviceEntries[0]["sourceName"];
-    };
+	this.getDisplayText = function () {
+		var text = this.getTriangle();
+		return text + ' ' + deviceEntries[0]["sourceName"];
+	};
 
-    /* Getters end */
+	/* Getters end */
 
-    this.group = function() {
-        jQuery.each(deviceEntries, function(index, entry) {
-            if (!entry["normalizedAmounts"]) {
-                return;
-            }
+	this.group = function() {
+		jQuery.each(deviceEntries, function(index, entry) {
+			if (!entry["normalizedAmounts"]) {
+				return;
+			}
 
-            var description = entry["description"];
-            var currentGroup = groupedData[description] = groupedData[description] || [];
-            currentGroup.push(entry);
-        });
+			var description = entry["description"];
+			var currentGroup = groupedData[description] = groupedData[description] || [];
+			currentGroup.push(entry);
+		});
 
-        return groupedData;
-    };
+		return groupedData;
+	};
 
-    this.collapse = function() {
-        collapsed = true;
-        this.saveState();
-    };
+	this.collapse = function() {
+		collapsed = true;
+		this.saveState();
+	};
 
-    this.expand = function() {
-        collapsed = false;
-        this.saveState();
-    };
+	this.expand = function() {
+		collapsed = false;
+		this.saveState();
+	};
 
-    this.isCollapsed = function() {
-        return collapsed;
-    };
+	this.isCollapsed = function() {
+		return collapsed;
+	};
 
-    this.getCurrentState = function() {
-        return this.isCollapsed();
-    };
+	this.getCurrentState = function() {
+		return this.isCollapsed();
+	};
 
-    this.saveState = function() {
-        var params = {
-            isCollapsed: this.getCurrentState(),
-            device: source
-        };
+	this.saveState = function() {
+		var params = {
+			isCollapsed: this.getCurrentState(),
+			device: source
+		};
 
-        params = getCSRFPreventionObject("saveDeviceEntriesStateDataCSRF", params);
+		params = getCSRFPreventionObject("saveDeviceEntriesStateDataCSRF", params);
 
-        backgroundPostJSON("Saving state", "/home/saveDeviceEntriesStateData", params, function(data) {
-            if (!checkData(data)) {
-                return;
-            }
-            console.log("Preference saved.");
-        }, function(resp) {
-            console.log("Could not save preference.", resp);
-        });
-    };
+		backgroundPostJSON("Saving state", "/home/saveDeviceEntriesStateData", params, function(data) {
+			if (!checkData(data)) {
+				return;
+			}
+			console.log("Preference saved.");
+		}, function(resp) {
+			console.log("Could not save preference.", resp);
+		});
+	};
 }
 
 inherit(EntryDeviceData, StateView);

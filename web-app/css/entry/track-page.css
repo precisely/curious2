@@ -1,25 +1,25 @@
 #entry0 .entry.device-summary-entry {
-    padding-left: 35px;
+	padding-left: 35px;
 }
 
 #entry0 .entry.device-tag-entry:not(.no-summary) {
-    padding-left: 70px;
-    border-left: none;
+	padding-left: 70px;
+	border-left: none;
 }
 
 #entry0 .entry.device-tag-entry.no-summary {
-    padding-left: 40px;
+	padding-left: 40px;
 }
 
 .device-entry .toggle-icon, .device-summary-entry .toggle-icon {
-    margin-right: 2px;
+	margin-right: 2px;
 }
 
 .entry.device-entry, .entry.device-summary-entry {
-    cursor: pointer;
-    font-weight: bold;
+	cursor: pointer;
+	font-weight: bold;
 }
 
 .entry.device-summary-entry .content-wrapper {
-    font-weight: bold;
+	font-weight: bold;
 }
