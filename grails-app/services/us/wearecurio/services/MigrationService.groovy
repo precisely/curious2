@@ -623,13 +623,7 @@ class MigrationService {
 		}
 
 		tryMigration("Fix typo in fullName in user_group") {
-			UserGroup.withCriteria {
-				ilike("fullName", "%grouo%")
-			}.each { userGroup ->
-				log.debug "Fixing typo in $userGroup"
-				userGroup.fullName = userGroup.fullName.replace("grouo", "group")
-				Utils.save(userGroup, true)
-			}
+			sql("update user_group set full_name = replace(full_name, 'grouo', 'group')")
 		}
 	}
 	
