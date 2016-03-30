@@ -38,7 +38,6 @@ import java.text.SimpleDateFormat
 
 class DataController extends LoginController {
 
-	def tokenService
 	EntryParserService entryParserService
 	SearchService searchService
 	
@@ -423,6 +422,10 @@ class DataController extends LoginController {
 		debug "DataController.getListData() Returning entries "+entries.dump()
 		// skip continuous repeat entries with entries within the usage threshold
 
+		/*
+		 * It should always be rendered as a map after mobile app is updated. This is currently needed to backward
+		 * support the mobile code.
+		 */
 		if (respondAsMap) {
 			renderJSONGet([entries: entries, deviceSettings: user.settings.getDeviceSettings()])
 			return
@@ -661,16 +664,20 @@ class DataController extends LoginController {
 		Date baseDate = parseDate(params.baseDate)
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
 		
-		def result = doAddEntry(params)
-		if (!result[2]) {
-			
-		}
+		List result = doAddEntry(params)
+
 		if (result[0] != null) {
+			AuthenticationStatus authStatus = authFromUserIdStr(params.userId)
+
+			User user = authStatus.user
+
 			renderJSONGet([
 				listEntries(userId, params.timeZoneName, baseDate, currentTime),
 				result[1],
 				result[2]?.getJSONDesc(),
-				result[0].getJSONDesc()
+				result[0].getJSONDesc(),
+				// TODO respond this as map instead of passing data based on index
+				user.settings.getDeviceSettings()
 			])
 		} else {
 			renderStringGet('error')
@@ -685,15 +692,19 @@ class DataController extends LoginController {
 		
 		def (entry, message, oldTagStats, newTagStats) = doUpdateEntry(params)
 		if (entry != null) {
+			User user = sessionUser()
+
 			renderJSONGet([listEntries(userFromId(entry.getUserId()), params.timeZoneName, baseDate, currentTime),
-					oldTagStats?.getJSONDesc(), newTagStats?.getJSONDesc()])
+					oldTagStats?.getJSONDesc(), newTagStats?.getJSONDesc(),
+					// TODO respond this as map instead of passing data based on index
+					user.settings.getDeviceSettings()])
 		} else {
 			debug "Error while updating: " + message
 			renderStringGet(message)
 		}
 	}
 
-	def deleteEntrySData() { // new API
+	def deleteEntrySData(Long entryId) { // new API
 		debug "DataController.deleteEntrySData() params:" + params
 
 		def user = sessionUser()
@@ -704,7 +715,7 @@ class DataController extends LoginController {
 			return
 		}
 
-		def entry = Entry.get(params.entryId.toLong());
+		Entry entry = Entry.get(entryId)
 		def userId = entry.getUserId();
 
 		def currentTime = params.currentTime == null ? new Date() : parseDate(params.currentTime)
@@ -721,7 +732,9 @@ class DataController extends LoginController {
 			def tagStats = stats.finish()
 			renderJSONGet([listEntries(sessionUser(), timeZoneName, parseDate(params.displayDate), currentTime),
 				tagStats[0]?.getJSONDesc(),
-				tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null])
+				tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null,
+				// TODO respond this as map instead of passing data based on index
+				user.settings.getDeviceSettings()])
 		}
 	}
 

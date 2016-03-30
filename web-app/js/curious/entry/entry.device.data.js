@@ -4,22 +4,23 @@ function EntryDeviceData(deviceEntries, settings) {
 
     StateView.call(this);
 
+    if (!deviceEntries || !deviceEntries[0]) {
+        throw "At least one entry need to passed."
+    }
+
     /* Private members start */
 
     var groupedData = {};
     var collapsed = false;
-    var source, sourceName;
+
+    var sourceName = deviceEntries[0].sourceName;
+    var source = sourceName.split(" ")[0].toUpperCase();
+
+    if (settings[source]) {     // If user has previously collapsed the device top level entry
+        collapsed = true;
+    }
 
     /* Private members end */
-
-    if (deviceEntries && deviceEntries[0]) {
-        sourceName = deviceEntries[0].sourceName;
-        source = sourceName.split(" ")[0].toUpperCase();
-
-        if (settings[source]) {     // If user has previously collapsed the device top level entry
-            collapsed = true;
-        }
-    }
 
     /* Getters start */
 
@@ -29,10 +30,10 @@ function EntryDeviceData(deviceEntries, settings) {
 
     this.getTriangle = function () {
         if (collapsed) {
-            return '<i class="fa toggle-icon fa-chevron-right"></i>';
+            return '<i class="fa fa-fw toggle-icon fa-chevron-right"></i>';
         }
 
-        return '<i class="fa toggle-icon fa-chevron-down"></i>';
+        return '<i class="fa fa-fw toggle-icon fa-chevron-down"></i>';
     };
 
     this.getDisplayText = function () {

@@ -1,10 +1,14 @@
 #entry0 .entry.device-summary-entry {
-    padding-left: 36px;
+    padding-left: 35px;
 }
 
-#entry0 .entry.device-tag-entry {
-    padding-left: 65px;
+#entry0 .entry.device-tag-entry:not(.no-summary) {
+    padding-left: 70px;
     border-left: none;
+}
+
+#entry0 .entry.device-tag-entry.no-summary {
+    padding-left: 40px;
 }
 
 .device-entry .toggle-icon, .device-summary-entry .toggle-icon {

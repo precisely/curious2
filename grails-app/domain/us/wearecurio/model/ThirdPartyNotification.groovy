@@ -78,6 +78,15 @@ enum ThirdParty {
 		}
 	}
 
+	static ThirdParty lookup(String name) {
+		try {
+			return ThirdParty.valueOf(name?.toUpperCase() ?: "")
+		} catch (IllegalArgumentException e) {
+			String message = "Invalid device. Allowed values are " + this.values()*.name().join(", ")
+			throw new IllegalArgumentException(message)
+		}
+	}
+
 	static ThirdParty get(Integer id) {
 		map.get(id)
 	}

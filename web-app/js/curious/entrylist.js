@@ -86,10 +86,15 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				return;
 			}
 
-			self.deviceSettings = data.deviceSettings;
+			self.setDeviceSettings(data.deviceSettings);
 			self.refreshEntries(data.entries);
 		});
-	}
+	};
+
+	this.setDeviceSettings = function(deviceSettings) {
+		console.log("Device settings", deviceSettings);
+		this.deviceSettings = deviceSettings;
+	};
 
 	this.clearEntries = function() {
 		this.entryListItems = [];
@@ -191,7 +196,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		if (isDeviceTagEntry) {
 			classes.push("device-tag-entry");
 			if (!args.singleDeviceTagEntry) {
-				classes.push("hide", args.deviceDataSummaryInstance.getAssociatedEntriesClass());
+				classes.push(args.deviceDataSummaryInstance.getAssociatedEntriesClass());
 			}
 		}
 
@@ -358,6 +363,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		if (groupedEntries.length === 1) {
 			// Then do not display that as expandable entry instead show it as simple entry (but indented)
 			classes.push(entryDeviceDataInstance.getSanitizedSourceName());
+			classes.push("no-summary");
 
 			this.displayEntry(groupedEntries[0], false, {deviceTagEntry: true, singleDeviceTagEntry: true, classes:
 					classes});
@@ -368,6 +374,14 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		this.displayEntry(deviceDataSummaryEntry, false, {classes: classes});
 
 		groupedEntries.forEach(function(entry) {
+			// If summary entry is collapsed (user might have collapsed it in the current session)
+			if (deviceDataSummaryEntry.isCollapsed()) {
+				// Then only hide all nested entries
+				if (classes.indexOf("hide") === -1) {
+					classes.push("hide");
+				}
+			}
+
 			this.displayEntry(entry, false, {deviceTagEntry: true, deviceDataSummaryInstance: deviceDataSummaryEntry,
 				classes: classes});
 		}.bind(this));
@@ -590,7 +604,9 @@ function EntryListWidget(divIds, autocompleteWidget) {
 					+ getCSRFPreventionURI("deleteEntryDataCSRF") + "&callback=?",
 					function(entries) {
 				if (checkData(entries, 'success', "Error deleting entry")) {
+					self.setDeviceSettings(entries[3]);
 					self.refreshEntries(entries[0]);
+
 					if (entries[1] != null)
 						self.autocompleteWidget.update(entries[1][0], entries[1][1], entries[1][2], entries[1][3], entries[1][4]);
 					if (entries[2] != null) {
@@ -613,7 +629,9 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				+ getCSRFPreventionURI("updateEntrySDataCSRF") + "&allFuture=" + (allFuture? '1':'0') + "&callback=?",
 				function(entries) {
 			if (checkData(entries, 'success', "Error updating entry")) {
+				self.setDeviceSettings(entries[3]);
 				self.refreshEntries(entries[0]);
+
 				if (self.nextSelectionId) {
 					var nextSelection = $('#' + self.nextSelectionId);
 					self.nextSelectionId = null;
@@ -687,6 +705,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				if (RepeatType.isContinuous(entries[3].repeatType)) {
 					self.refreshPinnedEntries(entries[0]);
 				} else {
+					self.setDeviceSettings(entries[4]);
 					self.refreshEntries(entries[0]);
 				}
 				if (entries[2] != null)

@@ -9,16 +9,25 @@ function EntryDeviceDataSummary(deviceTagEntries) {
 
     StateView.call(this);
 
+    if (!deviceTagEntries || !deviceTagEntries[0]) {
+        throw "At least one entry need to passed."
+    }
+
+    /* Private members start */
+
     var aggregatedUnitAmounts;
     var groupedData = {};
-    var collapsed = true;
-    var baseTag = "";
-    var deviceName = "";
 
-    if (deviceTagEntries && deviceTagEntries[0]) {
-        baseTag = deviceTagEntries[0].description;
-        deviceName = deviceTagEntries[0].sourceName;
-    }
+    var baseTag = deviceTagEntries[0].description;
+    var deviceName = deviceTagEntries[0].sourceName;
+    var source = deviceName.split(" ")[0].toUpperCase();
+    var collapsed = true;
+
+    var entrySessionStorage = store.namespace("entries").session;      // store2.min.js
+    // Will be like "oura.device.summary.sleep"
+    var storageKey = source.toLowerCase() + ".device.summary." + baseTag;
+
+    /* Private members end */
 
     this.getBaseTag = function() {
         return baseTag;
@@ -33,11 +42,11 @@ function EntryDeviceDataSummary(deviceTagEntries) {
     };
 
     this.getTriangle = function () {
-        if (collapsed) {
-            return '<i class="fa toggle-icon fa-chevron-right"></i>';
+        if (this.isCollapsed()) {
+            return '<i class="fa fa-fw toggle-icon fa-chevron-right"></i>';
         }
 
-        return '<i class="fa toggle-icon fa-chevron-down"></i>';
+        return '<i class="fa fa-fw toggle-icon fa-chevron-down"></i>';
     };
 
     this.group = function () {
@@ -99,14 +108,53 @@ function EntryDeviceDataSummary(deviceTagEntries) {
 
     this.collapse = function() {
         collapsed = true;
+        this.saveState();
     };
 
     this.expand = function() {
         collapsed = false;
+        this.saveState();
     };
 
     this.isCollapsed = function() {
-        return collapsed;
+        return !this.getCurrentState();
+    };
+
+    this.getCurrentState = function() {
+        var summaryPreferences = entrySessionStorage.get(storageKey) || {};
+        return summaryPreferences[constructDateKey()];
+    };
+
+    /**
+     * Will create an object like:
+     * {
+     *     "MOVES": {
+     *         walk: {
+     *              "09-Feb-2016": true,
+     *              "12-Feb-2016": false
+     *         },
+     *         bike: {
+     *              "09-Feb-2016": false
+     *         }
+     *     },
+     *     "WITHINGS": {
+     *          "sleep": {
+     *               "09-Feb-2016": false
+     *          }
+     *     }
+     * }
+     *
+     * This means, the walk summary entry for 9th Feb from Moves was expanded; while the bike summary entry for 9th
+     * Feb from Moves was collapsed.
+     */
+    this.saveState = function() {
+        var summaryPreferences = entrySessionStorage.get(storageKey) || {};
+        summaryPreferences[constructDateKey()] = !collapsed;
+        entrySessionStorage.set(storageKey, summaryPreferences);
+    };
+
+    function constructDateKey() {
+        return $.datepicker.formatDate('dd-M-yy', deviceTagEntries[0].date);
     }
 }
 
