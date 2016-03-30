@@ -8,7 +8,6 @@
 		<span class="username">
 			{{- discussionPost.authorName || 'anonymous'}}
 		</span>
-
 		<span class="posting-time" data-time="{{- discussionPost.created }}"></span>
 		{{ if (discussionPost.created !== discussionPost.updated) { }}
 			<!--<span class="posting-time" title="{{- _.formatDate(discussionPost.created, 'M/dd/yy h:mm a') }}">
@@ -16,7 +15,7 @@
 			</span>-->
 		{{ } }}
 
-		{{ if (discussionPost.authorUserId == userId) { }}
+		{{ if (discussionPost.authorUserId == userId || discussionDetails.isAdmin) { }}
 			<span class="pull-right">
 				<a href="#" class="cancel-edit-post comment-buttons hide" data-post-id="{{- discussionPost.id}}"
 					data-discussion-hash="{{-discussionPost.hash}}" title="Cancel editing">

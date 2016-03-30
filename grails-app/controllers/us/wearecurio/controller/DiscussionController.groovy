@@ -3,7 +3,7 @@ package us.wearecurio.controller
 import org.springframework.http.HttpStatus
 import us.wearecurio.annotations.EmailVerificationRequired
 import us.wearecurio.exception.CreationNotAllowedException
-
+import us.wearecurio.security.NoAuth
 import java.text.SimpleDateFormat
 import java.text.DateFormat
 import grails.converters.JSON
@@ -66,6 +66,7 @@ class DiscussionController extends LoginController {
 		}
 	}
 
+	@NoAuth
 	def show() {
 		User user = sessionUser()
 		

@@ -262,6 +262,10 @@ $(document).ready(function() {
 				showAlert(data.message);
 				return;
 			}
+
+			if (!data.discussionDetails) {
+				data.discussionDetails = {userId: data.userId, isAdmin: data.isAdmin};
+			}
 			renderComments(params.discussionHash, [data.post], data, true);
 			$form[0].reset();
 			var discussionElement = getDiscussionElement(params.discussionHash);
@@ -327,6 +331,40 @@ $(document).ready(function() {
 		return false;
 	});
 
+	$('#share-modal').on('show.bs.modal', function(event) {
+		var targetElement = $(event.relatedTarget); // Element that triggered the modal
+		var shareURL = targetElement.data('shareUrl');
+		var discussionTitle = targetElement.data('discussionTitle');
+		$('#social-share-message').data({shareURL: shareURL, discussionTitle: discussionTitle});
+	});
+
+	$('#post-message').click(function() {
+		var shareMessage = $('#social-share-message').val();
+		if (!shareMessage || shareMessage == '') {
+			return false;
+		}
+		var platform = $(this).data('platform');
+		if (platform == 'twitter') {
+			var shareURL = 'http://twitter.com/intent/tweet?text=' + shareMessage + '&url=' +
+				encodeURIComponent($('#social-share-message').data('shareURL'));
+			var shareWindow = window.open(shareURL, '_blank', 'toolbar=no, menubar=no, width=500, height=400');
+		}
+		$('.share-options').show();
+		$('.post-message').hide();
+		$('#social-share-message').val('');
+		$('#share-modal .modal-header h4').text('Share');
+		$('#share-modal .modal-footer').hide();
+		$('#share-modal').modal('hide');
+	});
+
+	// Class to copy link to clipboard
+	var client = new ZeroClipboard($('.clip_button'));
+	client.on('ready', function(event) {
+		client.on('copy', function(event) {
+			event.clipboardData.setData('text/plain', $('#social-share-message').data('shareURL'));
+		});
+	});
+
 	$(document).on("change", "#disable-comments", function() {
 		var disabled = $(this).is(":checked");
 		var params = {
@@ -359,7 +397,6 @@ $(document).ready(function() {
 
 		$("#new-discussion-name").val(existingTitle);
 		$("#new-description").val(existingDescription);
-
 		$modal.modal("show");
 		return false;
 	});
@@ -429,6 +466,9 @@ function discussionShow(hash) {
 
 	queueJSON('Getting discussion', '/api/discussion/' + hash + '?' + getCSRFPreventionURI('getDiscussionList') + '&callback=?',
 			function(data) {
+		if (!checkData(data)) {
+			return;
+		}
 		if (data.success) {
 			$('.container-fluid').removeClass('main');
 			var discussionDetails = data.discussionDetails;
@@ -455,7 +495,12 @@ function discussionShow(hash) {
 				plot.loadSnapshotId(discussionDetails.firstPost.plotDataId, hash); // send discussion hash as authentication confirmation
 			}
 		} else {
-			$('.alert').text(data.message);
+			showAlert(data.message);
+			if (window.history.state) {
+				window.history.back();
+			} else {
+				location.hash = '#all';
+			}
 		}
 
 		setQueryHeader('Curious Discussions', true);
@@ -506,4 +551,37 @@ function setDescription(message) {
 		$(".add-description-form").show();
 	}
 	$(".add-description-form textarea").val("");
+}
+
+function shareMessage(platform) {
+	if (platform == 'copy') {
+		var hasFlash = false;
+		try {
+			hasFlash = Boolean(new ActiveXObject('ShockwaveFlash.ShockwaveFlash'));
+		} catch(exception) {
+			hasFlash = ('undefined' != typeof navigator.mimeTypes['application/x-shockwave-flash']);
+		}
+		if (!hasFlash) {
+			showAlert('You need to install the Flash Player to use this feature.');
+		}
+		$('#share-modal').modal('hide');
+		return true;
+	} else if (platform == 'facebook') {
+		FB.ui({
+			method: 'feed',
+			link: $('#social-share-message').data('shareURL'),
+			caption: 'Curious Discussions',
+			name: $('#social-share-message').data('discussionTitle')
+		}, function(response){});
+		$('#share-modal').modal('hide');
+		return true;
+	}
+
+	// See base.js for capitalizeFirstLetter() method
+	$('#share-modal .modal-header h4').text('Sharing to ' + platform.capitalizeFirstLetter());
+	$('.post-message .fa').removeClass('fa-facebook fa-twitter').addClass('fa-' + platform);
+	$('#post-message').data('platform', platform);
+	$('.share-options').hide();
+	$('.post-message').show();
+	$('#share-modal .modal-footer').show();
 }
