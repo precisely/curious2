@@ -7,6 +7,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.services.OuraDataService
+import us.wearecurio.security.NoAuth
 
 /**
  * A generic controller to handle all authentication made by oauth plugin.
@@ -89,6 +90,7 @@ class AuthenticationController extends SessionController {
 	/**
 	 * @see Declarative Error handling in http://grails.org/doc/latest/guide/theWebLayer.html#mappingToResponseCodes
 	 */
+	@NoAuth
 	def authenticateProvider() {
 		String provider = request.exception.cause.provider
 		String returnURI = request.forwardURI
@@ -203,10 +205,12 @@ class AuthenticationController extends SessionController {
 		oauthAccountService.createOrUpdate(ThirdParty.WITHINGS, session.withingsUserId, tokenInstance, userId, timeZoneId)
 	}
 
+	@NoAuth
 	def thirdPartySignUp() {
 		handleSignUpSignInAuth(SIGN_UP_AUTH)
 	}
 
+	@NoAuth
 	def thirdPartySignIn() {
 		handleSignUpSignInAuth(SIGN_IN_AUTH)
 	}

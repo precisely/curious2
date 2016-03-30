@@ -134,10 +134,13 @@
 										<img src="/images/follow.png" alt="follow">Follow
 									</button>
 								{{ } }}
-								<button class="share-button" data-toggle="popover" data-placement="top" title="Share:"
-									data-content="<input class='share-link' type='text' value='{{- serverURL}}/home/social#discussions/{{- discussionHash }}'>">
-									<img src="/images/share.png" alt="share"> Share
-								</button>
+								{{ if (isAdmin) { }}
+									<button class="share-button" data-toggle="modal" data-target="#share-modal"
+											data-share-url="{{- serverURL }}/home/social/discussions/{{- discussionHash }}"
+											data-discussion-title="{{- discussionTitle }}">
+										<img src="/images/share.png" alt="share"> Share
+									</button>
+								{{ } }}
 								<button class="comment-button" data-total-comments="{{- totalPostCount }}">
 									<img src="/images/comment.png" alt="comment"> Comment
 								</button>

@@ -162,6 +162,7 @@ environments {
         grails.serverURL = "http://127.0.0.1:8080/"	/** If last `/` is removed, modify url's in oauth provider configurations **/
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
+		facebookAppId = "174406569567139"
 		
 		curiousanalytics.servers = [
 			'http://127.0.0.1:8090'
@@ -227,6 +228,7 @@ environments {
 		// serverUrl now must be specified in LocalConfig.groovy
         //grails.serverURL = "https://qa.wearecurio.us/"
 		grails.serverURLProtocol = "https"
+		facebookAppId = "174406919567104"
 		
 		curiousanalytics.servers = [
 			'http://curiousanalytics:8090',
@@ -369,6 +371,7 @@ environments {
 		def extConfig = System.properties.getProperty('CURIOUSCONFIGHOME');
 		if (!extConfig) extConfig = "/home/curious/localconfig"
 		grails.config.locations = [ "file:${extConfig}/LocalConfig.groovy" ]
+		facebookAppId = "164274177247045"
 
 		curiousanalytics.servers = [
 			'http://curiousanalytics:8090',
@@ -435,6 +438,7 @@ environments {
         grails.serverURL = "http://127.0.0.1:8080/"
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
+		facebookAppId = "714092418734227"
 		
 		curiousanalytics.servers = [
 			'http://127.0.0.1:8090'

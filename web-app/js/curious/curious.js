@@ -118,8 +118,12 @@ function checkData(data, status, errorMessage, successMessage) {
 		if (status != 'cached') {
 			showAlert("Session timed out.");
 			doLogout();
-			location.reload(true);
+			location.href = '/home/login';
 		}
+		return false;
+	}
+	if (data == 'access denied') {
+		location.href = '/accessDenied';
 		return false;
 	}
 	if (data == 'success') {

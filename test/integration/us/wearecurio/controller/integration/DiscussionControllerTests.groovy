@@ -152,16 +152,14 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test show when user is not logged in an disccussion is not public"() {
+	void xxx() {
 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
 		discussion.visibility = Visibility.PRIVATE
 		Utils.save(discussion, true)
 		
 		controller.params.id = discussion.hash
 		controller.show()
-
-		assert !controller.response.json.success
-		assert controller.response.json.message == messageSource.getMessage("default.login.message", null, null)
+		controller.response.contentAsString == "access denied"
 	}
 
 	@Test
