@@ -120,6 +120,11 @@ abstract class DataService {
 	abstract Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
 			InvalidAccessTokenException
 
+	Map getDataDefault(OAuthAccount account, Date forDate, boolean refreshAll) throws InvalidAccessTokenException {
+		log.debug "getDataDefault(): account ${account?.id} forDay: $forDate refreshAll: $refreshAll"
+		return getDataDefault(account, forDate, null, refreshAll)
+	}
+
 	/**
 	 * Returns the OAuthAccount instance for given userId.
 	 * @param userId User id for which instance needs to be fetched.

@@ -54,18 +54,16 @@ class WithingsDataService extends DataService {
 
 	@Transactional
 	ThirdPartyNotification saveNotification(Date notificationDate, String accountId) {
-		return new ThirdPartyNotification([collectionType: "default", date: notificationDate, ownerId: accountId, subscriptionId: "",
-			ownerType: "user", typeId: typeId]).save()
+		ThirdPartyNotification notification =  new ThirdPartyNotification([collectionType: "default", date:
+				notificationDate, ownerId: accountId, subscriptionId: "", ownerType: "user", typeId: typeId])
+
+		Utils.save(notification, true)
+		return notification
 	}
 
 	@Transactional
 	void saveNotificationForPreviousData(OAuthAccount account) {
 		saveNotification(earlyStartDate, account.accountId)
-	}
-
-	@Transactional
-	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
-		return getDataDefault(account, startDate, null, refreshAll)
 	}
 
 	@Override
