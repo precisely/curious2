@@ -1,16 +1,15 @@
 <div class="new-post">
-	<form id="create-discussion">
+	<label>New post:&nbsp;</label>
+	<button class="btn" onclick="location.href='/home/graph?group=public'">Chart of your data</button>
+	<button class="btn"
+			onclick="$('#create-discussion').show('fast').find('input').prop('placeholder', 'Enter text of your how-to article').data('type', 'howto')">How to article</button>
+	<button class="btn"
+			onclick="$('#create-discussion').show('fast').find('input').prop('placeholder', 'Ask a support question of the community?').data('type', 'support')">Support question</button>
+	<form id="create-discussion" class="hide">
 		<div class="input-affordance left-addon">
-			<i class="fa fa-pencil"></i> 
-			<input class="full-width discussion-topic-input" type="text" placeholder="New question or discussion topic?"
+			<i class="fa fa-pencil"></i>
+			<input class="full-width discussion-topic-input" type="text"
 				name="discussionTopic" id="discussion-topic" required />
-
-			<input type="radio" class="radio-public" name="visibility" id="public" value="public" checked>
-			<label for="public" class="radio-public-label">Public</label>
-
-			<input type="radio" class="radio-private" name="visibility" id="private" value="private">
-			<label for="private" class="radio-private-label">Private</label>
 		</div>
-		<input type="hidden" name="group" value="{{- groupName }}" />
 	</form>
 </div>

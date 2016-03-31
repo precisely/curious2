@@ -524,11 +524,16 @@ $(document).ready(function() {
 			}
 
 			var data = extractDiscussionNameAndPost(value);
+			var questionType = ' #' + $(this).data('type');
+			data.name += questionType;
 
 			// See base.js for implementation details of $.serializeObject()
-			var params = $('#create-discussion').serializeObject();
-			params.name = data.name;
-			params.discussionPost = data.post;
+			var params = {
+				name: data.name,
+				discussionPost: data.post,
+				visibility: 'public',
+				group: ''
+			};
 
 			queuePostJSON('Creating discussion', '/api/discussion', getCSRFPreventionObject('createDiscussionDataCSRF', params),
 					function(data) {
@@ -537,6 +542,7 @@ $(document).ready(function() {
 				if (data.success) {
 					var element = $(".discussions").length !== 0 ? ".discussions" : "#feed";
 					addAllFeedItems({listItems: [data.discussion]}, element, true);
+					$('#create-discussion').hide('fast');
 					var $discussionForm = $('#create-discussion')[0];
 					if ($discussionForm) {
 						$discussionForm.reset();

@@ -22,7 +22,11 @@
 					<h4 class="page-subheader">Groups</h4>
 					<p><small>Where do you want to publish this?</small></p>
 					{{ _.each(groups, function(groupName, index) { }}
-						<input type="radio" id="group-{{- index }}" name="group" value="{{- groupName.name }}">
+						{{ if (selectGroup && (groupName.name.toUpperCase() == selectGroup.toUpperCase())) { }}
+							<input type="radio" id="group-{{- index }}" name="group" checked value="{{- groupName.name }}" >
+						{{ } else { }}
+							<input type="radio" id="group-{{- index }}" name="group" value="{{- groupName.name }}" >
+						{{ } }}
 						<label for="group-{{- index }}">{{- groupName.fullName }}</label> <br>
 					{{ }); }}
 				</div>

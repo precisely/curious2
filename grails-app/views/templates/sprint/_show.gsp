@@ -82,8 +82,6 @@
 										<input class="full-width discussion-topic-input"
 												type="text" placeholder="New question or discussion topic?"
 												name="name" id="discussion-topic" required />
-										<input type="radio" class="radio-public" name="visibility" id="public" value="public" checked><label for="public" class="radio-public-label">Public</label>
-										<input type="radio" class="radio-private" name="visibility" id="private" value="private"><label for="private" class="radio-private-label">Private</label>
 										<hr class="hide">
 										<input type="text" id="discussion-description" class="full-width discussion-topic-description hide" placeholder="Enter comment/description"
 												name="discussionPost">

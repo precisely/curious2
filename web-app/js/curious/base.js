@@ -2,7 +2,7 @@
 
 /*
  * Using {{ }} to escape/evaluate/interpolate template using Loadash instead of <% %>
- * 
+ *
  * https://lodash.com/docs#templateSettings
  * http://stackoverflow.com/a/15625454/2405040
  */
@@ -125,7 +125,7 @@ String.prototype.sanitizeTitle = function(){
 	return this.trim().toLowerCase().replace(/\s/g, '-');
 };
 
-/* 
+/*
  * This function will capitalize first letter of a String
  * Reference: http://stackoverflow.com/questions/1026069/capitalize-the-first-letter-of-string-in-javascript
  */
@@ -135,25 +135,25 @@ String.prototype.capitalizeFirstLetter = function() {
 
 /*
  * Simple, clean Javascript inheritance scheme
- * 
+ *
  * Based on: http://kevinoncode.blogspot.com/2011/04/understanding-javascript-inheritance.html
- * 
+ *
  * Usage:
- * 
+ *
  * function Person(age) {
  * 	this.age = age;
  * }
- * 
+ *
  * function Fireman(age, station) {
  * 	Person.call(this, age);
  * 	this.station = station;
  * }
  * inherit(Fireman, Person);
- * 
+ *
  * var fireman = new Fireman(35, 1001);
  * assert(fireman.age == 35);
- * 
- * 
+ *
+ *
  */
 function inherit(subclass, superclass) {
 	function TempClass() {}
@@ -705,4 +705,19 @@ if (typeof String.prototype.startsWith != 'function') {
 	String.prototype.startsWith = function(str) {
 		return this.slice(0, str.length) == str;
 	};
+}
+
+/*
+ * Method to return query parameters from url.
+ * http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
+ */
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    url = url.toLowerCase(); // This is just to avoid case sensitiveness
+    name = name.replace(/[\[\]]/g, "\\$&").toLowerCase();// This is just to avoid case sensitiveness for query parameter name
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
 }

@@ -70,7 +70,7 @@ input, optgroup, select, textarea {
 .discussion-topic-input {
 	color: #fc3f28;
 	padding-left: 85px;
-	padding-right: 160px;
+	padding-right: 85px;
 }
 .discussion-topic-description {
 	color: #A0A0A0;
@@ -2046,7 +2046,9 @@ body.track-page #datepicker {
 body.track-page #area0 .panel-wrapper {
 	border-bottom: 0;
 }
+body.track-page ol#entry0 li.entry.ghost:not(.ui-selected) {
 
+}
 .comment-label {
 	color: #C0C8C9;
 	font-size: 12px;
@@ -2568,8 +2570,17 @@ div.graph-header-container .red-header {
 	list-style: none;
 }
 .new-post {
-	text-align: right;
 }
+
+.new-post button {
+	font-size: 12px;
+	background-color: #fc3f28;
+	padding: 5px;
+	margin: 10px;
+	color: #ffffff;
+	border-radius: 2px;
+}
+
 .new-post textarea {
 	padding: 3px;
 }
