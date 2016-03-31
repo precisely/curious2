@@ -5,6 +5,8 @@ import static org.junit.Assert.*
 import java.text.DateFormat
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
+import org.joda.time.LocalDate
+import org.joda.time.LocalTime
 import org.joda.time.format.DateTimeFormatter
 import org.joda.time.format.DateTimeFormat
 import org.junit.*
@@ -148,5 +150,24 @@ class IncrementingDateTimeTests extends CuriousTestCase {
 		lastRepeat = IncrementingDateTime.lastRepeatBeforeDateTime(initial, last, RepeatType.YEARLY_BIT)
 		
 		assert lastRepeat.getMillis() == parseDateTime("January 15 2022 15:00").getMillis()
+	}
+	
+	@Test
+	void "Test utility methods"() {
+		LocalDate localDate = new LocalDate(2001, 1, 30)
+		assert IncrementingDateTime.addMonth(localDate).getDayOfMonth() == 28
+		
+		localDate = new LocalDate(2001, 2, 27)
+		assert IncrementingDateTime.monthDay(localDate, 31).getDayOfMonth() == 28
+		
+		localDate = new LocalDate(2004, 2, 29)
+		assert IncrementingDateTime.addYear(localDate).getDayOfMonth() == 28
+		
+		localDate = new LocalDate(2004, 2, 29)
+		assert IncrementingDateTime.subtractYear(localDate).getDayOfMonth() == 28
+		
+		localDate = new LocalDate(2016, 3, 13)
+		LocalTime localTime = new LocalTime(2, 30);
+		assert IncrementingDateTime.makeDateTime(localDate, localTime, DateTimeZone.forID("America/Los_Angeles")).getHourOfDay() == 3
 	}
 }
