@@ -403,13 +403,13 @@ class OuraDataService extends DataService {
  * TODO Replace the use of String like "sleep", "s", "acitivity", "a" etc. with this enum to make the code more
  * readable. This enum is not used anywhere currently.
  */
-enum OuraDataTypes {
+enum OuraDataType {
 	SLEEP("s"),
 	ACTIVITY("ac"),
 	EXERCISE("e")
 
 	final oldSetName
-	OuraDataTypes(String oldSetName) {
+	OuraDataType(String oldSetName) {
 		this.oldSetName = oldSetName
 	}
 }
