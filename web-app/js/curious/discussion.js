@@ -362,6 +362,10 @@ $(document).ready(function() {
 		client.on('copy', function(event) {
 			event.clipboardData.setData('text/plain', $('#social-share-message').data('shareURL'));
 		});
+		client.on('aftercopy', function(event) {
+			$('.clip_button').tooltip({trigger: "manual", title: "Copied!", placement: 'top', animation: true});
+			$('.clip_button').tooltip('show');
+		});
 	});
 
 	$(document).on("change", "#disable-comments", function() {
@@ -554,16 +558,14 @@ function setDescription(message) {
 
 function shareMessage(platform) {
 	if (platform == 'copy') {
-		var hasFlash = false;
-		try {
-			hasFlash = Boolean(new ActiveXObject('ShockwaveFlash.ShockwaveFlash'));
-		} catch(exception) {
-			hasFlash = ('undefined' != typeof navigator.mimeTypes['application/x-shockwave-flash']);
+		var mimeTypes = navigator.mimeTypes['application/x-shockwave-flash'];
+		if (!mimeTypes || !mimeTypes.enabledPlugin) {
+			showAlert('Please install the Flash Player in order to use this feature.');
 		}
-		if (!hasFlash) {
-			showAlert('You need to install the Flash Player to use this feature.');
-		}
-		$('#share-modal').modal('hide');
+		setTimeout(function() {
+			$('#share-modal').modal('hide');
+			$('.clip_button').tooltip('hide');
+		}, 1000);
 		return true;
 	} else if (platform == 'facebook') {
 		FB.ui({

@@ -661,7 +661,7 @@ class Discussion {
 
 		// TODO Remove the word "discussion" from all keys since we are passing data for discussion only
 		return [discussionId: this.id, discussionTitle: this.name ?: 'New question or discussion topic?', hash: this.hash, 
-			discussionOwner: (user?.name) ?: (user?.username), discussionOwnerAvatarURL: user?.avatar?.path, discussionCreatedOn: this.created, updated: this.updated,
+			discussionOwner: user?.username, discussionOwnerAvatarURL: user?.avatar?.path, discussionCreatedOn: this.created, updated: this.updated,
 			firstPost: firstPostInstance?.getJSONDesc(), isNew: isNew(), totalPostCount: totalPostCount, discussionOwnerHash: user?.hash,
 			isPublic: isPublic(), groupName: groupName, disableComments: this.disableComments]
 	}

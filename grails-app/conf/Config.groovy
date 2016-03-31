@@ -162,7 +162,7 @@ environments {
         grails.serverURL = "http://127.0.0.1:8080/"	/** If last `/` is removed, modify url's in oauth provider configurations **/
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
-		facebookAppId = "174406569567139"
+		facebookAppId = "714092418734227"
 		
 		curiousanalytics.servers = [
 			'http://127.0.0.1:8090'

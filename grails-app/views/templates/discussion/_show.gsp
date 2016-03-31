@@ -162,7 +162,7 @@
 					{{var isCommentAllowed = !disableComments || isAdmin }}
 
 					<form class="comment-form new-comment-form {{- isCommentAllowed ? '' : 'comment-disabled' }}">
-						{{ if (notLoggedIn) { }}
+						%{--{{ if (notLoggedIn) { }}
 							<p>Enter your details below</p>
 
 							<div class="form-group">
@@ -184,7 +184,8 @@
 								<label>Message</label>
 								<g:render template="/templates/discussionPost/commentField" ></g:render>
 							</div>
-						{{ } else if (canWrite) { }}
+						{{ } else if (canWrite) { }}--}%
+						{{ if (canWrite) { }}
 							<g:render template="/templates/discussionPost/commentField" ></g:render>
 						{{ } }}
 

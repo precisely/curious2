@@ -17,10 +17,12 @@
 
 		{{ if (discussionPost.authorUserId == userId || discussionDetails.isAdmin) { }}
 			<span class="pull-right">
+			{{ if (discussionPost.authorUserId == userId) { }}
 				<a href="#" class="edit-post comment-buttons hide" data-post-id="{{- discussionPost.id}}"
 					data-discussion-hash="{{-discussionPost.hash}}" title="Edit comment">
 					<i class="fa fa-pencil fa-fw"></i>
 				</a>
+			{{ } }}
 				<a href="#" class="delete-post comment-buttons hide" data-post-id="{{- discussionPost.id}}"
 					data-discussion-hash="{{-discussionPost.hash}}" title="Delete comment">
 					<i class="fa fa-trash"></i>

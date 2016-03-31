@@ -69,7 +69,7 @@ class DiscussionController extends LoginController {
 	@NoAuth
 	def show() {
 		User user = sessionUser()
-		
+
 		log.debug "Showing discussion:" + params.id
 
 		Discussion discussion = Discussion.findByHash(params.id)
@@ -87,7 +87,7 @@ class DiscussionController extends LoginController {
 
 		Map model = discussion.getJSONDesc()
 		model.putAll([notLoggedIn: user ? false : true, userId: user?.id, associatedGroups: [],		// Public discussion
-				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion), isFollowing: discussion.isFollower(user.id),
+				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion), isFollowing: discussion.isFollower(user?.id),
 				templateVer: urlService.template(request), discussionHash: discussion.hash, canWrite: UserGroup.canWriteDiscussion(user, discussion)])
 
 		/*if (user) {

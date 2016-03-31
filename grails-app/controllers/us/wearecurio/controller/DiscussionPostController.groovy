@@ -33,7 +33,7 @@ class DiscussionPostController extends LoginController{
 		User currentUser = sessionUser()
 
 		Map discussionDetails = [isAdmin: UserGroup.canAdminDiscussion(currentUser, discussion), 
-				canWrite: UserGroup.canWriteDiscussion(currentUser, discussion), isFollowing: discussion.isFollower(currentUser.id)]
+				canWrite: UserGroup.canWriteDiscussion(currentUser, discussion), isFollowing: discussion.isFollower(currentUser?.id)]
 
 		// Discussion details are only needed for the first page
 		if (params.offset == 0) {
@@ -59,6 +59,10 @@ class DiscussionPostController extends LoginController{
 		}
 
 		User user = sessionUser()
+		if (!user) {
+			renderJSONPost(['login'])
+			return
+		}
 		def comment
 		try {
 			comment = DiscussionPost.createComment(params.message, user, discussion, params)

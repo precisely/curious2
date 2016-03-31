@@ -2,7 +2,9 @@
 <html>
 <head>
 <title><g:layoutTitle/></title>
-<meta property="og:image" content="${grailsApplication.config.grails.serverURL}www/content/images/curious-share.png" />
+<meta property="og:image" content="${grailsApplication.config.grails.serverURL}images/curious-share.png" />
+<meta property="og:image:width" content="450"/>
+<meta property="og:image:height" content="298"/>
 <meta property="og:type" content="website"/>
 <g:layoutHead/>
 <script type="text/javascript" src="/js/curious/autocomplete.js?ver=22"></script>

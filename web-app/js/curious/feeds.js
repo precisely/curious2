@@ -967,7 +967,7 @@ function getDiscussionElement(hash) {
 
 function followDiscussion(args) {
 	var httpArgs = {requestMethod: 'GET'};
-	queueJSONAll('Following discussion', '/api/discussion/action/follow', getCSRFPreventionObject('followDiscussionCSRF', args),
+	queueJSONAll('Following discussion', '/api/discussion/action/follow?callback=?', getCSRFPreventionObject('followDiscussionCSRF', args),
 	function(data) {
 		if (checkData(data)) {
 			if (data.success) {
