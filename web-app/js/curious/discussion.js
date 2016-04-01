@@ -417,7 +417,8 @@ $(document).ready(function() {
 		}
 
 		$("#new-discussion-name").val(existingTitle);
-		$("#new-description").val(existingDescription);
+		$("#new-description").val(_.unlinkify(existingDescription));
+
 		$modal.modal("show");
 		return false;
 	});
@@ -562,7 +563,7 @@ function getCommentFormData($form) {
  */
 function setDescription(message) {
 	message = message || "";
-	$(".first-post-message").html(message.newLineToBr());
+	$(".first-post-message").html(_.linkify(message.newLineToBr()));
 
 	if (message) {
 		$(".first-post-message").show();

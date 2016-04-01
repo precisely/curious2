@@ -32,9 +32,13 @@ function compileTemplate(id, data) {
 }
 
 _.linkify = function(textToLinkify) {
-	"use strict";
 	return Autolinker.link(_.escape(textToLinkify), {className: 'click-link'});
-}
+};
+
+_.unlinkify = function(textToUnlinkify) {
+	return textToUnlinkify.replace(/(<([^>]+)>)/ig,"");
+};
+
 function _stripParens(str) {
 	if (str.slice(0, 1) == '(' && str.slice(-1) == ')')
 		return str.slice(1, -1);
