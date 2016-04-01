@@ -417,7 +417,8 @@ abstract class DataService {
 			try {
 				getDataDefault(account, account.lastPolled, null, false)
 			} catch (InvalidAccessTokenException e) {
-				log.warn "Token expired while polling for & account: [$account]"
+				log.warn "Token expired while polling for $account"
+				account.clearAccessToken()
 			}
 		}
 	}

@@ -3,6 +3,7 @@ package us.wearecurio.services.integration
 import grails.test.spock.IntegrationSpec
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
 import org.scribe.model.Response
+import us.wearecurio.datetime.DateUtils
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
@@ -62,14 +63,19 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 	void "test get data sleep"() {
 		String mockedResponseData = new File(testDataPath("sleep", 1)).text
 
+		Date startDate = new Date()
 		jawboneUpDataService.oauthService = [
 			getJawboneupResource: { token, url, p, header ->
+				String startTime = Long.toString((long)(startDate.getTime() / 1000))
+				String endTime = Long.toString((long)(DateUtils.getEndOfTheDay(startDate).getTime() / 1000))
+
+				assert url == "https://jawbone.com/nudge/api/users/@me/sleeps?startTimestamp=${startTime}&endTimestamp=${endTime}"
 				return new Response(new MockedHttpURLConnection(mockedResponseData))
 			}
 		]
 
 		when:
-		Map result = jawboneUpDataService.getDataSleep(account, new Date(), false)
+		Map result = jawboneUpDataService.getDataSleep(account, startDate, false)
 
 		then:
 		result.success == true
@@ -97,14 +103,19 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 /*	void "test get data body"() {
 		String mockedResponseData = new File(testDataPath("body")).text
 
+		Date startDate = new Date()
 		jawboneUpDataService.oauthService = [
 			getJawboneupResource: { token, url, p, header ->
+				String startTime = Long.toString((long)(startDate.getTime() / 1000))
+				String endTime = Long.toString((long)(DateUtils.getEndOfTheDay(startDate).getTime() / 1000))
+
+				assert url == "https://jawbone.com/nudge/api/users/@me/body_events?startTimestamp=${startTime}&endTimestamp=${endTime}"
 				return new Response(new MockedHttpURLConnection(mockedResponseData))
 			}
 		]
 
 		when:
-		Map result = jawboneUpDataService.getDataBody(account, new Date(), false)
+		Map result = jawboneUpDataService.getDataBody(account, startDate, false)
 
 		then:
 		result.success == true
@@ -136,8 +147,13 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 	void "test get data move"() {
 		String mockedResponseData = new File(testDataPath("moves")).text
 
+		Date startDate = new Date()
 		jawboneUpDataService.oauthService = [
 			getJawboneupResource: { token, url, p, header ->
+				String startTime = Long.toString((long)(startDate.getTime() / 1000))
+				String endTime = Long.toString((long)(DateUtils.getEndOfTheDay(startDate).getTime() / 1000))
+
+				assert url == "https://jawbone.com/nudge/api/users/@me/moves?startTimestamp=${startTime}&endTimestamp=${endTime}"
 				return new Response(new MockedHttpURLConnection(mockedResponseData))
 			}
 		]
@@ -145,7 +161,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US)
 
 		when:
-		Map result = jawboneUpDataService.getDataMove(account, new Date(), false)
+		Map result = jawboneUpDataService.getDataMove(account, startDate, false)
 
 		then:
 		result.success == true
