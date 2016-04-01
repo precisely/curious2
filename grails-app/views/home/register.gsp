@@ -83,6 +83,12 @@
 								value="${fieldValue(bean:flash.user,field:'name')}" />
 					</div>
 
+					<div class="form-group">
+						<label for="promo_code">Promo Code:</label>
+						<input class="form-control" type="text" name="promo_code" id="promo_code"
+								value="${fieldValue(bean:flash.user,field:'promo_code')}" />
+					</div>
+
 					<g:if test="${templateVer == 'lhp'}">
 						<div class="form-group">
 							<label for="agree">Agree to share de-identified data for LAM research*:</label> 
