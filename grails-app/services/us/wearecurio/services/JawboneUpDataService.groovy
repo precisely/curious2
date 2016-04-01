@@ -124,9 +124,7 @@ class JawboneUpDataService extends DataService {
 		JSONObject bodyData = apiResponse["data"]
 
 		bodyData["items"].find { bodyEntry ->
-			JSONObject bodyDetails = bodyEntry["details"]
-
-			String setName = getSetName(JawboneUpDataType.BODY, bodyDetails)
+			String setName = getSetName(JawboneUpDataType.BODY, bodyEntry)
 
 			Date entryDate = shortDateParser.parse(bodyEntry["date"].toString())
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
@@ -204,7 +202,7 @@ class JawboneUpDataService extends DataService {
 			// Raw date received in yyyyMMdd format. Example: 20140910
 			String rawDate = movesEntry["date"].toString()
 
-			String setName = getSetName(JawboneUpDataType.MOVE, movesDetails)
+			String setName = getSetName(JawboneUpDataType.MOVE, movesEntry)
 
 			Date entryDate = dateOnlyFormatter.parse(rawDate)
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
@@ -412,7 +410,7 @@ class JawboneUpDataService extends DataService {
 				return false	// continue looping
 			}
 
-			String setName = getSetName(JawboneUpDataType.SLEEP, sleepDetails)
+			String setName = getSetName(JawboneUpDataType.SLEEP, sleepEntry)
 
 			Date entryDate = new Date(sleepDetails["asleep_time"].toLong() * 1000)
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
@@ -465,7 +463,7 @@ class JawboneUpDataService extends DataService {
 	 */
 	@Override
 	JSONElement getResponse(Token tokenInstance, String requestUrl, String method = "get", Map queryParams = [:],
-			Map requestHeaders = [:]) {
+			Map requestHeaders = [:]) throws InvalidAccessTokenException {
 		requestHeaders << ["Accept": "application/json"]
 		super.getResponse(tokenInstance, requestUrl, method, queryParams, requestHeaders)
 	}

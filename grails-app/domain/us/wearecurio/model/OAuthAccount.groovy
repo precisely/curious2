@@ -13,7 +13,10 @@ class OAuthAccount {
 	String accessSecret
 	String refreshToken
 	Date expiresOn
-	Date lastPolled
+	/**
+	 * Initializing the value with current time since we only need data after the user links a device/account.
+	 */
+	Date lastPolled = new Date()
 	Date lastSubscribed
 	Integer timeZoneId
 
@@ -22,11 +25,9 @@ class OAuthAccount {
 		accountId maxSize: 24	// Jawbone sends around 22 characters accountId
 		expiresOn nullable: true
 		userId(unique:['typeId'])
-		lastPolled(nullable:true)
 		lastSubscribed(nullable:true)
 		refreshToken nullable: true
 		timeZoneId nullable: true
-		//typeId inList: []
 	}
 	
 	static mapping = {

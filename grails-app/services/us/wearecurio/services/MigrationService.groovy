@@ -19,7 +19,6 @@ import us.wearecurio.model.TagProperties
 import us.wearecurio.model.TagStats
 import us.wearecurio.model.TagUnitStats
 import us.wearecurio.model.TagValueStats
-import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
@@ -616,10 +615,10 @@ class MigrationService {
 			sql("alter table _user drop column is_verified")
 			sql("update _user set email_verified = :status", [status: VerificationStatus.VERIFIED.id])
 		}
-		tryMigration("Set last polled for all Oura OAuthAccounts") {
+		tryMigration("Set last polled for all OAuthAccounts & add not null constraint") {
 			// Set last polled to (now - 4 days)
-			sql("update oauth_account set last_polled = (now() - interval 4 day) where type_id = :typeId",
-					[typeId: ThirdParty.OURA.id])
+			sql("update oauth_account set last_polled = (now() - interval 4 day) where last_polled is null")
+			sql("ALTER TABLE oauth_account MODIFY COLUMN last_polled datetime NOT NULL")
 		}
 	}
 	
