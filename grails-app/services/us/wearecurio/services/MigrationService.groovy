@@ -2,7 +2,6 @@ package us.wearecurio.services
 
 import grails.util.Environment
 import grails.util.Holders
-import groovy.time.TimeCategory
 import org.apache.commons.logging.LogFactory
 import org.grails.plugins.elasticsearch.ElasticSearchService
 import org.springframework.transaction.annotation.Transactional
@@ -13,6 +12,7 @@ import us.wearecurio.model.DurationType
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
 import us.wearecurio.model.Model
+import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.PlotData
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.Tag
@@ -20,6 +20,7 @@ import us.wearecurio.model.TagProperties
 import us.wearecurio.model.TagStats
 import us.wearecurio.model.TagUnitStats
 import us.wearecurio.model.TagValueStats
+import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
@@ -76,6 +77,7 @@ class MigrationService {
 	ElasticSearchService elasticSearchService
 	EntryParserService entryParserService
 	def elasticSearchAdminService
+	OuraDataService ouraDataService
 	
 	boolean skipMigrations = false
 	
@@ -624,32 +626,21 @@ class MigrationService {
 		tryMigration("Fix typo in fullName in user_group") {
 			sql("update user_group set full_name = replace(full_name, 'grouo', 'group')")
 		}
-		tryMigration("Fix duration entries for Oura") {
-			Entry.withCriteria {
-				eq("comment", OuraDataService.COMMENT)
-				tag {
-					eq("description", "sleep [time: total]")
-				}
-				eq("units", "hours total")
-				isNotNull("userId")
-			}.each { entry ->
-				log.debug "Updating sleep entry group $entry"
-				Date sleepStart = entry.date
-				// In minutes
-				Integer sleepTime = (int)(entry.amount * 60)
-				Date sleepEnd
-				use(TimeCategory) {
-					sleepEnd = sleepStart + sleepTime.minutes
-				}
+		tryMigration("Re-import Oura data from beginning to fix duration entries") {
+			OAuthAccount.withCriteria {
+				eq("typeId", ThirdParty.OURA)
+				ne("accessToken", "")
+			}.each { oauthAccount ->
+				log.debug "Updating lastPolled for $oauthAccount"
 
-				log.debug "Sleep start [$sleepStart], total bedtime [$sleepTime] minutes, sleep end [$sleepEnd]"
+				User userInstance = User.get(oauthAccount.userId)
+				Date firstMarch = new Date("03/01/2016")
 
-				Integer recordsUpdated = Entry.executeUpdate("""update Entry set date = :endDate where userId
-						= :userId and setIdentifier = :setIdentifier and date = :entryDate and comment = :comment""",
-						[endDate: sleepEnd, entryDate: sleepStart, setIdentifier: entry.setIdentifier,
-						comment: entry.comment, userId: entry.userId])
+				Date lastPolled = firstMarch > userInstance.created ? firstMarch : userInstance.created
+				log.debug "New last polled is [$lastPolled]"
 
-				log.debug "Total $recordsUpdated updated for $entry"
+				oauthAccount.lastPolled = lastPolled
+				Utils.save(oauthAccount, true)
 			}
 		}
 	}
@@ -818,6 +809,9 @@ class MigrationService {
 				if (discussion.createVirtualObjects())
 					Utils.save(discussion, true)
 			}
+		}
+		tryMigration("Re-import Oura data") {
+			ouraDataService.pollAll()
 		}
 	}
 }
