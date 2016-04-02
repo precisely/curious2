@@ -209,14 +209,20 @@ class JawboneUpDataService extends DataService {
 
 			unsetOldEntries(userId, setName)
 
-			tagUnitMap.buildEntry(creationMap, stats, "miles", movesDetails["distance"], userId,
-					timeZoneIdNumber, entryDate, COMMENT, setName)
+			if (movesDetails["distance"]) {
+				tagUnitMap.buildEntry(creationMap, stats, "miles", movesDetails["distance"], userId,
+						timeZoneIdNumber, entryDate, COMMENT, setName)
+			}
 
-			tagUnitMap.buildEntry(creationMap, stats, "minutes", movesDetails["active_time"], userId,
-					timeZoneIdNumber, entryDate, COMMENT, setName)
+			if (movesDetails["active_time"]) {
+				tagUnitMap.buildEntry(creationMap, stats, "minutes", movesDetails["active_time"], userId,
+						timeZoneIdNumber, entryDate, COMMENT, setName)
+			}
 
-			tagUnitMap.buildEntry(creationMap, stats, "steps", movesDetails["steps"], userId,
-					timeZoneIdNumber, entryDate, COMMENT, setName)
+			if (movesDetails["steps"]) {
+				tagUnitMap.buildEntry(creationMap, stats, "steps", movesDetails["steps"], userId,
+						timeZoneIdNumber, entryDate, COMMENT, setName)
+			}
 
 			if (movesDetails["hourly_totals"]) {
 				// Used to hold continuous adjacent same type hourly data
