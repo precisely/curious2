@@ -2,6 +2,7 @@ package us.wearecurio.services
 
 import grails.util.Environment
 import grails.util.Holders
+import groovy.time.TimeCategory
 import org.apache.commons.logging.LogFactory
 import org.grails.plugins.elasticsearch.ElasticSearchService
 import org.springframework.transaction.annotation.Transactional
@@ -619,6 +620,34 @@ class MigrationService {
 			// Set last polled to (now - 4 days)
 			sql("update oauth_account set last_polled = (now() - interval 4 day) where last_polled is null")
 			sql("ALTER TABLE oauth_account MODIFY COLUMN last_polled datetime NOT NULL")
+		}
+		tryMigration("Fix duration entries for Oura") {
+			Entry.withCriteria {
+				eq("comment", OuraDataService.COMMENT)
+				tag {
+					eq("description", "sleep [time: total]")
+				}
+				eq("units", "hours total")
+				isNotNull("userId")
+			}.each { entry ->
+				log.debug "Updating sleep entry group $entry"
+				Date sleepStart = entry.date
+				// In minutes
+				Integer sleepTime = (int)(entry.amount * 60)
+				Date sleepEnd
+				use(TimeCategory) {
+					sleepEnd = sleepStart + sleepTime.minutes
+				}
+
+				log.debug "Sleep start [$sleepStart], total bedtime [$sleepTime] minutes, sleep end [$sleepEnd]"
+
+				Integer recordsUpdated = Entry.executeUpdate("""update Entry set date = :endDate where userId
+						= :userId and setIdentifier = :setIdentifier and date = :entryDate and comment = :comment""",
+						[endDate: sleepEnd, entryDate: sleepStart, setIdentifier: entry.setIdentifier,
+						comment: entry.comment, userId: entry.userId])
+
+				log.debug "Total $recordsUpdated updated for $entry"
+			}
 		}
 	}
 	

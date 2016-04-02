@@ -1,6 +1,7 @@
 package us.wearecurio.services
 
 import grails.converters.JSON
+import groovy.time.TimeCategory
 import groovyx.net.http.URIBuilder
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -124,12 +125,23 @@ class OuraDataService extends DataService {
 			Integer timeZoneIdNumber = getTimeZoneId(account, sleepEntry)
 			def sleepEntryData = sleepEntry["data"]
 
-			if (sleepEntryData) {
-				["bedtime_m", "sleep_score", "awake_m", "rem_m", "light_m", "deep_m"].each { key ->
-					if (sleepEntryData[key]) {
-						tagUnitMap.buildEntry(creationMap, stats, key, Long.parseLong(sleepEntryData[key].toString()), userId, timeZoneIdNumber,
-								entryDate, COMMENT, setName)
-					}
+			if (!sleepEntryData) {
+				return
+			}
+
+			// In Minutes
+			Integer totalSlept = sleepEntryData["bedtime_m"].toInteger()
+			Date sleepEnd
+			use(TimeCategory) {
+				sleepEnd = entryDate + totalSlept.minutes
+			}
+
+			log.debug "Sleep start $entryDate, total bedtime $totalSlept minutes, sleep end $sleepEnd"
+
+			["bedtime_m", "sleep_score", "awake_m", "rem_m", "light_m", "deep_m"].each { key ->
+				if (sleepEntryData[key]) {
+					tagUnitMap.buildEntry(creationMap, stats, key, Long.parseLong(sleepEntryData[key].toString()),
+							userId, timeZoneIdNumber, sleepEnd, COMMENT, setName)
 				}
 			}
 		}
