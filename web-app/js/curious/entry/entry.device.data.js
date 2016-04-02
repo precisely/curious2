@@ -5,10 +5,8 @@ function EntryDeviceData(deviceEntries, savedStates) {
 	StateView.call(this);
 
 	if (!deviceEntries || !deviceEntries[0]) {
-		throw "At least one entry need to passed."
+		throw "At least one entry need to be passed."
 	}
-
-	/* Private members start */
 
 	var groupedData = {};
 	var collapsed = false;
@@ -19,10 +17,6 @@ function EntryDeviceData(deviceEntries, savedStates) {
 	if (savedStates[source]) {     // If user has previously collapsed the device top level entry
 		collapsed = true;
 	}
-
-	/* Private members end */
-
-	/* Getters start */
 
 	this.getSanitizedSourceName = function() {
 		return sourceName.sanitizeTitle();
@@ -40,8 +34,6 @@ function EntryDeviceData(deviceEntries, savedStates) {
 		var text = this.getTriangle();
 		return text + ' ' + deviceEntries[0]["sourceName"];
 	};
-
-	/* Getters end */
 
 	this.group = function() {
 		jQuery.each(deviceEntries, function(index, entry) {

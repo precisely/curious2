@@ -10,10 +10,8 @@ function EntryDeviceDataSummary(deviceTagEntries) {
 	StateView.call(this);
 
 	if (!deviceTagEntries || !deviceTagEntries[0]) {
-		throw "At least one entry need to passed."
+		throw "At least one entry need to be passed."
 	}
-
-	/* Private members start */
 
 	var aggregatedUnitAmounts;
 	var groupedData = {};
@@ -26,8 +24,6 @@ function EntryDeviceDataSummary(deviceTagEntries) {
 	var entrySessionStorage = store.namespace("entries").session;      // store2.min.js
 	// Will be like "oura.device.summary.sleep"
 	var storageKey = source.toLowerCase() + ".device.summary." + baseTag;
-
-	/* Private members end */
 
 	this.getBaseTag = function() {
 		return baseTag;
