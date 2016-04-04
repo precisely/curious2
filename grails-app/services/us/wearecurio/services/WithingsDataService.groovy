@@ -54,7 +54,7 @@ class WithingsDataService extends DataService {
 
 	@Transactional
 	ThirdPartyNotification saveNotification(Date notificationDate, String accountId) {
-		ThirdPartyNotification notification =  new ThirdPartyNotification([collectionType: "default", date:
+		ThirdPartyNotification notification = new ThirdPartyNotification([collectionType: "default", date:
 				notificationDate, ownerId: accountId, subscriptionId: "", ownerType: "user", typeId: typeId])
 
 		Utils.save(notification, true)

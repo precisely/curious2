@@ -1,6 +1,7 @@
 package us.wearecurio.jobs
 
 import grails.util.Environment
+import us.wearecurio.services.JawboneUpDataService
 import us.wearecurio.services.OuraDataService
 
 class ThirdPartyNotificationJob extends us.wearecurio.utility.TimerJob {
@@ -16,6 +17,7 @@ class ThirdPartyNotificationJob extends us.wearecurio.utility.TimerJob {
 	def fitBitDataService
 	def withingsDataService
 	OuraDataService ouraDataService
+	JawboneUpDataService jawboneUpDataService
 
 	def execute() {
 		log.debug "Started executing ThirdPartyNotificationJob.."
@@ -26,6 +28,7 @@ class ThirdPartyNotificationJob extends us.wearecurio.utility.TimerJob {
 		fitBitDataService.notificationProcessor()
 		withingsDataService.notificationProcessor()
 		ouraDataService.notificationProcessor()
+		jawboneUpDataService.notificationProcessor()
 		log.debug "Finished executing ThirdPartyNotificationJob."
 	}
 }
