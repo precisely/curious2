@@ -180,12 +180,18 @@ function removeElem(arr, elem) {
 //This function returns url parameters as key value pair
 function getSearchParams() {
 	var vars = {};
-	var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,
+	var currentURL = window.location.href;
+	var parts = currentURL.slice(0, currentURL.indexOf('#')).replace(/[?&]+([^=&]+)=([^&]*)/gi,
 			function(m, key, value) {
 				vars[key] = value;
 			}
 	);
 	return vars;
+}
+
+// This function will remove the query string params without reloading the page.
+function removeQueryString() {
+	history.pushState({}, '', window.location.pathname + window.location.hash);
 }
 
 /*

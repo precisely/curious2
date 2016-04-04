@@ -4,6 +4,8 @@ import org.springframework.http.HttpStatus
 import us.wearecurio.annotations.EmailVerificationRequired
 import us.wearecurio.exception.CreationNotAllowedException
 import us.wearecurio.security.NoAuth
+import us.wearecurio.services.TwitterDataService
+
 import java.text.SimpleDateFormat
 import java.text.DateFormat
 import grails.converters.JSON
@@ -14,6 +16,8 @@ import us.wearecurio.model.Model.Visibility
 class DiscussionController extends LoginController {
 
 	static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
+
+	TwitterDataService twitterDataService
 
 	// Not being used right now as all discussion lists are comming form feed
 	def index() {
@@ -193,6 +197,46 @@ class DiscussionController extends LoginController {
 			log.debug "Failed to publish discussion: user ID does not match owner"
 			renderJSONGet([success: false, message: g.message(code: "default.permission.denied", args: ["Discussion"])]) 
 		}
+	}
+
+	/**
+	 * Used to handle sharing on twitter.
+	 */
+	def tweet() {
+		log.debug "Posting to twitter : " + params.message
+
+		User user = sessionUser()
+		if (!user) {
+			renderJSONPost(['login'])
+		}
+
+		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(ThirdParty.TWITTER, user.id)
+		// This is to handle the case when the user has not been authorized by twitter yet.
+		if (!account) {
+			session["returnURIWithToken"] = "api/discussion/action/tweet"
+			session["requestOrigin"] = params.requestOrigin
+			session["tweetMessage"] = params.message
+			renderJSONPost([success: false, authenticated: false])
+			return
+		}
+
+		String message = params.message ?: session["tweetMessage"]
+
+		if (!message || message.length() > 140) {
+			String messageCode = (message.length() > 140) ? "twitter.empty.message" : "twitter.long.message"
+			renderJSONPost([success: false, message: g.message(code: messageCode)])
+		}
+
+		Boolean tweetStatus = twitterDataService.postStatus(account.getTokenInstance(), message)
+
+		// This is to handle the case when the tweet is being made immediately after authorization.
+		if (session["tweetMessage"]) {
+			String redirectLocation = session["requestOrigin"] ?: "home/social#all"
+			session["tweetMessage"] = null
+			session["requestOrigin"] = null
+			redirect(url: toUrl(controller: "home", action: "social", fragment: redirectLocation, params: [tweetStatus: tweetStatus]))
+		}
+		renderJSONPost([success: true, authenticated: true, message: g.message(code: "twitter.tweet.success") ])
 	}
 
 	def follow() {

@@ -418,6 +418,16 @@ function checkAndDisplayTabData() {
 	}
 
 	$(window).scrollTop(0);
+
+	// This block is used to alert the status of sharing to twitter, immediately after authorization.
+	var queryParams = getSearchParams();
+	if (queryParams.tweetStatus == 'true') {
+		showAlert('Successfully tweeted discussion!', removeQueryString);
+	} else if (queryParams.tweetStatus == 'false') {
+		showAlert('Sorry but we could not tweet your discussion.', removeQueryString);
+	}
+	// Positioning the dialog to the approximate center of the screen.
+	$('.ui-dialog').css({"position": "absolute", "top": "40%"})
 }
 
 $(window).load(checkAndDisplayTabData).on('hashchange', checkAndDisplayTabData);

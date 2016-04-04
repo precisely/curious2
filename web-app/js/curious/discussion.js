@@ -318,11 +318,6 @@ $(document).ready(function() {
 		return false;
 	});
 
-	$(document).on("click", ".share-button", function() {
-		$(this).popover({html: true}).popover('show');
-		$('.share-link').select();
-	});
-
 	// On click of comment button in the single discussion page
 	$(document).on("click", ".comment-button", function() {
 		// Just put focus on the comment box
@@ -338,16 +333,33 @@ $(document).ready(function() {
 	});
 
 	$('#post-message').click(function() {
-		var shareMessage = $('#social-share-message').val();
-		if (!shareMessage || shareMessage == '') {
-			return false;
+		var params = {};
+		params.message = $('#social-share-message').val();
+		var $alert = $("#share-modal").find('.alert');
+		if (!params.message) {
+			showBootstrapAlert($alert, "Please enter some text to post to Twitter.");
+			return;
 		}
-		var platform = $(this).data('platform');
-		if (platform == 'twitter') {
-			var shareURL = 'http://twitter.com/intent/tweet?text=' + shareMessage + '&url=' +
-				encodeURIComponent($('#social-share-message').data('shareURL'));
-			var shareWindow = window.open(shareURL, '_blank', 'toolbar=no, menubar=no, width=500, height=400');
+
+		if (params.message.length > 140) {
+			showBootstrapAlert($alert, "The text cannot be more than 140 characters");
+			return;
 		}
+
+		params.requestOrigin = window.location.hash.slice(1);
+
+		queuePostJSON("Posting to Twitter", "/api/discussion/action/tweet", getCSRFPreventionObject("tweetDiscussionDataCSRF", params), function(data) {
+			if (!checkData(data)) {
+				return;
+			}
+			if (!data.authenticated) {
+				var twitterURL = '/oauth/twitter/authenticate';
+				window.location.href = twitterURL;
+			}
+			if (data.message) {
+				showAlert(data.message);
+			}
+		});
 		$('.share-options').show();
 		$('.post-message').hide();
 		$('#social-share-message').val('');
@@ -581,8 +593,30 @@ function shareMessage(platform) {
 	// See base.js for capitalizeFirstLetter() method
 	$('#share-modal .modal-header h4').text('Sharing to ' + platform.capitalizeFirstLetter());
 	$('.post-message .fa').removeClass('fa-facebook fa-twitter').addClass('fa-' + platform);
+	var textToShare = $('#social-share-message').data('discussionTitle') + '\n' + $('#social-share-message').data('shareURL');
+	$('#share-message-length').text(140 - textToShare.length);
 	$('#post-message').data('platform', platform);
 	$('.share-options').hide();
 	$('.post-message').show();
 	$('#share-modal .modal-footer').show();
+	$('#social-share-message').val(textToShare);
 }
+
+$(document).on('keyup', '#social-share-message', function(e) {
+	$(document).on('keyup','#social-share-message',function() {
+		var t = $('#social-share-message').val().length;
+		$('#share-message-length').text(140-t);
+		var css = (t<=140) ? {"color": "#000", "font-weight": "100"} : {"color": "#fc3f28", "font-weight": "bold"};
+		$('#share-message-length').css(css);
+		return;
+	});
+});
+
+$(document).on('hidden.bs.modal', function() {
+	$('.share-options').show();
+	$('.post-message').hide();
+	$('#share-modal .modal-header h4').text('Share');
+	$('#share-modal .modal-footer').hide();
+	$('#share-modal').modal('hide');
+});
+

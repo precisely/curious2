@@ -18,7 +18,8 @@
 			deleteDiscussionPostDataCSRF, getDiscussionList, getPlotDescDataCSRF, getSumPlotDescDataCSRF, showTagGroupCSRF,
 			getSprintParticipantsDataCSRF, getUserDataCSRF, followDiscussionCSRF,
 			getSprintDiscussionsDataCSRF, addMemberCSRF, addAdminCSRF, deleteMemberCSRF, deleteAdminCSRF, joinSprintDataCSRF,
-			leaveSprintDataCSRF, showsprintCSRF, followCSRF, closeExplanationCardTrackathonCSRF, closeExplanationCardCuriosityCSRF" />
+			leaveSprintDataCSRF, showsprintCSRF, followCSRF, closeExplanationCardTrackathonCSRF, closeExplanationCardCuriosityCSRF,
+			tweetDiscussionDataCSRF" />
 	<g:layoutHead />
 
 	</head>

@@ -2,10 +2,14 @@
 	<div class="modal-dialog modal-sm">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<button type="button" class="close dismiss-share-modal" data-dismiss="modal" aria-label="Close">
 					<i class="fa fa-times-circle-o"></i>
 				</button>
 				<h4>Share</h4>
+			</div>
+			<div class="alert alert-danger hide">
+				<button class="close" data-dismiss="alert" aria-label="Close">&times;</button>
+				<span class="message"></span>
 			</div>
 			<div class="modal-body">
 				<div class="row share-options">
@@ -38,6 +42,7 @@
 				</div>
 			</div>
 			<div class="modal-footer hide">
+				<small class="pull-left" id="share-message-length"></small>
 				<button type="button" class="btn btn-primary" id="post-message">POST</button>
 			</div>
 		</div>

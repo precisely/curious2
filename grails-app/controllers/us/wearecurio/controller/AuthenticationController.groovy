@@ -1,5 +1,6 @@
 package us.wearecurio.controller
 
+import groovyx.net.http.URIBuilder
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
 import us.wearecurio.hashids.DefaultHashIDGenerator
@@ -110,6 +111,12 @@ class AuthenticationController extends SessionController {
 		Integer timeZoneId = TimeZoneId.look(userInfo.timezone).id
 
 		oauthAccountService.createOrUpdate(ThirdParty.FITBIT, userInfo.encodedId, tokenInstance, userId, timeZoneId)
+	}
+
+	def twitterAuth() {
+		URIBuilder builder = new URIBuilder("https://api.twitter.com?" + tokenInstance.getRawResponse())
+		String twitterId = builder.getQuery().user_id
+		oauthAccountService.createOrUpdate(ThirdParty.TWITTER, twitterId, tokenInstance, userId )
 	}
 
 	def humanAuth() {

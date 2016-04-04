@@ -1,7 +1,10 @@
 package us.wearecurio.services
 
+import grails.converters.JSON
 import org.apache.commons.logging.LogFactory
-
+import org.codehaus.groovy.grails.web.json.JSONObject
+import org.scribe.model.Response
+import org.scribe.model.Token
 import org.springframework.transaction.annotation.Transactional
 
 import twitter4j.Twitter
@@ -13,6 +16,9 @@ import twitter4j.auth.RequestToken
 import twitter4j.auth.AccessToken
 import twitter4j.Status
 import twitter4j.Paging
+import uk.co.desirableobjects.oauth.scribe.OauthService
+import us.wearecurio.thirdparty.InvalidAccessTokenException
+import us.wearecurio.thirdparty.MissingOAuthAccountException
 
 import java.net.URL
 import java.util.HashMap
@@ -23,7 +29,7 @@ import us.wearecurio.model.*
 
 import grails.util.GrailsUtil
 
-class TwitterDataService {
+class TwitterDataService extends DataService {
 
 	private static def log = LogFactory.getLog(this)
 
@@ -31,9 +37,15 @@ class TwitterDataService {
 
 	static String curiousDataToken = "297564720-I2lqE8a3zVVbQlnmAI7suLviyaVFuel9kiAyaOcZ"
 	static String curiousDataSecret = "pN2HFeBdTluBgJVDslWu7YBo2sUIxADcGFHyj9qUVo"
-
+	static String BASE_URL = "https://api.twitter.com/1.1"
 	TwitterData twitterData
 	EntryParserService entryParserService
+	OauthService oauthService
+
+	TwitterDataService() {
+		provider = "Twitter"
+		typeId = ThirdParty.TWITTER
+	}
 
 	def fetchTwitterData() {
 		if (twitterData == null) {
@@ -77,6 +89,36 @@ class TwitterDataService {
 		requestMap.put(requestToken.getToken(), requestToken)
 
 		return requestToken.getAuthorizationURL()
+	}
+
+	@Override
+	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws InvalidAccessTokenException {
+		return null
+	}
+
+	@Override
+	String getTimeZoneName(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException {
+		return null
+	}
+
+	@Override
+	List<ThirdPartyNotification> notificationHandler(String notificationData) {
+		return null
+	}
+
+	JSONObject getUserProfile(Token tokenInstance, String url) {
+		if (!oauthService) {
+			oauthService = getOauthService()
+		}
+		Response response = oauthService.getTwitterResource(tokenInstance, url)
+		if (response.getCode() == 200) {
+			return JSON.parse(response.body)
+		}
+	}
+
+	def postStatus(Token tokenInstance, String status) {
+		JSONObject tweetResponse = getResponse(tokenInstance, BASE_URL + "/statuses/update.json", "post", [status: status])
+		return (tweetResponse?.getCode() == 200 || tweetResponse?.errors[0]?.code == 187)
 	}
 
 	/**
