@@ -95,7 +95,7 @@ class JawboneUpDataService extends DataService {
 	Map getDataBody(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) {
 		log.debug "getDataBody(): ${account} start: $startDate, end: $endDate refreshAll: $refreshAll"
 
-		beforeGetData(account, startDate, endDate, refreshAll)
+		validateParams(account, startDate, endDate, refreshAll)
 		return getDataBody(account, getRequestURL(JawboneUpDataType.BODY, startDate, endDate))
 	}
 
@@ -162,7 +162,7 @@ class JawboneUpDataService extends DataService {
 	Map getDataMove(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) {
 		log.debug "getDataMove(): ${account} start: $startDate, end: $endDate refreshAll: $refreshAll"
 
-		beforeGetData(account, startDate, endDate, refreshAll)
+		validateParams(account, startDate, endDate, refreshAll)
 		return getDataMove(account, getRequestURL(JawboneUpDataType.MOVE, startDate, endDate))
 	}
 
@@ -381,7 +381,7 @@ class JawboneUpDataService extends DataService {
 	Map getDataSleep(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) {
 		log.debug "getDataSleep(): ${account} start: $startDate, end: $endDate refreshAll: $refreshAll"
 
-		beforeGetData(account, startDate, endDate, refreshAll)
+		validateParams(account, startDate, endDate, refreshAll)
 		return getDataSleep(account, getRequestURL(JawboneUpDataType.SLEEP, startDate, endDate))
 	}
 
@@ -453,7 +453,7 @@ class JawboneUpDataService extends DataService {
 		return [success: true]
 	}
 
-	void beforeGetData(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) {
+	void validateParams(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) {
 		if (!account || !startDate || !endDate) {
 			throw new IllegalArgumentException("One of the required argument is missing")
 		}
@@ -547,11 +547,13 @@ class JawboneUpDataService extends DataService {
 		}
 
 		List<ThirdPartyNotification> notificationsList = []
+		List supportedNotificationTypes = ["body", "sleep", "move"]
 		notifications["events"].find { notification ->
 			log.debug "Saving $notification."
 
 			// Jawbone also sends notification when band buttons are pressed (has no type)
-			if (!notification["type"] || !notification["timestamp"]) {
+			if (!notification["type"] || !(notification["type"] in supportedNotificationTypes) || 
+					!notification["timestamp"]) {
 				log.debug "Notification type or timestamp not received."
 				return false	// continue looping
 			}
