@@ -121,10 +121,17 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		result.success == true
 
 		List<Entry> userEntries = Entry.findAllByUserId(userId)
-		userEntries.size() == 1
+		userEntries.size() == 2
+
 		userEntries[0].baseTag.description == "measurement"
 		userEntries[0].tag.description == "measurement [amount]"
 		userEntries[0].amount.setScale(2, BigDecimal.ROUND_HALF_UP) == 124.0g
+		userEntries[0].setIdentifier.toString() == "JUP body 20140820"
+
+		userEntries[1].baseTag.description == "measurement"
+		userEntries[1].tag.description == "measurement [amount]"
+		userEntries[1].amount.setScale(2, BigDecimal.ROUND_HALF_UP) == 124.0g
+		userEntries[1].setIdentifier.toString() == "JUP body 20140815"
 	}
 
 	void "test get data body if response is not success"() {
