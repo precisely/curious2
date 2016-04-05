@@ -454,8 +454,16 @@ class JawboneUpDataService extends DataService {
 	}
 
 	void validateParams(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) {
-		if (!account || !startDate || !endDate) {
-			throw new IllegalArgumentException("One of the required argument is missing")
+		if (!account) {
+			throw new IllegalArgumentException("OAuth account is missing")
+		}
+
+		if (!startDate) {
+			throw new IllegalArgumentException("Start date is missing")
+		}
+
+		if (!endDate) {
+			throw new IllegalArgumentException("End date is missing")
 		}
 
 		if (refreshAll) {
@@ -486,8 +494,16 @@ class JawboneUpDataService extends DataService {
 	 * @param endDate End date upto which data needs to be pulled
 	 */
 	String getRequestURL(JawboneUpDataType type, Date startDate, Date endDate) {
-		if (!startDate || !endDate || !type) {
-			throw new IllegalArgumentException("One of the required argument is missing")
+		if (!type) {
+			throw new IllegalArgumentException("Type parameter is missing")
+		}
+
+		if (!startDate) {
+			throw new IllegalArgumentException("Start date is missing")
+		}
+
+		if (!endDate) {
+			throw new IllegalArgumentException("End date is missing")
 		}
 
 		Long startTime = startDate.getTime()
