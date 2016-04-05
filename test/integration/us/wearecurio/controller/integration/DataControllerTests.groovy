@@ -727,7 +727,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def retVal = controller.loadPlotDataId()
 
 		String content = controller.response.contentAsString
-		assert content.contains('"username":"y"') && content.contains('"foo":"foo"})')
+		assert content.contains('"username":"y"') && content.contains('"foo":"foo"')
 	}
 
 	@Test
