@@ -640,6 +640,10 @@ class MigrationService {
 				Utils.save(oauthAccount, true)
 			}
 		}
+
+		tryMigration("Fix typo in fullName in user_group") {
+			sql("update user_group set full_name = replace(full_name, 'grouo', 'group')")
+		}
 	}
 	
 	/**
