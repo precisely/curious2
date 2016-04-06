@@ -2,11 +2,14 @@
 <html>
 	<head>
 	<title><g:layoutTitle/></title>
+	<meta property="og:title" content="${discussionTitle}"/>
+	<meta property="og:description" content="${firstPost?.message}"/>
 	<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 	<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
 	<script type="text/javascript" src="/js/curious/feeds.js?ver=23"></script>
 	<script type="text/javascript" src="/js/curious/discussion.js?ver=24"></script>
 	<script type="text/javascript" src="/js/curious/sprint.js?ver=24"></script>
+	<script src="/js/zero.clipboard.min.js"></script>
 	<c:jsCSRFToken keys="deleteGhostEntryDataCSRF, deleteEntryDataCSRF, addEntryCSRF, getPeopleDataCSRF, getCommentsCSRF,
 			getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF, fetchSprintDataCSRF, createNewSprintDataCSRF, 
 			deleteSprintDataCSRF, stopSprintDataCSRF, startSprintDataCSRF, addMemberToSprintDataCSRF, addAdminToSprintDataCSRF, 
@@ -15,7 +18,8 @@
 			deleteDiscussionPostDataCSRF, getDiscussionList, getPlotDescDataCSRF, getSumPlotDescDataCSRF, showTagGroupCSRF,
 			getSprintParticipantsDataCSRF, getUserDataCSRF, followDiscussionCSRF,
 			getSprintDiscussionsDataCSRF, addMemberCSRF, addAdminCSRF, deleteMemberCSRF, deleteAdminCSRF, joinSprintDataCSRF,
-			leaveSprintDataCSRF, showsprintCSRF, followCSRF, closeExplanationCardTrackathonCSRF, closeExplanationCardCuriosityCSRF" />
+			leaveSprintDataCSRF, showsprintCSRF, followCSRF, closeExplanationCardTrackathonCSRF, closeExplanationCardCuriosityCSRF,
+			tweetDiscussionDataCSRF" />
 	<g:layoutHead />
 
 	</head>
@@ -24,6 +28,23 @@
 		<g:set var="isSocialListingPage" value="${controllerName == "home" && actionName == "social"}" />
 		<g:set var="isSprintsListingPage" value="${controllerName == "home" && actionName == "sprint"}" />
 
+	<script>
+		window.fbAsyncInit = function() {
+			FB.init({
+				appId      : ${grailsApplication.config.facebookAppId},
+				xfbml      : true,
+				version    : 'v2.4'
+			});
+		};
+
+		(function(d, s, id){
+			var js, fjs = d.getElementsByTagName(s)[0];
+			if (d.getElementById(id)) {return;}
+			js = d.createElement(s); js.id = id;
+			js.src = "//connect.facebook.net/en_US/sdk.js";
+			fjs.parentNode.insertBefore(js, fjs);
+		}(document, 'script', 'facebook-jssdk'));
+	</script>
 		<content tag="processUserData"><g:pageProperty name="page.processUserData"/></content>
 		<div class="row red-header">
 			<h1 class="clearfix">
@@ -102,6 +123,7 @@
 		</div>
 
 		<g:render template="/sprint/createSprintModal" />
+		<g:render template="/templates/discussion/share"/>
 
 		<c:renderJSTemplate template="/discussion/create" id="_createDiscussionForm" />
 		<c:renderJSTemplate template="/discussion/instance" id="_discussions" />

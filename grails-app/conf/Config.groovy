@@ -9,6 +9,7 @@ import us.wearecurio.thirdparty.jawbone.JawboneUpApi
 import us.wearecurio.thirdparty.moves.MovesApi
 import us.wearecurio.thirdparty.ttandme.Twenty3AndMeApi
 import us.wearecurio.thirdparty.withings.WithingsApi
+import org.scribe.builder.api.TwitterApi
 
 // locations to search for config files that get merged into the main config;
 // config files can be ConfigSlurper scripts, Java properties files, or classes
@@ -162,6 +163,7 @@ environments {
         grails.serverURL = "http://127.0.0.1:8080/"	/** If last `/` is removed, modify url's in oauth provider configurations **/
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
+		facebookAppId = "714092418734227"
 		
 		curiousanalytics.servers = [
 			'http://127.0.0.1:8090'
@@ -218,6 +220,10 @@ environments {
 					key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
 					secret = "767464759048b87ef4d6e4d2f8456010bb085eefbfd83215e5f147626fc24"
 				} **/
+				twitter {
+					key = "gI2yYQiHUaCSaMemzkfXWPWSv"
+					secret = "9v5XAQ860KaYQuk1w0Ez2hjfJ3Dpl58Sg5s3tdhbWWY9WHOmQh"
+				}
 			}
 			debug = true
 		}
@@ -227,6 +233,7 @@ environments {
 		// serverUrl now must be specified in LocalConfig.groovy
         //grails.serverURL = "https://qa.wearecurio.us/"
 		grails.serverURLProtocol = "https"
+		facebookAppId = "174406919567104"
 		
 		curiousanalytics.servers = [
 			'http://curiousanalytics:8090',
@@ -369,6 +376,7 @@ environments {
 		def extConfig = System.properties.getProperty('CURIOUSCONFIGHOME');
 		if (!extConfig) extConfig = "/home/curious/localconfig"
 		grails.config.locations = [ "file:${extConfig}/LocalConfig.groovy" ]
+		facebookAppId = "164274177247045"
 
 		curiousanalytics.servers = [
 			'http://curiousanalytics:8090',
@@ -435,6 +443,7 @@ environments {
         grails.serverURL = "http://127.0.0.1:8080/"
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
+		facebookAppId = "714092418734227"
 		
 		curiousanalytics.servers = [
 			'http://127.0.0.1:8090'
@@ -472,6 +481,10 @@ environments {
 				withings {
 					key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
 					secret = "767464759048b87ef4d6e4d2f8456010bb085eefbfd83215e5f147626fc24"
+				}
+				twitter {
+					key = "gI2yYQiHUaCSaMemzkfXWPWSv"
+					secret = "9v5XAQ860KaYQuk1w0Ez2hjfJ3Dpl58Sg5s3tdhbWWY9WHOmQh"
 				}
 			}
 		}
@@ -595,6 +608,13 @@ oauth {
 			failureUri = "authentication/oura/fail"
 			scope = "read"
 		}
+		twitter {
+			callback = "${grails.serverURL}oauth/twitter/callback"
+			successUri = "authentication/twitter/success"
+			failureUri = "authentication/twitter/fail"
+			api = TwitterApi
+		}
+
 	}
 	debug = true
 }

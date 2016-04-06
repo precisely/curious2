@@ -9,6 +9,18 @@
 	}
 }
 
+@media (max-width: 991px) {
+	.share-options .option {
+		text-align: center !important;
+	}
+	.share-options .option button{
+		margin-right: 17px;
+	}
+	.share-options .caption {
+		padding: 0px !important;
+	}
+}
+
 @media only screen and (max-device-width : 767px) and (orientation : portrait) {
 	.get-started-buttons .ios-app-link img {
 		height: 28px;

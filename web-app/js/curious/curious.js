@@ -105,6 +105,11 @@ function formatUnits(units) {
 	return "";
 }
 
+function logoutAndRedirect() {
+	doLogout();
+	location.href = '/home/login';
+}
+
 /*
  * Curious data json return value check
  */
@@ -116,10 +121,15 @@ function checkData(data, status, errorMessage, successMessage) {
 	}
 	if (data == 'login') {
 		if (status != 'cached') {
-			showAlert("Session timed out.");
-			doLogout();
-			location.reload(true);
+			// Checking whether user's session timed out or the user hadn't logged in in the first place.
+			var message = currentUserId? "Session timed out." : "Please login first."
+			showAlert(message, logoutAndRedirect);
+			setTimeout(logoutAndRedirect, 30000);
 		}
+		return false;
+	}
+	if (data == 'access denied') {
+		location.href = '/accessDenied';
 		return false;
 	}
 	if (data == 'success') {
