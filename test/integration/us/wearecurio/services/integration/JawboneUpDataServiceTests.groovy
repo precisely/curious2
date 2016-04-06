@@ -94,7 +94,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		userEntries.find { it.tag.description == "sleep quality" }.units == "%"
 	}
 
-	void "test get data body"() {
+/*	void "test get data body"() {
 		String mockedResponseData = new File(testDataPath("body")).text
 
 		jawboneUpDataService.oauthService = [

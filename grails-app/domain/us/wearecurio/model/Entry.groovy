@@ -391,7 +391,7 @@ class Entry implements Comparable {
 						setIdentifier:Identifier.look(m['setName']),
 						amountPrecision:amount.precision==null ? 3 : amount.precision
 						)
-
+		
 		entry.setUnits(amount.units ?: '')
 		entry.setComment(m['comment'] ?: '')
 
@@ -2148,7 +2148,7 @@ class Entry implements Comparable {
 	}
 
 	int hashCode() {
-		return ((int)userId?:0) + ((int)date.getTime()) + ((int)tag.id) + (amount.toString().hashCode()) + ((int)repeatTypeId?:0)
+		return ((int)(userId?:0)) + ((int)date.getTime()) + ((int)tag.id) + (amount == null ? 0 : amount.toString().hashCode()) + ((int)(repeatTypeId?:0))
 	}
 
 	boolean equals(Object o) {

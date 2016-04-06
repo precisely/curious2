@@ -195,9 +195,13 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params.id = plotData.id.toString()
 		controller.params.discussionHash = discussion.hash
 
-		def retVal = controller.loadSnapshotDataId()
-
-		assert controller.response.contentAsString.equals('callback({"username":"y","foo":"foo"})')
+		controller.loadSnapshotDataId()
+		
+		String c = controller.response.contentAsString
+		
+		assert c.startsWith('callback({')
+		assert c.contains('"foo":"foo"')
+		assert c.contains('"username":"y"')
 	}
 
 	@Test
@@ -480,8 +484,13 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.getTagsData()
 
 		def c = controller.response.contentAsString
-
-		assert controller.response.contentAsString.equals('callback([{"id":' + entry.getTag().getId() + ',"iscontinuous":0,"c":2,"description":"bread","showpoints":null}])')
+		
+		assert c.startsWith('callback([{"')
+		assert c.contains('"iscontinuous":0')
+		assert c.contains('"description":"bread"')
+		assert c.contains('"id":' + entry.tag.id)
+		assert c.contains('"c":2')
+		assert c.contains('"showpoints":null')
 		}
 
 	@Test

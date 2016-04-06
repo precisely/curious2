@@ -835,6 +835,8 @@ class UnitGroupMap {
 			String units1 = matcher.group(1)
 			ratio = simpleLookupUnitRatioForUnits(units1.toLowerCase())
 			if (ratio != null) {
+				String g = matcher.group(4)
+				
 				String suffix = matcher.group(4)
 				decorated = DecoratedUnitRatio.lookupOrCreate(ratio, ratio.bareTagSuffix, suffix, true, true)
 				
@@ -978,6 +980,8 @@ class UnitRatio {
 			this.bareTagSuffix = tagSuffix.substring(1, tagSuffix.length() - 1)
 		else
 			this.bareTagSuffix = ""
+		if (this.tagSuffix.contains("awake"))
+			unit = unit
 		this.subRatio = 0.0g
 		this.singularUnitRatio = null
 		this.pluralUnitRatio = null
@@ -1060,6 +1064,7 @@ class UnitRatio {
 
 class DecoratedUnitRatio {
 	UnitRatio unitRatio
+	String bareSuffix // the bare suffix for just the dimension type ("hours" -> "time", etc.)
 	String unitSuffix // this is a special suffix added to the tag if the unit is decorated (i.e., "hours rem" or "feet elevation"
 	String tagSuffix // computed suffix ([elevation])
 	boolean customSuffix
@@ -1081,10 +1086,13 @@ class DecoratedUnitRatio {
 		this.unitRatio = unitRatio
 		this.unitSuffix = unitSuffix
 		this.customSuffix = customSuffix
+		this.bareSuffix = bareSuffix
 		if (unitSuffix) {
 			tagSuffix = '[' + (bareSuffix ? bareSuffix + ": " + unitSuffix : unitSuffix) + ']'
 		} else
 			tagSuffix = unitRatio.tagSuffix
+		if (this.tagSuffix.contains("awake"))
+			bareSuffix = bareSuffix
 		unitRatio.unitGroup.registerDecoratedUnitRatio(this)
 		if (initialize) {
 			initializeSubUnitRatios()
@@ -1104,20 +1112,20 @@ class DecoratedUnitRatio {
 			if (unitSuffix == null) {
 				subUnitRatio = unitRatio.subUnitRatio?.decoratedUnitRatio
 			} else
-				subUnitRatio = lookupOrCreate(unitRatio.subUnitRatio, null, unitSuffix, true)
+				subUnitRatio = lookupOrCreate(unitRatio.subUnitRatio, bareSuffix, unitSuffix, true)
 		}
 		if (unitRatio.singularUnitRatio != null) {
 			bareSingularUnitRatio = unitRatio.singularUnitRatio.decoratedUnitRatio
 			if (unitSuffix == null) {
 				bareSingularUnitRatio = singularUnitRatio
 				if (singularUnitRatio == null) {
-					singularUnitRatio = lookupOrCreate(unitRatio.singularUnitRatio, null, unitSuffix, true)
+					singularUnitRatio = lookupOrCreate(unitRatio.singularUnitRatio, bareSuffix, unitSuffix, true)
 				}
 			} else {
 				if (unitRatio.singularUnitRatio.is(unitRatio)) {
 					singularUnitRatio = this
 				} else
-					singularUnitRatio = lookupOrCreate(unitRatio.singularUnitRatio, null, unitSuffix, true)
+					singularUnitRatio = lookupOrCreate(unitRatio.singularUnitRatio, bareSuffix, unitSuffix, true)
 			}
 		}
 		if (unitRatio.pluralUnitRatio != null) {
@@ -1125,13 +1133,13 @@ class DecoratedUnitRatio {
 			if (unitSuffix == null) {
 				barePluralUnitRatio = pluralUnitRatio
 				if (pluralUnitRatio == null) {
-					pluralUnitRatio = lookupOrCreate(unitRatio.pluralUnitRatio, null, unitSuffix, true)
+					pluralUnitRatio = lookupOrCreate(unitRatio.pluralUnitRatio, bareSuffix, unitSuffix, true)
 				}
 			} else {
 				if (unitRatio.pluralUnitRatio.is(unitRatio)) {
 					pluralUnitRatio = this
 				} else
-					pluralUnitRatio = lookupOrCreate(unitRatio.pluralUnitRatio, null, unitSuffix, true)
+					pluralUnitRatio = lookupOrCreate(unitRatio.pluralUnitRatio, bareSuffix, unitSuffix, true)
 			}
 		}
 	}

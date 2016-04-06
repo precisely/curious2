@@ -72,7 +72,7 @@ class AnalyticsCorrelation {
 		series2Type index: 'updateIdx'
 		description1 index: 'search1'
 		description2 index: 'search2'
-		signalLevel index: 'signalLevelIdx', defaultValue: (Double)-1.0
+		signalLevel index: 'signalLevelIdx', defaultValue: -1.0d
 	}
 
 	public static userCorrelations(Long userId, Integer max, String flavor) {

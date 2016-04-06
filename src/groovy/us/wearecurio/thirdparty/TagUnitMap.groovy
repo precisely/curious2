@@ -1,6 +1,7 @@
 package us.wearecurio.thirdparty
 
 import org.apache.commons.logging.LogFactory
+import us.wearecurio.data.DecoratedUnitRatio
 import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.model.DurationType
 import us.wearecurio.model.Entry
@@ -164,6 +165,8 @@ abstract class TagUnitMap {
 			args['datePrecisionSecs'] = Entry.DEFAULT_DATEPRECISION_SECS
 		
 		ParseAmount parseAmount = new ParseAmount(tag, baseTag, amount, amountPrecision, units, currentMapping.unitRatio, durationType)
+		
+		DecoratedUnitRatio unitRatio = currentMapping.unitRatio
 		
 		Map parsedEntry = [userId: userId, date: date, description: description, amount: parseAmount, comment: comment, setName: setName, timeZoneId: timeZoneId, durationType:durationType]
 		

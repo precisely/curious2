@@ -94,7 +94,7 @@ class RemindEmailService {
 			if (userId == 1L)
 				userId = userId
 
-			def remindEvents = Entry.fetchReminders(u, oldDate, (long)(now.getTime() - oldDate.getTime()) / 1000L)
+			def remindEvents = Entry.fetchReminders(u, oldDate, (long)((now.getTime() - oldDate.getTime()) / 1000L))
 			
 			if (remindEvents?.size()) {
 				log.debug "Reminder for user " + userId + " " + u?.username
