@@ -6,8 +6,8 @@
 	<meta property="og:description" content="${firstPost?.message}"/>
 	<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 	<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
-	<script type="text/javascript" src="/js/curious/feeds.js?ver=23"></script>
-	<script type="text/javascript" src="/js/curious/discussion.js?ver=24"></script>
+	<script type="text/javascript" src="/js/curious/feeds.js?ver=24"></script>
+	<script type="text/javascript" src="/js/curious/discussion.js?ver=25"></script>
 	<script type="text/javascript" src="/js/curious/sprint.js?ver=24"></script>
 	<script src="/js/zero.clipboard.min.js"></script>
 	<c:jsCSRFToken keys="deleteGhostEntryDataCSRF, deleteEntryDataCSRF, addEntryCSRF, getPeopleDataCSRF, getCommentsCSRF,
@@ -31,13 +31,13 @@
 	<script>
 		window.fbAsyncInit = function() {
 			FB.init({
-				appId      : ${grailsApplication.config.facebookAppId},
-				xfbml      : true,
-				version    : 'v2.4'
+				appId: ${grailsApplication.config.facebookAppId},
+				xfbml: true,
+				version: 'v2.4'
 			});
 		};
 
-		(function(d, s, id){
+		(function(d, s, id) {
 			var js, fjs = d.getElementsByTagName(s)[0];
 			if (d.getElementById(id)) {return;}
 			js = d.createElement(s); js.id = id;

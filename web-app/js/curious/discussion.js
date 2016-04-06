@@ -354,7 +354,7 @@ $(document).ready(function() {
 		params.requestOrigin = window.location.hash.slice(1);
 		params.messageLength = messageLength;
 
-		queuePostJSON("Posting to Twitter", "/api/discussion/action/tweet", getCSRFPreventionObject("tweetDiscussionDataCSRF", params), function(data) {
+		queuePostJSON("Posting to Twitter", "/api/discussion/action/tweetDiscussion", getCSRFPreventionObject("tweetDiscussionDataCSRF", params), function(data) {
 			if (!checkData(data)) {
 				return;
 			}
@@ -609,16 +609,16 @@ function shareMessage(platform) {
 	$('#message-link').text(' + ' + $('#social-share-message').data('shareURL'));
 }
 
-$(document).on('keyup','#social-share-message',function() {
+$(document).on('keyup', '#social-share-message', function() {
 
-	var shareMessage = $('#social-share-message').val().length;
+	var shareMessageLength = $('#social-share-message').val().length;
 	/*
 	 * Since we are attaching a URL at the end of the message we have to subtract the length of the url from the
 	 * maximum length of the message. Although twitter convert all the URLs in a tweet to smaller URLs of 23
 	 * characters each. Hence subtracting 23 characters from the maximum length of 140 characters in the counter
 	 */
-	$('#share-message-length').text(116 - shareMessage);
-	var css = (shareMessage <= 116) ? {"color": "#616B6B", "font-weight": "100"} : {"color": "#fc3f28", "font-weight": "bold"};
+	$('#share-message-length').text(116 - shareMessageLength);
+	var css = (shareMessageLength <= 116) ? {"color": "#616B6B", "font-weight": "100"} : {"color": "#fc3f28", "font-weight": "bold"};
 	$('#share-message-length').css(css);
 	return;
 });

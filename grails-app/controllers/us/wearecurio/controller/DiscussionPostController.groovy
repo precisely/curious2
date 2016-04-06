@@ -60,7 +60,7 @@ class DiscussionPostController extends LoginController{
 
 		User user = sessionUser()
 		if (!user) {
-			renderJSONPost(['login'])
+			renderJSONPost(["login"])
 			return
 		}
 		def comment
@@ -80,7 +80,7 @@ class DiscussionPostController extends LoginController{
 		}
 
 		JSON.use("jsonDate") {
-			renderJSONPost([success: true, post: comment.getJSONDesc(), userId: sessionUser()?.id, idAdmin:
+			renderJSONPost([success: true, post: comment.getJSONDesc(), userId: user.id, idAdmin:
 					UserGroup.canAdminDiscussion(sessionUser(), discussion)])
 		}
 	}

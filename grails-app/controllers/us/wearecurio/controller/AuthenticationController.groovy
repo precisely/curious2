@@ -116,7 +116,7 @@ class AuthenticationController extends SessionController {
 	def twitterAuth() {
 		URIBuilder builder = new URIBuilder("https://api.twitter.com?" + tokenInstance.getRawResponse())
 		String twitterId = builder.getQuery().user_id
-		oauthAccountService.createOrUpdate(ThirdParty.TWITTER, twitterId, tokenInstance, userId )
+		oauthAccountService.createOrUpdate(ThirdParty.TWITTER, twitterId, tokenInstance, userId)
 	}
 
 	def humanAuth() {

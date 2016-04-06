@@ -58,9 +58,9 @@ class TwitterDataServiceTests extends CuriousTestCase {
 		}
 		assertTrue(twitterDataService.postStatus(tokenInstance, "success").success)
 		assertTrue(twitterDataService.postStatus(tokenInstance, "success").messageCode == "twitter.tweet.success")
-		assertFalse (twitterDataService.postStatus(tokenInstance, "fail").success)
-		assertTrue (twitterDataService.postStatus(tokenInstance, "duplicate").success)
-		assertTrue (twitterDataService.postStatus(tokenInstance, "duplicate").messageCode == "twitter.duplicate.tweet")
+		assertFalse(twitterDataService.postStatus(tokenInstance, "fail").success)
+		assertTrue(twitterDataService.postStatus(tokenInstance, "duplicate").success)
+		assertTrue(twitterDataService.postStatus(tokenInstance, "duplicate").messageCode == "twitter.duplicate.tweet")
 
 	}
 

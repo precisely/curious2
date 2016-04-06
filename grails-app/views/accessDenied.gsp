@@ -7,12 +7,10 @@
 
 <body class="warning-page">
 	<div class="main container-fluid" >
-		<div class="container-fluid" >
-			<div class="filter-group">
-				<nav class="red-header">
-				</nav>
-				<h1>Access Denied</h1>
-			</div>
+		<div class="filter-group">
+			<nav class="red-header">
+			</nav>
+			<h1>Access Denied</h1>
 		</div>
 		<!-- /MAIN -->
 	</div>

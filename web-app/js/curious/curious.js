@@ -122,7 +122,7 @@ function checkData(data, status, errorMessage, successMessage) {
 	if (data == 'login') {
 		if (status != 'cached') {
 			// Checking whether user's session timed out or the user hadn't logged in in the first place.
-			var message = currentUserId? "Session timed out." : "Please login first."
+			var message = currentUserId ? "Session timed out." : "Please login first."
 			showAlert(message, logoutAndRedirect);
 			setTimeout(logoutAndRedirect, 30000);
 		}

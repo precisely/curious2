@@ -304,7 +304,7 @@ class SecurityService {
 	}
 
 	/*
-	 * This method iterates over all the controllersandmethods to search for 
+	 * This method iterates over all the controllers and methods to search for
 	 * NoAuth annotation and populates noauthActions list based on above
 	 * search
 	 */
@@ -318,7 +318,7 @@ class SecurityService {
 
 			controllerClass.methods.each { Method method ->
 				if (method.isAnnotationPresent(NoAuth)) {
-					if (noauthActions[controllerName] && !(noauthActions[controllerName] == '*')) {
+					if (noauthActions[controllerName] instanceof List) {
 						noauthActions[controllerName].push(method.name)
 					} else {
 						noauthActions[controllerName] = [method.name]

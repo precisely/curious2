@@ -422,7 +422,7 @@ function checkAndDisplayTabData() {
 	// This block is used to alert the status of sharing to twitter, immediately after authorization.
 	var queryParams = getSearchParams();
 	if (queryParams.tweetStatus == 'true' && queryParams.duplicateTweet == 'false') {
-		showAlert('Successfully tweeted discussion!', removeQueryString);
+		showAlert('Successfully posted discussion to Twitter.', removeQueryString);
 	} else if (queryParams.tweetStatus == 'true' && queryParams.duplicateTweet == 'true') {
 		showAlert('You have already tweeted this discussion.', removeQueryString);
 	} else if (queryParams.tweetStatus == 'false') {
@@ -560,21 +560,22 @@ $(document).ready(function() {
 		$('#createSprintOverlay').modal('hide').data('bs.modal', null);
 		clearSprintFormData();
 		queuePostJSON('Canceling sprint edit', '/data/cancelSprintEdit', getCSRFPreventionObject('cancelSprintEditCSRF',
-						{username: userName, sprintHash: $('#sprintIdField').val()}),
+				{username: userName, sprintHash: $('#sprintIdField').val()}),
 				function(data) {
-					if (!checkData(data))
-						return;
+			if (!checkData(data)) {
+				return;
+			}
 
-					if (data.success) {
-						console.log('added persons: ', data);
-						$("#" + inputId).val('');
-						addParticipantsAndAdminsToList($("#" + inputId + "-list"), deleteButtonClass, userName);
-					} else {
-						showBootstrapAlert($('.modal-dialog .alert'), data.message);
-					}
-				}, function(xhr) {
-					console.log('error: ', xhr);
-				});
+			if (data.success) {
+				console.log('added people: ', data);
+				$("#" + inputId).val('');
+				addParticipantsAndAdminsToList($("#" + inputId + "-list"), deleteButtonClass, userName);
+			} else {
+				showBootstrapAlert($('.modal-dialog .alert'), data.message);
+			}
+		}, function(xhr) {
+			console.log('error: ', xhr);
+		});
 		return false;
 	});
 });
@@ -666,22 +667,22 @@ function deleteParticipantsOrAdmins($element, username, actionType) {
 
 	queuePostJSON('Removing members', '/api/sprint/action/' + actionName, getCSRFPreventionObject(actionName + 'CSRF',
 					{username: username, now: new Date().toUTCString(), sprintHash: $('#sprintIdField').val(),
-						timeZoneName: jstz.determine().name()}),
+					timeZoneName: jstz.determine().name()}),
 			function(data) {
-				if (!checkData(data))
-					return;
+		if (!checkData(data))
+			return;
 
-				if (data.success) {
-					$element.parents('li').remove();
-				} else {
-					$('.modal-dialog .alert').text(data.errorMessage).removeClass('hide');
-					setInterval(function() {
-						$('.modal-dialog .alert').addClass('hide');
-					}, 5000);
-				}
-			}, function(xhr) {
-				console.log('error: ', xhr);
-			});
+		if (data.success) {
+			$element.parents('li').remove();
+		} else {
+			$('.modal-dialog .alert').text(data.errorMessage).removeClass('hide');
+			setInterval(function() {
+				$('.modal-dialog .alert').addClass('hide');
+			}, 5000);
+		}
+	}, function(xhr) {
+		console.log('error: ', xhr);
+	});
 }
 
 function createAutocomplete(inputId, autocompleteId) {
@@ -696,8 +697,9 @@ function createAutocomplete(inputId, autocompleteId) {
 		queueJSON('Getting autocomplete', '/data/getAutocompleteParticipantsData?' + getCSRFPreventionURI("getAutocompleteParticipantsDataCSRF") + "&callback=?",
 				{searchString: searchString, max: 10},
 				function(data) {
-					if (!checkData(data))
-						return;
+			if (!checkData(data)) {
+				return;
+			}
 
 			if (data.success) {
 				$('#' + inputId).autocomplete('option', 'source', data.displayNames);
@@ -728,19 +730,20 @@ function addSprintMemberOrAdmin(inputId, userName) {
 	queuePostJSON('Adding members', '/api/sprint/action/' + actionName, getCSRFPreventionObject(actionName + 'CSRF',
 					{username: userName, sprintHash: $('#sprintIdField').val()}),
 			function(data) {
-				if (!checkData(data))
-					return;
+		if (!checkData(data)) {
+			return;
+		}
 
-				if (data.success) {
-					console.log('added persons: ', data);
-					$("#" + inputId).val('');
-					addParticipantsAndAdminsToList($("#" + inputId + "-list"), deleteButtonClass, userName);
-				} else {
-					showBootstrapAlert($('.modal-dialog .alert'), data.errorMessage);
-				}
-			}, function(xhr) {
-				console.log('error: ', xhr);
-			});
+		if (data.success) {
+			console.log('added people: ', data);
+			$("#" + inputId).val('');
+			addParticipantsAndAdminsToList($("#" + inputId + "-list"), deleteButtonClass, userName);
+		} else {
+			showBootstrapAlert($('.modal-dialog .alert'), data.errorMessage);
+		}
+	}, function(xhr) {
+		console.log('error: ', xhr);
+	});
 }
 
 function deleteSimpleEntry(id, $element) {
@@ -776,7 +779,7 @@ function deleteGhost($tagToDelete, entryId, allFuture) {
 	this.baseDate = new Date('January 1, 2001 12:00 am').toUTCString();
 
 	queueJSON("deleting entry", makeGetUrl("deleteGhostEntryData"), makeGetArgs(getCSRFPreventionObject("deleteGhostEntryDataCSRF", {entryId:entryId,
-				all:(allFuture ? "true" : "false"), date: this.baseDate, baseDate: this.baseDate})),
+			all:(allFuture ? "true" : "false"), date: this.baseDate, baseDate: this.baseDate})),
 			function(response) {
 				if (!checkData(response))
 					return;
@@ -884,16 +887,16 @@ function editSprint(sprintHash) {
 			} else {
 				$('#open').prop('checked', true);
 			}
-			$.each(data.entries, function (index, value) {
+			$.each(data.entries, function(index, value) {
 				addTagsToList(value);
 			});
-			$.each(data.participants, function (index, participant) {
+			$.each(data.participants, function(index, participant) {
 				if (!participant.virtual) {
 					addParticipantsAndAdminsToList($("#sprint-participants-list"),
 							'deleteParticipants', participant.username);
 				}
 			});
-			$.each(data.admins, function (index, admin) {
+			$.each(data.admins, function(index, admin) {
 				if (!admin.virtual) {
 					addParticipantsAndAdminsToList($("#sprint-admins-list"),
 							'deleteAdmins', admin.username);
@@ -912,20 +915,21 @@ function deleteSprint(sprintHash) {
 		queueJSONAll('Deleting sprint', '/api/sprint/' + sprintHash,
 				getCSRFPreventionObject('deleteSprintDataCSRF'),
 				function(data) {
-					if (!checkData(data))
-						return;
+			if (!checkData(data)) {
+				return;
+			}
 
-					console.log('data: ', data);
-					if (!data.success) {
-						showAlert('Unable to delete sprint!');
-					} else {
-						if (!window.history.back()) {
-							location.href = sprintListURL;
-						}
-					}
-				}, function(data) {
-					showAlert(data.message);
-				}, null, httpArgs);
+			console.log('data: ', data);
+			if (!data.success) {
+				showAlert('Unable to delete sprint!');
+			} else {
+				if (!window.history.back()) {
+					location.href = sprintListURL;
+				}
+			}
+		}, function(data) {
+			showAlert(data.message);
+		}, null, httpArgs);
 	});
 }
 
@@ -949,18 +953,18 @@ function toggleCommentsList(discussionHash) {
 function showUserDetails(hash) {
 	queueJSON('Getting user details', '/api/user/' + hash + '?' + getCSRFPreventionURI('getUserDataCSRF') + '&callback=?',
 			function(data) {
-				if (data.success) {
-					data.user.followButtonText = data.user.followed ? 'UNFOLLOW' : 'FOLLOW';
-					var compiledHTML = compileTemplate("_peopleDetails", {'user': data.user});
-					$('#feed').html(compiledHTML);
-					setQueryHeader('User Profile', true);
-				} else {
-					showAlert(data.message);
-					window.history.back();
-				}
-			}, function(data) {
-				showAlert('Internal server error occurred.');
-			});
+		if (data.success) {
+			data.user.followButtonText = data.user.followed ? 'UNFOLLOW' : 'FOLLOW';
+			var compiledHTML = compileTemplate("_peopleDetails", {'user': data.user});
+			$('#feed').html(compiledHTML);
+			setQueryHeader('User Profile', true);
+		} else {
+			showAlert(data.message);
+			window.history.back();
+		}
+	}, function(data) {
+		showAlert('Internal server error occurred.');
+	});
 }
 
 function setQueryHeader(text, setGobackButton) {

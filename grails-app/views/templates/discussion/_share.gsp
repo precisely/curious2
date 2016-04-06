@@ -13,25 +13,30 @@
 			</div>
 			<div class="modal-body">
 				<div class="row share-options">
-					<div class="col-md-5 option">
-						<button onclick="shareMessage('copy')" class="clip_button">
-							<i class="fa fa-link fa-2x"></i>
-						</button>
-						<label class="caption">Copy Link</label>
+					<div class="col-sm-5 col-xs-4 option">
+						<div class="option-container">
+							<button onclick="shareMessage('copy')" class="clip_button">
+								<i class="fa fa-link fa-2x"></i>
+							</button>
+							<label class="caption">Copy Link</label>
+						</div>
 					</div>
-					<div class="col-md-2 option">
-						<button onclick="shareMessage('facebook')">
-							<i class="fa fa-facebook fa-2x"></i>
-						</button>
-						<label class="caption">Facebook</label>
+					<div class="col-sm-2 col-xs-4 option">
+						<div class="option-container">
+							<button onclick="shareMessage('facebook')">
+								<i class="fa fa-facebook fa-2x"></i>
+							</button>
+							<label class="caption">Facebook</label>
+						</div>
 					</div>
-					<div class="col-md-5 option">
-						<button onclick="shareMessage('twitter')">
-							<i class="fa fa-twitter fa-2x"></i>
-						</button>
-						<label class="caption">Twitter</label>
+					<div class="col-sm-5 col-xs-4 option">
+						<div class="option-container">
+							<button onclick="shareMessage('twitter')">
+								<i class="fa fa-twitter fa-2x"></i>
+							</button>
+							<label class="caption">Twitter</label>
+						</div>
 					</div>
-					<div class="col-md-3"></div>
 				</div>
 				<div class="row post-message hide">
 					<div class="col-md-9">

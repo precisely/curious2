@@ -1,15 +1,10 @@
 package us.wearecurio.controller.integration
 
 import us.wearecurio.services.TwitterDataService
-
-import static org.junit.Assert.*
 import org.junit.*
-import org.scribe.model.Response
-
 import us.wearecurio.model.Model.Visibility
 import us.wearecurio.controller.DiscussionController
 import us.wearecurio.model.*
-import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.utility.Utils
 import us.wearecurio.hashids.DefaultHashIDGenerator
 
@@ -60,7 +55,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void testTweet() {
+	void "Test tweet success"() {
 		mockPostStatus()
 		params.message = "This is a discussion"
 		params.messageLength = params.message.length().toString()
@@ -70,11 +65,11 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.request.method = "POST"
 		OAuthAccount account = new OAuthAccount([accessToken: "some-token", accessSecret: "some-secret", userId: userId, accountId: "some-account", typeId: ThirdParty.TWITTER ])
 		account.save(flush:true)
-		controller.tweet()
+		controller.tweetDiscussion()
 
 		assert controller.response.json.success == true
 		assert controller.response.json.authenticated == true
-		assert controller.response.json.message  == "Successfully tweeted discussion."
+		assert controller.response.json.message == messageSource.getMessage("twitter.tweet.success", ["Discussion"] as Object[], null)
 	}
 
 	@Test
@@ -83,7 +78,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll(params)
 		controller.session.userId = null
 		controller.request.method = "POST"
-		controller.tweet()
+		controller.tweetDiscussion()
 
 		assert controller.response.json[0] == "login"
 	}
@@ -96,7 +91,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll(params)
 		controller.session.userId = user2.id
 		controller.request.method = "POST"
-		controller.tweet()
+		controller.tweetDiscussion()
 
 		assert controller.response.json.success == false
 		assert controller.response.json.authenticated == false
@@ -115,10 +110,10 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.request.method = "POST"
 		OAuthAccount account = new OAuthAccount([accessToken: "some-token", accessSecret: "some-secret", userId: userId, accountId: "some-account", typeId: ThirdParty.TWITTER ])
 		Utils.save(account, true)
-		controller.tweet()
+		controller.tweetDiscussion()
 
 		assert controller.response.json.success == false
-		assert controller.response.json.message == "The text is too long."
+		assert controller.response.json.message == messageSource.getMessage("twitter.long.message", ["Discussion"] as Object[], null)
 	}
 
 	@Test
@@ -131,10 +126,10 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.request.method = "POST"
 		OAuthAccount account = new OAuthAccount([accessToken: "some-token", accessSecret: "some-secret", userId: userId, accountId: "some-account", typeId: ThirdParty.TWITTER ])
 		Utils.save(account, true)
-		controller.tweet()
+		controller.tweetDiscussion()
 
 		assert controller.response.json.success == false
-		assert controller.response.json.message == "No data to tweet."
+		assert controller.response.json.message == messageSource.getMessage("twitter.empty.message", ["Discussion"] as Object[], null)
 	}
 
 	@Test
@@ -148,11 +143,11 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		OAuthAccount account = new OAuthAccount([accessToken: "some-token", accessSecret: "some-secret", userId: userId, accountId: "some-account", typeId: ThirdParty.TWITTER ])
 		Utils.save(account, true)
 		controller.session.tweetMessage = "This is a discussion"
-		controller.tweet()
+		controller.tweetDiscussion()
 
 		assert controller.response.json.success == true
 		assert controller.response.json.authenticated == true
-		assert controller.response.json.message == "Successfully tweeted discussion."
+		assert controller.response.json.message == messageSource.getMessage("twitter.tweet.success", ["Discussion"] as Object[], null)
 		assert controller.response.redirectedUrl == "http://localhost:8204/home/social?tweetStatus=true&duplicateTweet=false#home/social#all"
 		assert controller.session.tweetMessage == null
 		assert controller.session.requestOrigin == null
@@ -261,7 +256,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void xxx() {
+	void "Test show when user is not logged in an discussion is not public"() {
 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
 		discussion.visibility = Visibility.PRIVATE
 		Utils.save(discussion, true)

@@ -4930,7 +4930,10 @@ input.cropit-image-zoom-input {
 }
 
 #share-modal {
-	margin-top: 10%;
+    min-width: 350px;
+	margin-top: 15%;
+	-ms-word-wrap: break-word;
+	word-wrap: break-word;
 }
 
 #share-modal .modal-header {
@@ -4959,20 +4962,19 @@ input.cropit-image-zoom-input {
 
 }
 
-.share-options .option:nth-child(1) {
-	text-align: right;
+.option-container {
+	display: inline-block;
+}
+.share-options .option:nth-child(1) .option-container {
+	float: right;
 }
 
-.share-options .option:nth-child(3) {
-	text-align: left;
+.share-options .option:nth-child(3)  .option-container{
+	float: left;
 }
 
-.share-options .option:nth-child(1) label {
-	padding-right: 13px;
-}
-
-.share-options .option:nth-child(3) label {
-	padding-left: 21px;
+.option-container {
+	text-align: center;
 }
 
 #message-link {
@@ -4986,7 +4988,6 @@ input.cropit-image-zoom-input {
 	padding-left: 4px;
 	padding-top: 5px;
 	padding-right: 5px;
-	/*border: 3px solid #c1c1c1;*/
 	border-radius: 50%;
 	color: #c1c1c1;
 }
@@ -5056,11 +5057,11 @@ input.cropit-image-zoom-input {
 	opacity: .9;
 }
 .tooltip.top {
-	padding: 5px 0;
+	padding: 5px 0px;
 	margin-top: -3px;
 }
 .tooltip.bottom {
-	padding: 5px 0;
+	padding: 5px 0px;
 	margin-top: 3px;
 }
 .tooltip-inner {
@@ -5074,20 +5075,20 @@ input.cropit-image-zoom-input {
 }
 .tooltip-arrow {
 	position: absolute;
-	width: 0;
-	height: 0;
+	width: 0px;
+	height: 0px;
 	border-color: transparent;
 	border-style: solid;
 }
 .tooltip.top .tooltip-arrow {
-	bottom: 0;
+	bottom: 0px;
 	left: 50%;
 	margin-left: -5px;
 	border-width: 5px 5px 0;
 	border-top-color: #000;
 }
 .tooltip.bottom .tooltip-arrow {
-	top: 0;
+	top: 0px;
 	left: 50%;
 	margin-left: -5px;
 	border-width: 0 5px 5px;
