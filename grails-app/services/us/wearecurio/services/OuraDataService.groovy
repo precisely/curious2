@@ -1,6 +1,7 @@
 package us.wearecurio.services
 
 import grails.converters.JSON
+import groovy.time.TimeCategory
 import groovyx.net.http.URIBuilder
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -53,8 +54,9 @@ class OuraDataService extends DataService {
 		endDate = endDate ?: new Date()
 
 		getDataSleep(account, startDate, endDate, false)
-		getDataExercise(account, startDate, endDate, false)
-		getDataActivity(account, startDate, endDate, false)
+		// Uncomment these below 2 lines when Oura starts sending the activity & excercise data
+		//getDataExercise(account, startDate, endDate, false)
+		//getDataActivity(account, startDate, endDate, false)
 
 		account.markLastPolled()
 		[success: true]
@@ -124,12 +126,23 @@ class OuraDataService extends DataService {
 			Integer timeZoneIdNumber = getTimeZoneId(account, sleepEntry)
 			def sleepEntryData = sleepEntry["data"]
 
-			if (sleepEntryData) {
-				["bedtime_m", "sleep_score", "awake_m", "rem_m", "light_m", "deep_m"].each { key ->
-					if (sleepEntryData[key]) {
-						tagUnitMap.buildEntry(creationMap, stats, key, Long.parseLong(sleepEntryData[key].toString()), userId, timeZoneIdNumber,
-								entryDate, COMMENT, setName)
-					}
+			if (!sleepEntryData) {
+				return
+			}
+
+			// In Minutes
+			Integer totalSlept = sleepEntryData["bedtime_m"].toInteger()
+			Date sleepEnd
+			use(TimeCategory) {
+				sleepEnd = entryDate + totalSlept.minutes
+			}
+
+			log.debug "Sleep start $entryDate, total bedtime $totalSlept minutes, sleep end $sleepEnd"
+
+			["bedtime_m", "sleep_score", "awake_m", "rem_m", "light_m", "deep_m"].each { key ->
+				if (sleepEntryData[key]) {
+					tagUnitMap.buildEntry(creationMap, stats, key, Long.parseLong(sleepEntryData[key].toString()),
+							userId, timeZoneIdNumber, sleepEnd, COMMENT, setName)
 				}
 			}
 		}
@@ -403,13 +416,13 @@ class OuraDataService extends DataService {
  * TODO Replace the use of String like "sleep", "s", "acitivity", "a" etc. with this enum to make the code more
  * readable. This enum is not used anywhere currently.
  */
-enum OuraDataTypes {
+enum OuraDataType {
 	SLEEP("s"),
 	ACTIVITY("ac"),
 	EXERCISE("e")
 
 	final oldSetName
-	OuraDataTypes(String oldSetName) {
+	OuraDataType(String oldSetName) {
 		this.oldSetName = oldSetName
 	}
 }

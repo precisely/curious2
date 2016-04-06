@@ -12,6 +12,7 @@ import us.wearecurio.model.DurationType
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
 import us.wearecurio.model.Model
+import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.PlotData
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.Tag
@@ -76,6 +77,7 @@ class MigrationService {
 	ElasticSearchService elasticSearchService
 	EntryParserService entryParserService
 	def elasticSearchAdminService
+	OuraDataService ouraDataService
 	
 	boolean skipMigrations = false
 	
@@ -616,10 +618,31 @@ class MigrationService {
 			sql("alter table _user drop column is_verified")
 			sql("update _user set email_verified = :status", [status: VerificationStatus.VERIFIED.id])
 		}
-		tryMigration("Set last polled for all Oura OAuthAccounts") {
+		tryMigration("Set last polled for all OAuthAccounts & add not null constraint") {
 			// Set last polled to (now - 4 days)
-			sql("update oauth_account set last_polled = (now() - interval 4 day) where type_id = :typeId",
-					[typeId: ThirdParty.OURA.id])
+			sql("update oauth_account set last_polled = (now() - interval 4 day) where last_polled is null")
+			sql("ALTER TABLE oauth_account MODIFY COLUMN last_polled datetime NOT NULL")
+		}
+		tryMigration("Re-import Oura data from beginning to fix duration entries") {
+			OAuthAccount.withCriteria {
+				eq("typeId", ThirdParty.OURA)
+				ne("accessToken", "")
+			}.each { oauthAccount ->
+				log.debug "Updating lastPolled for $oauthAccount"
+
+				User userInstance = User.get(oauthAccount.userId)
+				Date firstMarch = new Date("03/01/2016")
+
+				Date lastPolled = firstMarch > userInstance.created ? firstMarch : userInstance.created
+				log.debug "New last polled is [$lastPolled]"
+
+				oauthAccount.lastPolled = lastPolled
+				Utils.save(oauthAccount, true)
+			}
+		}
+
+		tryMigration("Fix typo in fullName in user_group") {
+			sql("update user_group set full_name = replace(full_name, 'grouo', 'group')")
 		}
 	}
 	
@@ -787,6 +810,9 @@ class MigrationService {
 				if (discussion.createVirtualObjects())
 					Utils.save(discussion, true)
 			}
+		}
+		tryMigration("Re-import Oura data") {
+			ouraDataService.pollAll()
 		}
 	}
 }

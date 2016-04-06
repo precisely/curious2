@@ -260,7 +260,7 @@ class Discussion {
             this.virtualUserGroupIdFollowers <= 0
            ) {
             vUGFollowers = UserGroup.createVirtual(
-                "virtual discussion followers grouo for '${(name?:"anonymous")}'"
+                "virtual discussion followers group for '${(name?:"anonymous")}'"
             )
             this.virtualUserGroupIdFollowers = vUGFollowers.id
         } else {

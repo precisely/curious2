@@ -6,8 +6,6 @@ class JawboneUpTagUnitMap extends TagUnitMap {
 
 	private static Map sleepUnitMap, activityUnitMap, workOutUnitMap, measurementUnitMap, columnDetailMap = [:]
 
-	Map buckets
-
 	static {
 		sleepUnitMap = [
 			duration: [tag: SLEEP, unit: "mins", convert: true, from: "seconds"],
@@ -21,7 +19,7 @@ class JawboneUpTagUnitMap extends TagUnitMap {
 			minutes: [tag: ACTIVITY, unit: "mins", convert: true, from: "seconds"],
 			steps: [tag: ACTIVITY, unit: "steps"],
 
-			lightlyActiveDistance: [tag: "light $ACTIVITY", unit: "miles", unit: "miles", convert: true, from: "meters"],
+			lightlyActiveDistance: [tag: "light $ACTIVITY", unit: "miles", convert: true, from: "meters"],
 			lightlyActiveMinutes: [tag: "light $ACTIVITY", unit: "mins", convert: true, from: "seconds"],
 			lightlyActiveSteps: [tag: "light $ACTIVITY", unit: "steps"],
 			lightlyActiveCalories: [tag: "light $ACTIVITY", unit: "cal"],
