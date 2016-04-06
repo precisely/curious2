@@ -106,19 +106,14 @@ class TwitterDataService extends DataService {
 		return null
 	}
 
-	JSONObject getUserProfile(Token tokenInstance, String url) {
-		if (!oauthService) {
-			oauthService = getOauthService()
-		}
-		Response response = oauthService.getTwitterResource(tokenInstance, url)
-		if (response.getCode() == 200) {
-			return JSON.parse(response.body)
-		}
-	}
-
-	def postStatus(Token tokenInstance, String status) {
+	Map postStatus(Token tokenInstance, String status) {
 		JSONObject tweetResponse = getResponse(tokenInstance, BASE_URL + "/statuses/update.json", "post", [status: status])
-		return (tweetResponse?.getCode() == 200 || tweetResponse?.errors[0]?.code == 187)
+		if (tweetResponse.getCode() == 200) {
+			return [success: true, messageCode: "twitter.tweet.success", duplicateTweet: false]
+		} else if (tweetResponse?.errors?.getAt(0)?.code == 187) {
+			return [success: true, messageCode: "twitter.duplicate.tweet", duplicateTweet: true]
+		}
+		return [success: false]
 	}
 
 	/**

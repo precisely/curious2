@@ -482,6 +482,10 @@ environments {
 					key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
 					secret = "767464759048b87ef4d6e4d2f8456010bb085eefbfd83215e5f147626fc24"
 				}
+				twitter {
+					key = "gI2yYQiHUaCSaMemzkfXWPWSv"
+					secret = "9v5XAQ860KaYQuk1w0Ez2hjfJ3Dpl58Sg5s3tdhbWWY9WHOmQh"
+				}
 			}
 		}
     }

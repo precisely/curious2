@@ -1,5 +1,7 @@
 package us.wearecurio.controller.integration
 
+import us.wearecurio.services.TwitterDataService
+
 import static org.junit.Assert.*
 import org.junit.*
 import org.scribe.model.Response
@@ -48,6 +50,113 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
     void tearDown() {
 		super.tearDown()
     }
+
+	void mockPostStatus() {
+		controller.twitterDataService = [
+				postStatus: { token, URL ->
+					return [success: true, messageCode: "twitter.tweet.success", duplicateTweet: false]
+				}
+		] as TwitterDataService
+	}
+
+	@Test
+	void testTweet() {
+		mockPostStatus()
+		params.message = "This is a discussion"
+		params.messageLength = params.message.length().toString()
+		params.requestOrigin = "home/social#all"
+		controller.params.putAll(params)
+		controller.session.userId = userId
+		controller.request.method = "POST"
+		OAuthAccount account = new OAuthAccount([accessToken: "some-token", accessSecret: "some-secret", userId: userId, accountId: "some-account", typeId: ThirdParty.TWITTER ])
+		account.save(flush:true)
+		controller.tweet()
+
+		assert controller.response.json.success == true
+		assert controller.response.json.authenticated == true
+		assert controller.response.json.message  == "Successfully tweeted discussion."
+	}
+
+	@Test
+	void "Test tweet with no user logged in"() {
+		params.message = "This is a discussion"
+		controller.params.putAll(params)
+		controller.session.userId = null
+		controller.request.method = "POST"
+		controller.tweet()
+
+		assert controller.response.json[0] == "login"
+	}
+
+	@Test
+	void "Test tweet with no authorized user"() {
+		params.message = "This is a discussion"
+		params.messageLength = params.message.length().toString()
+		params.requestOrigin = "home/social#all"
+		controller.params.putAll(params)
+		controller.session.userId = user2.id
+		controller.request.method = "POST"
+		controller.tweet()
+
+		assert controller.response.json.success == false
+		assert controller.response.json.authenticated == false
+		assert controller.session.tweetMessage == params.message
+		assert controller.session.requestOrigin == params.requestOrigin
+	}
+
+	@Test
+	void "Test tweet with message length exceeded"() {
+		params.message = """This is a long discussion.This is a long discussion. This is a long discussion. This is a long discussion.
+				This is a long discussion. This is a long discussion. This is a long discussion. This is a long discussion. """
+		params.requestOrigin = "home/social#all"
+		params.messageLength = params.message.length().toString()
+		controller.params.putAll(params)
+		controller.session.userId = userId
+		controller.request.method = "POST"
+		OAuthAccount account = new OAuthAccount([accessToken: "some-token", accessSecret: "some-secret", userId: userId, accountId: "some-account", typeId: ThirdParty.TWITTER ])
+		Utils.save(account, true)
+		controller.tweet()
+
+		assert controller.response.json.success == false
+		assert controller.response.json.message == "The text is too long."
+	}
+
+	@Test
+	void "Test tweet with empty message"() {
+		params.message = ""
+		params.messageLength = "0"
+		params.requestOrigin = "home/social#all"
+		controller.params.putAll(params)
+		controller.session.userId = userId
+		controller.request.method = "POST"
+		OAuthAccount account = new OAuthAccount([accessToken: "some-token", accessSecret: "some-secret", userId: userId, accountId: "some-account", typeId: ThirdParty.TWITTER ])
+		Utils.save(account, true)
+		controller.tweet()
+
+		assert controller.response.json.success == false
+		assert controller.response.json.message == "No data to tweet."
+	}
+
+	@Test
+	void "Test tweet after authorization"() {
+		mockPostStatus()
+		params.message = "This is a discussion"
+		params.messageLength = params.message.length().toString()
+		controller.params.putAll(params)
+		controller.session.userId = userId
+		controller.request.method = "POST"
+		OAuthAccount account = new OAuthAccount([accessToken: "some-token", accessSecret: "some-secret", userId: userId, accountId: "some-account", typeId: ThirdParty.TWITTER ])
+		Utils.save(account, true)
+		controller.session.tweetMessage = "This is a discussion"
+		controller.tweet()
+
+		assert controller.response.json.success == true
+		assert controller.response.json.authenticated == true
+		assert controller.response.json.message == "Successfully tweeted discussion."
+		assert controller.response.redirectedUrl == "http://localhost:8204/home/social?tweetStatus=true&duplicateTweet=false#home/social#all"
+		assert controller.session.tweetMessage == null
+		assert controller.session.requestOrigin == null
+	}
 
     @Test
     void testCreateWithGroupNameWithWritePermission() {

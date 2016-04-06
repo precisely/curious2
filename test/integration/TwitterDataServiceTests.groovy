@@ -1,5 +1,7 @@
 import grails.test.*
-
+import org.codehaus.groovy.grails.web.json.JSONObject
+import org.scribe.model.Token
+import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.integration.CuriousTestCase;
 import us.wearecurio.model.*
 import us.wearecurio.services.TwitterDataService
@@ -26,6 +28,7 @@ class TwitterDataServiceTests extends CuriousTestCase {
 	static transactional = true
 
 	TwitterDataService twitterDataService
+	OauthService oauthService
 
 	@Before
 	void setUp() {
@@ -35,6 +38,30 @@ class TwitterDataServiceTests extends CuriousTestCase {
 	@After
 	void tearDown() {
 		super.tearDown()
+	}
+
+	@Test
+	void testPostStatus() {
+		Token tokenInstance = new Token('some-token', 'some-secret')
+		twitterDataService.getMetaClass().getResponse = { Token token, String URL, String method="get", Map params=[:], Map requestHeaders=[:] ->
+			JSONObject response = [tweet: true] as JSONObject
+			if (params.status.contains('duplicate')) {
+				response = [errors:[[code:187]]] as JSONObject
+			}
+			response.getMetaClass().getCode = { ->
+				if (params.status.contains('fail') || params.status.contains('duplicate')) {
+					return 403
+				}
+				return 200
+			}
+			return response
+		}
+		assertTrue(twitterDataService.postStatus(tokenInstance, "success").success)
+		assertTrue(twitterDataService.postStatus(tokenInstance, "success").messageCode == "twitter.tweet.success")
+		assertFalse (twitterDataService.postStatus(tokenInstance, "fail").success)
+		assertTrue (twitterDataService.postStatus(tokenInstance, "duplicate").success)
+		assertTrue (twitterDataService.postStatus(tokenInstance, "duplicate").messageCode == "twitter.duplicate.tweet")
+
 	}
 
 	@Test

@@ -208,6 +208,17 @@ class DiscussionController extends LoginController {
 		User user = sessionUser()
 		if (!user) {
 			renderJSONPost(['login'])
+			return
+		}
+		String message = params.message ?: session["tweetMessage"]
+		int messageLength = params.messageLength ? Integer.parseInt(params.messageLength) : session["messageLength"]
+		// If sent message is longer than 140 with url shortened to 23 characters.
+		if (!message || messageLength > 140) {
+			session["tweetMessage"] == null
+			String messageCode = message ? "twitter.long.message": "twitter.empty.message"
+			log.debug g.message(code: messageCode)
+			renderJSONPost([success: false, message: g.message(code: messageCode)])
+			return
 		}
 
 		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(ThirdParty.TWITTER, user.id)
@@ -215,28 +226,24 @@ class DiscussionController extends LoginController {
 		if (!account) {
 			session["returnURIWithToken"] = "api/discussion/action/tweet"
 			session["requestOrigin"] = params.requestOrigin
-			session["tweetMessage"] = params.message
+			session["tweetMessage"] = message
+			session["messageLength"] = messageLength
 			renderJSONPost([success: false, authenticated: false])
 			return
 		}
 
-		String message = params.message ?: session["tweetMessage"]
-
-		if (!message || message.length() > 140) {
-			String messageCode = (message.length() > 140) ? "twitter.empty.message" : "twitter.long.message"
-			renderJSONPost([success: false, message: g.message(code: messageCode)])
-		}
-
-		Boolean tweetStatus = twitterDataService.postStatus(account.getTokenInstance(), message)
+		Map tweetResponse = twitterDataService.postStatus(account.getTokenInstance(), message)
 
 		// This is to handle the case when the tweet is being made immediately after authorization.
 		if (session["tweetMessage"]) {
 			String redirectLocation = session["requestOrigin"] ?: "home/social#all"
 			session["tweetMessage"] = null
+			session["messageLength"] = null
 			session["requestOrigin"] = null
-			redirect(url: toUrl(controller: "home", action: "social", fragment: redirectLocation, params: [tweetStatus: tweetStatus]))
+			redirect(url: toUrl(controller: "home", action: "social", fragment: redirectLocation,
+					params: [tweetStatus: tweetResponse.success, duplicateTweet: tweetResponse.duplicateTweet]))
 		}
-		renderJSONPost([success: true, authenticated: true, message: g.message(code: "twitter.tweet.success") ])
+		renderJSONPost([success: true, authenticated: true, message: g.message(code: tweetResponse.messageCode) ])
 	}
 
 	def follow() {

@@ -421,8 +421,10 @@ function checkAndDisplayTabData() {
 
 	// This block is used to alert the status of sharing to twitter, immediately after authorization.
 	var queryParams = getSearchParams();
-	if (queryParams.tweetStatus == 'true') {
+	if (queryParams.tweetStatus == 'true' && queryParams.duplicateTweet == 'false') {
 		showAlert('Successfully tweeted discussion!', removeQueryString);
+	} else if (queryParams.tweetStatus == 'true' && queryParams.duplicateTweet == 'true') {
+		showAlert('You have already tweeted this discussion.', removeQueryString);
 	} else if (queryParams.tweetStatus == 'false') {
 		showAlert('Sorry but we could not tweet your discussion.', removeQueryString);
 	}

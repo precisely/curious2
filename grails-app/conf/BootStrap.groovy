@@ -81,7 +81,7 @@ class BootStrap {
 		log.debug "populating no auth actions."
 		securityService.populateNoAuthMethods()
 
-		//withingsDataService.refreshSubscriptions()
+		withingsDataService.refreshSubscriptions()
 		if (current != Environment.TEST && current != Environment.DEVELOPMENT) {
 			try {
 				new IntraDayDataThread().start()
