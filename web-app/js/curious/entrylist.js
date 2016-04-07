@@ -159,13 +159,19 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		}
 
 		if (isContinuous) {
-			var buttonText = description;
-			if(entry.amountPrecision > 0) {
-				buttonText += ' ' + entry.amount + ' ' + entry.units;
+			var buttonText = escapehtml(description);
+			var nullAmount = false;
+			if (entry.amountPrecision > 0) {
+				buttonText += ' ' + entry.amount + ' ' + escapehtml(entry.units);
+			} else {
+				if (entry.amount == null) {
+					buttonText += ' # ' + escapehtml(entry.units);
+					nullAmount = true;
+				}
 			}
 			var pinnedTagButtonHTMLContent = '<div class="pin-button" id="' + this.editId + 'entryid' + id + '">' + 
 				' <button class="pin-entry" id="pin-button' + id + '" onclick="entryListWidget.createEntryFromPinnedEntry(' + currentUserId 
-				+',\'' + buttonText +'\',' + this.defaultToNow + ')">'+ 
+				+',\'' + buttonText +'\',' + this.defaultToNow +',' + (nullAmount ? 'true' : 'false') + ')">'+ 
 				buttonText + '</button>' + '<li class="dropdown hide-important"><a href="#" data-toggle="dropdown">' + 
 				'<b class="caret"></b></a><ul class="dropdown-menu" role="menu"><li>' + 
 				'<a href="#" id="#entrydelid' + this.editId + id + '" onclick="entryListWidget.deleteEntryId(' + id + ');return false;">' +
@@ -474,11 +480,17 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		}
 	}
 
-	this.createEntryFromPinnedEntry = function(userId, text, defaultToNow) {
+	this.createEntryFromPinnedEntry = function(userId, text, defaultToNow, nullAmount) {
 		var tagStats = this.autocompleteWidget.tagStatsMap.get(text);
 		if (!tagStats) tagStats = this.autocompleteWidget.tagStatsMap.getFromText(text);
 		if ((!tagStats) || tagStats.typicallyNoAmount) {
-			this.addEntry(userId, text, defaultToNow);
+			if (nullAmount) {
+				this.addEntry(userId, text, defaultToNow, null, null, function() {
+					var selectee = $('#' + self.editId + 'entryid' + self.latestEntryId);
+					self.selectEntry($(selectee));
+				});
+			} else
+				this.addEntry(userId, text, defaultToNow);
 		} else {
 			this.addEntry(userId, tagStats.createText(), defaultToNow, null, null, function() {
 				var selectee = $('#' + self.editId + 'entryid' + self.latestEntryId);

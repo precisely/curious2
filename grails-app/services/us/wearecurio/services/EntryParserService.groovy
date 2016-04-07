@@ -97,7 +97,7 @@ class EntryParserService {
 	protected static final Pattern commentWordPattern = ~/^([^\s]+)($|\s*)/
 	protected static final Pattern commentPattern = ~/^(\(.*\)|;.*|\/\/.*)$/
 	protected static final Pattern amountPattern = ~/(?i)^(=?\s*)(-?\.\d+|-?\d+[\d,]*\.\d+|-?\d[\d,]*+)(\s*\/\s*(-?\.\d+|-?\d+\.\d+|-?\d+))?\s*/
-	protected static final Pattern amountWordPattern = ~/(?i)^(#($|\s)|_($|\s)|none\b|zero\b|yes\b|no\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b)\s*/
+	protected static final Pattern amountWordPattern = ~/(?i)^(#($|\s)|_($|\s)|___($|\s)|none\b|zero\b|yes\b|no\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b)\s*/
 	
 	protected static Map<String, List> numberMap = [
 		'zero' : [new BigDecimal(0, mc), DEFAULT_AMOUNTPRECISION],

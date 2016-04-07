@@ -143,6 +143,17 @@ class EntryParserServiceTests extends CuriousTestCase {
 	}
 
 	@Test
+	void testNullField() {
+		// make sure pinned durations do not complete each other
+		println("== Test creation of start entry ==")
+		
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep _ hours", null, null, baseDate, true), new EntryStats())
+
+		assert entry.amount == null
+		assert entry.units == "hours"
+	}
+
+	@Test
 	void testDurationPinned() {
 		// make sure pinned durations do not complete each other
 		println("== Test creation of start entry ==")

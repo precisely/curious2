@@ -90,7 +90,7 @@ function setDateField(field, date, init) {
 }
 
 function formatAmount(amount, amountPrecision) {
-	if (amount == null) return " ___";
+	if (amount == null) return " #";
 	if (amountPrecision < 0) return "";
 	if (amountPrecision == 0) {
 		return amount ? " yes" : " no";
