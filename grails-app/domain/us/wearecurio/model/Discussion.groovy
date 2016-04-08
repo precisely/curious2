@@ -203,9 +203,6 @@ class Discussion {
 
 			boolean isNew = discussion.isNew()
 
-			if (discussion.getName().equals(params.name))
-				return true
-
 			discussion.setName(params.name)
 			discussion.setUpdated(new Date())
 
