@@ -286,6 +286,11 @@ class WithingsDataService extends DataService {
 
 	Map getDataIntraDayActivity(OAuthAccount account, Date startDate, Date endDate)
 			throws InvalidAccessTokenException, TooManyRequestsException {
+		if (!account) {
+			log.error "Null account, aborting!"
+			return [success: false]
+		}
+		
 		def intraDayResponse = fetchActivityData(account, account.accountId, startDate, endDate, true)
 		def userId = account.userId
 		

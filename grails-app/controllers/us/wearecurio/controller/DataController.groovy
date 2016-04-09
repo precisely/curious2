@@ -415,7 +415,6 @@ class DataController extends LoginController {
 				date = parseDate(date)
 				LocalDate localDate = new DateTime(date.time, DateTimeZone.forID('UTC')).withZone(userTimeZone).toLocalDate()
 				def data = Entry.fetchListData(user, timeZoneName, date, currentTime)
-				debug "DataController.getListData(): " + date + " data: " + data
 				entries = entries << ["${localDate.toString('MM/dd/yyyy')}":data]
 			}
 		}
