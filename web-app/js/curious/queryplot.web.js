@@ -49,7 +49,8 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 			}
 		},
 		changeYear: true,
-		changeMonth: true
+		changeMonth: true,
+		yearRange: "-120:+0"
 	});
 
 	datepicker.change(function () {
@@ -72,7 +73,8 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 			}
 		},
 		changeYear: true,
-		changeMonth: true
+		changeMonth: true,
+		yearRange: "-120:+0"
 	});
 
 	datepicker.change(function () {

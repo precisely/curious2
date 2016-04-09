@@ -1,9 +1,11 @@
 package us.wearecurio.jobs
 
 import us.wearecurio.services.*
+
 import org.apache.commons.logging.LogFactory
 
 import grails.util.Environment
+import org.codehaus.groovy.grails.commons.GrailsApplication
 
 class PollWithingsJob extends us.wearecurio.utility.TimerJob {
 
@@ -14,10 +16,17 @@ class PollWithingsJob extends us.wearecurio.utility.TimerJob {
 	}
 
 	WithingsDataService withingsDataService
-
+	GrailsApplication grailsApplication
+	
 	def execute() {
 		def timestamp = System.currentTimeMillis()
 		log.debug "PollWithingsJob: Started at ${timestamp}"
+		
+		if (!grailsApplication.config.wearecurious.runImportJobs) {
+			log.debug "Not job server, aborting..."
+			return
+		}
+		
 		if (Environment.current != Environment.PRODUCTION) {
 			log.debug "Aborted DeviceIntegrationHourlyJob.."
 			return // don't send reminders in test or development mode

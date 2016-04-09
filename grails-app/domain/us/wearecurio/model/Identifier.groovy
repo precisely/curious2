@@ -10,8 +10,6 @@ class Identifier {
 	
 	public static final int MAXIDENTIFIERLENGTH = 100
 	
-	public static Map<String, Identifier> map = Collections.synchronizedMap(new BoundedCache<String, Identifier>(10000))
-	
 	static constraints = {
 		value(maxSize:MAXIDENTIFIERLENGTH, unique:true)
 	}
@@ -22,12 +20,6 @@ class Identifier {
 		value column:'value', index:'value_index'
 	}
 	
-	static {
-		Utils.registerTestReset {
-			map.clear()
-		}
-	}
-
 	String value
 	
 	/**
@@ -36,27 +28,19 @@ class Identifier {
 	static Identifier look(String value) {
 		if (value == null) return null
 		
-		synchronized (map) {
-			Identifier ident = map.get(value)
-			
-			if (ident != null) return ident
-		
-			while (true) {
-				ident = Identifier.findByValue(value)
+		Identifier ident = Identifier.findByValue(value)
 				
-				if (ident) {
-					map.put(value, ident)
-					return ident
-				}
-				
-				ident = new Identifier(value:value)
-				
-				if (Utils.save(ident, true)) {
-					map.put(value, ident)
-					return ident
-				}
-			}
+		if (ident) {
+			return ident
 		}
+				
+		ident = new Identifier(value:value)
+				
+		if (Utils.save(ident, true)) {
+			return ident
+		}
+		
+		return Identifier.findByValue(value)
 	}
 	
 	public int hashCode() {

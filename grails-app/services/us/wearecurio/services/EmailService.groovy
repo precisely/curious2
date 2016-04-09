@@ -22,8 +22,13 @@ class EmailService {
 	
     void sendMail(Closure callable) {
 		BackgroundTask.launch {
-			log.debug "Calling mail service sendMail"
-			mailService.sendMail(callable)
+			try {
+				log.debug "Calling mail service sendMail"
+				mailService.sendMail(callable)
+			} catch (Exception e) {
+				log.error "Error while sending email to: " + toString
+				e.printStackTrace()
+			}
 		}
     }
 

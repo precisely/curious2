@@ -308,9 +308,7 @@ function editUserDetails() {
 									</oauth:checkSubscription>
 								</div>
 								<div class="form-group">
-									<g:if test="${user.emailVerified == us.wearecurio.model.VerificationStatus.UNVERIFIED}">
-										<g:link action="dosendverify" class="basic-text">Resend verification email</g:link>
-									</g:if>
+									<g:link action="dosendverify" class="basic-text">Resend verification email</g:link>
 								</div>
 							</div>
 						</div>

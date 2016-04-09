@@ -18,9 +18,14 @@ class ThirdPartyNotificationJob extends us.wearecurio.utility.TimerJob {
 	def withingsDataService
 	OuraDataService ouraDataService
 	JawboneUpDataService jawboneUpDataService
-
+	def grailsApplication
+	
 	def execute() {
 		log.debug "Started executing ThirdPartyNotificationJob.."
+		if (!grailsApplication.config.wearecurious.runImportJobs) {
+			log.debug "Not job server, aborting..."
+			return
+		}
 		if (Environment.current != Environment.PRODUCTION) {
 			log.debug "Aborted ThirdPartyNotificationJob.."
 			return // don't send reminders in test or development mode

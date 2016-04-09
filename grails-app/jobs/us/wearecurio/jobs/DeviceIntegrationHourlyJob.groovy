@@ -1,14 +1,17 @@
 package us.wearecurio.jobs
 
 import grails.util.Environment
+
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDateTime
+
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.utility.TimerJob
+import org.codehaus.groovy.grails.commons.GrailsApplication
 
 class DeviceIntegrationHourlyJob extends TimerJob {
 	static transactional = false
@@ -16,7 +19,8 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 	def movesDataService
 	def withingsDataService
 	def concurrent = false
-
+	GrailsApplication grailsApplication
+	
 	static triggers = {
 		simple startDelay: 30 * MINUTE, repeatInterval: HOUR
 	}
@@ -24,6 +28,11 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 	def execute() {
 		//humanDataService.poll()
 		log.debug("Started DeviceIntegrationHourlyJob...")
+		
+		if (!grailsApplication.config.wearecurious.runImportJobs) {
+			log.debug "Not job server, aborting..."
+			return
+		}
 		
 		if (Environment.current != Environment.PRODUCTION) {
 			log.debug "Aborted DeviceIntegrationHourlyJob.."

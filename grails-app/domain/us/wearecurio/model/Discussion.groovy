@@ -150,7 +150,7 @@ class Discussion {
 		Discussion discussion = create(user, name, createTime, visibility)
 		group.addDiscussion(discussion)
 		group.updateWriter(user)
-
+		
 		return discussion
 	}
 

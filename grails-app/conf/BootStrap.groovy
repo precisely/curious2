@@ -31,6 +31,8 @@ class BootStrap {
 	EntryParserService entryParserService
 	AlertGenerationService alertGenerationService
 	
+	def grailsApplication
+	
 	static protected initClosures = []
 	
 	def init = { servletContext ->
@@ -78,8 +80,9 @@ class BootStrap {
 			}
 		}
 
-
-		withingsDataService.refreshSubscriptions()
+		if (grailsApplication.config.wearecurious.runImportJobs)
+			withingsDataService.refreshSubscriptions()
+		
 		if (current != Environment.TEST && current != Environment.DEVELOPMENT) {
 			try {
 				new IntraDayDataThread().start()

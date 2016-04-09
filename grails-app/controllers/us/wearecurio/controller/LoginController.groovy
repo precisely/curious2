@@ -180,14 +180,14 @@ class LoginController extends SessionController {
 	}
 	
 	protected def execVerifyUser(User user) {
-		debug "Sending account recovery email for: " + user.getEmail()
+		debug "Sending account verification email for: " + user.getEmail()
 		
 		def verification = PasswordRecovery.createVerification(user.getId())
 		
 		def verificationLink = toUrl(controller:'home', action:'verify', params:[code:verification.getCode()])
 		
 		emailService.send(user.getEmail(), "We Are Curious: account verification instructions",
-				"Welcome to We Are Curious! We are looking forward to your participation in our community. Please go to the Trackathon tab on your app or on the website to find ideas for how to use We Are Curious.\nBefore you post messages to our community, we'd like to ask that you verify your email address by clicking here: " + verificationLink + "\nThank you, and again. welcome!")
+				"Welcome to We Are Curious! We are looking forward to your participation in our community.\n\nTrack your activities, sleep, mood: anything you like, using our simple tag-based format.\n\nChart your health data using the Chart tab.\n\nShare your discoveries and questions with the community using the Social tab.\n\nCheck out the Trackathon tab to find or contribute ideas for how to use We Are Curious.\n\nBefore you post to our community, we'd like to ask that you verify your email address by clicking here: " + verificationLink + "\n\nThank you, and again. welcome!")
 		
 		debug "Verification link: " + verificationLink
 		
