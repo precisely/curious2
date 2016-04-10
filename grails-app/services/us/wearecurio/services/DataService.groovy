@@ -345,12 +345,15 @@ abstract class DataService {
 			}.each { account ->
 				log.debug "Processing $notification for account id [$account.id]"
 				processedOAuthAccounts++
+				
+				Date saveLastPolled = account.lastPolled
 
 				try {
 					DatabaseService.retry(notification) {
-						this."getData${notification.collectionType.capitalize()}"(account, notification.date, false)
-						notification.status = ThirdPartyNotification.Status.PROCESSED
-						Utils.save(notification, true)
+						if (this.poll(account, notification.date)) {
+							notification.status = ThirdPartyNotification.Status.PROCESSED
+							Utils.save(notification, true)
+						}
 					}
 				} catch (MissingMethodException e) {
 					log.warn "No method implementation found for collection type: [$account.typeId.providerName] for $provider.", e
@@ -361,6 +364,8 @@ abstract class DataService {
 				} catch (Throwable t) {
 					log.error "Unknown exception thrown during notification processing " + t
 					t.printStackTrace()
+					account.lastPolled = saveLastPolled
+					Utils.save(account, true)
 				}
 				return notification
 			}
@@ -401,15 +406,17 @@ abstract class DataService {
 	 * @param account
 	 * @return
 	 */
-	boolean poll(OAuthAccount account) {
+	boolean poll(OAuthAccount account, Date notificationDate = null) {
 		String accountId = account.accountId
 
 		Long nowTime = new Date().getTime()
 
 		Long lastPoll = lastPollTimestamps.get(accountId)
-
-		if (lastPoll && nowTime - lastPoll < 500) { // don't allow polling faster than once every 500ms
-			log.warn "Polling faster than 500ms for $provider with accountId: [$accountId]"
+		
+		if (notificationDate != null && lastPoll != null && notificationDate < lastPoll)
+			lastPoll = notificationDate
+		else if ((lastPoll != null) && (nowTime - lastPoll < 60000)) { // don't allow polling faster than once every minute
+			log.warn "Polling faster than 1 minute for $provider with accountId: [$accountId]"
 			return false
 		}
 

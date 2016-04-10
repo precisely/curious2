@@ -1,6 +1,7 @@
 package us.wearecurio.services.integration
 
 import us.wearecurio.model.OAuthAccount
+import grails.converters.JSON
 import grails.test.mixin.*
 
 import org.junit.*
@@ -13,6 +14,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.services.DataService
 import us.wearecurio.services.FitBitDataService
+import us.wearecurio.services.OuraDataService
 import us.wearecurio.services.WithingsDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
@@ -23,6 +25,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 
 	WithingsDataService withingsDataService
 	FitBitDataService fitBitDataService
+	OuraDataService ouraDataService
 	OAuthAccount account
 	OAuthAccount account2
 
@@ -49,6 +52,17 @@ class DataServiceTests extends CuriousServiceTestCase {
 		
 		account.delete()
 		account2.delete()
+	}
+
+	@Test
+	void testNotifications() {
+		String mockNotificationData = [type: "sleep",
+			date: "2016-01-01", userId: userId] as JSON
+
+		ouraDataService.notificationHandler(mockNotificationData)
+		ouraDataService.notificationProcessor()
+		
+		// TODO: Finish this up
 	}
 
 	@Test
@@ -124,4 +138,5 @@ class DataServiceTests extends CuriousServiceTestCase {
 		assert Entry.count() > 0
 		assert polledFitBit && polledWithings
 	}
+/**/
 }
