@@ -543,6 +543,8 @@ class Sprint {
 		Utils.save(this, true)
 		
 		fetchUserGroup()?.acceptAllInvited()
+		
+		reindex()
 
 		return this
 	}
