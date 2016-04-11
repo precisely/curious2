@@ -17,15 +17,16 @@
 							</div>
 							<div class="dateline row">
 								<div class="col-xs-4">
-									<span class="startDate"><input id="startdatepicker1"
-																   type="text" value="" class="startdatepicker cycleInput" /></span>
+									<span class="startDate">
+										<input id="startdatepicker1" type="text" value="" class="startdatepicker cycleInput" />
+									</span>
 								</div>
 								<div class="col-xs-4">
 									<!-- span class="cycleTag" id="cycleTag1"><input type="text" class="cycleTagInput" name="cycletag" value="" class="cycleInput" /></span -->
 								</div>
 								<div class="col-xs-4">
 									<span class="endDate"><input id="enddatepicker1"
-																 type="text" value="" class="enddatepicker cycleInput" /></span>
+											type="text" value="" class="enddatepicker cycleInput" /></span>
 								</div>
 							</div>
 						</div>
@@ -92,7 +93,7 @@
 						{{ } }}
 
 						<form action="#"
-							  class="edit-comment-form add-description-form relative {{- (isAdmin && (!firstPost || !firstPost.message)) ? '' : 'hide'}}">
+								class="edit-comment-form add-description-form relative {{- (isAdmin && (!firstPost || !firstPost.message)) ? '' : 'hide'}}">
 							<input type="hidden" name="id" value="{{- firstPost.id}}" />
 
 							<textarea name="message" rows="1" class="auto-resize enter-submit allow-shift"
@@ -101,7 +102,7 @@
 
 							<div class="edit-options hide text-right">
 								<a href="#" title="Clear description"
-								   onclick="$('.edit-comment-form').find('textarea').val('').trigger('change'); return false;">
+										onclick="$('.edit-comment-form').find('textarea').val('').trigger('change'); return false;">
 									<i class="fa fa-times-circle fa-fw"></i>
 								</a>
 							</div>
@@ -205,15 +206,12 @@
 	<input type="hidden" name="discussionHash" value="{{- discussionHash }}" />
 
 	<div id="share-dialog" class="hide" title="Share">
-		<select name="shareOptions" id="shareOptions" multiple="multiple"
-				class="form-control" size="8">
-			<option value="isPublic" {{- isPublic ? 'selected="selected"' : '' }}>Visible
-		to the world</option>
+		<select name="shareOptions" id="shareOptions" multiple="multiple" class="form-control" size="8">
+			<option value="isPublic" {{- isPublic ? 'selected="selected"' : '' }}>Visible to the world</option>
 			{{ _.each(associatedGroups, function(userGroup) { }}
-			<option value="{{- userGroup.id }}"
-					{{- userGroup.shared ? 'selected="selected"' : '' }}>
-		{{- userGroup.fullName }}
-		</option>
+				<option value="{{- userGroup.id }}" {{- userGroup.shared ? 'selected="selected"' : '' }}>
+					{{- userGroup.fullName }}
+				</option>
 			{{ }) }}
 		</select>
 	</div>

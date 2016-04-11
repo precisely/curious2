@@ -47,7 +47,6 @@ $('#recordList').scroll(function() {
 });
 
 function hidePopover(element) {
-	"use strict";
 	if (!element) {
 		element = $('[data-toggle="popover"]');
 	}
@@ -55,12 +54,11 @@ function hidePopover(element) {
 }
 
 function createPopover(element, content, containerId) {
-	"use strict";
 	element.popover({
 		trigger: 'click manual',
 		placement: 'bottom',
 		html: true,
-		container:containerId,
+		container: containerId,
 		content: content,
 		template: '<div class="popover dropdown-menu" style="max-width:290px"><div class="arrow"></div><h3 class="popover-title">' +
 				'</h3><div class="popover-content" style="padding:0px;"></div></div>'
@@ -68,12 +66,11 @@ function createPopover(element, content, containerId) {
 }
 
 $(document).on('shown.bs.popover', function() {
-	"use strict";
 	/*
 	 * Setting the datepicker options here. The popover in the new entry affordance has both changeYear as well as
 	 * changeMonth enabled.
 	 */
-	var datepickerOptions = ($('.entry-details-dropdown-menu').data('for-entry')) ? undefined : {changeYear: true, changeMonth: true}
+	var datepickerOptions = ($('.entry-details-dropdown-menu').data('for-entry')) ? {} : {changeYear: true, changeMonth: true, yearRange: "-120:+0"};
 	$('.choose-date-input').datepicker(datepickerOptions);
 	var $selectee = $('.ui-selected');
 	if ($selectee.length) {
@@ -355,6 +352,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			commentLabel = '<div class="comment-label "></div>';
 		}
 
+		var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': id + '-', 'entryId': this.editId + "entryid" + id});
 		innerHTMLContent += (timeAfterTag ? '<span class="entryTime">'
 				+ escapehtml(dateStr) + '</span>' : '') + commentHTML + '</div>' + commentLabel;
 
@@ -1008,7 +1006,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0px; width: calc(100% - 75px);" /></span>');
 		$('#' + $selectee.attr('id') + ' .track-input-dropdown').show();
 
-		var popoverContent = _.template($('#entry-details-popover-content').html())({'editType': currentEntryId + '-' ,entryId: $selectee.attr('id')});
+		var popoverContent = _.template($('#entry-details-popover-content').html())({'editType': currentEntryId + '-', entryId: $selectee.attr('id')});
 		$('.entry-details-popover-temp-container').html(popoverContent);
 
 		if (RepeatType.isRemind(repeatType)) {

@@ -124,7 +124,7 @@
 			$('#addData').prepend(newEntryDetailsPopover);
 			$('#addData .track-input-dropdown').show();
 			newEntryDetailsPopoverContent = _.template($('#entry-details-popover-content').clone().html())({'editType': 'new', entryId: ""});
-			createPopover($('.track-input-modifiers'), newEntryDetailsPopoverContent,'#addData');
+			createPopover($('.track-input-modifiers'), newEntryDetailsPopoverContent, '#addData');
 			$(document).on('change', '.repeat-entry-checkbox', function() {
 				$('.repeat-modifiers').toggleClass('hide');
 			});

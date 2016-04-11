@@ -1225,7 +1225,7 @@ body.tags-displayed .floating-column {
  * Generic & common stuff, useful for every where. Starts here.
  */
 
-.click-link {
+.auto-link-color {
 	color:#428bca !important;
 }
 
@@ -1791,7 +1791,7 @@ body.tags-displayed .floating-column {
 	padding: 0;
 }
 
-.arrow {
+.dropdown-menu .arrow {
 	left:80% !important;
 }
 

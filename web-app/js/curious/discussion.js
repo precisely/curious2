@@ -190,7 +190,7 @@ $(document).ready(function() {
 		var $this = $(this);
 		var $parent = $this.parents(".discussion-comment");
 		var $message = $parent.find(".message");
-		var previousMessage = $message.html().trim().brToNewLine();
+		var previousMessage = $message.text().trim().brToNewLine();
 		var postID = $this.data("postId");
 
 		var html = compileTemplate("_commentEditForm", {id: postID, message: previousMessage});
@@ -306,7 +306,7 @@ $(document).ready(function() {
 						setDescription(params.message);
 					} else {
 						hideInlinePostEdit($parentComment);
-						$parentComment.find(".message").html(params.message.newLineToBr());
+						$parentComment.find(".message").html(_.linkify(params.message.newLineToBr()));
 					}
 				}, function(xhr) {
 					console.log('Internal server error');

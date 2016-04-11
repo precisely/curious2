@@ -32,7 +32,7 @@ function compileTemplate(id, data) {
 }
 
 _.linkify = function(textToLinkify) {
-	return Autolinker.link(_.escape(textToLinkify), {className: 'click-link'});
+	return Autolinker.link(_.escape(textToLinkify), {className: 'auto-link-color'});
 };
 
 _.unlinkify = function(textToUnlinkify) {
