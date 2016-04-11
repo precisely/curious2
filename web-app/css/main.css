@@ -1183,6 +1183,19 @@ body.tags-displayed .floating-column {
 	border-right:60px solid #08BBF1;
 }
 
+.comment-form p {
+	font-weight: 500;
+}
+
+.comment-form label {
+	margin: 10px 0px 5px 0px;
+	font-weight: normal;
+}
+
+.comment-form textarea {
+	padding: 15px;
+}
+
 .entryComment {
 	text-transform: none;
 	vertical-align: baseline;
@@ -2255,7 +2268,7 @@ div.graph-header-container .red-header {
 }
 
 .sprint button {
-	margin: 0 10px 10px 10px;
+	margin: 0px 10px 10px 10px !important;
 	text-transform: uppercase;
 	font-weight: 600;
 	color: dimgrey;
@@ -4812,7 +4825,7 @@ input.cropit-image-zoom-input {
 }
 
 #close-track-input-modifier .fa {
-	color: rgba(8, 8, 8, 0.32);;
+	color: rgba(8, 8, 8, 0.32);
 	font-size: 16px;
 	position: relative;
 }
@@ -4914,4 +4927,181 @@ input.cropit-image-zoom-input {
 	overflow-y: auto;
 	padding-top: 10px;
 	padding-bottom: 10px;
+}
+
+#share-modal {
+    min-width: 350px;
+	margin-top: 15%;
+	-ms-word-wrap: break-word;
+	word-wrap: break-word;
+}
+
+#share-modal .modal-header {
+	color: #FF935F;
+}
+
+#share-modal .modal-header h4 {
+	margin: 10px 10px;
+}
+
+#share-modal .modal-header .fa {
+	color: #c1c1c1;
+	margin-top: 8px;
+}
+
+#share-modal .modal-body {
+	text-align: center;
+}
+
+.share-options {
+	margin-top: 10px;
+}
+
+.share-options .option {
+	display: inline;
+
+}
+
+.option-container {
+	display: inline-block;
+}
+.share-options .option:nth-child(1) .option-container {
+	float: right;
+}
+
+.share-options .option:nth-child(3)  .option-container{
+	float: left;
+}
+
+.option-container {
+	text-align: center;
+}
+
+#message-link {
+	text-align: left;
+	color:grey;
+}
+
+.twitter-share-tooltip {
+	margin-top: -2px;
+	margin-left: .5em;
+	padding-left: 4px;
+	padding-top: 5px;
+	padding-right: 5px;
+	border-radius: 50%;
+	color: #c1c1c1;
+}
+
+#share-message-length {
+	color: #616B6B;
+}
+.share-options button {
+	height: 80px;
+	width: 80px;
+	border-radius: 50%;
+	border: 1px solid #c1c1c1;
+	background: transparent;
+}
+
+#share-modal label {
+	margin: 10px auto;
+}
+
+#share-modal .share-options .fa {
+	font-size: 40px;
+}
+
+#share-modal textarea {
+	color: #000;
+	font-style: italic;
+	font-size: 14px;
+	border: none;
+	width: 100%;
+	resize: none;
+	margin-bottom: 10px;
+}
+
+#share-modal .fa-facebook {
+	color: #3b5791;
+}
+
+#share-modal .fa-twitter {
+	color: #32a7e0;
+}
+
+#share-modal .modal-footer {
+	padding: 10px;
+	height: auto;
+}
+
+#share-modal .modal-footer button {
+	width: auto;
+	padding: 5px 20px;
+	padding: 5px 20px;
+	background-color: #FF935F;
+	border: none;
+	border-radius: 2px;
+}
+.tooltip {
+	position: absolute;
+	z-index: 1070;
+	display: block;
+	font-size: 12px;
+	line-height: 1.4;
+	visibility: visible;
+	filter: alpha(opacity=0);
+	opacity: 0;
+}
+.tooltip.in {
+	filter: alpha(opacity=90);
+	opacity: .9;
+}
+.tooltip.top {
+	padding: 5px 0px;
+	margin-top: -3px;
+}
+.tooltip.bottom {
+	padding: 5px 0px;
+	margin-top: 3px;
+}
+.tooltip-inner {
+	max-width: 200px;
+	padding: 3px 8px;
+	color: #fff;
+	text-align: center;
+	text-decoration: none;
+	background-color: #000;
+	border-radius: 4px;
+}
+.tooltip-arrow {
+	position: absolute;
+	width: 0px;
+	height: 0px;
+	border-color: transparent;
+	border-style: solid;
+}
+.tooltip.top .tooltip-arrow {
+	bottom: 0px;
+	left: 50%;
+	margin-left: -5px;
+	border-width: 5px 5px 0;
+	border-top-color: #000;
+}
+.tooltip.bottom .tooltip-arrow {
+	top: 0px;
+	left: 50%;
+	margin-left: -5px;
+	border-width: 0 5px 5px;
+	border-bottom-color: #000;
+}
+
+.warning-page .main {
+	min-height: 400px;
+}
+
+.warning-page h1 {
+	color: #5d5d5d;
+	font-weight: 700;
+	font-size: 20px;
+	margin: 20px 0px;
 }

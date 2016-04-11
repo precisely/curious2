@@ -82,7 +82,10 @@ class BootStrap {
 
 		if (grailsApplication.config.wearecurious.runImportJobs)
 			withingsDataService.refreshSubscriptions()
-		
+
+		log.debug "Populating no auth actions."
+		securityService.populateNoAuthMethods()
+
 		if (current != Environment.TEST && current != Environment.DEVELOPMENT) {
 			try {
 				new IntraDayDataThread().start()

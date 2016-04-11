@@ -255,6 +255,10 @@ $(document).ready(function() {
 				showAlert(data.message);
 				return;
 			}
+
+			if (!data.discussionDetails) {
+				data.discussionDetails = {userId: data.userId, isAdmin: data.isAdmin};
+			}
 			renderComments(params.discussionHash, [data.post], data, true);
 			$form[0].reset();
 			var discussionElement = getDiscussionElement(params.discussionHash);
@@ -314,16 +318,72 @@ $(document).ready(function() {
 		return false;
 	});
 
-	$(document).on("click", ".share-button", function() {
-		$(this).popover({html: true}).popover('show');
-		$('.share-link').select();
-	});
-
 	// On click of comment button in the single discussion page
 	$(document).on("click", ".comment-button", function() {
 		// Just put focus on the comment box
 		$(this).parents(".discussion").find(".comment-message").focus();
 		return false;
+	});
+
+	$('#share-modal').on('show.bs.modal', function(event) {
+		var targetElement = $(event.relatedTarget); // Element that triggered the modal
+		var shareURL = targetElement.data('shareUrl');
+		var discussionTitle = targetElement.data('discussionTitle');
+		$('#social-share-message').data({shareURL: shareURL, discussionTitle: discussionTitle});
+	});
+
+	$('.twitter-share-tooltip').popover();
+	$('#post-message').click(function() {
+		var params = {};
+		var messageText = $('#social-share-message').val();
+		var messageLink = $('#social-share-message').data('shareURL');
+		params.message = messageText + " " + messageLink;
+		var messageLength = messageLink ? messageText.length + 23 + 1 : messageText.length;
+		var $alert = $("#share-modal").find('.alert');
+
+		if (!messageText && !messageLink) {
+			showBootstrapAlert($alert, "Please enter some text to post to Twitter.");
+			return;
+		}
+
+		if (messageLength > 140) {
+			showBootstrapAlert($alert, "The text is too long");
+			return;
+		}
+
+		params.requestOrigin = window.location.hash.slice(1);
+		params.messageLength = messageLength;
+
+		queuePostJSON("Posting to Twitter", "/api/discussion/action/tweetDiscussion", getCSRFPreventionObject("tweetDiscussionDataCSRF", params), function(data) {
+			if (!checkData(data)) {
+				return;
+			}
+			if (data.authenticated == false) {
+				var twitterURL = '/oauth/twitter/authenticate';
+				window.location.href = twitterURL;
+			}
+			if (data.message) {
+				showAlert(data.message);
+			}
+		});
+		$('.share-options').show();
+		$('.post-message').hide();
+		$('#social-share-message').val('');
+		$('#share-modal .modal-header h4').text('Share');
+		$('#share-modal .modal-footer').hide();
+		$('#share-modal').modal('hide');
+	});
+
+	// Class to copy link to clipboard
+	var client = new ZeroClipboard($('.clip_button'));
+	client.on('ready', function(event) {
+		client.on('copy', function(event) {
+			event.clipboardData.setData('text/plain', $('#social-share-message').data('shareURL'));
+		});
+		client.on('aftercopy', function(event) {
+			$('.clip_button').tooltip({trigger: "manual", title: "Copied!", placement: 'top', animation: true});
+			$('.clip_button').tooltip('show');
+		});
 	});
 
 	$(document).on("change", "#disable-comments", function() {
@@ -358,7 +418,6 @@ $(document).ready(function() {
 
 		$("#new-discussion-name").val(existingTitle);
 		$("#new-description").val(existingDescription);
-
 		$modal.modal("show");
 		return false;
 	});
@@ -428,6 +487,9 @@ function discussionShow(hash) {
 
 	queueJSON('Getting discussion', '/api/discussion/' + hash + '?' + getCSRFPreventionURI('getDiscussionList') + '&callback=?',
 			function(data) {
+		if (!checkData(data)) {
+			return;
+		}
 		if (data.success) {
 			$('.container-fluid').removeClass('main');
 			var discussionDetails = data.discussionDetails;
@@ -454,7 +516,12 @@ function discussionShow(hash) {
 				plot.loadSnapshotId(discussionDetails.firstPost.plotDataId, hash); // send discussion hash as authentication confirmation
 			}
 		} else {
-			$('.alert').text(data.message);
+			showAlert(data.message);
+			if (window.history.state) {
+				window.history.back();
+			} else {
+				location.hash = '#all';
+			}
 		}
 
 		setQueryHeader('Curious Discussions', true);
@@ -506,3 +573,61 @@ function setDescription(message) {
 	}
 	$(".add-description-form textarea").val("");
 }
+
+function shareMessage(platform) {
+	if (platform == 'copy') {
+		var mimeTypes = navigator.mimeTypes['application/x-shockwave-flash'];
+		if (!mimeTypes || !mimeTypes.enabledPlugin) {
+			showAlert('Please install the Flash Player in order to use this feature.');
+		}
+		setTimeout(function() {
+			$('#share-modal').modal('hide');
+			$('.clip_button').tooltip('hide');
+		}, 1000);
+		return true;
+	} else if (platform == 'facebook') {
+		FB.ui({
+			method: 'feed',
+			link: $('#social-share-message').data('shareURL'),
+			caption: 'Curious Discussions',
+			name: $('#social-share-message').data('discussionTitle')
+		}, function(response){});
+		$('#share-modal').modal('hide');
+		return true;
+	}
+
+	// See base.js for capitalizeFirstLetter() method
+	$('#share-modal .modal-header h4').text('Sharing to ' + platform.capitalizeFirstLetter());
+	$('.post-message .fa').removeClass('fa-facebook fa-twitter').addClass('fa-' + platform);
+	var textToShare = $('#social-share-message').data('discussionTitle');
+	$('#share-message-length').text(116 - textToShare.length);
+	$('#post-message').data('platform', platform);
+	$('.share-options').hide();
+	$('.post-message').show();
+	$('#share-modal .modal-footer').show();
+	$('#social-share-message').val(textToShare);
+	$('#message-link').text(' + ' + $('#social-share-message').data('shareURL'));
+}
+
+$(document).on('keyup', '#social-share-message', function() {
+
+	var shareMessageLength = $('#social-share-message').val().length;
+	/*
+	 * Since we are attaching a URL at the end of the message we have to subtract the length of the url from the
+	 * maximum length of the message. Although twitter convert all the URLs in a tweet to smaller URLs of 23
+	 * characters each. Hence subtracting 23 characters from the maximum length of 140 characters in the counter
+	 */
+	$('#share-message-length').text(116 - shareMessageLength);
+	var css = (shareMessageLength <= 116) ? {"color": "#616B6B", "font-weight": "100"} : {"color": "#fc3f28", "font-weight": "bold"};
+	$('#share-message-length').css(css);
+	return;
+});
+
+$(document).on('hidden.bs.modal', function() {
+	$('.share-options').show();
+	$('.post-message').hide();
+	$('#share-modal .modal-header h4').text('Share');
+	$('#share-modal .modal-footer').hide();
+	$('#share-modal').modal('hide');
+});
+
