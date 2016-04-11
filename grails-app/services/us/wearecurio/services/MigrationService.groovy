@@ -682,6 +682,16 @@ class MigrationService {
 				}
 			}
 		}
+		tryMigration("Re-index all sprints") {
+			for (Sprint sprint in Sprint.list()) {
+				log.debug "Reindex sprints"
+
+				if (sprint.deleted)
+					continue
+				
+				sprint.reindex()
+			}
+		}
 	}
 	
 	/**
