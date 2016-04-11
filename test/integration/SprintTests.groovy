@@ -93,7 +93,7 @@ class SprintTests extends CuriousTestCase {
 		baseDateShifted = dateFormat.parse("June 30, 2010 11:00 pm")
 		baseDate2 = dateFormat.parse("July 1, 2010 1:00 am") // switch time zone
 		tomorrowBaseDate = dateFormat.parse("July 2, 2010 12:00 am")
-		tomorrowCurrentTime = dateFormat.parse("July 2, 2010 2:15 pm")
+		tomorrowCurrentTime = dateFormat.parse("July 2, 2010 5:15 pm")
 		dayAfterTomorrowBaseDate = dateFormat.parse("July 3, 2010 12:00 am")
 		dayAfterDayAfterTomorrowBaseDate = dateFormat.parse("July 4, 2010 12:00 am")
 		lateBaseDate = dateFormat.parse("July 3, 2010 12:00 am")
@@ -112,33 +112,6 @@ class SprintTests extends CuriousTestCase {
 		super.tearDown()
 	}
 
-	@Test
-	void testAddDeviceName() {
-		Sprint sprint = Sprint.create(currentTime, user2, "Caffeine + Sugar", Visibility.PUBLIC)
-		assert sprint.userId == user2.id
-		assert sprint.name == "Caffeine + Sugar"
-		assert sprint.visibility == Visibility.PUBLIC
-		assert sprint.fetchTagName() == "caffeine sugar trackathon"
-		
-		Utils.save(sprint, true)
-		
-		sprint.addDeviceName("Moves")
-		
-		Utils.save(sprint, true)
-		
-		assert sprint.containsDevice("Moves")
-		
-		Utils.save(sprint, true)
-		
-		Sprint sprint2 = Sprint.get(sprint.id)
-		
-		assert sprint2.containsDevice("Moves")
-		
-		def devices = sprint.getDevices()
-		
-		assert devices.contains("Moves")
-	}
-	
 	@Test
 	void testCreateSprintTags() {
 		Sprint sprint = Sprint.create(currentTime, user2, "Caffeine + Sugar", Visibility.PUBLIC)
@@ -210,6 +183,33 @@ class SprintTests extends CuriousTestCase {
 		}
 		
 		assert sprintStop
+	}
+	
+/*	@Test
+	void testAddDeviceName() {
+		Sprint sprint = Sprint.create(currentTime, user2, "Caffeine + Sugar", Visibility.PUBLIC)
+		assert sprint.userId == user2.id
+		assert sprint.name == "Caffeine + Sugar"
+		assert sprint.visibility == Visibility.PUBLIC
+		assert sprint.fetchTagName() == "caffeine sugar trackathon"
+		
+		Utils.save(sprint, true)
+		
+		sprint.addDeviceName("Moves")
+		
+		Utils.save(sprint, true)
+		
+		assert sprint.containsDevice("Moves")
+		
+		Utils.save(sprint, true)
+		
+		Sprint sprint2 = Sprint.get(sprint.id)
+		
+		assert sprint2.containsDevice("Moves")
+		
+		def devices = sprint.getDevices()
+		
+		assert devices.contains("Moves")
 	}
 	
 	@Test

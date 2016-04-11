@@ -1819,6 +1819,9 @@ class Entry implements Comparable {
 			if (resultEntryIds.contains(entryId))
 				continue;
 			
+			if (entry.startDate != null && entry.date != null && (entry.date.getTime() - entry.startDate.getTime()) < DAYTICKS)
+				continue;
+			
 			def desc = entry.getStartJSONDesc()
 
 			desc['timeZoneName'] = timeZoneName

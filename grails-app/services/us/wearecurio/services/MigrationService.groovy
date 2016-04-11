@@ -633,7 +633,7 @@ class MigrationService {
 		tryMigration("Fix typo in fullName in user_group") {
 			sql("update user_group set full_name = replace(full_name, 'grouo', 'group')")
 		}
-		tryMigration("Re-import Oura data from beginning to fix duration entries") {
+		tryMigration("Re-import Oura data from beginning to fix duration entries - take two") {
 			OAuthAccount.withCriteria {
 				eq("typeId", ThirdParty.OURA)
 				ne("accessToken", "")
