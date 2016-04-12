@@ -40,7 +40,7 @@ class DataController extends LoginController {
 
 	EntryParserService entryParserService
 	SearchService searchService
-	
+
 	static debug(str) {
 		log.debug(str)
 	}
@@ -53,11 +53,11 @@ class DataController extends LoginController {
 	private def getParsedEntry(Map params, User user) {
 		def p = [defaultToNow:'1']
 		p.putAll(params)
-		
+
 		boolean defaultToNow = (p.defaultToNow == '1')
-		
+
 		debug "DataController.getParsedEntry() params:" + p
-		
+
 		Date currentTime = parseDate(p.currentTime)
 		Date baseDate = parseDate(p.baseDate)
 		Long repeatTypeId = parseLong(p.repeatTypeId)
@@ -72,19 +72,19 @@ class DataController extends LoginController {
 
 	protected def doAddEntry(Map params) {
 		AuthenticationStatus authStatus = authFromUserIdStr(params.userId)
-		
+
 		User user = authStatus.user
 		def parsedEntry = getParsedEntry(params, user)
 
 		if (parsedEntry == null)
 			return 'Syntax error trying to parse entry'
-				
+
 		EntryStats stats = new EntryStats(user.id)
 		def entry = Entry.create(user.id, parsedEntry, stats)
 		ArrayList<TagStats> tagStats = stats.finish()
 
 		debug("created " + entry)
-		
+
 		authStatus.sprint?.reindex()
 
 		return [entry, parsedEntry['status'], tagStats?.get(0)]
@@ -97,18 +97,18 @@ class DataController extends LoginController {
 		p.putAll(parms)
 
 		boolean allFuture = (p.allFuture == '1')
-		
+
 		Entry entry = Entry.get(Long.parseLong(p.entryId))
 
 		if (entry.getUserId() == 0L) {
 			debug "Attempting to edit a deleted entry."
 			return [null, 'Attempting to edit a deleted entry.', null, null]
 		}
-		
+
 		Long userId = entry.getUserId()
 
 		AuthenticationStatus authStatus = authFromUserId(entry.getUserId())
-		
+
 		if (!authStatus.authorized) {
 			debug "Illegal access to entry " + entry
 			return [null, 'You do not have permission to edit this entry.', null, null]
@@ -122,12 +122,12 @@ class DataController extends LoginController {
 		Date currentTime = parseDate(p.currentTime)
 		Date baseDate = parseDate(p.baseDate)
 		String timeZoneName = p.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : p.timeZoneName
-		
+
 		Long repeatTypeId = parseLong(p.repeatTypeId)
 		Date repeatEnd = parseDate(p.repeatEnd)
 
 		EntryStats stats = new EntryStats(userId)
-		
+
 		// activate repeat entry if it has a repeat type
 		if (entry.getRepeatType() != null && entry.getRepeatType().isContinuous()) {
 			debug "Activating continuous entry " + entry
@@ -138,7 +138,7 @@ class DataController extends LoginController {
 			} else
 				debug "No entry activation"
 		}
-		
+
 		boolean wasContinuous = entry.getRepeatType()?.isContinuous()
 
 		def m = entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, false, 1)
@@ -153,9 +153,9 @@ class DataController extends LoginController {
 		} else if (entry != null) {
 			entry = entry.update(m, stats, baseDate, allFuture)
 		}
-		
+
 		authStatus.sprint?.reindex()
-		
+
 		ArrayList<TagStats> tagStats = stats.finish()
 		if (tagStats == null) {
 			return [entry, '', null, null]
@@ -186,7 +186,7 @@ class DataController extends LoginController {
 		Date currentDate = null
 		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss z").withZone(DateTimeZone.UTC)
 		Date now = new Date()
-		
+
 		EntryStats stats = new EntryStats(userId)
 
 		reader.eachCsvLine { tokens ->
@@ -230,7 +230,7 @@ class DataController extends LoginController {
 				}
 			}
 		}
-		
+
 		stats.finish()
 
 		return true
@@ -321,7 +321,7 @@ class DataController extends LoginController {
 				writeCSV(writer, entry.getBaseTag().getDescription())
 			else
 				writeCSV(writer, entry.getTag().getDescription())
-			
+
 			writer.write("\n")
 		}
 
@@ -350,7 +350,7 @@ class DataController extends LoginController {
 	def deleteGhostEntry() {
 		deleteGhostEntryData()
 	}
-	
+
 	def deleteGhostEntryData() {
 		debug "DataController.deleteGhostEntryData() params:" + params
 
@@ -358,7 +358,7 @@ class DataController extends LoginController {
 		def entry = Entry.get(Long.parseLong(params.entryId))
 
 		Map result = Entry.canDelete(entry, user)
-		
+
 		if (result.canDelete) {
 			renderJSONGet(deleteGhostEntryHelper(params))
 		} else {
@@ -366,7 +366,7 @@ class DataController extends LoginController {
 			return
 		}
 	}
-	
+
 	private def deleteGhostEntryHelper(Map params) {
 		def entry = Entry.get(Long.parseLong(params.entryId))
 		def allFuture = params.all?.equals("true") ? true : false
@@ -429,7 +429,7 @@ class DataController extends LoginController {
 		}
 		renderJSONGet(entries)
 	}
-	
+
 	def getInterestTagsData() {
 		debug "DataController.getInterestTagsData() userId:" + params.userId
 
@@ -446,7 +446,7 @@ class DataController extends LoginController {
 
 		renderJSONGet([interestTags:tags])
 	}
-	
+
 	def addInterestTagData() {
 		debug "DataController.addInterestTagData() userId:" + params.userId + ", tagName: " + params.tagName
 
@@ -456,7 +456,7 @@ class DataController extends LoginController {
 			renderStringGet(AUTH_ERROR_MESSAGE)
 			return
 		}
-		
+
 		if (!params.tagName) {
 			debug "no tag name specified"
 			renderStringGet("No tag name specified")
@@ -464,7 +464,7 @@ class DataController extends LoginController {
 		}
 
 		user.addInterestTag(Tag.look(params.tagName.toLowerCase()))
-		
+
 		if (Utils.save(user, true))  {
 			debug "Successfully added tag"
 			renderJSONGet([interestTags:user.fetchInterestTagsJSON()])
@@ -473,7 +473,7 @@ class DataController extends LoginController {
 			renderStringGet("Error adding interest tag")
 		}
 	}
-	
+
 	def updateInterestTagData() {
 		debug "DataController.updateInterestTagData() userId:" + params.userId + ", oldTagName: " + params.oldTagName + ", newTagName: " + params.newTagName
 
@@ -483,16 +483,16 @@ class DataController extends LoginController {
 			renderStringGet(AUTH_ERROR_MESSAGE)
 			return
 		}
-		
+
 		if ((!params.oldTagName) || (!params.newTagName)) {
 			debug "no tag name specified"
 			renderStringGet("No tag name specified")
 			return
 		}
-		
+
 		Tag oldTag = Tag.findByDescription(params.oldTagName.toLowerCase())
 		Tag newTag = Tag.look(params.newTagName.toLowerCase())
-		
+
 		if ((!oldTag) || (!newTag)) {
 			debug "tag not found"
 			renderStringGet("Internal error: tag not found")
@@ -511,25 +511,25 @@ class DataController extends LoginController {
 			renderStringGet("Error adding interest tag")
 		}
 	}
-	
+
 	def deleteInterestTagData() {
 		debug "DataController.deleteInterestTagData() userId:" + params.userId + ", tagName: " + params.tagName
- 
+
 		User user = sessionUser()
 		if (user == null) {
 			debug "auth failure"
 			renderStringGet(AUTH_ERROR_MESSAGE)
 			return
 		}
-		
+
 		if (!params.tagName) {
 			debug "no tag name specified"
 			renderStringGet("No tag name specified")
 			return
 		}
-		
+
 		Tag tag = Tag.findByDescription(params.tagName.toLowerCase())
-		
+
 		if (!tag) {
 			debug "tag not found"
 			renderStringGet("Internal error: tag not found")
@@ -538,7 +538,7 @@ class DataController extends LoginController {
 		}
 
 		user.deleteInterestTag(tag)
-		
+
 		if (Utils.save(user, true))  {
 			debug "Successfully removed tag"
 			renderJSONGet([interestTags:user.fetchInterestTagsJSON()])
@@ -547,7 +547,7 @@ class DataController extends LoginController {
 			renderStringGet("Error adding interest tag")
 		}
 	}
-	
+
 	protected def fetchPlotEntries() {
 		def tags = JSON.parse(params.tags)
 		def startDateStr = params.startDate
@@ -561,7 +561,7 @@ class DataController extends LoginController {
 		}
 
 		def plotInfo = [:]
-		
+
 		def plotEntries = Entry.fetchPlotData(sessionUser(), tagIds, startDateStr ? parseDate(startDateStr) : null,
 			endDateStr ? parseDate(endDateStr) : null, new Date(), plotInfo)
 
@@ -579,21 +579,21 @@ class DataController extends LoginController {
 		debug "DataController.getPlotDescData() params:" + params
 
 		User user = sessionUser()
-		
+
 		if (user == null) {
 			debug "auth failure"
 			renderStringGet(AUTH_ERROR_MESSAGE)
 			return
 		}
-		
+
 		def results = fetchPlotEntries()
-		
+
 		def minMax = Entry.fetchTagIdsMinMax(user.getId(), results.tagIds)
-		
+
 		renderDataGet(new JSON([entries:results.entries, min:minMax[0], max:minMax[1],
 				unitGroupId:results.unitGroupId, valueScale:results.valueScale]))
 	}
-	
+
 	protected def fetchSumPlotEntries() {
 		def tags = JSON.parse(params.tags)
 		def startDateStr = params.startDate
@@ -605,35 +605,35 @@ class DataController extends LoginController {
 		}
 
 		def plotInfo = [:]
-		
+
 		def entries = Entry.fetchSumPlotData(sessionUser(), tagIds,
 			startDateStr ? parseDate(startDateStr) : null, endDateStr ? parseDate(endDateStr) : null, new Date(), params.timeZoneName, plotInfo)
-		
+
 		return [entries:entries, tagIds:tagIds, unitGroupId:plotInfo.unitGroupId,
 				valueScale:plotInfo.valueScale]
 	}
 
 	def getSumPlotData() {
 		debug "DataController.getSumPlotData() params:" + params
-		
+
 		renderDataGet(new JSON(fetchSumPlotEntries().entries))
 	}
 
 	def getSumPlotDescData() {
 		debug "DataController.getSumPlotDescData() params:" + params
-		
+
 		User user = sessionUser()
-		
+
 		if (user == null) {
 			debug "auth failure"
 			renderStringGet(AUTH_ERROR_MESSAGE)
 			return
 		}
-		
+
 		def results = fetchSumPlotEntries()
-		
+
 		def minMax = Entry.fetchTagIdsMinMax(user.getId(), results.tagIds)
-		
+
 		renderDataGet(new JSON([entries:results.entries, min:minMax[0], max:minMax[1], unitGroupId:results.unitGroupId,
 				valueScale:results.valueScale]))
 	}
@@ -656,7 +656,7 @@ class DataController extends LoginController {
 
 		Date baseDate = parseDate(params.baseDate)
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
-		
+
 		List result = doAddEntry(params)
 
 		if (result[0] != null) {
@@ -679,10 +679,10 @@ class DataController extends LoginController {
 
 	def updateEntrySData() { // new API
 		debug("DataController.updateEntrySData() params:" + params)
-		
+
 		Date baseDate = parseDate(params.baseDate)
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
-		
+
 		def (entry, message, oldTagStats, newTagStats) = doUpdateEntry(params)
 		if (entry != null) {
 			User user = sessionUser()
@@ -818,7 +818,7 @@ class DataController extends LoginController {
 		def user = sessionUser()
 		if (user == null)
 			return null
-			
+
 		if (term.equals(ALLAUTOTAGS)) {
 			debug "ALLAUTOTAGS"
 			return getSessionCache("AUTOTAGS*" + term, {
@@ -866,9 +866,9 @@ class DataController extends LoginController {
 		debug "DataController.autocompleteData() params:" + params
 
 		def user = sessionUser()
-		
+
 		Date now
-		
+
 		if (params.currentTime) {
 			now = parseDate(params.currentTime)
 		} else
@@ -961,7 +961,7 @@ class DataController extends LoginController {
 		debug "Trying to load plot data " + params.id
 
 		PlotData plotData = PlotData.get(Long.valueOf(params.id))
-		
+
 		if (plotData.userId != user.id) {
 			renderStringGet('Not authorized to load this graph');
 			return;
@@ -1058,7 +1058,7 @@ class DataController extends LoginController {
 
 		UserGroup group = null
 		Visibility visibility = Visibility.PUBLIC
-		
+
 		if (params.group) {
 			if (params.group == Visibility.PRIVATE.name()) {
 				visibility = Visibility.PRIVATE
@@ -1101,7 +1101,7 @@ class DataController extends LoginController {
 			renderStringGet("You're using an old version of the client; please update to the latest version (reload the browser or update your mobile app).")
 			return
 		}
-		
+
 		def user = sessionUser()
 
 		if (user == null) {
@@ -1121,7 +1121,7 @@ class DataController extends LoginController {
 			renderStringGet('No such graph id ' + params.id)
 			return;
 		}
-		
+
 		def c = DiscussionPost.createCriteria()
 		def results = c {
 			eq("plotDataId", plotDataId)
@@ -1133,11 +1133,11 @@ class DataController extends LoginController {
 			renderStringGet("You do not have authorization to load this graph.")
 			return
 		}
-		
+
 		DiscussionPost post = results[0]
-		
+
 		Discussion discussion = Discussion.get(post.discussionId)
-		
+
 		if (discussionHash != discussion.hash) {
 			debug "auth failure - discussion hash doesn't match"
 			renderStringGet("You do not have authorization to load this graph.")
@@ -1228,7 +1228,7 @@ class DataController extends LoginController {
 		if (session.showHelp) {
 			session.showHelp = null
 		}
-		
+
 		String userIdStr = sessionUser().id.toString()
 
 		List entries = []
@@ -1239,7 +1239,7 @@ class DataController extends LoginController {
 		} else {
 			entries = params['entries[]']
 		}
-		
+
 		boolean operationSuccess = true;
 		String messageCode = "default.create.label"
 		List messageArgs = ["Entries"]
@@ -1407,12 +1407,7 @@ class DataController extends LoginController {
 
 		try {
 			thirdPartyDevice = ThirdParty.lookup(device)
-		} catch (IllegalArgumentException e) {
-			renderJSONPost([success: false, message: e.message])
-			return
-		}
 
-		try {
 			if (isCollapsed) {
 				user.settings.collapseDeviceEntries(thirdPartyDevice)
 			} else {
@@ -1421,6 +1416,8 @@ class DataController extends LoginController {
 
 			Utils.save(user, true)
 			renderJSONPost([success: true])
+		} catch (IllegalArgumentException e) {
+			renderJSONPost([success: false, message: e.message])
 		} catch(e) {
 			renderJSONPost([success: false, message: e.message])
 		}

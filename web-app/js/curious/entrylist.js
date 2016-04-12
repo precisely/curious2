@@ -145,14 +145,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		var description = entry.description;
 		var comment = entry.comment;
 		var classes = ["entry"];
-		var $entryToReplace, $appendAfterEntry;
 
-		if (args.replaceEntry) {
-			$entryToReplace = $(args.replaceEntry);
-		}
-		if (args.appendAfterEntry) {
-			$appendAfterEntry = $(args.appendAfterEntry);
-		}
 		if (args.classes) {
 			// Push all the classes
 			classes.push.apply(classes, args.classes);
@@ -326,13 +319,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			entryEditItem.html(innerHTMLContent);
 		} else {
 			var newEntryContent = '<li id="' + elementId + '" class="' + classes.join(" ") + '">' + innerHTMLContent + '</li>';
-			if ($entryToReplace) {
-				$entryToReplace.replaceWith(newEntryContent);
-			} else if ($appendAfterEntry) {
-				$appendAfterEntry.after(newEntryContent);
-			} else {
-				$("#" + this.listId).append(newEntryContent);
-			}
+			$("#" + this.listId).append(newEntryContent);
 			entryEditItem = $("#" + elementId);
 		}
 		$("#entrydelid" + this.editId + id).click(function() {
@@ -746,6 +733,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				if (callBack && typeof callBack == 'function') {
 					callBack();
 				}
+				// Scroll to position where the entry was added and glow
 				if (!RepeatType.isContinuous(entries[3].repeatType)) {
 					var entryContainer = $('#recordList'), scrollTo = $('#' + self.editId + 'entryid' + entries[3].id),
 					contentWrapper = $('#' + self.editId + 'entryid' + entries[3].id + ' .content-wrapper');
