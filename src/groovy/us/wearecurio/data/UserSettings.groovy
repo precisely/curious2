@@ -19,7 +19,10 @@ class UserSettings extends BitSet {
 	private static final int JAWBONE_COLLAPSED = 9
 	private static final int OURA_COLLAPSED = 10
 
-	// Do not save following fields into the database
+	/**
+	 * Do not save following fields into the database. In a embedded groovy domain class, Hibernate try to persist
+	 * the following fields to the database since the getters of this fields are defined.
+	 */
 	static transients = ["bioPublic", "namePublic", "value", "deviceEntryStates"]
 
 	UserSettings() {

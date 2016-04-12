@@ -1,5 +1,12 @@
 "use strict";
 
+/**
+ * Class used to group the given entries based on the matching base tag.
+ *
+ * @params deviceEntries List of plain entries received from the server for a partucular device. For example: all
+ * entries from Oura.
+ * @params savedStates Map of saved state of collapse/expand for the user
+ */
 function EntryDeviceData(deviceEntries, savedStates) {
 
 	StateView.call(this);
@@ -67,6 +74,7 @@ function EntryDeviceData(deviceEntries, savedStates) {
 		return collapsed;
 	};
 
+	// This is just the helper method for readability and to provide implementation of getCurrentState method
 	this.getCurrentState = function() {
 		return this.isCollapsed();
 	};

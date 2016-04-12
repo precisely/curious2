@@ -410,7 +410,6 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		self.entrySelectData = {};
 		self.groupedData = {};
 		var entryDataInstance = new EntryData(entries);
-		entryDataInstance.collectDeviceEntries();
 
 		jQuery.each(entryDataInstance.getNormalEntries(), function() {
 			if (onlyPinned && !RepeatType.isContinuous(this.repeatType)) {
@@ -695,7 +694,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		}
 	}
 
-	this.createEntryFromPinnedEntry = function(userId, text, defaultToNow, nullAmount) {
+	this.createEntryFromPinnedEntry = function(userId, entryId, text, defaultToNow, nullAmount) {
 		var entries = [];
 		this.entryListItems.forEach(function(entryItem) {
 			if (entryItem.id == entryId) entries.push(entryItem);
@@ -1071,7 +1070,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		var isAnyEntrySelected = $alreadySelectedEntry.length > 0;
 
 		// When clicked on any entry element i.e. li.entry
-		var isClickedOnEntry = $target.closest("li.entry").length > 0;
+		var clickedOnEntry = $target.closest("li.entry").length > 0;
 
 		// If such elements are clicked, where we not have to do anything. (Like deleteEntry)
 		var isEventToCancel = ($target.closest(".entryNoBlur").length > 0) || $target.is(".save-entry");
@@ -1082,14 +1081,14 @@ function EntryListWidget(divIds, autocompleteWidget) {
 
 		var $deviceEntry = $target.closest(".device-entry");
 		var $deviceSummaryEntry = $target.closest(".device-summary-entry");
-		var isClickedOnDeviceEntry = $deviceEntry.length !== 0;
-		var isClickedOnDeviceSummaryEntry = $deviceSummaryEntry.length !== 0;
+		var clickedOnDeviceEntry = $deviceEntry.length !== 0;
+		var clickedOnDeviceSummaryEntry = $deviceSummaryEntry.length !== 0;
 
 		// If a device entry (example: "Moves Data") or device summary entry is clicked
-		if (isClickedOnDeviceEntry || isClickedOnDeviceSummaryEntry) {
-			if (isClickedOnDeviceEntry) {
+		if (clickedOnDeviceEntry || clickedOnDeviceSummaryEntry) {
+			if (clickedOnDeviceEntry) {
 				self.toggleDeviceEntry($deviceEntry);
-			} else if (isClickedOnDeviceSummaryEntry) {
+			} else if (clickedOnDeviceSummaryEntry) {
 				self.toggleDeviceSummaryEntry($deviceSummaryEntry);
 			}
 
@@ -1125,7 +1124,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			return;
 		}
 
-		if (isClickedOnEntry) {
+		if (clickedOnEntry) {
 			// parents() method returns all anscestors as list. So element at 0th position will be li.entry
 			var selectee = $target.parents("li.entry").andSelf()[0];
 			console.debug('Mousedown: Clicked on an entry. Will now select.');

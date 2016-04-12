@@ -1,8 +1,10 @@
 "use strict";
 
 /**
- *
- * @param deviceTagEntries will be the list of entries with same base tag like "walk", "bike", "excercise"
+ * Class to construct device summary entries for each base tag by using normalized amounts of given entries.
+ * Call the method "group()" after passing the device entries to get the entry data for device summary entry.
+ 
+ * @param deviceTagEntries will be the list of entries with same base tag like "walk", "bike", "exercise"
  * for a particular device like "Moves".
  */
 function EntryDeviceDataSummary(deviceTagEntries) {

@@ -23,7 +23,11 @@ dataSource {
 hibernate {
 		cache.use_second_level_cache = true
 		cache.use_query_cache = false
-		// TODO This should be changed to "org.hibernate.cache.SingletonEhCacheRegionFactory" http://stackoverflow.com/a/36035330/2405040
+		/*
+		 * TODO This should be changed to "org.hibernate.cache.SingletonEhCacheRegionFactory" to prevent
+		 * conflict in ehcache versions.
+		 * https://github.com/grails/grails-core/releases/tag/v2.5.0
+		 */
 		cache.region.factory_class = 'net.sf.ehcache.hibernate.EhCacheRegionFactory' // Hibernate 3
 //		cache.region.factory_class = 'org.hibernate.cache.ehcache.EhCacheRegionFactory' // Hibernate 4
 		singleSession = true // configure OSIV singleSession mode

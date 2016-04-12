@@ -122,7 +122,7 @@ String.prototype.indexOfRegex = function(regex) {
  * Convert any string to sanitized string. For example: "We Are Curious".sanitizeTitle() == "we-are-curious"
  */
 String.prototype.sanitizeTitle = function(){
-	return this.toLowerCase().replace(/\s/g, '-');
+	return this.trim().toLowerCase().replace(/\s/g, '-');
 };
 
 /* 
@@ -678,7 +678,7 @@ function dataURItoBlob(dataURI) {
 }
 
 /**
- * Compare if two date objects are of same day. http://stackoverflow.com/a/4293084/2405040
+ * Compare if two date objects are of same day.
  * @param date1 {Date} First date object
  * @param date2 {Date} Second date object
  * @returns {boolean} <true> if both are same (ignoring the time)

@@ -16,7 +16,7 @@
 						</a>
 						<g:if test="${templateVer == 'lhp'}">
 							<a href="https://npo1.networkforgood.org/Donate/Donate.aspx?npoSubscriptionId=3737"
-							   id="headerbutton">
+								id="headerbutton">
 								<img src="/images/lhpdonate.gif"/>
 							</a>
 						</g:if>

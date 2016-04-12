@@ -1,9 +1,15 @@
 "use strict";
 
-function EntryData(entriesData) {
+/**
+ * Accepts all the entries received from the server to separate the normal entries (which is not associated with any
+ * source/device) and the device entries (which are imported from any device API). Call methods, "getNormalEntries()"
+ * to get the list of normal entries and call "getDeviceEntries" to get the list of device entries.
+ *
+ * @param entries List of entries
+ */
+function EntryData(entries) {
 
 	var deviceEntries, normalEntries;
-	var entries = entriesData;
 
 	this.getDeviceEntries = function() {
 		return deviceEntries;
@@ -13,7 +19,7 @@ function EntryData(entriesData) {
 		return normalEntries;
 	};
 
-	this.collectDeviceEntries = function() {
+	function collectDeviceEntries() {
 		deviceEntries = {};
 		normalEntries = [];
 
@@ -26,5 +32,7 @@ function EntryData(entriesData) {
 				normalEntries.push(entry);
 			}
 		}.bind(this));
-	};
+	}
+
+	collectDeviceEntries();
 }

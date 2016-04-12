@@ -502,7 +502,7 @@ class DataController extends LoginController {
 
 		user.deleteInterestTag(oldTag)
 		user.addInterestTag(newTag)
-		
+
 		if (Utils.save(user, true))  {
 			debug "Successfully updated tag"
 			renderJSONGet([interestTags:user.fetchInterestTagsJSON()])
@@ -1198,9 +1198,9 @@ class DataController extends LoginController {
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
 		def parsedEntry = getParsedEntry(params, user)
 		def amount = parsedEntry.amounts[0]
-		if (parsedEntry.tag?.description?.contains("cannot understand what you typed") || 
+		if (parsedEntry.tag?.description?.contains("cannot understand what you typed") ||
 				(parsedEntry.baseTag.description == "sleep" && parsedEntry.amounts[0].durationType != DurationType.END)) {
-			renderJSONGet([success: false, message: parsedEntry.baseTag?.description == "sleep" ? 
+			renderJSONGet([success: false, message: parsedEntry.baseTag?.description == "sleep" ?
 					"You must enter a time duration, like 'sleep 8 hours 10 mins'" : "Can not understand what you typed"])
 			return
 		}
@@ -1298,7 +1298,7 @@ class DataController extends LoginController {
 			}
 		}
 		JSON.use("jsonDate") {
-			renderJSONPost([success: operationSuccess, createdEntries: createdEntries, 
+			renderJSONPost([success: operationSuccess, createdEntries: createdEntries,
 				message: g.message(code: messageCode, args: messageArgs)])
 		}
 	}
@@ -1343,7 +1343,7 @@ class DataController extends LoginController {
 			}
 
 			renderJSONGet([success: true, usernameList: searchResults.collect { it.getAt(0) },
-							userIdList: searchResults.collect { it.getAt(2) }, displayNames: displayNames])
+					userIdList: searchResults.collect { it.getAt(2) }, displayNames: displayNames])
 		} else {
 			renderJSONGet([success: false])
 		}
@@ -1386,7 +1386,7 @@ class DataController extends LoginController {
 	def getSprintParticipantsData(int offset, int max) {
 		Sprint sprint = Sprint.findByHash(params.id)
 		if (!sprint) {
-			renderJSONGet([success: false, message: g.message(code: "default.not.found.message",                                             
+			renderJSONGet([success: false, message: g.message(code: "default.not.found.message",
 					args: ["sprint", params.id])])
 			return
 		}
@@ -1409,15 +1409,20 @@ class DataController extends LoginController {
 			thirdPartyDevice = ThirdParty.lookup(device)
 		} catch (IllegalArgumentException e) {
 			renderJSONPost([success: false, message: e.message])
+			return
 		}
 
-		if (isCollapsed) {
-			user.settings.collapseDeviceEntries(thirdPartyDevice)
-		} else {
-			user.settings.expandDeviceEntries(thirdPartyDevice)
-		}
+		try {
+			if (isCollapsed) {
+				user.settings.collapseDeviceEntries(thirdPartyDevice)
+			} else {
+				user.settings.expandDeviceEntries(thirdPartyDevice)
+			}
 
-		Utils.save(user, true)
-		renderJSONPost([success: true])
+			Utils.save(user, true)
+			renderJSONPost([success: true])
+		} catch(e) {
+			renderJSONPost([success: false, message: e.message])
+		}
 	}
 }
