@@ -83,6 +83,15 @@
 			callLogoutCallbacks();
 		}
 
+		registerLogoutCallback(function() {
+			if (typeof store == 'undefined' || typeof (store.namespace('entries.state')) == 'undefined' || typeof (store.namespace("entries.state").session) == 'undefined') {
+				return;
+			}
+			// Clear the saved collapse/expand state of device entries on logout
+			var entrySessionStorage = store.namespace("entries.state").session;
+			entrySessionStorage.clear();
+		});
+
 		var entryListWidget;
 		
 		$(function() {
