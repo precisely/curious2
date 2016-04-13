@@ -650,22 +650,6 @@ class MigrationService {
 				Utils.save(oauthAccount, true)
 			}
 		}
-		tryMigration("Send initial welcome emails") {
-			for (User user in User.list()) {
-				log.debug "Sending account welcome email for: " + user.getEmail()
-				
-				Date cutoff = new Date(new Date().getTime() - (10 * 31L * 24L * 60L * 60000L))
-				
-				if (user.created > cutoff && (!user.virtual)) {					
-					emailService.send(user.getEmail(), "Welcome to We Are Curious",
-							"Welcome to We Are Curious! We are looking forward to your participation in our community.\n\n"
-							+ "Track your activities, sleep, mood: anything you like, using our tag-based format. Sync with devices and external services like Moves from your user profile. Chart your health data using the Chart tab.\n\n"
-							+ "Share your discoveries and questions with the community using the Social tab or by sharing your charts from the Chart tab.\n\n"
-							+ "Check out the Trackathon tab to find or contribute ideas for how to use We Are Curious.\n\n"
-							+ "Your email account is verified; you can post to the community. Thank you, and again. welcome!")
-				}
-			}
-		}
 		tryMigration("Re-add discussions to public 3") {
 			UserGroup group = UserGroup.findByFullName('Curious Discussions')
 			Date cutoff = new Date() - 60
