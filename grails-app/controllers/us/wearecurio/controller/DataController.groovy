@@ -10,6 +10,7 @@ import us.wearecurio.annotations.EmailVerificationRequired
 import us.wearecurio.data.DecoratedUnitRatio
 import us.wearecurio.data.RepeatType
 import us.wearecurio.data.UnitGroupMap
+import us.wearecurio.data.UserSettings
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.DiscussionPost
 import us.wearecurio.model.DurationType
@@ -85,9 +86,32 @@ class DataController extends LoginController {
 
 		debug("created " + entry)
 
+		boolean showEntryBalloon
+		boolean showBookmarkBalloon
+		if (params.containsKey('mobileSessionId')) {
+			UserSettings userSettings = user.settings
+			if (entry.getRepeatType()?.isContinuous()) {
+				showBookmarkBalloon = !userSettings.hasBookmarkCreationCountCompleted()
+				if (showBookmarkBalloon) {
+					userSettings.countBookmarkCreation()
+				}
+			} else {
+				showEntryBalloon = !userSettings.hasEntryCreationCountCompleted()
+				if (showEntryBalloon) {
+					userSettings.countEntryCreation()
+				}
+
+				if (entry.getRepeatType()?.isReminder()) {
+					userSettings.countFirstAlertEntry()
+				}
+			}
+
+			Utils.save(user, true)
+		}
+
 		authStatus.sprint?.reindex()
 
-		return [entry, parsedEntry['status'], tagStats?.get(0)]
+		return [entry, parsedEntry['status'], tagStats?.get(0), showEntryBalloon, showBookmarkBalloon]
 	}
 
 	protected def doUpdateEntry(Map parms) {
@@ -427,6 +451,15 @@ class DataController extends LoginController {
 			renderJSONGet([entries: entries, deviceEntryStates: user.settings.getDeviceEntryStates()])
 			return
 		}
+		
+		// This response is specific for the mobile app.
+		if (params.containsKey('mobileSessionId')) {
+			boolean showRemindAlertBalloon = !user.settings.hasFirstAlertEntryCountCompleted()
+			renderJSONGet([entries, showRemindAlertBalloon])
+			
+			return
+		}
+
 		renderJSONGet(entries)
 	}
 
@@ -670,7 +703,9 @@ class DataController extends LoginController {
 				result[2]?.getJSONDesc(),
 				result[0].getJSONDesc(),
 				// TODO respond this as map instead of passing data based on index
-				user.settings.getDeviceEntryStates()
+				user.settings.getDeviceEntryStates(),
+				result[3],
+				result[4]
 			])
 		} else {
 			renderStringGet('error')

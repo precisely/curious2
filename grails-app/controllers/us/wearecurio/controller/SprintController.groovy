@@ -284,10 +284,21 @@ class SprintController extends LoginController {
 		Date baseDate = Utils.getStartOfDay(now)
 		EntryStats stats = new EntryStats(currentUser.id)
 
+		boolean showSprintStartBalloon
+		if (params.containsKey('mobileSessionId')) {
+			showSprintStartBalloon = !currentUser.settings.hasTrackathonStartCountCompleted()
+			if (showSprintStartBalloon) {
+				currentUser.settings.countTrackathonStart()
+			}
+
+			Utils.save(currentUser, true)
+		}
+		
 		if (sprintInstance.start(currentUser.id, baseDate, now, timeZoneName, stats)) {
-			renderJSONGet([success: true])
+			renderJSONGet([success: true, showSprintStartBalloon: showSprintStartBalloon])
 			return
 		}
+
 		renderJSONGet([success: false, message: g.message(code: "can.not.start.sprint")])
 	}
 
@@ -369,7 +380,8 @@ class SprintController extends LoginController {
 			return
 		}
 		
-		if (!sprint.hasMember(currentUser.id)) {
+		boolean isMember = sprint.hasMember(currentUser.id)
+		if (!isMember) {
 			renderJSONGet([success: false, message: g.message(code: "not.sprint.member")])
 			return
 		}
@@ -377,6 +389,18 @@ class SprintController extends LoginController {
 		params.max = Math.min(max ?: 5, 100)
 		params.offset = offset ?: 0
 		Map sprintDiscussions = searchService.getSprintDiscussions(sprint, currentUser, params.offset, params.max)
-		renderJSONGet([listItems: sprintDiscussions.listItems, success: true]);
+
+		boolean showPostDiscussionBalloon
+		if (params.containsKey('mobileSessionId')) {
+			showPostDiscussionBalloon = !currentUser.settings.hasDiscussionDetailVisitCountCompleted()
+			if (showPostDiscussionBalloon) {
+				currentUser.settings.countDiscussionDetailVisit()
+			}
+
+			Utils.save(currentUser, true)
+		}
+		
+		renderJSONGet([listItems: sprintDiscussions.listItems, success: true, showPostDiscussionBalloon: 
+				showPostDiscussionBalloon, isMember: isMember]);
 	}
 }

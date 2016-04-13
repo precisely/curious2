@@ -17,6 +17,24 @@ class UserController extends LoginController {
 	FileUploaderService fileUploaderService
 	SearchService searchService
 
+	protected updateUserSettings(String methodName) {
+		User currentUser = sessionUser()
+		if (!currentUser) {
+			debug "auth failure"
+			renderJSONGet([success: false])
+			return
+		}
+
+		currentUser.settings?."$methodName"()
+
+		// Saving user as UserSettings is an embedded domain
+		if (Utils.save(currentUser, true)) {
+			renderJSONGet([success: true])
+		} else {
+			renderJSONGet([success: false, message: g.message(code: "default.not.updated.message", args: ["User", "preferences"])])
+		}
+	}
+
 	def index() {
 
 	}
@@ -118,57 +136,21 @@ class UserController extends LoginController {
 	}
 
 	def closeExplanationCardCuriosity() {
-		User currentUser = sessionUser()
-		if (!currentUser) {
-			debug "auth failure"
-			renderJSONGet([success: false])
-			return
-		}
-
-		currentUser.settings?.closeCuriositiesExplanation()
-
-		// Saving user as UserSettings is an embedded domain
-		if (Utils.save(currentUser, true)) {
-			renderJSONGet([success: true])
-		} else {
-			renderJSONGet([success: false, message: g.message(code: "default.not.updated.message", args: ["User", "preferences"])])
-		}
+		debug "UserController.closeExplanationCardCuriosity()"
+		String methodName = "closeCuriositiesExplanation"
+		updateUserSettings(methodName)
 	}
 
 	def closeExplanationCardTrackathon() {
-		User currentUser = sessionUser()
-		if (!currentUser) {
-			debug "auth failure"
-			renderJSONGet([success: false])
-			return
-		}
-
-		currentUser.settings?.closeTrackathonExplanation()
-
-		// Saving user as UserSettings is an embedded domain
-		if (Utils.save(currentUser, true)) {
-			renderJSONGet([success: true])
-		} else {
-			renderJSONGet([success: false, message: g.message(code: "default.not.updated.message", args: ["User", "preferences"])])
-		}
+		debug "UserController.closeExplanationCardTrackathon()"
+		String methodName = "closeTrackathonExplanation"
+		updateUserSettings(methodName)
 	}
-	
+
 	def markTrackathonVisited() {
-		User currentUser = sessionUser()
-		if (!currentUser) {
-			debug "auth failure"
-			renderJSONGet([success: false])
-			return
-		}
-
-		currentUser.settings?.markTrackathonVisited()
-
-		// Saving user as UserSettings is an embedded domain
-		if (Utils.save(currentUser, true)) {
-			renderJSONGet([success: true])
-		} else {
-			renderJSONGet([success: false, message: g.message(code: "default.not.updated.message", args: ["User", "preferences"])])
-		}
+		debug "UserController.closeExplanationCardTrackathon()"
+		String methodName = "markTrackathonVisited"
+		updateUserSettings(methodName)
 	}
 
 	def addTutorialTags() {
