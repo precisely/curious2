@@ -544,6 +544,8 @@ class Sprint {
 		
 		fetchUserGroup()?.acceptAllInvited()
 		
+		log.debug "Reindexing this sprint"
+		
 		reindex()
 
 		return this

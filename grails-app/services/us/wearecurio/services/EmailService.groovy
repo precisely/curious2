@@ -21,6 +21,8 @@ class EmailService {
 	MailService mailService
 	
     void sendMail(Closure callable) {
+		if (Environment.current != Environment.PRODUCTION)
+			return
 		BackgroundTask.launch {
 			try {
 				log.debug "Calling mail service sendMail"
