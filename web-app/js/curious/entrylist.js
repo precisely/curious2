@@ -1224,3 +1224,12 @@ function EntryListWidget(divIds, autocompleteWidget) {
 
 	self.refresh();
 }
+
+$(document).ready(function() {
+	$("#logoutLink").click(function () {
+		// Clear the saved preference on logout
+		var entrySessionStorage = store.namespace("entries.state").session;
+		entrySessionStorage.clear();
+		return true;
+	});
+});

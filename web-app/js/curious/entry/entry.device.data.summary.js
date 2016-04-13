@@ -23,7 +23,7 @@ function EntryDeviceDataSummary(deviceTagEntries) {
 	var source = deviceName.split(" ")[0].toUpperCase();
 	var collapsed = true;
 
-	var entrySessionStorage = store.namespace("entries").session;      // store2.min.js
+	var entrySessionStorage = store.namespace("entries.state").session;      // store2.min.js
 	// Will be like "oura.device.summary.sleep"
 	var storageKey = source.toLowerCase() + ".device.summary." + baseTag;
 
