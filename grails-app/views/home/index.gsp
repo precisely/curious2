@@ -84,7 +84,7 @@
 		}
 
 		registerLogoutCallback(function() {
-			if (!store) {
+			if (typeof store == 'undefined' || typeof (store.namespace('entries.state')) == 'undefined' || typeof (store.namespace("entries.state").session) == 'undefined') {
 				return;
 			}
 			// Clear the saved collapse/expand state of device entries on logout
