@@ -158,6 +158,8 @@ elasticSearch {
 
 environments {
     development {
+		grails.mail.disabled=true
+		
         grails.logging.jul.usebridge = false
         grails.serverURL = "http://127.0.0.1:8080/"	/** If last `/` is removed, modify url's in oauth provider configurations **/
 		grails.serverURLProtocol = "http"
@@ -223,6 +225,8 @@ environments {
 		}
     }
     qa {
+		grails.mail.disabled=true
+		
         grails.logging.jul.usebridge = false
 		// serverUrl now must be specified in LocalConfig.groovy
         //grails.serverURL = "https://qa.wearecurio.us/"
@@ -363,6 +367,7 @@ environments {
 		}*/
     }
     production {
+		grails.mail.disabled=false
         grails.logging.jul.usebridge = false
         grails.serverURL = "https://www.wearecurio.us/"
 		grails.serverURLProtocol = "https"
