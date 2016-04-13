@@ -83,6 +83,15 @@
 			callLogoutCallbacks();
 		}
 
+		registerLogoutCallback(function() {
+			if (!store) {
+				return;
+			}
+			// Clear the saved collapse/expand state of device entries on logout
+			var entrySessionStorage = store.namespace("entries.state").session;
+			entrySessionStorage.clear();
+		});
+
 		var entryListWidget;
 		
 		$(function() {
