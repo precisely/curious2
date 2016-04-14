@@ -1551,6 +1551,10 @@ body.tags-displayed .floating-column {
 	color:#FC3F28;
 }
 
+.input-affordance.left-addon {
+	margin-top: 13px;
+}
+
 .user-name-radio .input-affordance input[type=radio]:checked + label {
 	color:#787878;
 }
@@ -2570,20 +2574,23 @@ div.graph-header-container .red-header {
 	list-style: none;
 }
 .new-post {
+	margin-bottom: 7px;
 }
 
-.new-post button {
-	font-size: 12px;
-	background-color: #fc3f28;
-	padding: 5px;
-	margin: 10px;
-	color: #ffffff;
+.btn-discussion, .btn-discussion:focus {
+	color: #fc3f28 !important;
+	background: #ffffff;
+	border: 1px solid #fc3f28 !important;
 	border-radius: 2px;
+	font-weight: 400 !important;
+	text-transform: none !important;
 }
 
-.new-post textarea {
-	padding: 3px;
+.btn-discussion:hover {
+	color: #ffffff !important;
+	background: #fc3f28 !important;
 }
+
 .new-post input[type='submit'] {
 	background-color: #869293;
 	color: #ffffff;

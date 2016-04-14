@@ -77,8 +77,8 @@
 						<div class="right-content">
 							<div class="new-post">
 								<label>New post:&nbsp;</label>
-								<button class="btn" onclick="location.href='/home/graph?group={{- virtualGroupName}}'">Chart of your data</button>
-								<button class="btn"
+								<button class="btn btn-discussion" style="margin: 0px;" onclick="location.href='/home/graph?group={{- virtualGroupName}}'">Chart of your data</button>
+								<button class="btn btn-discussion" style="margin: 0px"
 									onclick="$('#create-discussion').show('fast').find('input').prop('placeholder', 'New question or discussion topic?')">
 									Create a new trackathon discussion topic
 								</button>
