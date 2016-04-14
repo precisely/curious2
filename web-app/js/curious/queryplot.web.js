@@ -402,7 +402,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 		}
 
 		this.getGroupsToShare(function(data) {
-			var modalHTML = _.template($('#publish-to-groups').html(), {groups: data.groups, selectGroup: getParameterByName('group')});
+			var modalHTML = _.template($('#publish-to-groups').html(), {groups: data.groups, selectGroup: getSearchParams().group});
 			$('#publish-to-groups').html(modalHTML);
 			this.displayPublishModal();
 		}.bind(this));

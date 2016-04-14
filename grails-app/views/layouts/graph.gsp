@@ -187,6 +187,26 @@ function doLogout() {
 				}
 			}, 1000);
 		});
+
+		$(document).ready(function() {
+			/**
+			 * Code to scroll to selected group in the publish chart modal when group has been selected by default.
+			 */
+			$(document).on('shown.bs.modal','#publish-to-groups', function() {
+				var $shareModal = $('#publish-to-groups');
+				var $checkedItem = $shareModal.find('input[type="radio"]:checked');
+
+				if (!$checkedItem || $checkedItem.length === 0) {
+					return;
+				}
+
+				var $scrollTo = $shareModal.find('label[for="' + $checkedItem.attr("id") + '"]');
+				var $groupList = $('.share-group-list');
+				$groupList.animate({
+					scrollTop: $scrollTo.offset().top - $groupList.offset().top + $groupList.scrollTop()
+				});
+			});
+		});
 	</script>
 	
 	<g:layoutBody/>

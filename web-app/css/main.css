@@ -4921,7 +4921,12 @@ input.cropit-image-zoom-input {
 
 .publish-group-select .modal-body {
 	max-height: 500px;
-	overflow-y: auto;
+	overflow-y: hidden;
 	padding-top: 10px;
 	padding-bottom: 10px;
+}
+
+.share-group-list {
+	overflow-y: auto;
+	max-height: 270px;
 }

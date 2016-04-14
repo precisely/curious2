@@ -466,13 +466,13 @@ function closeExplanationCard(isSprintCard) {
 }
 
 function showExplanationCardTrackathon() {
-		var trackathonExplanationTemplate = $("script#_trackathonHelp").html();
-		$('.main.container-fluid').prepend(trackathonExplanationTemplate);
+	var trackathonExplanationTemplate = $("script#_trackathonHelp").html();
+	$('.main.container-fluid').prepend(trackathonExplanationTemplate);
 }
 
 function showExplanationCardCuriosity() {
-		var curiosityExplanationTemplate = $("script#_curiosityHelp").html();
-		$('.red-header').after(curiosityExplanationTemplate);
+	var curiosityExplanationTemplate = $("script#_curiosityHelp").html();
+	$('.red-header').after(curiosityExplanationTemplate);
 }
 
 function setNotificationBadge(notificationCount) {
