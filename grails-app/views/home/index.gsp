@@ -1,14 +1,15 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<meta name="layout" content="menu" />
-<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
-<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
+	<meta name="layout" content="menu" />
+	<link type="text/css" href="/css/entry/track-page.css" rel="stylesheet">
+	<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
+	<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
 		deleteTagGroupDataCSRF, addTagToTagGroupDataCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, 
 		updateEntrySDataCSRF,removeTagFromTagGroupCSRF, removeTagFromTagGroupDataCSRF, addTagGroupToTagGroupCSRF, 
-		removeTagGroupFromTagGroupCSRF, pingDataCSRF,showTagGroupDataCSRF, 
+		removeTagGroupFromTagGroupCSRF, pingDataCSRF,showTagGroupDataCSRF, saveDeviceEntriesStateDataCSRF,
 		createTagGroupDataCSRF, excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getInterestTagsDataCSRF, 
 		addInterestTagDataCSRF, deleteInterestTagDataCSRF, updateInterestTagDataCSRF" />
 </head>
@@ -18,8 +19,8 @@
 		<p><p>
 		<div id="alert-message-text"></div>
 	</div>
+
 	<div class="red-header date-controls clearfix">
-		<!-- g:render template="/tag/tagListWidget" model="[header: true]" / -->
 		<h1 class="clearfix">
 			<a class="back" href="#" onclick="entryListWidget.changeDate(-1); return false;">
 				<img alt="back" class="date-left-arrow" src="/images/left-arrow.png">
@@ -34,29 +35,14 @@
 	</div>
 
 	<!-- MAIN -->
-	<div class="clearfix">
-		<!-- RIGHT NAV -->
-		<!-- g:render template="/tag/tagListWidget" / -->
-		<!-- /RIGHT NAV -->
-		<div class="floating-column entry-container">
-			<div class="main container-fluid" id="trackmain">
+	<!-- TODO Fix indentation after merge -->
+			<div class="main entry-container clearfix">
 				<div id="autocomplete" style="position: absolute; top: 10px; right: 10px;"></div>
 				<div id="area0">
 					<div id="addData" class="input-affordance addon">
 						<div class="track-input-modifiers">
 							<img alt="tag" src="/images/tag.png" class="inputTag">
 						</div>
-							<!-- <p>choose<br>details:</p>
-							<a class="track-input-modifiers inputRemindPosition" onclick="entryListWidget.modifyInput('remind')">
-								<img alt="remind" class="inputRemind" src="/images/input-remind.png">
-							</a>
-							<a class="track-input-modifiers inputRepeatPosition" onclick="entryListWidget.modifyInput('repeat')">
-								<img alt="repeat" class="inputRepeat" src="/images/input-repeat.png">
-							</a>ook
-							<a class="track-input-modifiers inputPinPosition" onclick="entryListWidget.modifyInput('bookmark')">
-								<img alt="repeat" class="inputPin" src="/images/input-pin.png">
-							</a>
-							--!>
 							<input class="full-width" type="text" placeholder="sleep 8 hours 8:15am (good dreams)"
 									name="data" id="input0" required />
 							<input type="hidden" name="repeatTypeId" id="input0RepeatTypeId" />
@@ -77,14 +63,16 @@
 					<img class="sort-arrow hide" src="" alt="sort"/> 
 				</a>
 				<div id="recordList">
-					<ol id="entry0"></ol>
+					<ol id="entry0" class="entry-list"></ol>
 				</div>
 			</div>
-		</div>
-	</div>
+
 	<!-- /MAIN -->
-	<div id="remove-exclusion-dialog" class="hide" title="Add back to the Group"></div>
 	<script type="text/javascript" src="/js/curious/entrylist.js?ver=27"></script>
+	<script type="text/javascript" src="/js/curious/state.view.js?ver=27"></script>
+	<script type="text/javascript" src="/js/curious/entry/entry.data.js?ver=27"></script>
+	<script type="text/javascript" src="/js/curious/entry/entry.device.data.js?ver=27"></script>
+	<script type="text/javascript" src="/js/curious/entry/entry.device.data.summary.js?ver=27"></script>
 	<script type="text/javascript">
 		var timeAfterTag = ${prefs['displayTimeAfterTag'] ? true : false};
 		var currentDate = new Date();
@@ -94,6 +82,15 @@
 		function doLogout() {
 			callLogoutCallbacks();
 		}
+
+		registerLogoutCallback(function() {
+			if (typeof store == 'undefined' || typeof (store.namespace('entries.state')) == 'undefined' || typeof (store.namespace("entries.state").session) == 'undefined') {
+				return;
+			}
+			// Clear the saved collapse/expand state of device entries on logout
+			var entrySessionStorage = store.namespace("entries.state").session;
+			entrySessionStorage.clear();
+		});
 
 		var entryListWidget;
 		

@@ -197,7 +197,7 @@ $(document).ready(function() {
 		$parent.addClass("editing-comment");
 		$message.after(html);
 		$.autoResize.init();
-		$parent.find(".comment-message").focus();
+		$parent.find(".comment-message").putCursorAtEnd();
 
 		return false;
 	});

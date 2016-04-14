@@ -1663,7 +1663,12 @@ class Entry implements Comparable {
 		setUnits(amount.units?:'')
 		setComment(m['comment']?:'')
 		setRepeatTypeId(m['repeatType']?.id)
-		setSetIdentifier(Identifier.look(m['setName']))
+
+		// Only update setIdentifier if set name is available to prevent loosing existing identifier for device entries
+		if (m["setName"]) {
+			setSetIdentifier(Identifier.look(m['setName']))
+		}
+
 		setBaseTag(newBaseTag)
 		setDurationType(newDurationType)
 		setTimeZoneId((Integer)timeZoneId.getId())

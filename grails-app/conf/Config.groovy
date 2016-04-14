@@ -223,6 +223,16 @@ environments {
 			}
 			debug = true
 		}
+		/*
+		 * Workaround to prevent an error of "net.sf.ehcache.CacheException: Another unnamed CacheManager already exists in the same VM."
+		 * while hot reloading application in development.
+		 * https://github.com/grails/grails-core/releases/tag/v2.5.0
+		 */
+		beans {
+			cacheManager {
+				shared = true
+			}
+		}
     }
     qa {
 		grails.mail.disabled=true

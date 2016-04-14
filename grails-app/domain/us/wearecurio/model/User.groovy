@@ -79,6 +79,12 @@ class User {
 		hash column: 'hash', index: 'hash_index'
 		twitterAccountName column:'twitter_account_name', index:'twitter_account_name_idx'
 		email column:'email', index:'email_idx'
+		/**
+		 * Uncomment the below line for escaping the field "virtual" if MySQL is upgraded to >= 5.7.6 since a new reserved
+		 * keyword "virtual" is introduced in MySQL 5.7.6 so the queries for User domain will start failing.
+		 * https://dev.mysql.com/doc/refman/5.7/en/keywords.html#idm139723140549024
+		 */
+		//virtual column: '`virtual`'
 	}
 
 	static embedded = ["settings"]
@@ -285,9 +291,9 @@ class User {
     void addOwnedDiscussion(Long ownedDiscussionId) {
 		if (virtualUserGroupIdDiscussions != null && virtualUserGroupIdDiscussions > 0) {
 			GroupMemberDiscussion.create(virtualUserGroupIdDiscussions, ownedDiscussionId)
-		}        
+		}
     }
-    
+
 	static boolean follow(User followed, User follower) {
 		return followed.follow(follower)
 	}

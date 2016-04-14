@@ -1,5 +1,7 @@
 package us.wearecurio.data
 
+import us.wearecurio.model.ThirdParty
+
 class UserSettings extends BitSet {
 
 	/*
@@ -11,8 +13,17 @@ class UserSettings extends BitSet {
 	private static final int CLOSED_EXPLANATION_CARD_TRACKATHON = 4
 	private static final int TRACKATHON_VISITED = 5
 
-	// Do not save following fields into the database
-	static transients = ["bioPublic", "namePublic", "value"]
+	private static final int WITHINGS_COLLAPSED = 6
+	private static final int FITBIT_COLLAPSED = 7
+	private static final int MOVES_COLLAPSED = 8
+	private static final int JAWBONE_COLLAPSED = 9
+	private static final int OURA_COLLAPSED = 10
+
+	/**
+	 * Do not save following fields into the database. In a embedded groovy domain class, Hibernate try to persist
+	 * the following fields to the database since the getters of this fields are defined.
+	 */
+	static transients = ["bioPublic", "namePublic", "value", "deviceEntryStates"]
 
 	UserSettings() {
 		super(0)
@@ -78,5 +89,33 @@ class UserSettings extends BitSet {
 
 	boolean markTrackathonVisited() {
 		set(TRACKATHON_VISITED)
+	}
+
+	boolean isDeviceEntriesCollapsed(ThirdParty thirdParty) {
+		return get(getDeviceBit(thirdParty))
+	}
+
+	boolean collapseDeviceEntries(ThirdParty thirdParty) {
+		set(getDeviceBit(thirdParty))
+	}
+
+	boolean expandDeviceEntries(ThirdParty thirdParty) {
+		clear(getDeviceBit(thirdParty))
+	}
+
+	/**
+	 * Get the device bit from above defined constants by appending the "_COLLAPSED" to the name of the third party
+	 * enum.
+	 * @param thirdParty Get UserSettings bit for given third party device.
+	 */
+	private int getDeviceBit(ThirdParty thirdParty) {
+		return UserSettings[thirdParty.name() + "_COLLAPSED"]
+	}
+
+	Map<String, Boolean> getDeviceEntryStates() {
+		List<ThirdParty> supportedDevices = [ThirdParty.WITHINGS, ThirdParty.FITBIT, ThirdParty.JAWBONE,
+				ThirdParty.MOVES, ThirdParty.OURA]
+
+		return supportedDevices.collectEntries { [(it.name()): isDeviceEntriesCollapsed(it)] }
 	}
 }

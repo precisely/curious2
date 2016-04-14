@@ -1,28 +1,28 @@
 import grails.converters.JSON
 import grails.util.Environment
-
-import org.joda.time.DateTimeZone
-import us.wearecurio.filters.EmailVerificationCheckFilters
-import us.wearecurio.thirdparty.withings.IntraDayDataThread
-
-import us.wearecurio.server.BackgroundTask
-
-import us.wearecurio.marshaller.EnumMarshaller
-import us.wearecurio.model.UserGroup
-import us.wearecurio.services.*
-import us.wearecurio.utility.Utils
-import us.wearecurio.data.DataRetriever
 import org.springframework.web.context.support.WebApplicationContextUtils
-
+import us.wearecurio.data.DataRetriever
 import us.wearecurio.data.UnitGroupMap
-
+import us.wearecurio.filters.EmailVerificationCheckFilters
+import us.wearecurio.marshaller.EnumMarshaller
 import us.wearecurio.model.TagStats
+import us.wearecurio.server.BackgroundTask
+import us.wearecurio.services.AlertGenerationService
+import us.wearecurio.services.AnalyticsService
+import us.wearecurio.services.DatabaseService
+import us.wearecurio.services.EmailService
+import us.wearecurio.services.EntryParserService
+import us.wearecurio.services.MigrationService
+import us.wearecurio.services.SearchService
+import us.wearecurio.services.SecurityService
+import us.wearecurio.services.WithingsDataService
+import us.wearecurio.thirdparty.withings.IntraDayDataThread
+import us.wearecurio.utility.Utils
 
 class BootStrap {
 
 	MigrationService migrationService
 	WithingsDataService withingsDataService
-	RemindEmailService remindEmailService
 	DatabaseService databaseService
 	EmailService emailService
 	AnalyticsService analyticsService
@@ -30,7 +30,7 @@ class BootStrap {
 	SearchService searchService
 	EntryParserService entryParserService
 	AlertGenerationService alertGenerationService
-	
+
 	def grailsApplication
 	
 	static protected initClosures = []
@@ -38,7 +38,7 @@ class BootStrap {
 	def init = { servletContext ->
 		log.debug "Curious bootstrap started executing."
 		def current = Environment.current
-		
+
 		DatabaseService.set(databaseService)
 		EmailService.set(emailService)
 		SecurityService.set(securityService)
@@ -46,13 +46,13 @@ class BootStrap {
 		EntryParserService.set(entryParserService)
 		AnalyticsService.set(analyticsService)
 		AlertGenerationService.set(alertGenerationService)
-		
+
 		DataRetriever.setDatabaseService(databaseService)
-		
+
 		UnitGroupMap.initialize()
 
 		EmailVerificationCheckFilters.populateEmailVerificationEndpoints()
-		
+
 		migrationService.doMigrations()
 		JSON.registerObjectMarshaller(new EnumMarshaller())
 		def springContext = WebApplicationContextUtils.getWebApplicationContext( servletContext )
@@ -62,7 +62,7 @@ class BootStrap {
 		}
 
 		TagStats.initializeSharedTags()
-		
+
 		Utils.registerTestReset({ DataRetriever.resetCache() })
 
 		/**
@@ -82,7 +82,7 @@ class BootStrap {
 
 		if (grailsApplication.config.wearecurious.runImportJobs)
 			withingsDataService.refreshSubscriptions()
-		
+
 		if (current != Environment.TEST && current != Environment.DEVELOPMENT) {
 			try {
 				new IntraDayDataThread().start()
@@ -90,7 +90,7 @@ class BootStrap {
 				log.debug "Bootstrap: Could not start IntraDayDataThread"
 			}
 		}
-		
+
 		log.debug "Curious bootstrap finished executing."
 	}
 

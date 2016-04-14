@@ -21,6 +21,7 @@ import us.wearecurio.model.SurveyQuestion
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagProperties
 import us.wearecurio.model.TagStats
+import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
@@ -37,10 +38,9 @@ import java.text.SimpleDateFormat
 
 class DataController extends LoginController {
 
-	def tokenService
 	EntryParserService entryParserService
 	SearchService searchService
-	
+
 	static debug(str) {
 		log.debug(str)
 	}
@@ -53,11 +53,11 @@ class DataController extends LoginController {
 	private def getParsedEntry(Map params, User user) {
 		def p = [defaultToNow:'1']
 		p.putAll(params)
-		
+
 		boolean defaultToNow = (p.defaultToNow == '1')
-		
+
 		debug "DataController.getParsedEntry() params:" + p
-		
+
 		Date currentTime = parseDate(p.currentTime)
 		Date baseDate = parseDate(p.baseDate)
 		Long repeatTypeId = parseLong(p.repeatTypeId)
@@ -72,19 +72,19 @@ class DataController extends LoginController {
 
 	protected def doAddEntry(Map params) {
 		AuthenticationStatus authStatus = authFromUserIdStr(params.userId)
-		
+
 		User user = authStatus.user
 		def parsedEntry = getParsedEntry(params, user)
 
 		if (parsedEntry == null)
 			return 'Syntax error trying to parse entry'
-				
+
 		EntryStats stats = new EntryStats(user.id)
 		def entry = Entry.create(user.id, parsedEntry, stats)
 		ArrayList<TagStats> tagStats = stats.finish()
 
 		debug("created " + entry)
-		
+
 		authStatus.sprint?.reindex()
 
 		return [entry, parsedEntry['status'], tagStats?.get(0)]
@@ -93,25 +93,22 @@ class DataController extends LoginController {
 	protected def doUpdateEntry(Map parms) {
 		debug "DataController.doUpdateEntry() params:" + parms
 
-		def p = [defaultToNow:'1', allFuture:'1']
+		Map p = [defaultToNow:'1', allFuture:'1']
 		p.putAll(parms)
-				
-		boolean defaultToNow = (p.defaultToNow == '1')
-		boolean allFuture = (p.allFuture == '1')
-		
-		Entry entry = Entry.get(Long.parseLong(p.entryId))
 
-		Entry oldEntry = entry
+		boolean allFuture = (p.allFuture == '1')
+
+		Entry entry = Entry.get(Long.parseLong(p.entryId))
 
 		if (entry.getUserId() == 0L) {
 			debug "Attempting to edit a deleted entry."
 			return [null, 'Attempting to edit a deleted entry.', null, null]
 		}
-		
+
 		Long userId = entry.getUserId()
 
 		AuthenticationStatus authStatus = authFromUserId(entry.getUserId())
-		
+
 		if (!authStatus.authorized) {
 			debug "Illegal access to entry " + entry
 			return [null, 'You do not have permission to edit this entry.', null, null]
@@ -125,12 +122,12 @@ class DataController extends LoginController {
 		Date currentTime = parseDate(p.currentTime)
 		Date baseDate = parseDate(p.baseDate)
 		String timeZoneName = p.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : p.timeZoneName
-		
+
 		Long repeatTypeId = parseLong(p.repeatTypeId)
 		Date repeatEnd = parseDate(p.repeatEnd)
 
 		EntryStats stats = new EntryStats(userId)
-		
+
 		// activate repeat entry if it has a repeat type
 		if (entry.getRepeatType() != null && entry.getRepeatType().isContinuous()) {
 			debug "Activating continuous entry " + entry
@@ -141,7 +138,7 @@ class DataController extends LoginController {
 			} else
 				debug "No entry activation"
 		}
-		
+
 		boolean wasContinuous = entry.getRepeatType()?.isContinuous()
 
 		def m = entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, false, 1)
@@ -156,9 +153,9 @@ class DataController extends LoginController {
 		} else if (entry != null) {
 			entry = entry.update(m, stats, baseDate, allFuture)
 		}
-		
+
 		authStatus.sprint?.reindex()
-		
+
 		ArrayList<TagStats> tagStats = stats.finish()
 		if (tagStats == null) {
 			return [entry, '', null, null]
@@ -189,7 +186,7 @@ class DataController extends LoginController {
 		Date currentDate = null
 		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss z").withZone(DateTimeZone.UTC)
 		Date now = new Date()
-		
+
 		EntryStats stats = new EntryStats(userId)
 
 		reader.eachCsvLine { tokens ->
@@ -233,7 +230,7 @@ class DataController extends LoginController {
 				}
 			}
 		}
-		
+
 		stats.finish()
 
 		return true
@@ -324,7 +321,7 @@ class DataController extends LoginController {
 				writeCSV(writer, entry.getBaseTag().getDescription())
 			else
 				writeCSV(writer, entry.getTag().getDescription())
-			
+
 			writer.write("\n")
 		}
 
@@ -353,7 +350,7 @@ class DataController extends LoginController {
 	def deleteGhostEntry() {
 		deleteGhostEntryData()
 	}
-	
+
 	def deleteGhostEntryData() {
 		debug "DataController.deleteGhostEntryData() params:" + params
 
@@ -361,7 +358,7 @@ class DataController extends LoginController {
 		def entry = Entry.get(Long.parseLong(params.entryId))
 
 		Map result = Entry.canDelete(entry, user)
-		
+
 		if (result.canDelete) {
 			renderJSONGet(deleteGhostEntryHelper(params))
 		} else {
@@ -369,7 +366,7 @@ class DataController extends LoginController {
 			return
 		}
 	}
-	
+
 	private def deleteGhostEntryHelper(Map params) {
 		def entry = Entry.get(Long.parseLong(params.entryId))
 		def allFuture = params.all?.equals("true") ? true : false
@@ -387,7 +384,7 @@ class DataController extends LoginController {
 	}
 
 
-	def getListData() {
+	def getListData(Boolean respondAsMap) {
 		debug "DataController.getListData() userId:" + params.userId + " date: " + params.date + " timeZoneName:" + params.timeZoneName
 
 		def user = userFromIdStr(params.userId)
@@ -422,9 +419,17 @@ class DataController extends LoginController {
 		debug "DataController.getListData() Returning entries "+entries.dump()
 		// skip continuous repeat entries with entries within the usage threshold
 
+		/*
+		 * It should always be rendered as a map after mobile app is updated. This is currently needed to backward
+		 * support the mobile code.
+		 */
+		if (respondAsMap) {
+			renderJSONGet([entries: entries, deviceEntryStates: user.settings.getDeviceEntryStates()])
+			return
+		}
 		renderJSONGet(entries)
 	}
-	
+
 	def getInterestTagsData() {
 		debug "DataController.getInterestTagsData() userId:" + params.userId
 
@@ -441,7 +446,7 @@ class DataController extends LoginController {
 
 		renderJSONGet([interestTags:tags])
 	}
-	
+
 	def addInterestTagData() {
 		debug "DataController.addInterestTagData() userId:" + params.userId + ", tagName: " + params.tagName
 
@@ -451,7 +456,7 @@ class DataController extends LoginController {
 			renderStringGet(AUTH_ERROR_MESSAGE)
 			return
 		}
-		
+
 		if (!params.tagName) {
 			debug "no tag name specified"
 			renderStringGet("No tag name specified")
@@ -459,7 +464,7 @@ class DataController extends LoginController {
 		}
 
 		user.addInterestTag(Tag.look(params.tagName.toLowerCase()))
-		
+
 		if (Utils.save(user, true))  {
 			debug "Successfully added tag"
 			renderJSONGet([interestTags:user.fetchInterestTagsJSON()])
@@ -468,7 +473,7 @@ class DataController extends LoginController {
 			renderStringGet("Error adding interest tag")
 		}
 	}
-	
+
 	def updateInterestTagData() {
 		debug "DataController.updateInterestTagData() userId:" + params.userId + ", oldTagName: " + params.oldTagName + ", newTagName: " + params.newTagName
 
@@ -478,16 +483,16 @@ class DataController extends LoginController {
 			renderStringGet(AUTH_ERROR_MESSAGE)
 			return
 		}
-		
+
 		if ((!params.oldTagName) || (!params.newTagName)) {
 			debug "no tag name specified"
 			renderStringGet("No tag name specified")
 			return
 		}
-		
+
 		Tag oldTag = Tag.findByDescription(params.oldTagName.toLowerCase())
 		Tag newTag = Tag.look(params.newTagName.toLowerCase())
-		
+
 		if ((!oldTag) || (!newTag)) {
 			debug "tag not found"
 			renderStringGet("Internal error: tag not found")
@@ -497,7 +502,7 @@ class DataController extends LoginController {
 
 		user.deleteInterestTag(oldTag)
 		user.addInterestTag(newTag)
-		
+
 		if (Utils.save(user, true))  {
 			debug "Successfully updated tag"
 			renderJSONGet([interestTags:user.fetchInterestTagsJSON()])
@@ -506,25 +511,25 @@ class DataController extends LoginController {
 			renderStringGet("Error adding interest tag")
 		}
 	}
-	
+
 	def deleteInterestTagData() {
 		debug "DataController.deleteInterestTagData() userId:" + params.userId + ", tagName: " + params.tagName
- 
+
 		User user = sessionUser()
 		if (user == null) {
 			debug "auth failure"
 			renderStringGet(AUTH_ERROR_MESSAGE)
 			return
 		}
-		
+
 		if (!params.tagName) {
 			debug "no tag name specified"
 			renderStringGet("No tag name specified")
 			return
 		}
-		
+
 		Tag tag = Tag.findByDescription(params.tagName.toLowerCase())
-		
+
 		if (!tag) {
 			debug "tag not found"
 			renderStringGet("Internal error: tag not found")
@@ -533,7 +538,7 @@ class DataController extends LoginController {
 		}
 
 		user.deleteInterestTag(tag)
-		
+
 		if (Utils.save(user, true))  {
 			debug "Successfully removed tag"
 			renderJSONGet([interestTags:user.fetchInterestTagsJSON()])
@@ -542,7 +547,7 @@ class DataController extends LoginController {
 			renderStringGet("Error adding interest tag")
 		}
 	}
-	
+
 	protected def fetchPlotEntries() {
 		def tags = JSON.parse(params.tags)
 		def startDateStr = params.startDate
@@ -556,14 +561,10 @@ class DataController extends LoginController {
 		}
 
 		def plotInfo = [:]
-		
+
 		def plotEntries = Entry.fetchPlotData(sessionUser(), tagIds, startDateStr ? parseDate(startDateStr) : null,
 			endDateStr ? parseDate(endDateStr) : null, new Date(), plotInfo)
-		
-		for (def entry : plotEntries) {
-			
-		}
-		
+
 		return [entries:plotEntries, tagIds:tagIds, unitGroupId:plotInfo.unitGroupId,
 				valueScale:plotInfo.valueScale]
 	}
@@ -578,21 +579,21 @@ class DataController extends LoginController {
 		debug "DataController.getPlotDescData() params:" + params
 
 		User user = sessionUser()
-		
+
 		if (user == null) {
 			debug "auth failure"
 			renderStringGet(AUTH_ERROR_MESSAGE)
 			return
 		}
-		
+
 		def results = fetchPlotEntries()
-		
+
 		def minMax = Entry.fetchTagIdsMinMax(user.getId(), results.tagIds)
-		
+
 		renderDataGet(new JSON([entries:results.entries, min:minMax[0], max:minMax[1],
 				unitGroupId:results.unitGroupId, valueScale:results.valueScale]))
 	}
-	
+
 	protected def fetchSumPlotEntries() {
 		def tags = JSON.parse(params.tags)
 		def startDateStr = params.startDate
@@ -604,35 +605,35 @@ class DataController extends LoginController {
 		}
 
 		def plotInfo = [:]
-		
+
 		def entries = Entry.fetchSumPlotData(sessionUser(), tagIds,
 			startDateStr ? parseDate(startDateStr) : null, endDateStr ? parseDate(endDateStr) : null, new Date(), params.timeZoneName, plotInfo)
-		
+
 		return [entries:entries, tagIds:tagIds, unitGroupId:plotInfo.unitGroupId,
 				valueScale:plotInfo.valueScale]
 	}
 
 	def getSumPlotData() {
 		debug "DataController.getSumPlotData() params:" + params
-		
+
 		renderDataGet(new JSON(fetchSumPlotEntries().entries))
 	}
 
 	def getSumPlotDescData() {
 		debug "DataController.getSumPlotDescData() params:" + params
-		
+
 		User user = sessionUser()
-		
+
 		if (user == null) {
 			debug "auth failure"
 			renderStringGet(AUTH_ERROR_MESSAGE)
 			return
 		}
-		
+
 		def results = fetchSumPlotEntries()
-		
+
 		def minMax = Entry.fetchTagIdsMinMax(user.getId(), results.tagIds)
-		
+
 		renderDataGet(new JSON([entries:results.entries, min:minMax[0], max:minMax[1], unitGroupId:results.unitGroupId,
 				valueScale:results.valueScale]))
 	}
@@ -655,17 +656,21 @@ class DataController extends LoginController {
 
 		Date baseDate = parseDate(params.baseDate)
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
-		
-		def result = doAddEntry(params)
-		if (!result[2]) {
-			
-		}
+
+		List result = doAddEntry(params)
+
 		if (result[0] != null) {
+			AuthenticationStatus authStatus = authFromUserIdStr(params.userId)
+
+			User user = authStatus.user
+
 			renderJSONGet([
 				listEntries(userId, params.timeZoneName, baseDate, currentTime),
 				result[1],
 				result[2]?.getJSONDesc(),
-				result[0].getJSONDesc()
+				result[0].getJSONDesc(),
+				// TODO respond this as map instead of passing data based on index
+				user.settings.getDeviceEntryStates()
 			])
 		} else {
 			renderStringGet('error')
@@ -674,21 +679,25 @@ class DataController extends LoginController {
 
 	def updateEntrySData() { // new API
 		debug("DataController.updateEntrySData() params:" + params)
-		
+
 		Date baseDate = parseDate(params.baseDate)
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
-		
+
 		def (entry, message, oldTagStats, newTagStats) = doUpdateEntry(params)
 		if (entry != null) {
+			User user = sessionUser()
+
 			renderJSONGet([listEntries(userFromId(entry.getUserId()), params.timeZoneName, baseDate, currentTime),
-					oldTagStats?.getJSONDesc(), newTagStats?.getJSONDesc()])
+					oldTagStats?.getJSONDesc(), newTagStats?.getJSONDesc(),
+					// TODO respond this as map instead of passing data based on index
+					user.settings.getDeviceEntryStates()])
 		} else {
 			debug "Error while updating: " + message
 			renderStringGet(message)
 		}
 	}
 
-	def deleteEntrySData() { // new API
+	def deleteEntrySData(Long entryId) { // new API
 		debug "DataController.deleteEntrySData() params:" + params
 
 		def user = sessionUser()
@@ -699,7 +708,7 @@ class DataController extends LoginController {
 			return
 		}
 
-		def entry = Entry.get(params.entryId.toLong());
+		Entry entry = Entry.get(entryId)
 		def userId = entry.getUserId();
 
 		def currentTime = params.currentTime == null ? new Date() : parseDate(params.currentTime)
@@ -716,7 +725,9 @@ class DataController extends LoginController {
 			def tagStats = stats.finish()
 			renderJSONGet([listEntries(sessionUser(), timeZoneName, parseDate(params.displayDate), currentTime),
 				tagStats[0]?.getJSONDesc(),
-				tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null])
+				tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null,
+				// TODO respond this as map instead of passing data based on index
+				user.settings.getDeviceEntryStates()])
 		}
 	}
 
@@ -807,7 +818,7 @@ class DataController extends LoginController {
 		def user = sessionUser()
 		if (user == null)
 			return null
-			
+
 		if (term.equals(ALLAUTOTAGS)) {
 			debug "ALLAUTOTAGS"
 			return getSessionCache("AUTOTAGS*" + term, {
@@ -855,9 +866,9 @@ class DataController extends LoginController {
 		debug "DataController.autocompleteData() params:" + params
 
 		def user = sessionUser()
-		
+
 		Date now
-		
+
 		if (params.currentTime) {
 			now = parseDate(params.currentTime)
 		} else
@@ -950,7 +961,7 @@ class DataController extends LoginController {
 		debug "Trying to load plot data " + params.id
 
 		PlotData plotData = PlotData.get(Long.valueOf(params.id))
-		
+
 		if (plotData.userId != user.id) {
 			renderStringGet('Not authorized to load this graph');
 			return;
@@ -1047,7 +1058,7 @@ class DataController extends LoginController {
 
 		UserGroup group = null
 		Visibility visibility = Visibility.PUBLIC
-		
+
 		if (params.group) {
 			if (params.group == Visibility.PRIVATE.name()) {
 				visibility = Visibility.PRIVATE
@@ -1090,7 +1101,7 @@ class DataController extends LoginController {
 			renderStringGet("You're using an old version of the client; please update to the latest version (reload the browser or update your mobile app).")
 			return
 		}
-		
+
 		def user = sessionUser()
 
 		if (user == null) {
@@ -1110,7 +1121,7 @@ class DataController extends LoginController {
 			renderStringGet('No such graph id ' + params.id)
 			return;
 		}
-		
+
 		def c = DiscussionPost.createCriteria()
 		def results = c {
 			eq("plotDataId", plotDataId)
@@ -1122,11 +1133,11 @@ class DataController extends LoginController {
 			renderStringGet("You do not have authorization to load this graph.")
 			return
 		}
-		
+
 		DiscussionPost post = results[0]
-		
+
 		Discussion discussion = Discussion.get(post.discussionId)
-		
+
 		if (discussionHash != discussion.hash) {
 			debug "auth failure - discussion hash doesn't match"
 			renderStringGet("You do not have authorization to load this graph.")
@@ -1171,35 +1182,6 @@ class DataController extends LoginController {
 		renderStringGet('success')
 	}
 
-	// Use "update" action of "DiscussionController" instead
-	@Deprecated
-	def setDiscussionNameData() {
-		debug "DataController.setDiscussionNameData() params:" + params
-
-		def user = sessionUser()
-
-		if (user == null) {
-			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
-			return
-		}
-
-		debug "Trying to set discussion name " + params.name
-
-		def discussion = Discussion.findByHash(params.discussionHash)
-
-		if (discussion == null) {
-			renderStringGet('No such discussion hash ' + params.discussionHash)
-			return;
-		}
-
-		if (Discussion.update(discussion, params, user)) {
-			renderStringGet('success')
-		} else {
-			renderStringGet('Failed to update discussion name')
-		}
-	}
-
 	def createSingleHelpEntrysData() {
 		debug("DataController.createSingleHelpEntrysData() params:" + params)
 
@@ -1216,9 +1198,9 @@ class DataController extends LoginController {
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
 		def parsedEntry = getParsedEntry(params, user)
 		def amount = parsedEntry.amounts[0]
-		if (parsedEntry.tag?.description?.contains("cannot understand what you typed") || 
+		if (parsedEntry.tag?.description?.contains("cannot understand what you typed") ||
 				(parsedEntry.baseTag.description == "sleep" && parsedEntry.amounts[0].durationType != DurationType.END)) {
-			renderJSONGet([success: false, message: parsedEntry.baseTag?.description == "sleep" ? 
+			renderJSONGet([success: false, message: parsedEntry.baseTag?.description == "sleep" ?
 					"You must enter a time duration, like 'sleep 8 hours 10 mins'" : "Can not understand what you typed"])
 			return
 		}
@@ -1246,7 +1228,7 @@ class DataController extends LoginController {
 		if (session.showHelp) {
 			session.showHelp = null
 		}
-		
+
 		String userIdStr = sessionUser().id.toString()
 
 		List entries = []
@@ -1257,7 +1239,7 @@ class DataController extends LoginController {
 		} else {
 			entries = params['entries[]']
 		}
-		
+
 		boolean operationSuccess = true;
 		String messageCode = "default.create.label"
 		List messageArgs = ["Entries"]
@@ -1316,7 +1298,7 @@ class DataController extends LoginController {
 			}
 		}
 		JSON.use("jsonDate") {
-			renderJSONPost([success: operationSuccess, createdEntries: createdEntries, 
+			renderJSONPost([success: operationSuccess, createdEntries: createdEntries,
 				message: g.message(code: messageCode, args: messageArgs)])
 		}
 	}
@@ -1332,7 +1314,7 @@ class DataController extends LoginController {
 		if (params.searchString) {
 			params.max = params.max ? Math.min(params.int('max'), 50) : 4
 			List searchResults = User.withCriteria {
-				projections{
+				projections {
 					property("username")
 					property("name")
 					property("id")
@@ -1365,18 +1347,6 @@ class DataController extends LoginController {
 		} else {
 			renderJSONGet([success: false])
 		}
-	}
-
-	def deleteDiscussionData() {
-		Discussion discussion = Discussion.get(params.discussionHash)
-		if (discussion == null) {
-			debug "DiscussionId not found: " + params.discussionHash
-			renderJSONGet([success: false, message: "That discussion topic no longer exists."])
-			return
-		}
-		Map result = Discussion.delete(discussion, sessionUser())
-		renderJSONGet(result)
-		return
 	}
 
 	def saveSurveyData() {
@@ -1416,11 +1386,40 @@ class DataController extends LoginController {
 	def getSprintParticipantsData(int offset, int max) {
 		Sprint sprint = Sprint.findByHash(params.id)
 		if (!sprint) {
-			renderJSONGet([success: false, message: g.message(code: "default.not.found.message",                                             
+			renderJSONGet([success: false, message: g.message(code: "default.not.found.message",
 					args: ["sprint", params.id])])
 			return
 		}
 
 		renderJSONGet([success: true, participants: sprint.getParticipants(max, offset)])
+	}
+
+	def saveDeviceEntriesStateData(Boolean isCollapsed, String device) {
+		User user = sessionUser()
+		log.debug "Save collapse/expand state of device entries for $user with $params"
+
+		if (!user) {
+			log.warn "No logged in user found"
+			return
+		}
+
+		ThirdParty thirdPartyDevice
+
+		try {
+			thirdPartyDevice = ThirdParty.lookup(device)
+
+			if (isCollapsed) {
+				user.settings.collapseDeviceEntries(thirdPartyDevice)
+			} else {
+				user.settings.expandDeviceEntries(thirdPartyDevice)
+			}
+
+			Utils.save(user, true)
+			renderJSONPost([success: true])
+		} catch (IllegalArgumentException e) {
+			renderJSONPost([success: false, message: e.message])
+		} catch(e) {
+			renderJSONPost([success: false, message: e.message])
+		}
 	}
 }

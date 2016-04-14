@@ -219,3 +219,31 @@ function showSpinner(spinner, promise) {
 		$element.find('.fa.fa-spin').remove();
 	});
 }
+
+/**
+ * Move Cursor To End of Textarea or Input
+ * @returns {*}
+ * https://css-tricks.com/snippets/jquery/move-cursor-to-end-of-textarea-or-input/
+ */
+jQuery.fn.putCursorAtEnd = function() {
+	return this.each(function() {
+		$(this).focus();
+
+		// If this function exists
+		if (this.setSelectionRange) {
+			// Then use it (Doesn't work in IE)
+
+			// Double the length because Opera is inconsistent about whether a carriage return is one character or two
+			var len = $(this).val().length * 2;
+
+			this.setSelectionRange(len, len);
+		} else {
+			// Otherwise replace the contents with itself (Doesn't work in Google Chrome)
+			$(this).val($(this).val());
+		}
+
+		// Scroll to the bottom, in case we're in a tall textarea
+		// (Necessary for Firefox and Google Chrome)
+		this.scrollTop = 999999;
+	});
+};
