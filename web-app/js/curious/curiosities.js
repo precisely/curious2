@@ -408,10 +408,10 @@ function initCuriosities() {
 			if (data.length <= 0 && pageNumber && pageNumber == 1) {
 				if (isMobile) {
 					App.pageView.getCurrentView().addListItemsToScrollView([]);
-				} else {
+				}/* else {
 					$('#curiosity-explanation-card').remove();
 					showExplanationCardCuriosity();
-				}
+				}*/
 			}
 			for (var i=0; i < data.length; i++) {
 				// Aliases for readability.

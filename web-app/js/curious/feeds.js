@@ -524,16 +524,22 @@ $(document).ready(function() {
 			}
 
 			var data = extractDiscussionNameAndPost(value);
-			var questionType = ' #' + $(this).data('type');
-			data.name += questionType;
+			//var questionType = ' #' + $(this).data('type');
+			var questionType = $(this).data('type');
+			data.name = !questionType ? data.name : (data.name + ' #' + questionType);
+			//data.name += questionType;
 
 			// See base.js for implementation details of $.serializeObject()
-			var params = {
+			var params = $('#create-discussion').serializeObject();
+			params.name = data.name;
+			params.discussionPost = data.post;
+
+			/*var params = {
 				name: data.name,
 				discussionPost: data.post,
 				visibility: 'public',
 				group: ''
-			};
+			};*/
 
 			queuePostJSON('Creating discussion', '/api/discussion', getCSRFPreventionObject('createDiscussionDataCSRF', params),
 					function(data) {
@@ -614,12 +620,12 @@ function addAllFeedItems(data, elementId, prepend) {
 
 	elementId = elementId || '#feed';
 
-	$('#sprint-explanation-card').remove();
+	//$('#sprint-explanation-card').remove();
 	if ((location.pathname.indexOf('sprint') > -1) && isHash(["all", "owned", "started"])) {
 		if (!closedExplanationCardTrackathon) {
 			showExplanationCardTrackathon();
-		} else if ((!data.listItems || !data.listItems.length) && !currentSprintsOffset && !isHash(["started"])) {
-			showExplanationCardTrackathon();
+		/*} else if ((!data.listItems || !data.listItems.length) && !currentSprintsOffset && !isHash(["started"])) {
+			showExplanationCardTrackathon();*/
 		}
 	}
 

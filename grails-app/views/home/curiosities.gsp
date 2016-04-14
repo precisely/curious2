@@ -64,6 +64,11 @@
 				&nbsp;
 			</ul>
 			<ul class="col-md-8 search-area disable-select" >
+				<li class="pull-right">
+					<div class="help" style="margin-top: 7px">
+						<i class="fa fa-question"></i>
+					</div>
+				</li>
 				<li>
 						<input id='search-input' class="search-input disable-select"	type="text" name="curiosities-search" placeholder="Search Curiosities" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Search Curiosities'"><input id='search-image' type="image" class="disable-select" src="/images/curiosities/1418886778_685082-Search-128.png" height="25" >
 				</li>
