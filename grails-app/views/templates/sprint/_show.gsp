@@ -72,7 +72,7 @@
 						<i class="nav fa fa-chevron-right fa-4x pull-right" onclick="showMoreParticipants('{{- hash }}')"></i>
 					</div>
 				</div>
-				{{ if (hasAdmin || !disableComments) { }}
+				{{ if (hasAdmin || (hasMember && !disableComments)) { }}
 					<div class="row">
 						<div class="right-content">
 							<div class="new-post">
