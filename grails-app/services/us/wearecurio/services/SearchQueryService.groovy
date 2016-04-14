@@ -133,6 +133,7 @@ class SearchQueryService {
 			case Role.SPRINT_READER:
 				visibility << Model.Visibility.PUBLIC
 				visibility << Model.Visibility.UNLISTED
+				visibility << Model.Visibility.PRIVATE
 				break;
 			case Role.SPRINT_ADMIN:
 			case Role.SPRINT_OWNER:

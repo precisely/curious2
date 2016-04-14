@@ -63,7 +63,7 @@ class SearchQueryServiceActivitySpec extends Specification {
 		"((userId:34 AND visibility:(PUBLIC OR PRIVATE OR UNLISTED OR NEW)) AND _type:sprint AND _exists_:description AND ((NOT _exists_:deleted) OR deleted:false))"
 		
 		578		| [3]				| [4]			| [378]				| [3]						|
-		"(((userId:578 AND visibility:(PUBLIC OR PRIVATE OR UNLISTED OR NEW)) OR (virtualGroupId:3 AND visibility:(PUBLIC OR UNLISTED)) OR (userId:378 AND visibility:PUBLIC)) AND _type:sprint AND _exists_:description AND ((NOT _exists_:deleted) OR deleted:false))"
+		"(((userId:578 AND visibility:(PUBLIC OR PRIVATE OR UNLISTED OR NEW)) OR (virtualGroupId:3 AND visibility:(PUBLIC OR UNLISTED OR PRIVATE)) OR (userId:378 AND visibility:PUBLIC)) AND _type:sprint AND _exists_:description AND ((NOT _exists_:deleted) OR deleted:false))"
 		
 		4637	| [6]				| [8]			| [5]				| []						|
 		"(((userId:4637 AND visibility:(PUBLIC OR PRIVATE OR UNLISTED OR NEW)) OR (userId:5 AND visibility:PUBLIC)) AND _type:sprint AND _exists_:description AND ((NOT _exists_:deleted) OR deleted:false))"

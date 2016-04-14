@@ -36,6 +36,8 @@ class EmailService {
 
     void send(String toString, String subjectString, String bodyString) {
 		log.debug "Sending email: " + toString + ", " + subjectString
+		if (Environment.current != Environment.PRODUCTION)
+			return
 		sendMail {
 			from "curious@wearecurio.us"
 			to toString
@@ -46,6 +48,8 @@ class EmailService {
 
     void send(String fromString, String toString, String subjectString, String bodyString) {
 		log.debug "Sending email: " + fromString + ", " + toString + ", " + subjectString
+		if (Environment.current != Environment.PRODUCTION)
+			return
 		sendMail {
 			from fromString
 			to toString

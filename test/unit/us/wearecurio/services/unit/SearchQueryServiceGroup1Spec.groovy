@@ -66,7 +66,7 @@ class SearchQueryServiceGroup1Spec extends Specification {
 		null
 		
 		578		| "foo"	| [3]				| [4]			| [378]					| [3]					| 
-		"((((virtualGroupId:3 AND visibility:(PUBLIC OR UNLISTED)) OR (userId:378 AND visibility:PUBLIC))) AND (name:(foo) OR description:(foo) OR username:(foo) OR discussionsUsernames:(foo)) AND _type:sprint AND ((NOT _exists_:deleted) OR deleted:false))"
+		"((((virtualGroupId:3 AND visibility:(PUBLIC OR UNLISTED OR PRIVATE)) OR (userId:378 AND visibility:PUBLIC))) AND (name:(foo) OR description:(foo) OR username:(foo) OR discussionsUsernames:(foo)) AND _type:sprint AND ((NOT _exists_:deleted) OR deleted:false))"
 		
 		4637	| "foo" | [6]				| [8]			| [5]					| []					| 
 		"(((userId:5 AND visibility:PUBLIC)) AND (name:(foo) OR description:(foo) OR username:(foo) OR discussionsUsernames:(foo)) AND _type:sprint AND ((NOT _exists_:deleted) OR deleted:false))"
