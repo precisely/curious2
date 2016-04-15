@@ -54,7 +54,7 @@ class Twenty3AndMeDataService extends DataService {
 			InvalidAccessTokenException {
 		Token tokenInstance = account.tokenInstance
 		JSONObject userInfo = getUserProfile(tokenInstance)
-		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
+		startDate = startDate ?: account.fetchLastData() ?: earlyStartDate
 
 		userInfo["profiles"]?.each { profile ->
 			String profileId = profile.id

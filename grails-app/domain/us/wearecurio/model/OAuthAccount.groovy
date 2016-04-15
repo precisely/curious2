@@ -14,9 +14,10 @@ class OAuthAccount {
 	String refreshToken
 	Date expiresOn
 	/**
-	 * Initializing the value with current time since we only need data after the user links a device/account.
+	 * Initializing lastData with current time minus two months, for retroactive data
 	 */
 	Date lastPolled = new Date()
+	Date lastData = new Date() - 61
 	Date lastSubscribed
 	Integer timeZoneId
 
@@ -28,6 +29,7 @@ class OAuthAccount {
 		lastSubscribed(nullable:true)
 		refreshToken nullable: true
 		timeZoneId nullable: true
+		lastData nullable: true
 	}
 	
 	static mapping = {
@@ -86,9 +88,20 @@ class OAuthAccount {
 		removeAccessToken()
 		Utils.save(this, true)
 	}
+	
+	Date fetchLastData() {
+		if (lastData == null)
+			return new Date() - 61
+		return lastData
+	}
 
-	void markLastPolled() {
-		this.lastPolled = new Date()
-		Utils.save(this, true)
+	void markLastPolled(Date lastData, Date lastPolled = null) {
+		if (this.lastData == null)
+			this.lastData = lastData
+		else if (lastData != null && lastData > this.lastData)
+			this.lastData = lastData
+		this.lastPolled = lastPolled ?: new Date()
+		this.merge()
+		Utils.save(this, false)
 	}
 }

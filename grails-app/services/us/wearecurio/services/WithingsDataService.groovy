@@ -166,22 +166,16 @@ class WithingsDataService extends DataService {
 			}
 		}
 
-		if(account.lastPolled) {
-			getDataActivityMetrics(account, account.lastPolled - 1, new Date() + 1)
+		if (account.lastData != null) {
+			getDataActivityMetrics(account, account.lastData - 1, new Date() + 1)
 		} else {
 			getDataActivityMetrics(account, startDate - 1, new Date() + 1)
 		}
 
-		if (serverTimestamp > 0) {
-			DatabaseService.retry(account) {
-				account.setLastPolled(new Date(serverTimestamp))
-				account.merge()
-				Utils.save(account, true)
-			}
-		}
-		
 		stats.finish()
 
+		account.markLastPolled(stats.lastDate, serverTimestamp > 0 ? new Date(serverTimestamp) : null)
+		
 		[success: true]
 	}
 	
@@ -281,6 +275,8 @@ class WithingsDataService extends DataService {
 		
 		stats.finish()
 		
+		account.markLastPolled(stats.lastDate)
+		
 		[success: true]
 	}
 
@@ -353,6 +349,8 @@ class WithingsDataService extends DataService {
 		
 		stats.finish()
 
+		account.markLastPolled(stats.lastDate)
+		
 		[success: true]
 	}
 

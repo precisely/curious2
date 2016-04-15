@@ -59,47 +59,47 @@ class HumanDataService {
 
 	JSONArray getDataForActivities(OAuthAccount account) {
 		String url = String.format(BASE_URL, "activities")
-		doWithURL(account.tokenInstance, url, "Activity", [createdSince: account.lastPolled])
+		doWithURL(account.tokenInstance, url, "Activity", [createdSince: account.fetchLastData()])
 	}
 
 	JSONArray getDataForBloodGlucode(OAuthAccount account) {
 		String url = String.format(BASE_URL, "blood_glucose/readings")
-		doWithURL(account.tokenInstance, url, "Blood Glucose", [createdSince: account.lastPolled])
+		doWithURL(account.tokenInstance, url, "Blood Glucose", [createdSince: account.fetchLastData()])
 	}
 
 	JSONArray getDataForBloodPressure(OAuthAccount account) {
 		String url = String.format(BASE_URL, "blood_pressure/readings")
-		doWithURL(account.tokenInstance, url, "Blood Pressure", [createdSince: account.lastPolled])
+		doWithURL(account.tokenInstance, url, "Blood Pressure", [createdSince: account.fetchLastData()])
 	}
 
 	JSONArray getDataForBodyFat(OAuthAccount account) {
 		String url = String.format(BASE_URL, "body_fat/readings")
-		doWithURL(account.tokenInstance, url, "Body Fat", [createdSince: account.lastPolled])
+		doWithURL(account.tokenInstance, url, "Body Fat", [createdSince: account.fetchLastData()])
 	}
 
 	JSONArray getDataForBodyMassIndex(OAuthAccount account) {
 		String url = String.format(BASE_URL, "bmi/readings")
-		doWithURL(account.tokenInstance, url, "Body Mass Index", [createdSince: account.lastPolled])
+		doWithURL(account.tokenInstance, url, "Body Mass Index", [createdSince: account.fetchLastData()])
 	}
 
 	JSONArray getDataForHeartRate(OAuthAccount account) {
 		String url = String.format(BASE_URL, "heart_rate/readings")
-		doWithURL(account.tokenInstance, url, "Heart Rate", [createdSince: account.lastPolled])
+		doWithURL(account.tokenInstance, url, "Heart Rate", [createdSince: account.fetchLastData()])
 	}
 
 	JSONArray getDataForHeight(OAuthAccount account) {
 		String url = String.format(BASE_URL, "height/readings")
-		doWithURL(account.tokenInstance, url, "Height", [createdSince: account.lastPolled])
+		doWithURL(account.tokenInstance, url, "Height", [createdSince: account.fetchLastData()])
 	}
 
 	JSONArray getDataForSleeps(OAuthAccount account) {
 		String url = String.format(BASE_URL, "sleeps")
-		doWithURL(account.tokenInstance, url, "Sleeps", [createdSince: account.lastPolled])
+		doWithURL(account.tokenInstance, url, "Sleeps", [createdSince: account.fetchLastData()])
 	}
 
 	JSONArray getDataForWeight(OAuthAccount account) {
 		String url = String.format(BASE_URL, "weight/readings")
-		doWithURL(account.tokenInstance, url, "Weight", [createdSince: account.lastPolled])
+		doWithURL(account.tokenInstance, url, "Weight", [createdSince: account.fetchLastData()])
 	}
 
 	JSONObject getUserProfile(OAuthAccount account) {
@@ -147,7 +147,7 @@ class HumanDataService {
 		int amountPrecision = 2
 		long curiousUserId = account.userId
 
-		Date lastPolled = new Date()
+		Date lastPolled = account.lastPolled ?: new Date() - 61
 		String comment, description, setName, source, units
 
 		Integer timeZoneIdNumber = account.timeZoneId ?: User.getTimeZoneId(curiousUserId)
@@ -333,7 +333,8 @@ class HumanDataService {
 		
 		stats.finish()
 
-		account.lastPolled = lastPolled
+		account.markLastPolled(stats.lastDate)
+
 		Utils.save(account, true)
 		[success: success]
 	}

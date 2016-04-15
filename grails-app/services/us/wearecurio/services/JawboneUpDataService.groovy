@@ -72,7 +72,7 @@ class JawboneUpDataService extends DataService {
 			throw new IllegalArgumentException("No OAuthAccount instance was passed")
 		}
 
-		startDate = startDate ?: account.lastPolled
+		startDate = startDate ?: account.fetchLastData()
 		endDate = endDate ?: new Date()
 
 		getDataBody(account, startDate, endDate, refreshAll)
@@ -143,6 +143,8 @@ class JawboneUpDataService extends DataService {
 		}
 
 		stats.finish()
+		
+		account.markLastPolled(stats.lastDate)
 
 		if (bodyData["links"] && bodyData["links"]["next"]) {
 			log.debug "Processing get sleep data for paginated URL"
@@ -285,6 +287,8 @@ class JawboneUpDataService extends DataService {
 		}
 
 		stats.finish()
+
+		account.markLastPolled(stats.lastDate)
 
 		if (moveData["links"] && moveData["links"]["next"]) {
 			log.debug "Processing get moves data for paginated URL"
@@ -444,6 +448,8 @@ class JawboneUpDataService extends DataService {
 		}
 
 		stats.finish()
+
+		account.markLastPolled(stats.lastDate)
 
 		if (sleepData["links"] && sleepData["links"]["next"]) {
 			log.debug "Processing get sleep data for paginated URL"

@@ -155,7 +155,7 @@ class MovesDataService extends DataService {
 			}
 		}
 
-		account.markLastPolled()
+		account.markLastPolled(stats.lastDate)
 		stats.finish()
 
 		return [success: true]
