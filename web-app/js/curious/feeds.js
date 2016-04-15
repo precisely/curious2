@@ -613,6 +613,7 @@ function addAllFeedItems(data, elementId, prepend) {
 
 	if ((location.pathname.indexOf('sprint') > -1) && isHash(["all", "owned", "started"])) {
 		if (!closedExplanationCardTrackathon) {
+			$('#sprint-explanation-card').remove();
 			showExplanationCardTrackathon();
 		}
 	}

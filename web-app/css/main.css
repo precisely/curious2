@@ -1552,7 +1552,7 @@ body.tags-displayed .floating-column {
 }
 
 .input-affordance.left-addon {
-	margin-top: 13px;
+	margin-top: 9px;
 }
 
 .user-name-radio .input-affordance input[type=radio]:checked + label {
@@ -2575,6 +2575,13 @@ div.graph-header-container .red-header {
 }
 .new-post {
 	margin-bottom: 7px;
+}
+.new-post .new-post-container {
+	display: inline-block;
+}
+
+.btn-discussion {
+	margin: 5px !important;
 }
 
 .btn-discussion, .btn-discussion:focus {

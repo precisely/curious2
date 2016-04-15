@@ -76,12 +76,16 @@
 					<div class="row">
 						<div class="right-content">
 							<div class="new-post">
-								<label>New post:&nbsp;</label>
-								<button class="btn btn-discussion" style="margin: 0px;" onclick="location.href='/home/graph?group={{- virtualGroupName}}'">Chart of your data</button>
-								<button class="btn btn-discussion" style="margin: 0px"
-									onclick="$('#create-discussion').show('fast').find('input').prop('placeholder', 'New question or discussion topic?')">
-									Create a new trackathon discussion topic
-								</button>
+								<div class="new-post-container">
+									<label>New post:&nbsp;</label>
+								</div>
+								<div class="new-post-container">
+									<button class="btn btn-discussion" onclick="location.href='/home/graph?group={{- virtualGroupName}}'">Chart of your data</button>
+									<button class="btn btn-discussion"
+										onclick="$('#create-discussion').show('fast').find('input').prop('placeholder', 'New question or discussion topic?')">
+										Create a new trackathon discussion topic
+									</button>
+								</div>
 								<form id="create-discussion" class="hide">
 									<div class="input-affordance left-addon">
 										<i class="fa fa-pencil"></i>
