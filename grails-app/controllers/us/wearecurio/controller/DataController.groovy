@@ -129,7 +129,7 @@ class DataController extends LoginController {
 		EntryStats stats = new EntryStats(userId)
 
 		// activate repeat entry if it has a repeat type
-		if (entry.getRepeatType() != null && entry.getRepeatType().isContinuous()) {
+		if (entry.getRepeatType() != null && entry.getRepeatType().isContinuous() && !p.bookmarkEdit) {
 			debug "Activating continuous entry " + entry
 			Entry newEntry = entry.activateContinuousEntry(baseDate, currentTime, timeZoneName, stats)
 			if (newEntry != null) {
@@ -147,7 +147,7 @@ class DataController extends LoginController {
 			debug "Parse error"
 			stats.finish()
 			return [null, 'Cannot interpret entry text.', null, null];
-		} else if (m['repeatType']?.isContinuous() && (!wasContinuous)) {
+		} else if (m['repeatType']?.isContinuous() && (!wasContinuous) && !p.bookmarkEdit) {
 			// if creating a new continuous (button) entry and the previous entry was not continuous, create a new entry instead
 			entry = Entry.create(userId, m, stats)
 		} else if (entry != null) {

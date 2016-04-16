@@ -150,7 +150,7 @@ class Discussion {
 		Discussion discussion = create(user, name, createTime, visibility)
 		group.addDiscussion(discussion)
 		group.updateWriter(user)
-		
+
 		return discussion
 	}
 
@@ -207,17 +207,29 @@ class Discussion {
 			discussion.setUpdated(new Date())
 
 			if (params.group) {
-				UserGroup group = UserGroup.lookup(params.group)
-				/*
-				 * Only allow creating a discussion if the author is admin of the group or the author has write permission to
-				 * the group and the group is not read only.
-				 */
-				if (!group || !group.hasAdmin(user) && (group.isReadOnly || !group.hasWriter(user))) {
-					throw new CreationNotAllowedException()
-				}
+				if (params.group == "PRIVATE") {
+					discussion.visibility = Visibility.PRIVATE
+					GroupMemberDiscussion.deleteAll(discussion.id)
+				} else {
+					UserGroup group
+					if (params.group == "PUBLIC") {
+						discussion.visibility = Visibility.PUBLIC
+						group = UserGroup.lookup("curious")
+					} else {
+						group = UserGroup.lookup(params.group)
+					}
 
-				group.addDiscussion(discussion)
-				group.updateWriter(user)
+					/*
+					 * Only allow creating a discussion if the author is admin of the group or the author has write permission to
+					 * the group and the group is not read only.
+					 */
+					if (!group || !group.hasAdmin(user) && (group.isReadOnly || !group.hasWriter(user))) {
+						throw new CreationNotAllowedException()
+					}
+
+					group.addDiscussion(discussion)
+					group.updateWriter(user)
+				}
 			}
 
 			Utils.save(discussion, true)
@@ -257,37 +269,35 @@ class Discussion {
 		if (id) SearchService.get().index(this)
 	}
 
-    boolean createVirtualObjects() {
-        if (this.virtualUserGroupIdFollowers != null &&
-            this.virtualUserGroupIdFollowers > 0 &&
-            this.virtualUserId != null &&
-            this.virtualUserId > 0
-           ) {
-            return false
-        }
+	boolean createVirtualObjects() {
+		if (this.virtualUserGroupIdFollowers != null &&
+		this.virtualUserGroupIdFollowers > 0 &&
+		this.virtualUserId != null &&
+		this.virtualUserId > 0
+		) {
+			return false
+		}
 
-        UserGroup vUGFollowers
-        if (this.virtualUserGroupIdFollowers == null ||
-            this.virtualUserGroupIdFollowers <= 0
-           ) {
-            vUGFollowers = UserGroup.createVirtual(
-                "virtual discussion followers group for '${(name?:"anonymous")}'"
-            )
-            this.virtualUserGroupIdFollowers = vUGFollowers.id
-        } else {
-            vUGFollowers = UserGroup.get(this.virtualUserGroupIdFollowers)
-        }
+		UserGroup vUGFollowers
+		if (this.virtualUserGroupIdFollowers == null ||
+				this.virtualUserGroupIdFollowers <= 0) {
+			vUGFollowers = UserGroup.createVirtual(
+					"virtual discussion followers group for '${(name?:"anonymous")}'")
+			this.virtualUserGroupIdFollowers = vUGFollowers.id
+		} else {
+			vUGFollowers = UserGroup.get(this.virtualUserGroupIdFollowers)
+		}
 
-        if (this.virtualUserId == null || this.virtualUserId <= 0) {
-            this.virtualUserId = User.createVirtual().id
-        }
-        vUGFollowers.addAdmin(this.virtualUserId)
-        //virtual user only admins group, do not want to be follower
-        vUGFollowers.removeReader(this.virtualUserId)
-        vUGFollowers.removeWriter(this.virtualUserId)
+		if (this.virtualUserId == null || this.virtualUserId <= 0) {
+			this.virtualUserId = User.createVirtual().id
+		}
+		vUGFollowers.addAdmin(this.virtualUserId)
+		//virtual user only admins group, do not want to be follower
+		vUGFollowers.removeReader(this.virtualUserId)
+		vUGFollowers.removeWriter(this.virtualUserId)
 
 		return true
-    }
+	}
 
 	boolean isPublic() {
 		return getIsPublic()
