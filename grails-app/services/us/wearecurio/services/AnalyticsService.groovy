@@ -20,6 +20,8 @@ import org.apache.commons.logging.LogFactory
 
 import grails.util.Environment
 
+import grails.util.GrailsUtil
+
 class AnalyticsService {
 
 	private static DEBUG = false
@@ -172,7 +174,19 @@ class AnalyticsService {
 			prepareUser(childTask)
 			childTask.startProcessing()
 		} catch(e) {
-			e.printStackTrace()
+			ByteArrayOutputStream os = new ByteArrayOutputStream()
+			e.printStackTrace(new PrintStream(os))
+			String output = os.toString("UTF8")
+			
+		   	def messageBody = "Error while executing Curious analytics:\n" + output
+			def messageSubject = "CURIOUS ANALYTICS ERROR: " + GrailsUtil.environment
+			EmailService.get().sendMail {
+				to "server@wearecurio.us"
+				from "server@wearecurio.us"
+				subject messageSubject
+				body messageBody
+			}
+			
 			return false
 		} finally {
 			AnalyticsTask.decBusy()
