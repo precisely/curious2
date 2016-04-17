@@ -90,6 +90,14 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
+	void testTwitterAuth() {
+		Token.getMetaClass().getRawResponse = { -> return "user_id=123" }
+		controller.session["twitter:oasAccessToken"] = 'some-token'
+		controller.twitterAuth()
+		assert OAuthAccount.countByTypeId(ThirdParty.TWITTER) == 1
+	}
+
+	@Test
 	void testFitbitAuth() {
 		controller.fitBitDataService = [
 			getUserProfile: { token->
