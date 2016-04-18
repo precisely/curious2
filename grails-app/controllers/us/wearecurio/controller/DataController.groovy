@@ -1,5 +1,6 @@
 package us.wearecurio.controller
 
+import us.wearecurio.security.NoAuth
 import grails.converters.JSON
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -328,6 +329,7 @@ class DataController extends LoginController {
 		writer.flush()
 	}
 
+	@NoAuth
 	def getPeopleData() {
 		debug "DataController.getPeopleData"
 
@@ -1091,6 +1093,7 @@ class DataController extends LoginController {
 		renderJSONPost([success: true, discussionHash: discussion.hash])
 	}
 
+	@NoAuth
 	def loadSnapshotDataId() {
 		debug "DataController.loadSnapshotDataId() params:" + params
 
