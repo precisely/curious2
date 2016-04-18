@@ -90,8 +90,20 @@ class DiscussionController extends LoginController {
 		}
 
 		Map model = discussion.getJSONDesc()
-		model.putAll([notLoggedIn: user ? false : true, userId: user?.id, associatedGroups: [],		// Public discussion
-				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion), isFollowing: discussion.isFollower(user?.id),
+		boolean notLoggedIn
+		int userId
+		String username
+		if (user) {
+			notLoggedIn = false
+			userId = user.id
+			username = user.getUsername()
+		} else {
+			notLoggedIn = true
+			userId = null
+			username = "(anonymous)"
+		}
+		model.putAll([notLoggedIn: notLoggedIn, userId: userId, associatedGroups: [],		// Public discussion
+				username: username, isAdmin: UserGroup.canAdminDiscussion(user, discussion), isFollowing: discussion.isFollower(userId),
 				templateVer: urlService.template(request), discussionHash: discussion.hash, canWrite: UserGroup.canWriteDiscussion(user, discussion)])
 
 		/*if (user) {
@@ -212,7 +224,7 @@ class DiscussionController extends LoginController {
 		}
 		String message = params.message ?: session["tweetMessage"]
 		int messageLength = params.messageLength ? Integer.parseInt(params.messageLength) : session["messageLength"]
-		// If sent message is longer than 140 with url shortened to 23 characters.
+		// If sent message is longer than 140 with url shortened to 23 characters, then return with error message.
 		if (!message || messageLength > 140) {
 			session["tweetMessage"] == null
 			String messageCode = message ? "twitter.long.message" : "twitter.empty.message"

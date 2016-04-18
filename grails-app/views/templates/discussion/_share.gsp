@@ -11,10 +11,10 @@
 				<button class="close" data-dismiss="alert" aria-label="Close">&times;</button>
 				<span class="message"></span>
 			</div>
-			<div class="modal-body">
+			<div class="modal-body text-center">
 				<div class="row share-options">
 					<div class="col-sm-5 col-xs-4 option">
-						<div class="option-container">
+						<div class="option-container pull-right text-center" style="display:inline-block">
 							<button onclick="shareMessage('copy')" class="clip_button">
 								<i class="fa fa-link fa-2x"></i>
 							</button>
@@ -22,7 +22,7 @@
 						</div>
 					</div>
 					<div class="col-sm-2 col-xs-4 option">
-						<div class="option-container">
+						<div class="option-container text-center inline-block">
 							<button onclick="shareMessage('facebook')">
 								<i class="fa fa-facebook fa-2x"></i>
 							</button>
@@ -30,7 +30,7 @@
 						</div>
 					</div>
 					<div class="col-sm-5 col-xs-4 option">
-						<div class="option-container">
+						<div class="option-container pull-left text-center inline-block">
 							<button onclick="shareMessage('twitter')">
 								<i class="fa fa-twitter fa-2x"></i>
 							</button>

@@ -57,7 +57,7 @@
 									data-discussion-title="{{- discussionData.name }}">
 								<img src="/images/share.png" alt="share" data-target="#share-modal"
 										data-share-url="{{- serverURL }}/home/social/discussions/{{- discussionData.hash }}"
-									 data-discussion-title="{{- discussionData.name }}">Share
+										data-discussion-title="{{- discussionData.name }}">Share
 							</button>
 						{{ } }}
 						<button onclick="toggleCommentsList('{{- discussionData.hash }}')">

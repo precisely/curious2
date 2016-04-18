@@ -4922,7 +4922,7 @@ input.cropit-image-zoom-input {
 }
 
 #share-modal {
-    min-width: 350px;
+	min-width: 350px;
 	margin-top: 15%;
 	-ms-word-wrap: break-word;
 	word-wrap: break-word;
@@ -4952,21 +4952,6 @@ input.cropit-image-zoom-input {
 .share-options .option {
 	display: inline;
 
-}
-
-.option-container {
-	display: inline-block;
-}
-.share-options .option:nth-child(1) .option-container {
-	float: right;
-}
-
-.share-options .option:nth-child(3)  .option-container{
-	float: left;
-}
-
-.option-container {
-	text-align: center;
 }
 
 #message-link {
@@ -5033,58 +5018,6 @@ input.cropit-image-zoom-input {
 	background-color: #FF935F;
 	border: none;
 	border-radius: 2px;
-}
-.tooltip {
-	position: absolute;
-	z-index: 1070;
-	display: block;
-	font-size: 12px;
-	line-height: 1.4;
-	visibility: visible;
-	filter: alpha(opacity=0);
-	opacity: 0;
-}
-.tooltip.in {
-	filter: alpha(opacity=90);
-	opacity: .9;
-}
-.tooltip.top {
-	padding: 5px 0px;
-	margin-top: -3px;
-}
-.tooltip.bottom {
-	padding: 5px 0px;
-	margin-top: 3px;
-}
-.tooltip-inner {
-	max-width: 200px;
-	padding: 3px 8px;
-	color: #fff;
-	text-align: center;
-	text-decoration: none;
-	background-color: #000;
-	border-radius: 4px;
-}
-.tooltip-arrow {
-	position: absolute;
-	width: 0px;
-	height: 0px;
-	border-color: transparent;
-	border-style: solid;
-}
-.tooltip.top .tooltip-arrow {
-	bottom: 0px;
-	left: 50%;
-	margin-left: -5px;
-	border-width: 5px 5px 0;
-	border-top-color: #000;
-}
-.tooltip.bottom .tooltip-arrow {
-	top: 0px;
-	left: 50%;
-	margin-left: -5px;
-	border-width: 0 5px 5px;
-	border-bottom-color: #000;
 }
 
 .warning-page .main {

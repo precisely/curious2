@@ -814,8 +814,9 @@ function addEntryToSprint(inputElement, suffix) {
 					if (entries[1] != null) {
 						showAlert(entries[1]);
 					}
-					if (entries[2] != null)
+					if (entries[2] != null) {
 						autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
+					}
 					var addedEntry = entries[3];
 					addTagsToList(addedEntry);
 				}

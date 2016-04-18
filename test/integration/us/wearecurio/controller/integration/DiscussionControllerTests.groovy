@@ -124,7 +124,8 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll(params)
 		controller.session.userId = userId
 		controller.request.method = "POST"
-		OAuthAccount account = new OAuthAccount([accessToken: "some-token", accessSecret: "some-secret", userId: userId, accountId: "some-account", typeId: ThirdParty.TWITTER ])
+		OAuthAccount account = new OAuthAccount([accessToken: "some-token", accessSecret: "some-secret",
+				userId: userId, accountId: "some-account", typeId: ThirdParty.TWITTER])
 		Utils.save(account, true)
 		controller.tweetDiscussion()
 
@@ -140,7 +141,8 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll(params)
 		controller.session.userId = userId
 		controller.request.method = "POST"
-		OAuthAccount account = new OAuthAccount([accessToken: "some-token", accessSecret: "some-secret", userId: userId, accountId: "some-account", typeId: ThirdParty.TWITTER ])
+		OAuthAccount account = new OAuthAccount([accessToken: "some-token", accessSecret: "some-secret",
+				userId: userId, accountId: "some-account", typeId: ThirdParty.TWITTER])
 		Utils.save(account, true)
 		controller.session.tweetMessage = "This is a discussion"
 		controller.tweetDiscussion()

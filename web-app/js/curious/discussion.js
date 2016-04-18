@@ -629,5 +629,6 @@ $(document).on('hidden.bs.modal', function() {
 	$('#share-modal .modal-header h4').text('Share');
 	$('#share-modal .modal-footer').hide();
 	$('#share-modal').modal('hide');
+	$('#share-message-length').css({"color": "#616B6B", "font-weight": "100"});
 });
 
