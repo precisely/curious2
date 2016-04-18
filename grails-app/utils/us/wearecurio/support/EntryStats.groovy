@@ -57,6 +57,10 @@ class EntryStats {
 			alertEdited = true
 	}
 	
+	Date getLastDate() {
+		startDate
+	}
+	
 	ArrayList<TagStats> finish() { // after finalizing all entry creation, call this to update statistics
 		ArrayList<TagStats> tagStats = new ArrayList<TagStats>()
 		

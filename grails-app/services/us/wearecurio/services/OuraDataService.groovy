@@ -58,7 +58,7 @@ class OuraDataService extends DataService {
 		//getDataExercise(account, startDate, endDate, false)
 		//getDataActivity(account, startDate, endDate, false)
 
-		account.markLastPolled()
+		Utils.save(account, true)
 		[success: true]
 	}
 

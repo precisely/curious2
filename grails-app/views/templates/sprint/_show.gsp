@@ -25,8 +25,15 @@
 						<ul>
 							{{ _.each (entries, function(entry) { }}
 								<li class="sprintTag">
-									{{- entry.description }} {{ if (entry.comment) { }}(<i>{{- entry.comment }}</i>){{ } }}
-									<button type="button" class="deleteSprintEntry" data-id="{{- entry.id }}" 
+									{{- entry.description }}
+									{{ if (RepeatType.isRemind(entry.repeatType)) { }}
+										(<i>remind</i>)
+									{{ } else if (RepeatType.isRepeat(entry.repeatType)) { }}
+										(<i>repeat</i>)
+									{{ } else if (RepeatType.isContinuous(entry.repeatType)) { }}
+										(<i>bookmark</i>)
+									{{ } }}
+									<button type="button" class="deleteSprintEntry" data-id="{{- entry.id }}"
 											data-repeat-type="{{- entry.repeatType }}">
 										<i class="fa fa-times-circle"></i>
 									</button>

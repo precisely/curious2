@@ -347,7 +347,8 @@ abstract class DataService {
 				processedOAuthAccounts++
 				
 				Date saveLastPolled = account.lastPolled
-
+				Date saveLastData = account.lastData
+				
 				try {
 					DatabaseService.retry(notification) {
 						if (this.poll(account, notification.date)) {
@@ -365,6 +366,7 @@ abstract class DataService {
 					log.error "Unknown exception thrown during notification processing " + t
 					t.printStackTrace()
 					account.lastPolled = saveLastPolled
+					account.lastData = saveLastData
 					Utils.save(account, true)
 				}
 				return notification
@@ -422,7 +424,7 @@ abstract class DataService {
 
 		OAuthAccount.withTransaction {
 			try {
-				getDataDefault(account, account.lastPolled, null, false)
+				getDataDefault(account, account.fetchLastData(), null, false)
 			} catch (InvalidAccessTokenException e) {
 				log.warn "Token expired while polling for $account"
 				account.clearAccessToken()
@@ -438,7 +440,7 @@ abstract class DataService {
 		OAuthAccount.findAllByTypeId(typeId).each { OAuthAccount account ->
 			DatabaseService.retry(account) {
 				try {
-					getDataDefault(account, account.lastPolled, new Date(), refreshAll)
+					getDataDefault(account, account.fetchLastData(), new Date(), refreshAll)
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while polling account: [$account] for $typeId."
 					account.clearAccessToken()

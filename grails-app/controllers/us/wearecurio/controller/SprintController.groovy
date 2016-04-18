@@ -36,7 +36,7 @@ class SprintController extends LoginController {
 		if (!sprintInstance) {
 			renderJSONPost([success: false, message: g.message(code: "sprint.not.exist")])
 			return
-		} 
+		}
 
 		Sprint.withTransaction { status ->
 			sprintInstance.update(requestData)
@@ -77,9 +77,9 @@ class SprintController extends LoginController {
 		sprintInstanceMap["virtualGroupName"] = sprintInstance.fetchUserGroup().name
 		sprintInstanceMap["hasMember"] = sprintInstance.hasMember(sessionUser().id)
 
-		renderJSONGet([success: true, sprint: sprintInstanceMap, entries: entries, participants: participants, admins: admins, 
+		renderJSONGet([success: true, sprint: sprintInstanceMap, entries: entries, participants: participants, admins: admins,
 			totalParticipants: sprintInstance.getParticipantsCount(), discussions: sprintDiscussions])
-	} 
+	}
 
 	def disableComments(boolean disable, String id) {
 		Sprint sprintInstance = Sprint.findByHash(id)
@@ -97,7 +97,7 @@ class SprintController extends LoginController {
 		}
 
 		sprintInstance.disableComments = disable
-		
+
 		Utils.save(sprintInstance, true)
 
 		String message
@@ -333,7 +333,7 @@ class SprintController extends LoginController {
 		Sprint sprintInstance = Sprint.findByHash(params.id)
 		User currentUser = sessionUser()
 		log.debug "User $currentUser trying to leave sprint[params.id]"
-		
+
 		if (!sprintInstance) {
 			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
 			return
@@ -342,7 +342,7 @@ class SprintController extends LoginController {
 			renderJSONGet([success: false, message: g.message(code: "not.sprint.member")])
 			return
 		}
-		
+
 		Date now = params.now ? parseDate(params.now) : null
 		Date baseDate = Utils.getStartOfDay(now)
 		String timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
@@ -352,7 +352,7 @@ class SprintController extends LoginController {
 		sprintInstance.removeMember(currentUser.id)
 		renderJSONGet([success: true])
 	}
-	
+
 	def join() {
 		Sprint sprintInstance = Sprint.findByHash(params.id)
 		User currentUser = sessionUser()
@@ -379,7 +379,7 @@ class SprintController extends LoginController {
 			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
 			return
 		}
-		
+
 		boolean isMember = sprint.hasMember(currentUser.id)
 		if (!isMember) {
 			renderJSONGet([success: false, message: g.message(code: "not.sprint.member")])
@@ -399,8 +399,8 @@ class SprintController extends LoginController {
 
 			Utils.save(currentUser, true)
 		}
-		
+
 		renderJSONGet([listItems: sprintDiscussions.listItems, success: true, showPostDiscussionBalloon: 
-				showPostDiscussionBalloon, isMember: isMember]);
+				showPostDiscussionBalloon, isMember: isMember])
 	}
 }

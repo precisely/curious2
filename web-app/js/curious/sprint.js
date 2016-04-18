@@ -18,8 +18,8 @@ function showDiscussionData(sprintDiscussions, sprintHash) {
 var offset = 10;
 
 function showPreviousParticipants() {
-	var leftPos = $('#participants-list ul').scrollLeft();                                             
-	$("#participants-list ul").scrollLeft(leftPos - 250); 
+	var leftPos = $('#participants-list ul').scrollLeft();
+	$("#participants-list ul").scrollLeft(leftPos - 250);
 }
 
 function showMoreParticipants(sprintInstance, infiniteScroll) {
@@ -35,7 +35,7 @@ function showMoreParticipants(sprintInstance, infiniteScroll) {
 			if (data.success) {
 				if (data.participants.length > 0) {
 					$.each(data.participants, function(index, participant) {
-						var avatarImage = participant.avatarURL ? '<img src="' + participant.avatarURL + '" alt="avatar" class="participantsAvatar">' : 
+						var avatarImage = participant.avatarURL ? '<img src="' + participant.avatarURL + '" alt="avatar" class="participantsAvatar">' :
 								'<img src="/images/track-avatar.png" alt="avatar" class="participantsAvatar">';
 						$('#participants-list ul li ul').append('<li>' + avatarImage + '<p>' + participant.username + '</p></li>');
 					})
@@ -50,7 +50,7 @@ function showMoreParticipants(sprintInstance, infiniteScroll) {
 				} else {
 					if (infiniteScroll) {
 						infiniteScroll.stop();
-					}	
+					}
 				}
 			} else {
 				showBootstrapAlert($('.alert'), data.message);
@@ -86,8 +86,8 @@ function showMoreDiscussions(sprintHash, infiniteScroll) {
 
 function sprintShow(hash) {
 	queueJSON('Getting sprint details', '/api/sprint/' + hash + '?' + getCSRFPreventionURI('showsprintCSRF') + '&callback=?',
-			function(data) { 
-		if (data.success) { 
+			function(data) {
+		if (data.success) {
 				var sprintInstance = data.sprint;
 				var entries = data.entries;
 				for (var i in entries) {

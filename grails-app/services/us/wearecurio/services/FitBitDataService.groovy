@@ -125,6 +125,8 @@ class FitBitDataService extends DataService {
 		
 		stats.finish()
 		
+		account.markLastPolled(stats.lastDate)
+		
 		[success: true]
 	}
 
@@ -149,7 +151,7 @@ class FitBitDataService extends DataService {
 	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
 			InvalidAccessTokenException {
 		log.debug("FitBitDataService.getDataDefault() account " + account.getId() + " startDate: " + startDate + " refreshAll: " + refreshAll)
-		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
+		startDate = startDate ?: account.fetchLastData() ?: earlyStartDate
 
 		getDataActivities(account, startDate, false)
 		getDataBody(account, startDate, false)
@@ -216,6 +218,8 @@ class FitBitDataService extends DataService {
 		
 		stats.finish()
 		
+		account.markLastPolled(stats.lastDate)
+
 		[success: true]
 	}
 

@@ -64,9 +64,9 @@ class UserGroup {
 		this.description = description
 		this.isVirtual = false
 	}
-	
+
 	static UserGroup theSystemGroup
-	
+
 	static UserGroup getSystemGroup() {
 		return lookupOrCreateSystemGroup()
 	}
@@ -74,13 +74,13 @@ class UserGroup {
 	static UserGroup lookupOrCreateSystemGroup() {
 		if (theSystemGroup == null)
 			theSystemGroup = createOrUpdate(SYSTEM_USER_GROUP_NAME, "system", "", [isSystemGroup: true])
-		
+
 		return theSystemGroup
 	}
 
 	static UserGroup createVirtual(String fullName, boolean isHidden = false) {
 		UserGroup userGroup = new UserGroup()
-		
+
 		if (fullName.length() > 250)
 			fullName = fullName.substring(0, 250)
 
@@ -243,7 +243,7 @@ class UserGroup {
 		}
 
 		String getSecondPostQuery = """select id, message, discussion_id,
-				@num := if(@did = discussion_id, @num + 1, 1) as row_num, 
+				@num := if(@did = discussion_id, @num + 1, 1) as row_num,
 				@did := discussion_id as discussionId from discussion_post force index(discussion_id)
 				group by discussion_id, message having row_num = 2"""
 
@@ -309,7 +309,7 @@ class UserGroup {
 			return false
 		if (!discussion)
 			return false
-		
+
 		return canAdminDiscussionId(user.id, discussion.id, discussion.userId)
 	}
 
@@ -576,7 +576,7 @@ class UserGroup {
 		GroupMemberReader.delete(id, userId)
 		GroupMemberWriter.delete(id, userId)
 	}
-	
+
 	Date writerDate(Long userId) {
 		GroupMemberWriter.lookup(id, userId)?.created
 	}
@@ -584,7 +584,7 @@ class UserGroup {
 	Date writerDate(User user) {
 		GroupMemberWriter.lookup(id, user.id)?.created
 	}
-	
+
 	boolean hasWriter(User user) {
 		if (!user) return false
 		hasWriter(user.id)
@@ -604,8 +604,8 @@ class UserGroup {
 
 	void addAdmin(User user) {
 		if (!user) return;
-		
-		addAdmin(user.id)		
+
+		addAdmin(user.id)
 	}
 
 	void removeAdmin(User user) {
@@ -746,13 +746,13 @@ class UserGroup {
 		return GroupMemberNotifiedMajor.lookup(id, userId) != null
 	}
 
-	/** 
+	/**
 	 * The add/remove Member methods are used to add a generic user to a group. If the group is
 	 * read-only, only adds read permissions for the user. Use addAdmin() to add a more powerful
 	 * user to the group. It is safe, however, to use addMember followed by addAdmin.
-	 * 
+	 *
 	 * There is no "hasMember" method --- use hasReader, hasWriter, or hasAdmin instead.
-	 * 
+	 *
 	 * @param user
 	 * @return
 	 */
@@ -817,9 +817,9 @@ class UserGroup {
 		if (!discussion) {
 			return false
 		}
-		
+
 		Long userId = discussion.getUserId()
-		
+
 		if (isReadOnly) {
 			if (userId) {
 				if (!hasAdmin(userId)) {
@@ -844,7 +844,8 @@ class UserGroup {
 			return false
 		}
 
-		GroupMemberDiscussion.create(id, discussion.getId())
+		GroupMemberDiscussion.deleteAll(discussion.id)
+		GroupMemberDiscussion.create(id, discussion.id)
 		return true
 	}
 

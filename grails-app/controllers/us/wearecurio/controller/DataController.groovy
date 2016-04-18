@@ -153,7 +153,7 @@ class DataController extends LoginController {
 		EntryStats stats = new EntryStats(userId)
 
 		// activate repeat entry if it has a repeat type
-		if (entry.getRepeatType() != null && entry.getRepeatType().isContinuous()) {
+		if (entry.getRepeatType() != null && entry.getRepeatType().isContinuous() && !p.bookmarkEdit) {
 			debug "Activating continuous entry " + entry
 			Entry newEntry = entry.activateContinuousEntry(baseDate, currentTime, timeZoneName, stats)
 			if (newEntry != null) {
@@ -171,7 +171,7 @@ class DataController extends LoginController {
 			debug "Parse error"
 			stats.finish()
 			return [null, 'Cannot interpret entry text.', null, null];
-		} else if (m['repeatType']?.isContinuous() && (!wasContinuous)) {
+		} else if (m['repeatType']?.isContinuous() && (!wasContinuous) && !p.bookmarkEdit) {
 			// if creating a new continuous (button) entry and the previous entry was not continuous, create a new entry instead
 			entry = Entry.create(userId, m, stats)
 		} else if (entry != null) {
@@ -749,16 +749,26 @@ class DataController extends LoginController {
 		def currentTime = params.currentTime == null ? new Date() : parseDate(params.currentTime)
 		def baseDate = params.baseDate == null? null : parseDate(params.baseDate)
 		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
+		User entryOwner = User.get(userId);
+		User currentUser = sessionUser()
 
-		if (entry.getUserId() != sessionUser().getId()) {
+		if ( !entryOwner.virtual && entryOwner.id != currentUser.id) {
 			renderStringGet('You do not have permission to delete this entry.')
 		} else if (entry.fetchIsGenerated()) {
 			renderStringGet('Cannot delete generated entries.')
 		} else {
+			// Allow deleting entries belonging to a trackathon only if user has write permission for that trackathon
+			if (entryOwner.virtual) {
+				Sprint sprint = Sprint.findByVirtualUserId(entryOwner.id)
+				if (!sprint.hasWriter(currentUser.id)) {
+					renderStringGet('You do not have permission to delete this entry.')
+					return
+				}
+			}
 			EntryStats stats = new EntryStats(userId)
 			Entry.delete(entry, stats)
 			def tagStats = stats.finish()
-			renderJSONGet([listEntries(sessionUser(), timeZoneName, parseDate(params.displayDate), currentTime),
+			renderJSONGet([listEntries(currentUser, timeZoneName, parseDate(params.displayDate), currentTime),
 				tagStats[0]?.getJSONDesc(),
 				tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null,
 				// TODO respond this as map instead of passing data based on index
