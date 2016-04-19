@@ -88,7 +88,8 @@ class DataController extends LoginController {
 
 		boolean showEntryBalloon
 		boolean showBookmarkBalloon
-		if (params.containsKey('mobileSessionId')) {
+		if (params.containsKey('mobileSessionId') && !params.isHelpEntry) {
+			// Currently showing the balloons only for the mobile app. TODO add support for balloons on web.
 			UserSettings userSettings = user.settings
 			if (entry.getRepeatType()?.isContinuous()) {
 				showBookmarkBalloon = !userSettings.hasBookmarkCreationCountCompleted()
@@ -451,8 +452,8 @@ class DataController extends LoginController {
 			renderJSONGet([entries: entries, deviceEntryStates: user.settings.getDeviceEntryStates()])
 			return
 		}
-		
-		// This response is specific for the mobile app.
+
+		// Currently showing the balloons only for the mobile app. TODO add support for balloons on web.
 		if (params.containsKey('mobileSessionId')) {
 			boolean showRemindAlertBalloon = !user.settings.hasFirstAlertEntryCountCompleted()
 			renderJSONGet([entries, showRemindAlertBalloon])
@@ -704,8 +705,8 @@ class DataController extends LoginController {
 				result[0].getJSONDesc(),
 				// TODO respond this as map instead of passing data based on index
 				user.settings.getDeviceEntryStates(),
-				result[3],
-				result[4]
+				result[3], // ShowEntryBalloon flag
+				result[4]  // ShowBookmarkBalloon flag
 			])
 		} else {
 			renderStringGet('error')
@@ -752,7 +753,7 @@ class DataController extends LoginController {
 		User entryOwner = User.get(userId);
 		User currentUser = sessionUser()
 
-		if ( !entryOwner.virtual && entryOwner.id != currentUser.id) {
+		if (!entryOwner.virtual && entryOwner.id != currentUser.id) {
 			renderStringGet('You do not have permission to delete this entry.')
 		} else if (entry.fetchIsGenerated()) {
 			renderStringGet('Cannot delete generated entries.')
@@ -1253,6 +1254,9 @@ class DataController extends LoginController {
 		if (params.entryId) {
 			result = doUpdateEntry(params)
 		} else {
+			if (params.containsKey('mobileSessionId')) {
+				params['isHelpEntry'] = true
+			}
 			result = doAddEntry(params)
 		}
 		if (result[0] != null) {

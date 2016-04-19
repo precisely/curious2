@@ -511,7 +511,12 @@ class LoginController extends SessionController {
 		}
 	}
 	
+	// This method only sets the user settings bit, if the request is from the mobile app.
 	protected boolean checkIfVisitedMobileApp(User user, Map params) {
+		if (!user) {
+			return
+		}
+
 		boolean hasVisitedMobileApp = user.settings.hasVisitedMobileApp()
 		if (params.containsKey('mobileSessionId')) {
 			if (!hasVisitedMobileApp) {

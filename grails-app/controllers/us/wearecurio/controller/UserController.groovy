@@ -17,6 +17,7 @@ class UserController extends LoginController {
 	FileUploaderService fileUploaderService
 	SearchService searchService
 
+	// This method updates the user settings bits based on the method name passed as string.
 	protected updateUserSettings(String methodName) {
 		User currentUser = sessionUser()
 		if (!currentUser) {
@@ -137,20 +138,17 @@ class UserController extends LoginController {
 
 	def closeExplanationCardCuriosity() {
 		debug "UserController.closeExplanationCardCuriosity()"
-		String methodName = "closeCuriositiesExplanation"
-		updateUserSettings(methodName)
+		updateUserSettings("closeCuriositiesExplanation")
 	}
 
 	def closeExplanationCardTrackathon() {
 		debug "UserController.closeExplanationCardTrackathon()"
-		String methodName = "closeTrackathonExplanation"
-		updateUserSettings(methodName)
+		updateUserSettings("closeTrackathonExplanation")
 	}
 
 	def markTrackathonVisited() {
 		debug "UserController.closeExplanationCardTrackathon()"
-		String methodName = "markTrackathonVisited"
-		updateUserSettings(methodName)
+		updateUserSettings("markTrackathonVisited")
 	}
 
 	def addTutorialTags() {

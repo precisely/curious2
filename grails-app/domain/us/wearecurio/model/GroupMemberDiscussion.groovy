@@ -81,7 +81,7 @@ class GroupMemberDiscussion {
 	public static deleteAll(long memberId) {
 		List<GroupMemberDiscussion> groupMemberDiscussions = GroupMemberDiscussion.findAllByMemberId(memberId)
 		groupMemberDiscussions.each {
-			delete(it);
+			delete(it)
 		}
 	}
 }

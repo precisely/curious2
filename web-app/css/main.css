@@ -2047,10 +2047,6 @@ body.track-page #area0 .panel-wrapper {
 	border-bottom: 0;
 }
 
-body.track-page ol#entry0 li.entry.ghost:not(.ui-selected) {
-
-}
-
 .comment-label {
 	color: #C0C8C9;
 	font-size: 12px;

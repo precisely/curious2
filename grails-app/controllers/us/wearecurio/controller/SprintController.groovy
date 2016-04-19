@@ -286,6 +286,7 @@ class SprintController extends LoginController {
 
 		boolean showSprintStartBalloon
 		if (params.containsKey('mobileSessionId')) {
+			// Currently showing the balloons only for the mobile app. TODO add support for balloons on web.
 			showSprintStartBalloon = !currentUser.settings.hasTrackathonStartCountCompleted()
 			if (showSprintStartBalloon) {
 				currentUser.settings.countTrackathonStart()
@@ -392,6 +393,7 @@ class SprintController extends LoginController {
 
 		boolean showPostDiscussionBalloon
 		if (params.containsKey('mobileSessionId')) {
+			// Currently showing the balloons only for the mobile app. TODO add support for balloons on web.
 			showPostDiscussionBalloon = !currentUser.settings.hasDiscussionDetailVisitCountCompleted()
 			if (showPostDiscussionBalloon) {
 				currentUser.settings.countDiscussionDetailVisit()

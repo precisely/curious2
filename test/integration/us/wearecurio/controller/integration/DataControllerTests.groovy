@@ -1,31 +1,17 @@
 package us.wearecurio.controller.integration
 
-import grails.test.*
-import grails.converters.*
-import us.wearecurio.controller.DataController;
+import grails.converters.JSON
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import us.wearecurio.controller.DataController
 import us.wearecurio.model.*
-import grails.util.GrailsUtil
+import us.wearecurio.model.Model.Visibility
+import us.wearecurio.services.EntryParserService
+import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
 
 import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.TimeZone
-
-import us.wearecurio.model.User
-import us.wearecurio.model.Entry
-import us.wearecurio.model.Tag
-import us.wearecurio.model.TagStats
-import us.wearecurio.services.EntryParserService
-import us.wearecurio.support.EntryStats
-import us.wearecurio.support.EntryCreateMap
-import static org.junit.Assert.*
-import us.wearecurio.model.Model.Visibility
-
-import org.joda.time.DateTime
-import org.junit.*
-
-import grails.test.mixin.*
 
 class DataControllerTests extends CuriousControllerTestCase {
 	static transactional = true
@@ -785,23 +771,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		curious.addDiscussion(discussion)
 		return discussion
-	}
-
-	@Test
-	void "test set discussion name"() {
-		Discussion discussion = setUpForCommentPage()
-
-		controller.session.userId = userId
-		controller.params.callback = 'callback'
-		controller.params.discussionHash = discussion.hash
-		controller.params.name = "foo"
-
-		// Test pagination with second page
-		controller.setDiscussionNameData()
-		String contentAsString = controller.response.contentAsString
-
-		assert contentAsString == "callback('success')"
-		assert discussion.name == "foo"
 	}
 
 	@Test

@@ -223,7 +223,8 @@ class Discussion {
 					 * Only allow creating a discussion if the author is admin of the group or the author has write permission to
 					 * the group and the group is not read only.
 					 */
-					if (!group || !group.hasAdmin(user) && (group.isReadOnly || !group.hasWriter(user))) {
+					
+					if (!group || group.isReadOnly || (!group.hasAdmin(user) && !group.hasWriter(user))) {
 						throw new CreationNotAllowedException()
 					}
 

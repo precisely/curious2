@@ -31,6 +31,7 @@ class UserSettings extends BitSet {
 	private static final int BOOKMARK_CREATED_2 = 20
 	private static final int BOOKMARK_CREATED_3 = 21
 	private static final int FIRST_ALERT_ENTRY = 22
+	// This bit is set when a user logs in to the mobile app for the first time (or register in the mobile app).
 	private static final int VISITED_MOBILE_APP = 23
 
 	/**

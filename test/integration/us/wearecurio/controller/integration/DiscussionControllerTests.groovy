@@ -1,15 +1,16 @@
 package us.wearecurio.controller.integration
 
-import static org.junit.Assert.*
-import org.junit.*
-import org.scribe.model.Response
-
-import us.wearecurio.model.Model.Visibility
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 import us.wearecurio.controller.DiscussionController
-import us.wearecurio.model.*
-import us.wearecurio.test.common.MockedHttpURLConnection
-import us.wearecurio.utility.Utils
 import us.wearecurio.hashids.DefaultHashIDGenerator
+import us.wearecurio.model.Discussion
+import us.wearecurio.model.DiscussionPost
+import us.wearecurio.model.Model.Visibility
+import us.wearecurio.model.User
+import us.wearecurio.model.UserGroup
+import us.wearecurio.utility.Utils
 
 class DiscussionControllerTests extends CuriousControllerTestCase {
 	static transactional = true
@@ -66,7 +67,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = user2.getId()
 		controller.request.method = "POST"
 		controller.save()
-		assert Discussion.count() == 0 
+		assert Discussion.count() == 0
     }
 
     @Test
@@ -85,7 +86,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
     @Test
     void testCreateWithNoGroup() {
 		//Adds a new discussion to the default group
-		params.remove("group") 
+		params.remove("group")
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
 		controller.request.method = "POST"
@@ -156,7 +157,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
 		discussion.visibility = Visibility.PRIVATE
 		Utils.save(discussion, true)
-		
+
 		controller.params.id = discussion.hash
 		controller.show()
 
@@ -168,7 +169,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 	void Testshow() {
 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
 		assert discussion
-		
+
 		controller.params.id = discussion.hash
 		controller.session.userId = user2.id
 		controller.show()
@@ -219,5 +220,26 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		assert controller.response.json.message == messageSource.getMessage("default.updated.message", ["Discussion"] as Object[], null)
 		assert discussion.isPublic()
 	}
-/**/
+
+	@Test
+	void "test update discussion name and firstPost"() {
+		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
+		assert discussion.name == "test Discussion"
+		assert !discussion.getFirstPost()
+		assert discussion.id != null
+
+		DiscussionPost.createFirstPost('test description', user2, discussion, null)
+		assert discussion.getFirstPost().message == 'test description'
+
+		controller.session.userId = user2.id
+		controller.request.contentType = "text/json"
+		controller.request.content = "{'discussionHash': ${discussion.hash}, 'name': 'foo', 'message': 'updated description'}"
+		controller.request.method = "PUT"
+
+		controller.update()
+
+		assert controller.response.json.success
+		assert discussion.name == "foo"
+		assert discussion.getFirstPost().message == "updated description"
+	}
 }
