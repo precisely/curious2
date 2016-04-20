@@ -214,7 +214,7 @@ class Discussion {
 					UserGroup group
 					if (params.group == "PUBLIC") {
 						discussion.visibility = Visibility.PUBLIC
-						group = UserGroup.lookup("curious")
+						group = UserGroup.getDefaultGroupForUser(user)
 					} else {
 						group = UserGroup.lookup(params.group)
 					}
