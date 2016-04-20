@@ -909,7 +909,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		$(document).trigger(beforeLinePlotEvent, [initialTag]);
 		var plotLine = new PlotLine({plot:this, name:initialTag.description, color:this.leastUsedPlotLineColor(),
 			tag: initialTag,showYAxis: false/*this.countYAxesShowing() == 0*/,
-			isContinuous:initialTag.isContinuous, showPoints:initialTag.showPoints});
+			isContinuous:initialTag.isContinuous, showPoints:initialTag.showPoints, sumData:(initialTag.isContinuous ? 0 : 1)});
 
 		this.lines['id' + plotLine.id] = plotLine;
 
@@ -1118,6 +1118,7 @@ function removeTagNameFromLine(plotId, lineId, tagName) {
 }
 
 var DAYTICKS = 1000*60*60*24;
+var TWOPI = Math.PI * 2.0;
 
 function PlotLine(p) {
 	this.plot = p.plot;
@@ -1132,7 +1133,7 @@ function PlotLine(p) {
 	this.isFreqLineFlag = p.isFreqLineFlag ? true : false;
 	this.fillColor = colorToFillColor(p.color,'0.3');
 	this.cycleFillColor = colorToFillColor(p.color,'0.15');
-	this.sumData = p.sumData || p.sumNights ? true : false;
+	this.sumData = p.sumData || p.sumNights ? 1 : 0;
 	this.sumNights = false;
 	this.tag = p.tag == undefined ? null : p.tag;
 	this.tags = p.tags == undefined ? [] : p.tags;
@@ -1459,17 +1460,20 @@ function PlotLine(p) {
 
 		var timeZoneName = jstz.determine().name();
 
-		var method = this.sumData ? "getSumPlotDescData" : "getPlotDescData";
+		var convertToSum = this.sumData ? true : false;
+		var sumDataWidth = this.sumData;
 		var plotLine = this;
 		var tagsDebug = this.getTags();
 
-		queuePostJSON("loading graph data", makeGetUrl(method), getCSRFPreventionObject(method + "CSRF", {tags: $.toJSON(this.getTags()),
+		queuePostJSON("loading graph data", makeGetUrl("getPlotDescData"), getCSRFPreventionObject("getPlotDescDataCSRF", {tags: $.toJSON(this.getTags()),
 				startDate:startDate == null ? "" : startDate.toUTCString(),
 				endDate:endDate == null ? "" : endDate.toUTCString(),
 				timeZoneName:timeZoneName }),
 			function(plotDesc){
 				if (this.checkData(plotDesc)) {
 					plotLine.loadEntries(plotDesc);
+					if (convertToSum)
+						plotLine.convertEntriesToSum(sumDataWidth, startOfTodayDate());
 					if (plotLine.smoothLine && plotLine.smoothDataWidth > 0 && plot.interactive)
 						plotLine.smoothLine.entries = undefined;
 					if (plotLine.freqLine && plotLine.freqDataWidth > 0 && plot.interactive)
@@ -1483,7 +1487,117 @@ function PlotLine(p) {
 				}
 			});
 	};
+	
+	var TWOPI = Math.PI * 2.0;
 
+	this.convertEntriesToSum = function(dataWidth, currentDay) {
+		var lineName = this.name;
+		var entries = this.entries;
+
+		if (!entries) return; // don't calculate if parent line hasn't
+									// been loaded yet
+
+		if (entries.length < 1) return; // don't calculate if parent line has no data
+		
+		if (entries.length == 1) {
+			this.entries = entries;
+			return;
+		}
+		
+		var sumTicks = Math.round(dataWidth * DAYTICKS);
+		
+		// calculate daytime average
+		
+		var sumX = 0.0;
+		var sumY = 0.0;
+		
+		var startDayAngle;
+		
+		for (var i = 0; i < entries.length; ++i) {
+			var entry = entries[i];
+			var modTime = (entry[0].getTime() % sumTicks)
+			if (modTime < 0) modTime += sumTicks;
+			var angle = (modTime / sumTicks) * TWOPI;
+			
+			sumX += Math.cos(angle);
+			sumY += Math.sin(angle);
+		}
+		
+		if (Math.abs(sumX) < 0.0001) sumX = 0.0;
+		if (Math.abs(sumY) < 0.0001) sumY = 0.0;
+		
+		if (sumX == 0.0 && sumY == 0.0) {
+			var currentDayModTime = currentDay.getTime() % sumTicks;
+			if (currentDayModTime < 0) currentDayModTime += sumTicks;
+			
+			startDayAngle = (currentDayModTime / sumTicks) * TWOPI;
+		} else {
+			startDayAngle = Math.atan2(sumY, sumX) + Math.PI;
+		}
+		
+		while (startDayAngle < 0.0) {
+			startDayAngle += TWOPI;
+		}
+		
+		while (startDayAngle > TWOPI) {
+			startDayAngle -= TWOPI;
+		}
+		
+		var startDayTicks = Math.round(startDayAngle * sumTicks);
+		while (startDayTicks >= sumTicks)
+			startDayTicks -= sumTicks;
+		
+		var currentSum = 0.0;
+		var currentNum = 0;
+		var currentDayTicks = null;
+		var newEntries = [];
+		var lastEntry = null;
+		var labels = [];
+
+		for (var i = 0; i < entries.length; ++i) {
+			var entry = entries[i];
+			var time = entry[0].getTime();
+			var value = entry[1];
+			var shiftedTime = time - startDayTicks;
+			
+			if (currentDayTicks == null) {
+				currentDayTicks = (shiftedTime - (shiftedTime % sumTicks)) + startDayTicks;
+			}
+			
+			if (time - currentDayTicks > sumTicks) {
+				// new value
+				if (currentNum == 1) {
+					if (lastEntry != null)
+						newEntries.push(lastEntry);
+				} else if (currentNum > 0) {
+					var moment = currentDayTicks + sumTicks / 2;
+					var average = currentSum / currentNum;
+					newEntries.push([new Date(moment), average]);
+				}
+				
+				currentDayTicks = (shiftedTime - (shiftedTime % sumTicks)) + startDayTicks;
+				currentNum = 1;
+				currentSum = value;
+			} else {
+				++currentNum;
+				currentSum += value;
+			}
+			
+			lastEntry = entry;
+		}
+		
+		if (currentNum == 1) {
+			if (lastEntry != null)
+				newEntries.push(lastEntry);
+		} else if (currentNum > 0) {
+			var moment = currentDayTicks + sumTicks / 2;
+			var average = currentSum / currentNum;
+			newEntries.push([new Date(moment), average]);
+		}
+		
+		this.entries = newEntries;
+	};
+	
 	this.calculateSmoothEntries = function() {
 		var parentLine = this.parentLine;
 		var lineName = parentLine.name;
@@ -1628,6 +1742,7 @@ function PlotLine(p) {
 
 		this.entries = retVal;
 	};
+	
 	this.calculateFreqEntries = function() {
 		var parentLine = this.parentLine;
 		var parentEntries = parentLine.entries;

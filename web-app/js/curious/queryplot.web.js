@@ -505,8 +505,14 @@ PlotLine.prototype.appendHTML = function() {
 	 + (this.showYAxis ? 'checked' : '') + '/> yaxis ';*/
 
 	if ((!this.snapshot) && (!this.isSmoothLine()) && (!this.isFreqLine()) && (!this.isCycle))
-		html += '<h4 style="margin-top:15px">OPERATIONS</h4> <div class="form-group"><input type="checkbox" name="plotlinesum' + idSuffix + '" id="plotlinesum' + idSuffix + '"'
-				+ (this.sumData ? 'checked' : '') + '/> <label>SUM</label></div> ';
+		html += '<h4 style="margin-top:15px">OPERATIONS</h4> <div class="form-group">'
+				+ '<div style="display:inline-block"><input type="checkbox" name="plotlinesum' + idSuffix + '" id="plotlinesum' + idSuffix + '"'
+				+ (this.sumData == 1 ? 'checked' : '') + '/> <label>DAILY SUM</label></div>'
+				+ '<div style="display:inline-block"><input type="checkbox" name="plotlineweeksum' + idSuffix + '" id="plotlineweeksum' + idSuffix + '"'
+				+ (this.sumData == 7 ? 'checked' : '') + '/> <label>WEEKLY SUM</label></div>'
+				+ '<div style="display:inline-block"><input type="checkbox" name="plotlinemonthsum' + idSuffix + '" id="plotlinemonthsum' + idSuffix + '"'
+				+ (this.sumData == 30 ? 'checked' : '') + '/> <label>MONTHLY SUM</label></div>'
+				+ '</div> ';
 	if (!this.isCycle) {
 		html += '<label>SMOOTH</label>';
 		html += '<div style="display:inline-block;margin-left:10px;width:90%;top:3px;" id="plotlinesmoothwidth' + idSuffix + '"></div>';
@@ -587,8 +593,37 @@ PlotLine.prototype.appendHTML = function() {
 	if (!this.snapshot) {
 		$("#plotlinesum" + idSuffix).change(function(e) {
 			var plotLine = plot.getLine(plotLineId);
-			if (plotLine.sumData) plotLine.sumData = false;
-			else plotLine.sumData = true;
+			if (plotLine.sumData == 1)
+				plotLine.sumData = 0;
+			else {
+				plotLine.sumData = 1;
+				$("#plotlineweeksum" + idSuffix).prop('checked', false)
+				$("#plotlinemonthsum" + idSuffix).prop('checked', false)
+			}
+			plot.loadAllData();
+			plot.refreshPlot();
+		});
+		$("#plotlineweeksum" + idSuffix).change(function(e) {
+			var plotLine = plot.getLine(plotLineId);
+			if (plotLine.sumData == 7)
+				plotLine.sumData = 0;
+			else {
+				plotLine.sumData = 7;
+				$("#plotlinesum" + idSuffix).prop('checked', false)
+				$("#plotlinemonthsum" + idSuffix).prop('checked', false)
+			}
+			plot.loadAllData();
+			plot.refreshPlot();
+		});
+		$("#plotlinemonthsum" + idSuffix).change(function(e) {
+			var plotLine = plot.getLine(plotLineId);
+			if (plotLine.sumData == 30)
+				plotLine.sumData = 0;
+			else {
+				plotLine.sumData = 30;
+				$("#plotlineweeksum" + idSuffix).prop('checked', false)
+				$("#plotlinesum" + idSuffix).prop('checked', false)
+			}
 			plot.loadAllData();
 			plot.refreshPlot();
 		});

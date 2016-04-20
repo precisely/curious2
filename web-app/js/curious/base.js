@@ -287,6 +287,11 @@ function dateToTimeStr(d, shortForm) {
 	return hour + ":" + min + ap;
 }
 
+function startOfTodayDate() {
+	var now = new Date();
+	return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+}
+
 //var DateUtil = new function() {
 function DateUtil() {
 	this.now = new Date();

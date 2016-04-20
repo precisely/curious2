@@ -7,28 +7,17 @@
 	</head>
 </head>
 <body>
-	<br>
-	<br>
-	<br>
-	<div class="row">
-		<div class="col-sm-push-4 text-right col-sm-6" style="margin-left: 20px">
-			<img class="" src="/images/home/home-logo-wide.jpg" width="583" height="88" />
-			<p style=" font-size: 34px; color: #f14a42; margin-bottom: 0px; white-space: nowrap;">
-				Track data, chart experience, find meaning.
-			</p>
-			<p style="font-size: 31px; color: #f14a42;">
-				<strong>We've all got questions.</strong>
-			</p>
-			<br> <br>&nbsp;<br/>&nbsp;
-		</div>
-	</div>
+		<br>
+			<div class="text-right home-logo-wrapper">
+				<img class="home-logo" src="/images/home/home-logo-wide.jpg" width="583" height="88"/>
+				<p class="logo-text-1">
+					New User Signup</p>
+				<p/>&nbsp;
+				<p/>&nbsp;
+				<p/>&nbsp;
+			</div>
 	<div class="shape-wrapper features">
 		<div class="features-background"></div>
-		<div class="row" id="features">
-			<div class="col-sm-3 col-sm-offset-1 margin-bottom">
-				<p style="font-size: 26px;">New User Signup</p>
-			</div>
-		</div>
 
 		<div class="row">
 			<div class="col-sm-3 col-sm-offset-1">

@@ -415,9 +415,10 @@ abstract class DataService {
 
 		Long lastPoll = lastPollTimestamps.get(accountId)
 		
-		if (notificationDate != null && lastPoll != null && notificationDate < lastPoll)
+		if (notificationDate != null && lastPoll != null && notificationDate < lastPoll) {
 			lastPoll = notificationDate
-		else if ((lastPoll != null) && (nowTime - lastPoll < 60000)) { // don't allow polling faster than once every minute
+			lastPollTimestamps.put(accountId, lastPoll)
+		} else if ((lastPoll != null) && (nowTime - lastPoll < 60000)) { // don't allow polling faster than once every minute
 			log.warn "Polling faster than 1 minute for $provider with accountId: [$accountId]"
 			return false
 		}
