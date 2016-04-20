@@ -1,31 +1,18 @@
 package us.wearecurio.controller.integration
 
-import grails.test.*
-import grails.converters.*
-import us.wearecurio.controller.DataController;
+import grails.converters.JSON
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import us.wearecurio.controller.DataController
+import us.wearecurio.data.RepeatType
 import us.wearecurio.model.*
-import grails.util.GrailsUtil
+import us.wearecurio.model.Model.Visibility
+import us.wearecurio.services.EntryParserService
+import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
 
 import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.TimeZone
-
-import us.wearecurio.model.User
-import us.wearecurio.model.Entry
-import us.wearecurio.model.Tag
-import us.wearecurio.model.TagStats
-import us.wearecurio.services.EntryParserService
-import us.wearecurio.support.EntryStats
-import us.wearecurio.support.EntryCreateMap
-import static org.junit.Assert.*
-import us.wearecurio.model.Model.Visibility
-
-import org.joda.time.DateTime
-import org.junit.*
-
-import grails.test.mixin.*
 
 class DataControllerTests extends CuriousControllerTestCase {
 	static transactional = true
@@ -42,7 +29,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	Date winterCurrentTime
 	Date winterLaterTime
 	Date winterBaseDate
-	
+
 	EntryParserService entryParserService
 
 	private static def LOG = new File("debug.out")
@@ -60,9 +47,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		TagStats.executeUpdate("delete TagStats t")
 		TagUnitStats.executeUpdate("delete TagUnitStats t")
 		TagProperties.executeUpdate("delete TagProperties tp")
-		
+
 		super.setUp()
-		
+
 		controller = new DataController()
 		Locale.setDefault(Locale.US)	// For to run test case in any country.
 
@@ -115,7 +102,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.createSingleHelpEntrysData()
 
 		def x = controller.response.contentAsString
-		
+
 		assert !x.contains("success: false")
 	}
 
@@ -124,20 +111,20 @@ class DataControllerTests extends CuriousControllerTestCase {
 		DataController controller = new DataController()
 
 		EntryStats stats = new EntryStats(userId)
-		
+
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
 		stats.finish()
-		
+
 		controller.session.userId = userId
 
 		controller.params.clear()
 		controller.params.callback = 'callback'
 		controller.params.all = 'true'
 		controller.params.currentTime = "Sat, 11 Jul 2010 08:00:00 GMT"
-		
+
 		def retVal = controller.autocompleteData()
 
 		String str = controller.response.contentAsString
@@ -152,23 +139,23 @@ class DataControllerTests extends CuriousControllerTestCase {
 		DataController controller = new DataController()
 
 		EntryStats stats = new EntryStats(userId)
-		
+
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
 		Entry.create(userId, entryParserService.parse(currentTime - 1, timeZone, "bread 1", null, null, baseDate, true), stats)
 		Entry.create(userId, entryParserService.parse(currentTime - 2, timeZone, "bread 1", null, null, baseDate, true), stats)
-		
+
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
 		stats.finish()
-		
+
 		controller.session.userId = userId
 
 		controller.params.clear()
 		controller.params.callback = 'callback'
 		controller.params.all = 'true'
 		controller.params.currentTime = "Sat, 11 Jul 2010 08:00:00 GMT"
-		
+
 		def retVal = controller.autocompleteData()
 
 		String str = controller.response.contentAsString
@@ -184,9 +171,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		Utils.save(plotData, true)
 		Discussion discussion = Discussion.create(user, "testCreateDiscussion", null, null)
 		DiscussionPost post = discussion.createPost(user, plotData.id, "comment")
-		
+
 		DiscussionPost findPost = DiscussionPost.findByPlotDataId(plotData.id)
-		
+
 		assert findPost == post
 
 		controller.session.userId = userId
@@ -196,9 +183,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params.discussionHash = discussion.hash
 
 		controller.loadSnapshotDataId()
-		
+
 		String c = controller.response.contentAsString
-		
+
 		assert c.startsWith('callback({')
 		assert c.contains('"foo":"foo"')
 		assert c.contains('"username":"y"')
@@ -209,7 +196,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 
 		Sprint sprint = Sprint.create(currentTime, user, "Caffeine + Sugar", Visibility.PUBLIC)
-		
+
 		controller.params.putAll([currentTime:'Fri, 30 Oct 2015 19:11:17 GMT',
 			text:'headache button',
 			dateToken:'1446232277272',
@@ -229,7 +216,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.addEntrySData()
 
 		def x = controller.response.contentAsString
-		
+
 		assert x.contains('"description":"headache"')
 	}
 
@@ -240,11 +227,11 @@ class DataControllerTests extends CuriousControllerTestCase {
 		println "User ID: " + userId
 
 		EntryStats stats = new EntryStats(userId)
-		
+
 		Sprint sprint = Sprint.create(currentTime, user, "Caffeine + Sugar", Visibility.PUBLIC)
 
 		def entry = Entry.create(sprint.virtualUserId, entryParserService.parse(currentTime, timeZone, "headache pinned", null, null, baseDate, true), stats)
-		
+
 		stats.finish()
 
 		controller.params['entryId'] = entry.getId().toString()
@@ -258,9 +245,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params['allFuture'] = '1'
 
 		controller.updateEntrySData()
-		
+
 		def x = controller.response.contentAsString
-		
+
 		assert x.contains('"description":"head pain"')
 	}
 
@@ -287,7 +274,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.addEntrySData()
 
 		def x = controller.response.contentAsString
-		
+
 		assert x.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":')
 		assert x.contains(',"description":"request swing","amount":1.000000000,"amountPrecision":-1,"units":"","comment":"(Megan)","repeatType":null,"repeatEnd":null,"amounts":{"0":{"amount":1.000000000,"amountPrecision":-1,"units":""}},"normalizedAmounts":{"0":{"amount":1.000000000,"amountPrecision":-1,"units":"","sum":false')
 	}
@@ -297,11 +284,11 @@ class DataControllerTests extends CuriousControllerTestCase {
 		DataController controller = new DataController()
 
 		EntryStats stats = new EntryStats(userId)
-		
+
 		Entry.create(userId, entryParserService.parse(winterCurrentTime, timeZone, "bread 1", null, null, winterBaseDate, true), stats)
 		Entry.create(userId, entryParserService.parse(winterLaterTime, timeZone, "bread 1 slice", null, null, winterBaseDate, true), stats)
 		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", null, null, winterBaseDate, true), stats)
-		
+
 		stats.finish()
 
 		def out = new ByteArrayOutputStream()
@@ -314,14 +301,14 @@ class DataControllerTests extends CuriousControllerTestCase {
 				+ '"2010-12-01 20:00:00 GMT","aspirin [tablets]",1.000000000,"tablet","repeat",1025,3,86400,"America/Los_Angeles","aspirin"\n' \
 				+ '"2010-12-01 23:30:00 GMT","bread",1.000000000,"","",-1,3,180,"America/Los_Angeles","bread"\n' \
 				+ '"2010-12-02 00:30:00 GMT","bread [slices]",1.000000000,"slice","",-1,3,180,"America/Los_Angeles","bread"\n'
-		
+
 		assert outString.equals(compareStr)
 	}
 
 	@Test
 	void "Test createHelpEntriesData when entryId passed in parameters"() {
 		EntryStats stats = new EntryStats(userId)
-		
+
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 2 hours", null, null, baseDate, true), stats)
 		stats.finish()
 
@@ -333,11 +320,11 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
 		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
 		controller.params["timeZoneName"] = "Asia/Kolkata"
-		
+
 		controller.createHelpEntriesData()
 		assert controller.response.json.success == true
 		assert Entry.get(entry.id).amount == 3.000000000g
-	}	
+	}
 
 	@Test
 	void testGetPeopleData() {
@@ -361,7 +348,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 
 		EntryStats stats = new EntryStats(userId)
-		
+
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
 		stats.finish()
 		println entry.valueString()
@@ -385,7 +372,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 
 		EntryStats stats = new EntryStats(userId)
-		
+
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
@@ -395,7 +382,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-02T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:7.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
 		stats.finish()
-		
+
 		controller.params['callback'] = 'callback'
 		controller.params['userId'] = userId.toString()
 		controller.params['timeZoneName'] = 'America/Los_Angeles'
@@ -418,13 +405,13 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 
 		EntryStats stats = new EntryStats(userId)
-		
+
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
 		stats.finish()
-		
+
 		controller.params['callback'] = 'callback'
 		controller.params['userId'] = userId.toString()
 		controller.params['tags'] = new JSON(['bread']).toString()
@@ -442,11 +429,11 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 
 		EntryStats stats = new EntryStats(userId)
-		
+
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 		entry = Entry.create(userId, entryParserService.parse(endTime, timeZone, "bread 1", null, null, baseDate, true), stats)
-		
+
 		stats.finish()
 
 		controller.params['callback'] = 'callback'
@@ -468,11 +455,11 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 
 		EntryStats stats = new EntryStats(userId)
-		
+
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 		entry = Entry.create(userId, entryParserService.parse(endTime, timeZone, "bread 1", null, null, baseDate, true), stats)
-		
+
 		stats.finish()
 
 		controller.params['isContinuous'] = null
@@ -484,7 +471,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.getTagsData()
 
 		def c = controller.response.contentAsString
-		
+
 		assert c.startsWith('callback([{"')
 		assert c.contains('"iscontinuous":0')
 		assert c.contains('"description":"bread"')
@@ -498,11 +485,11 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 
 		EntryStats stats = new EntryStats(userId)
-		
+
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 		entry = Entry.create(userId, entryParserService.parse(endTime, timeZone, "bread 1", null, null, baseDate, true), stats)
-		
+
 		stats.finish()
 
 		controller.params['callback'] = 'callback'
@@ -517,28 +504,185 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		assert controller.response.contentAsString.equals("callback('success')")
 	}
-	
+
+	Map getEntryParams() {
+		Map params = [:]
+
+		params['currentTime'] = 'Fri, 21 Jan 2011 21:46:20 GMT'
+		params['text'] = '3:30pm testing 25 units (comment)'
+		params['timeZoneName'] = 'America/Los_Angeles'
+		params['userId'] = userId.toString()
+		params['callback'] = 'jsonp1295646296016'
+		params['_'] = '1295646380043'
+		params['defaultToNow'] = '1'
+		params['baseDate'] = 'Fri, 21 Jan 2011 05:00:00 GMT'
+		params['action'] = 'addEntrySData'
+		params['controller'] = 'home'
+
+		return params 
+	}
+
 	@Test
 	void testAddEntrySData() {
 		controller.session.userId = userId
 
-		controller.params['currentTime'] = 'Fri, 21 Jan 2011 21:46:20 GMT'
-		controller.params['text'] = '3:30pm testing 25 units (comment)'
-		controller.params['timeZoneName'] = 'America/Los_Angeles'
-		controller.params['userId'] = userId.toString()
-		controller.params['callback'] = 'jsonp1295646296016'
-		controller.params['_'] = '1295646380043'
-		controller.params['defaultToNow'] = '1'
-		controller.params['baseDate'] = 'Fri, 21 Jan 2011 05:00:00 GMT'
-		controller.params['action'] = 'addEntrySData'
-		controller.params['controller'] = 'home'
+		controller.params.putAll(getEntryParams())
 
 		controller.addEntrySData()
 
 		assert controller.response.contentAsString.contains(',"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":')
 		assert controller.response.contentAsString.contains(',"description":"testing","amount":25.000000000,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null,"repeatEnd":null,"amounts":{"0":{"amount":25.0000,"amountPrecision":3,"units":"units"}},"normalizedAmounts"')
 	}
-	
+
+	@Test
+	void "test AddEntrySData for updating the FIRST_ENTRY and SECOND_ENTRY bits when user creates entries from mobile app"() {
+		controller.session.userId = userId
+
+		User user = User.get(userId)
+		int FIRST_ENTRY = 11
+		int SECOND_ENTRY = 12
+
+		// First clearing the previously set bits. (Just to ensure that this call sets the bits correctly)
+		user.settings.clear(FIRST_ENTRY)
+		user.settings.clear(SECOND_ENTRY)
+
+		assert !user.settings.get(FIRST_ENTRY)
+		assert !user.settings.get(SECOND_ENTRY)
+		assert !user.settings.hasEntryCreationCountCompleted()
+
+		// Sending the mobileSessionId parameter
+		controller.params.mobileSessionId = "abcdefghij1245231"
+
+		controller.params.putAll(getEntryParams())
+
+		// First entry count
+		controller.addEntrySData()
+
+		assert controller.response.contentAsString.contains(',"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":')
+		assert controller.response.contentAsString.contains(',"description":"testing","amount":25.000000000,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null,"repeatEnd":null,"amounts":{"0":{"amount":25.0000,"amountPrecision":3,"units":"units"}},"normalizedAmounts"')
+		
+		assert user.settings.get(FIRST_ENTRY)
+		assert !user.settings.get(SECOND_ENTRY)
+		assert !user.settings.hasEntryCreationCountCompleted()
+
+		// Second entry count
+		controller.params['currentTime'] = 'Fri, 22 Jan 2011 21:46:20 GMT'
+		controller.params['text'] = '4:30pm testing 25 units (comment)'
+		controller.addEntrySData()
+
+		assert user.settings.get(FIRST_ENTRY)
+		assert user.settings.get(SECOND_ENTRY)
+		assert user.settings.hasEntryCreationCountCompleted()
+	}
+
+	@Test
+	void "test AddEntrySData for not updating the FIRST_ENTRY and SECOND_ENTRY bits when user creates entries from web"() {
+		controller.session.userId = userId
+
+		User user = User.get(userId)
+		int FIRST_ENTRY = 11
+		int SECOND_ENTRY = 12
+
+		// First clearing the previously set bits. (Just to ensure that this call sets the bits correctly)
+		user.settings.clear(FIRST_ENTRY)
+		user.settings.clear(SECOND_ENTRY)
+
+		assert !user.settings.get(FIRST_ENTRY)
+		assert !user.settings.get(SECOND_ENTRY)
+		assert !user.settings.hasEntryCreationCountCompleted()
+
+		controller.params.putAll(getEntryParams())
+
+		controller.addEntrySData()
+
+		assert controller.response.contentAsString.contains(',"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":')
+		assert controller.response.contentAsString.contains(',"description":"testing","amount":25.000000000,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null,"repeatEnd":null,"amounts":{"0":{"amount":25.0000,"amountPrecision":3,"units":"units"}},"normalizedAmounts"')
+
+		// There will be no change in the user settings bits for entry creation count
+		assert !user.settings.get(FIRST_ENTRY)
+		assert !user.settings.get(SECOND_ENTRY)
+		assert !user.settings.hasEntryCreationCountCompleted()
+	}
+
+	@Test
+	void "test AddEntrySData for updating the BOOKMARK_CREATED bits when user creates bookmarks from mobile app"() {
+		controller.session.userId = userId
+
+		User user = User.get(userId)
+		int BOOKMARK_CREATED_1 = 19
+		int BOOKMARK_CREATED_2 = 20
+		int BOOKMARK_CREATED_3 = 21
+
+		// First clearing the previously set bits. (Just to ensure that this call sets the bits correctly)
+		user.settings.clear(BOOKMARK_CREATED_1)
+		user.settings.clear(BOOKMARK_CREATED_2)
+		user.settings.clear(BOOKMARK_CREATED_3)
+
+		assert !user.settings.get(BOOKMARK_CREATED_1)
+		assert !user.settings.get(BOOKMARK_CREATED_2)
+		assert !user.settings.get(BOOKMARK_CREATED_3)
+
+		// Sending the mobileSessionId parameter
+		controller.params.mobileSessionId = "abcdefghij1245231"
+
+		controller.params.putAll(getEntryParams())
+		controller.params['text'] = 'Bookmark 1'
+		controller.params['repeatTypeId'] = RepeatType.CONTINUOUS.id.toString()
+
+		// For first bookmark
+		controller.addEntrySData()
+
+		assert user.settings.get(BOOKMARK_CREATED_1)
+		assert !user.settings.get(BOOKMARK_CREATED_2)
+		assert !user.settings.get(BOOKMARK_CREATED_3)
+		assert !user.settings.hasBookmarkCreationCountCompleted()
+
+		// For second bookmark
+		controller.params['currentTime'] = 'Fri, 22 Jan 2011 21:46:20 GMT'
+		controller.params['text'] = 'Bookmark 2'
+		controller.addEntrySData()
+
+		assert user.settings.get(BOOKMARK_CREATED_1)
+		assert user.settings.get(BOOKMARK_CREATED_2)
+		assert !user.settings.get(BOOKMARK_CREATED_3)
+		assert !user.settings.hasBookmarkCreationCountCompleted()
+
+		// For third bookmark
+		controller.params['currentTime'] = 'Fri, 23 Jan 2011 21:46:20 GMT'
+		controller.params['text'] = 'Bookmark 3'
+		controller.addEntrySData()
+
+		assert user.settings.get(BOOKMARK_CREATED_1)
+		assert user.settings.get(BOOKMARK_CREATED_2)
+		assert user.settings.get(BOOKMARK_CREATED_3)
+		assert user.settings.hasBookmarkCreationCountCompleted()
+	}
+
+	@Test
+	void "test AddEntrySData for updating the FIRST_ALERT_ENTRY bit when user creates an alert entry from mobile app"() {
+		controller.session.userId = userId
+
+		User user = User.get(userId)
+		int FIRST_ALERT_ENTRY = 22
+
+		// First clearing the previously set bits. (Just to ensure that this call sets the bits correctly)
+		user.settings.clear(FIRST_ALERT_ENTRY)
+
+		assert !user.settings.get(FIRST_ALERT_ENTRY)
+		assert !user.settings.hasFirstAlertEntryCountCompleted()
+
+		// Sending the mobileSessionId parameter
+		controller.params.mobileSessionId = "abcdefghij1245231"
+
+		controller.params.putAll(getEntryParams())
+		controller.params['repeatTypeId'] = RepeatType.ALERT.id.toString()
+
+		controller.addEntrySData()
+
+		assert user.settings.get(FIRST_ALERT_ENTRY)
+		assert user.settings.hasFirstAlertEntryCountCompleted()
+	}
+
 	@Test
 	void testUpdateEntrySData() {
 		controller.session.userId = userId
@@ -546,7 +690,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		println "User ID: " + userId
 
 		EntryStats stats = new EntryStats(userId)
-		
+
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "updatetest 2 units (comment)", null, null, baseDate, true), stats)
 		stats.finish()
 
@@ -573,9 +717,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		println "User ID: " + userId
 
 		EntryStats stats = new EntryStats(userId)
-		
+
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread repeat daily", null, null, earlyBaseDate, true), stats)
-		
+
 		stats.finish()
 
 		controller.params['entryId'] = entry.getId().toString()
@@ -598,12 +742,12 @@ class DataControllerTests extends CuriousControllerTestCase {
 		DataController controller = new DataController()
 
 		EntryStats stats = new EntryStats(userId)
-		
+
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
 		stats.finish()
-		
+
 		controller.session.userId = userId
 		controller.params.entryId = entry.getId().toString()
 		controller.params.displayDate = "Sat, 11 Aug 2012 07:00:00 GMT"
@@ -621,15 +765,97 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
+	void "Test delete entry when entry belongs to trackathon and user does not have write permission on trackathon"() {
+		DataController controller = new DataController()
+
+		Map params = new HashMap()
+		params.put("username", "testuser2")
+		params.put("email", "test2@test.com")
+		params.put("password", "eiajrvaer")
+		params.put("first", "first2")
+		params.put("last", "last2")
+		params.put("sex", "M")
+		params.put("location", "New York, NY")
+		params.put("birthdate", "12/1/1991")
+
+		User user2 = User.create(params)
+		Utils.save(user2, true)
+
+		Sprint sprint = Sprint.create(currentTime, user2, "Caffeine + Sugar", Visibility.PUBLIC)
+		assert sprint.userId == user2.id
+		assert sprint.name == "Caffeine + Sugar"
+		assert sprint.visibility == Visibility.PUBLIC
+		assert sprint.fetchTagName() == "caffeine sugar trackathon"
+
+		Utils.save(sprint, true)
+
+		EntryStats stats = new EntryStats(sprint.virtualUserId)
+
+		def entry = Entry.create(sprint.virtualUserId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
+
+		stats.finish()
+
+		controller.session.userId = userId
+		controller.params.entryId = entry.getId().toString()
+		controller.params.displayDate = "Sat, 11 Aug 2012 07:00:00 GMT"
+		controller.params.date = "Sat, 11 Aug 2012 09:00:00 GMT"
+		controller.params.baseDate = "Sat, 11 Aug 2012 07:00:00 GMT"
+		controller.params.timeZoneName = "America/Los_Angeles"
+
+		controller.params['callback'] = 'callback'
+
+		controller.deleteEntrySData()
+
+		def content = controller.response.contentAsString
+
+		assert content.contains('You do not have permission to delete this entry.')
+	}
+
+	@Test
+	void "Test delete entry when entry belongs to trackathon and user has write permission on trackathon"() {
+		DataController controller = new DataController()
+
+		Sprint sprint = Sprint.create(currentTime, user, "Caffeine + Sugar", Visibility.PUBLIC)
+		assert sprint.userId == userId
+		assert sprint.name == "Caffeine + Sugar"
+		assert sprint.visibility == Visibility.PUBLIC
+		assert sprint.fetchTagName() == "caffeine sugar trackathon"
+
+		Utils.save(sprint, true)
+
+		EntryStats stats = new EntryStats(sprint.virtualUserId)
+
+		def entry = Entry.create(sprint.virtualUserId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
+
+		stats.finish()
+
+		controller.session.userId = userId
+		controller.params.entryId = entry.getId().toString()
+		controller.params.displayDate = "Sat, 11 Aug 2012 07:00:00 GMT"
+		controller.params.date = "Sat, 11 Aug 2012 09:00:00 GMT"
+		controller.params.baseDate = "Sat, 11 Aug 2012 07:00:00 GMT"
+		controller.params.timeZoneName = "America/Los_Angeles"
+
+		controller.params['callback'] = 'callback'
+
+		controller.deleteEntrySData()
+
+		def content = controller.response.contentAsString
+
+		assert !content.contains('You do not have permission to delete this entry.')
+		assert content.startsWith('callback([[]')
+	}
+
+	@Test
 	void testDeleteRepeatEntrySData() {
 		DataController controller = new DataController()
 
 		EntryStats stats = new EntryStats(userId)
-		
+
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1 repeat", null, null, baseDate, true), stats)
 
 		stats.finish()
-		
+
 		controller.session.userId = userId
 		controller.params.entryId = entry.getId().toString()
 		controller.params.displayDate = "Sat, 11 Jul 2012 08:00:00 GMT"
@@ -691,7 +917,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 			[isReadOnly:false, defaultNotify:false])
 
 		curious.addMember(user)
-	
+
 		Discussion discussion = Discussion.create(user, "Discussion name")
 		discussion.createPost(user, "comment1", currentTime)
 		discussion.createPost(user, "comment2", currentTime + 1)
@@ -700,7 +926,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		discussion.createPost(user, "comment5", currentTime + 4)
 		discussion.createPost(user, "comment6", currentTime + 5)
 		Utils.save(discussion, true)
-	
+
 		curious.addDiscussion(discussion)
 		return discussion
 	}
@@ -880,7 +1106,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
 		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
 		controller.params["timeZoneName"] = "Asia/Kolkata"
-		
+
 		controller.createHelpEntriesData()
 		assert controller.response.json.success
 		assert !controller.session.showHelp
@@ -893,7 +1119,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
 		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
 		controller.params["timeZoneName"] = "Asia/Kolkata"
-		
+
 		controller.createHelpEntriesData()
 		assert controller.response.json.success == true
 		assert Entry.count() == 2

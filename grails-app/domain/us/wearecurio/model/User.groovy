@@ -47,7 +47,7 @@ class User {
 	UFile avatar
 	private String avatarURL
 	VerificationStatus emailVerified = VerificationStatus.UNVERIFIED
-	
+
 	static transients = ['avatarURL']
 
 	static constraints = {
@@ -179,7 +179,7 @@ class User {
 
 		return user
 	}
-	
+
 	static boolean isSystemAdmin(Long userId) {
 		return UserGroup.hasAdmin(UserGroup.getSystemGroup().id, userId)
 	}
@@ -197,7 +197,7 @@ class User {
 			//addAdmin also adds as reader and writer
 			virtualUserGroup.addAdmin(this)
 		}
-		
+
 		return virtualUserGroupIdDiscussions
 	}
 
@@ -215,7 +215,7 @@ class User {
 			virtualUserGroup.removeReader(this)
 			virtualUserGroup.removeWriter(this)
 		}
-		
+
 		return virtualUserGroupIdFollowers
 	}
 
@@ -304,7 +304,7 @@ class User {
 
 	boolean follow(User follower) {
 		fetchVirtualUserGroupIdFollowers()
-		
+
 		def r = GroupMemberReader.lookup(virtualUserGroupIdFollowers, follower.id)
 		if (r) return true
 
@@ -325,7 +325,7 @@ class User {
 
 	boolean unFollow(User follower) {
 		fetchVirtualUserGroupIdFollowers()
-		
+
 		def r = GroupMemberReader.lookup(virtualUserGroupIdFollowers, follower.id)
 		if (r == null) return true
 
@@ -339,22 +339,22 @@ class User {
 						UserActivity.ObjectType.USER,
 						id
 						)
-		
+
 		return true
 	}
-	
+
 	static Long idFromHash(String hash) {
 		def result = DatabaseService.get().sqlRows("select id from _user where hash = :hash", [hash: hash])
 		return result[0]?.id
 	}
-	
+
 	boolean follows(User other) {
 		return followsId(other.id)
 	}
-	
+
 	boolean followsId(Long otherId) {
 		fetchVirtualUserGroupIdFollowers()
-		
+
 		def r = GroupMemberReader.lookup(virtualUserGroupIdFollowers, otherId)
 		return r ? true : false
 	}
@@ -393,7 +393,7 @@ class User {
 				uname = null
 			}
 		}
-		
+
 		if (uname) {
 			username = uname
 		}
@@ -603,11 +603,11 @@ class User {
 			Tag.fetchAll(usersTagIds)
 		}
 	}
-	
+
 	static boolean hasCachedTagId(Long userId, Long tagId) {
 		return tagIdCache[userId] && tagIdCache[userId].contains(tagId)
 	}
-	
+
 	static boolean recacheTagIds(Long userId) {
 		tagIdCache[userId] = null
 		tagGroupIdCache[userId] = null
@@ -617,10 +617,11 @@ class User {
 
 	static def getTagData(def userId) {
 		return User.withTransaction {
-			DatabaseService.get().sqlRows("""SELECT t.id AS id, t.description AS description, COUNT(e.id) AS c,
+			DatabaseService.get().sqlRows("""SELECT t.id AS id, t.description AS description,
 					IF(prop.data_type_manual IS NULL OR prop.data_type_manual = 0, IF(prop.data_type_computed IS NULL OR prop.data_type_computed = 2, 0, 1), prop.data_type_manual = 1) AS iscontinuous,
-					prop.show_points AS showpoints FROM entry e INNER JOIN tag t ON e.tag_id = t.id
+					prop.show_points AS showpoints, stat.count_last_three_months as lastThreeMonthsCount FROM entry e INNER JOIN tag t ON e.tag_id = t.id
 					LEFT JOIN tag_properties prop ON prop.user_id = e.user_id AND prop.tag_id = t.id
+					LEFT JOIN tag_stats stat on stat.user_id=e.user_id and stat.tag_id=t.id
 					WHERE e.user_id = :userId AND e.date IS NOT NULL GROUP BY t.id ORDER BY t.description""",
 							[userId:userId.toLong()])
 		}
@@ -685,11 +686,11 @@ class User {
 	void deleteInterestTag(Tag tag) {
 		this.removeFromInterestTags(tag)
 	}
-	
+
 	void removeInterestTag(Tag tag) {
 		this.removeFromInterestTags(tag)
 	}
-	
+
 	boolean hasInterestTag(Tag tag) {
 		this.interestTags?.contains(tag) ? true : false
 	}
@@ -846,29 +847,29 @@ class User {
 
 		return User.executeQuery(
 						"""SELECT item.groupId as groupId
-             FROM 
-                UserGroup userGroup, 
-                GroupMemberAdmin item 
-             WHERE 
-                item.memberId = :id AND 
+             FROM
+                UserGroup userGroup,
+                GroupMemberAdmin item
+             WHERE
+                item.memberId = :id AND
                 item.groupId = userGroup.id""",
 						[id: userId])
 	}
 
 /* Deprecated - this method could result in large result set over time, and also doesn't represent editable
  * logic correctly a la UserGroup.canAdminDiscussion()
- 
+
  	static List getAdminDiscussionIds(Long userId) {
 		if (userId == null) { return null }
 
 		return User.executeQuery(
 						"""SELECT dis.memberId as discussionId
-             FROM 
-                UserGroup userGroup, 
+             FROM
+                UserGroup userGroup,
                 GroupMemberAdmin item,
 				GroupMemberDiscussion dis
-             WHERE 
-                item.memberId = :id AND 
+             WHERE
+                item.memberId = :id AND
                 item.groupId = userGroup.id AND
 				dis.groupId = item.groupId""",
 						[id: userId])

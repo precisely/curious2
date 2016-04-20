@@ -1433,7 +1433,7 @@ body.tags-displayed .floating-column {
 	font-style: normal;
 }
 
-#answer::-webkit-input-placeholder, #answer:-moz-placeholder, 
+#answer::-webkit-input-placeholder, #answer:-moz-placeholder,
 #answer::-moz-placeholder {
 	font-style: normal;
 	font-size: 16px;
@@ -1547,18 +1547,18 @@ body.tags-displayed .floating-column {
 	color: #787878;
 }
 
-.input-affordance input[type=radio]:checked + label { 
+.input-affordance input[type=radio]:checked + label {
 	color:#FC3F28;
 }
 
-.user-name-radio .input-affordance input[type=radio]:checked + label { 
+.user-name-radio .input-affordance input[type=radio]:checked + label {
 	color:#787878;
 }
 
-.feed-body .input-affordance label:after { 
+.feed-body .input-affordance label:after {
 	content: "";
 	position: absolute;
-	display: inline-block; 
+	display: inline-block;
 	height: 16px;
 	width: 16px;
 	margin-left: 10px;
@@ -1572,10 +1572,10 @@ body.tags-displayed .floating-column {
 	margin-left:200px;
 }
 
-.user-name-radio .input-affordance label:after { 
+.user-name-radio .input-affordance label:after {
 	content: "";
 	position: absolute;
-	display: inline-block; 
+	display: inline-block;
 	height: 16px;
 	width: 16px;
 	margin-left: 10px;
@@ -1608,10 +1608,10 @@ body.tags-displayed .floating-column {
 	margin-left: 37px;
 }
 
-.bio-radio label:after { 
+.bio-radio label:after {
 	content: "";
 	position: absolute;
-	display: inline-block; 
+	display: inline-block;
 	height: 16px;
 	width: 16px;
 	margin-left: 10px;
@@ -1623,7 +1623,7 @@ body.tags-displayed .floating-column {
 
 .bio-radio input[type=radio] {
 	display: none;
-	
+
 }
 .bio-radio input[type=radio]:checked+label:after {
 	background-color: #FC3F28;
@@ -1795,7 +1795,7 @@ body.tags-displayed .floating-column {
 }
 
 
-.track-page .choose-date-input::-webkit-input-placeholder, .track-page .choose-date-input::-moz-placeholder, 
+.track-page .choose-date-input::-webkit-input-placeholder, .track-page .choose-date-input::-moz-placeholder,
 .track-page .choose-date-input:-ms-input-placeholder {
 	color: #656565 !important;
 	font-size: 10px;
@@ -1822,7 +1822,7 @@ body.tags-displayed .floating-column {
 }
 
 .repeat-frequency-radio-group input[type="radio"] {
-	display: none;	
+	display: none;
 }
 
 .repeat-frequency-radio-group label , .repeat-frequency-radio-group label {
@@ -2051,7 +2051,7 @@ body.track-page #area0 .panel-wrapper {
 	color: #C0C8C9;
 	font-size: 12px;
 }
-.pinnedDarkLabelImage, .repeatLabelImage, .repeatDarkLabelImage, .remindLabelImage, .remindDarkLabelImage {
+.pinnedDarkLabelImage, .repeatLabelImage, .repeatDarkLabelImage, .remindLabelImage, .remindDarkLabelImage, .bookmarkDarkLabelImage, .buttonDarkLabelImage {
 	height: 15px;
 	width: 15px;
 	background-size: contain !important;
@@ -2073,7 +2073,7 @@ body.track-page #area0 .panel-wrapper {
 	background: url('/images/remind-sm-dark.png') no-repeat center left;
 }
 
-.pinnedDarkLabelImage {
+.pinnedDarkLabelImage, .bookmarkDarkLabelImage, .buttonDarkLabelImage {
 	background: url('/images/pinned-sm-dark.png') no-repeat center left;
 }
 
@@ -2477,7 +2477,7 @@ div.graph-header-container .red-header {
 .feed #createSprintOverlay .modal-dialog .radio-label:after {
 	content: "";
 	position: absolute;
-	display: inline-block; 
+	display: inline-block;
 	height: 25px;
 	width: 25px;
 	border-radius: 12px;
@@ -3298,7 +3298,7 @@ body {
 }
 
 .sprint .sprint-description:after {
-	content: "\02026";  
+	content: "\02026";
 
 	box-sizing: content-box;
 	-webkit-box-sizing: content-box;
@@ -3308,7 +3308,7 @@ body {
 	float: right;
 	position: relative;
 	top: -21px;
-	left: 100%; 
+	left: 100%;
 	width: 3em;
 	margin-left: -3em;
 	padding-right: 5px;
@@ -3930,7 +3930,7 @@ body .modal-header button {
 .modal-dialog .carousel-inner .radio-label:before {
 	content: "";
 	position: absolute;
-	display: inline-block; 
+	display: inline-block;
 	height: 28px;
 	width: 28px;
 	border-radius: 15px;
@@ -4107,8 +4107,8 @@ body .modal-header button {
 }
 
 #participantsAutocomplete ul, #adminsAutocomplete ul {
-	-moz-column-count: 1; 
-	-moz-column-gap : 20px; 
+	-moz-column-count: 1;
+	-moz-column-gap : 20px;
 	-webkit-column-count : 1;
 	-webkit-column-gap : 20px;
 	 column-count : 1; column-gap : 20px;
@@ -4239,9 +4239,9 @@ body .modal-header button {
 	background: #e27c4a;
 	height: 13px;
 	width: 465px;
-	border-radius: 6px !important; 
+	border-radius: 6px !important;
 	-moz-box-shadow: inset 0 1px 1px 0 rgba(0, 0, 0, 0.75);
-	text-align: center; 
+	text-align: center;
 }
 
 #helpWizardOverlay input[type='range']::-webkit-slider-thumb {
@@ -4340,7 +4340,7 @@ body .modal-header button {
 }
 
 #feed-right-tab a {
-	color: #ff935f; 
+	color: #ff935f;
 }
 
 .feed-item.user {
@@ -4459,7 +4459,7 @@ input[type = "number"] {
 	font-weight: 600;
 	border: #cdcdcd;
 	border-style: solid;
-	border-width: 1px; 
+	border-width: 1px;
 	line-height: 0;
 	margin-left: 84px;
 	margin-bottom: 11px;
@@ -4484,14 +4484,14 @@ input[type = "number"] {
 	font-size:100px;
 }
 
-.email-radio input[type=radio]:checked + label { 
+.email-radio input[type=radio]:checked + label {
 	color:#787878;
 }
 
-.email-radio label:before { 
+.email-radio label:before {
 	content: "";
 	position: absolute;
-	display: inline-block; 
+	display: inline-block;
 	height: 16px;
 	width: 16px;
 	margin-left: -29px;

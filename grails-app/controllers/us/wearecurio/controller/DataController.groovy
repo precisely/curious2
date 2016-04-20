@@ -10,6 +10,7 @@ import us.wearecurio.annotations.EmailVerificationRequired
 import us.wearecurio.data.DecoratedUnitRatio
 import us.wearecurio.data.RepeatType
 import us.wearecurio.data.UnitGroupMap
+import us.wearecurio.data.UserSettings
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.DiscussionPost
 import us.wearecurio.model.DurationType
@@ -85,9 +86,33 @@ class DataController extends LoginController {
 
 		debug("created " + entry)
 
+		boolean showEntryBalloon
+		boolean showBookmarkBalloon
+		if (params.containsKey('mobileSessionId') && !params.isHelpEntry) {
+			// Currently showing the balloons only for the mobile app. TODO add support for balloons on web.
+			UserSettings userSettings = user.settings
+			if (entry.getRepeatType()?.isContinuous()) {
+				showBookmarkBalloon = !userSettings.hasBookmarkCreationCountCompleted()
+				if (showBookmarkBalloon) {
+					userSettings.countBookmarkCreation()
+				}
+			} else {
+				showEntryBalloon = !userSettings.hasEntryCreationCountCompleted()
+				if (showEntryBalloon) {
+					userSettings.countEntryCreation()
+				}
+
+				if (entry.getRepeatType()?.isReminder()) {
+					userSettings.countFirstAlertEntry()
+				}
+			}
+
+			Utils.save(user, true)
+		}
+
 		authStatus.sprint?.reindex()
 
-		return [entry, parsedEntry['status'], tagStats?.get(0)]
+		return [entry, parsedEntry['status'], tagStats?.get(0), showEntryBalloon, showBookmarkBalloon]
 	}
 
 	protected def doUpdateEntry(Map parms) {
@@ -129,7 +154,7 @@ class DataController extends LoginController {
 		EntryStats stats = new EntryStats(userId)
 
 		// activate repeat entry if it has a repeat type
-		if (entry.getRepeatType() != null && entry.getRepeatType().isContinuous()) {
+		if (entry.getRepeatType() != null && entry.getRepeatType().isContinuous() && !p.bookmarkEdit) {
 			debug "Activating continuous entry " + entry
 			Entry newEntry = entry.activateContinuousEntry(baseDate, currentTime, timeZoneName, stats)
 			if (newEntry != null) {
@@ -147,7 +172,7 @@ class DataController extends LoginController {
 			debug "Parse error"
 			stats.finish()
 			return [null, 'Cannot interpret entry text.', null, null];
-		} else if (m['repeatType']?.isContinuous() && (!wasContinuous)) {
+		} else if (m['repeatType']?.isContinuous() && (!wasContinuous) && !p.bookmarkEdit) {
 			// if creating a new continuous (button) entry and the previous entry was not continuous, create a new entry instead
 			entry = Entry.create(userId, m, stats)
 		} else if (entry != null) {
@@ -427,6 +452,15 @@ class DataController extends LoginController {
 			renderJSONGet([entries: entries, deviceEntryStates: user.settings.getDeviceEntryStates()])
 			return
 		}
+
+		// Currently showing the balloons only for the mobile app. TODO add support for balloons on web.
+		if (params.containsKey('mobileSessionId')) {
+			boolean showRemindAlertBalloon = !user.settings.hasFirstAlertEntryCountCompleted()
+			renderJSONGet([entries, showRemindAlertBalloon])
+			
+			return
+		}
+
 		renderJSONGet(entries)
 	}
 
@@ -670,7 +704,9 @@ class DataController extends LoginController {
 				result[2]?.getJSONDesc(),
 				result[0].getJSONDesc(),
 				// TODO respond this as map instead of passing data based on index
-				user.settings.getDeviceEntryStates()
+				user.settings.getDeviceEntryStates(),
+				result[3], // ShowEntryBalloon flag
+				result[4]  // ShowBookmarkBalloon flag
 			])
 		} else {
 			renderStringGet('error')
@@ -714,16 +750,26 @@ class DataController extends LoginController {
 		def currentTime = params.currentTime == null ? new Date() : parseDate(params.currentTime)
 		def baseDate = params.baseDate == null? null : parseDate(params.baseDate)
 		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
+		User entryOwner = User.get(userId);
+		User currentUser = sessionUser()
 
-		if (entry.getUserId() != sessionUser().getId()) {
+		if (!entryOwner.virtual && entryOwner.id != currentUser.id) {
 			renderStringGet('You do not have permission to delete this entry.')
 		} else if (entry.fetchIsGenerated()) {
 			renderStringGet('Cannot delete generated entries.')
 		} else {
+			// Allow deleting entries belonging to a trackathon only if user has write permission for that trackathon
+			if (entryOwner.virtual) {
+				Sprint sprint = Sprint.findByVirtualUserId(entryOwner.id)
+				if (!sprint.hasWriter(currentUser.id)) {
+					renderStringGet('You do not have permission to delete this entry.')
+					return
+				}
+			}
 			EntryStats stats = new EntryStats(userId)
 			Entry.delete(entry, stats)
 			def tagStats = stats.finish()
-			renderJSONGet([listEntries(sessionUser(), timeZoneName, parseDate(params.displayDate), currentTime),
+			renderJSONGet([listEntries(currentUser, timeZoneName, parseDate(params.displayDate), currentTime),
 				tagStats[0]?.getJSONDesc(),
 				tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null,
 				// TODO respond this as map instead of passing data based on index
@@ -1208,6 +1254,9 @@ class DataController extends LoginController {
 		if (params.entryId) {
 			result = doUpdateEntry(params)
 		} else {
+			if (params.containsKey('mobileSessionId')) {
+				params['isHelpEntry'] = true
+			}
 			result = doAddEntry(params)
 		}
 		if (result[0] != null) {

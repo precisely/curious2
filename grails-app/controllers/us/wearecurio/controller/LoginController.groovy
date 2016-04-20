@@ -144,10 +144,14 @@ class LoginController extends SessionController {
 				renderJSONGet([success:false, message: g.message(code: "user.account.banned")])
 				return
 			}
+
+			boolean hasVisitedMobileApp = checkIfVisitedMobileApp(user, params)
+
 			def uuid = session.persistentSession.fetchUuid()
 			debug "Logged in, persistent session ID " + uuid
 			// TODO: mobileSessionId is deprecated, will be removed eventually
-			renderJSONGet([user: user.getJSONDesc(), success:true, persistentSessionId:uuid, mobileSessionId:uuid])
+			renderJSONGet([user: user.getJSONDesc(), success:true, persistentSessionId:uuid, mobileSessionId:uuid, 
+						   hasVisitedMobileApp: hasVisitedMobileApp])
 		} else {
 			debug "auth failure"
 			renderJSONGet([success:false])
@@ -507,6 +511,23 @@ class LoginController extends SessionController {
 		}
 	}
 	
+	// This method only sets the user settings bit, if the request is from the mobile app.
+	protected boolean checkIfVisitedMobileApp(User user, Map params) {
+		if (!user) {
+			return
+		}
+
+		boolean hasVisitedMobileApp = user.settings.hasVisitedMobileApp()
+		if (params.containsKey('mobileSessionId')) {
+			if (!hasVisitedMobileApp) {
+				user.settings.markFirstVisit()
+				Utils.save(user, true)
+			}
+		}
+		
+		return hasVisitedMobileApp
+	}
+
 	def doregisterData() {
 		debug "LoginController.doregisterData()"
 		
@@ -522,9 +543,11 @@ class LoginController extends SessionController {
 		
 		def retVal = execRegister(params)
 		
+		boolean hasVisitedMobileApp = checkIfVisitedMobileApp(retVal['user'], params)
+		
 		if (retVal['success']) {
 			def uuid = session.persistentSession.fetchUuid()
-			renderJSONPost([success:true, persistentSessionId:uuid, mobileSessionId:uuid])
+			renderJSONPost([success:true, persistentSessionId:uuid, mobileSessionId:uuid, hasVisitedMobileApp: hasVisitedMobileApp])
 		} else if (retVal['errorCode'] == REGISTER_ERROR_USER_ALREADY_EXISTS) {
 			renderJSONPost([success:false, message:"User " + params.username + " already exists"])
 		} else if (retVal['errorCode'] == REGISTER_MISSING_FIELDS) {

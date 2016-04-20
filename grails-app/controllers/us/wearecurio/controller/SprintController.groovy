@@ -36,7 +36,7 @@ class SprintController extends LoginController {
 		if (!sprintInstance) {
 			renderJSONPost([success: false, message: g.message(code: "sprint.not.exist")])
 			return
-		} 
+		}
 
 		Sprint.withTransaction { status ->
 			sprintInstance.update(requestData)
@@ -77,9 +77,9 @@ class SprintController extends LoginController {
 		sprintInstanceMap["virtualGroupName"] = sprintInstance.fetchUserGroup().name
 		sprintInstanceMap["hasMember"] = sprintInstance.hasMember(sessionUser().id)
 
-		renderJSONGet([success: true, sprint: sprintInstanceMap, entries: entries, participants: participants, admins: admins, 
+		renderJSONGet([success: true, sprint: sprintInstanceMap, entries: entries, participants: participants, admins: admins,
 			totalParticipants: sprintInstance.getParticipantsCount(), discussions: sprintDiscussions])
-	} 
+	}
 
 	def disableComments(boolean disable, String id) {
 		Sprint sprintInstance = Sprint.findByHash(id)
@@ -97,7 +97,7 @@ class SprintController extends LoginController {
 		}
 
 		sprintInstance.disableComments = disable
-		
+
 		Utils.save(sprintInstance, true)
 
 		String message
@@ -284,10 +284,22 @@ class SprintController extends LoginController {
 		Date baseDate = Utils.getStartOfDay(now)
 		EntryStats stats = new EntryStats(currentUser.id)
 
+		boolean showSprintStartBalloon
+		if (params.containsKey('mobileSessionId')) {
+			// Currently showing the balloons only for the mobile app. TODO add support for balloons on web.
+			showSprintStartBalloon = !currentUser.settings.hasTrackathonStartCountCompleted()
+			if (showSprintStartBalloon) {
+				currentUser.settings.countTrackathonStart()
+			}
+
+			Utils.save(currentUser, true)
+		}
+		
 		if (sprintInstance.start(currentUser.id, baseDate, now, timeZoneName, stats)) {
-			renderJSONGet([success: true])
+			renderJSONGet([success: true, showSprintStartBalloon: showSprintStartBalloon])
 			return
 		}
+
 		renderJSONGet([success: false, message: g.message(code: "can.not.start.sprint")])
 	}
 
@@ -322,7 +334,7 @@ class SprintController extends LoginController {
 		Sprint sprintInstance = Sprint.findByHash(params.id)
 		User currentUser = sessionUser()
 		log.debug "User $currentUser trying to leave sprint[params.id]"
-		
+
 		if (!sprintInstance) {
 			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
 			return
@@ -331,7 +343,7 @@ class SprintController extends LoginController {
 			renderJSONGet([success: false, message: g.message(code: "not.sprint.member")])
 			return
 		}
-		
+
 		Date now = params.now ? parseDate(params.now) : null
 		Date baseDate = Utils.getStartOfDay(now)
 		String timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
@@ -341,7 +353,7 @@ class SprintController extends LoginController {
 		sprintInstance.removeMember(currentUser.id)
 		renderJSONGet([success: true])
 	}
-	
+
 	def join() {
 		Sprint sprintInstance = Sprint.findByHash(params.id)
 		User currentUser = sessionUser()
@@ -368,8 +380,9 @@ class SprintController extends LoginController {
 			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
 			return
 		}
-		
-		if (!sprint.hasMember(currentUser.id)) {
+
+		boolean isMember = sprint.hasMember(currentUser.id)
+		if (!isMember) {
 			renderJSONGet([success: false, message: g.message(code: "not.sprint.member")])
 			return
 		}
@@ -377,6 +390,19 @@ class SprintController extends LoginController {
 		params.max = Math.min(max ?: 5, 100)
 		params.offset = offset ?: 0
 		Map sprintDiscussions = searchService.getSprintDiscussions(sprint, currentUser, params.offset, params.max)
-		renderJSONGet([listItems: sprintDiscussions.listItems, success: true]);
+
+		boolean showPostDiscussionBalloon
+		if (params.containsKey('mobileSessionId')) {
+			// Currently showing the balloons only for the mobile app. TODO add support for balloons on web.
+			showPostDiscussionBalloon = !currentUser.settings.hasDiscussionDetailVisitCountCompleted()
+			if (showPostDiscussionBalloon) {
+				currentUser.settings.countDiscussionDetailVisit()
+			}
+
+			Utils.save(currentUser, true)
+		}
+
+		renderJSONGet([listItems: sprintDiscussions.listItems, success: true, showPostDiscussionBalloon: 
+				showPostDiscussionBalloon, isMember: isMember])
 	}
 }

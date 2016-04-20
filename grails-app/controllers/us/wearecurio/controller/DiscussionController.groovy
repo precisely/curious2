@@ -21,7 +21,7 @@ class DiscussionController extends LoginController {
 
 	@EmailVerificationRequired
 	def save(Long plotDataId, String name, Long id, String discussionPost, String visibility) {
-		log.debug "saving plotDataId:" + plotDataId + ", name:" + name + ", id:" + id + ", visibility:" + visibility
+		log.debug "saving plotDataId:" + plotDataId + ", name:" + name + ", id:" + id + ", visibility:" + visibility + ", group:" + params.group
 		def user = sessionUser()
 		UserGroup group = Discussion.loadGroup(params.group, user)
 
@@ -53,11 +53,11 @@ class DiscussionController extends LoginController {
 
 			Map model = discussion.getJSONDesc()
 			DateFormat df = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ssZ");
-			
+
 			log.debug "Successfully created new discussion: " + discussion.id
 
-			renderJSONPost([discussion: [name: model.discussionTitle, hash: model.hash, created: df.format(model.discussionCreatedOn), 
-					type: "dis", userAvatarURL: model.discussionOwnerAvatarURL, userName: model.discussionOwner, userHash: model.discussionOwnerHash, 
+			renderJSONPost([discussion: [name: model.discussionTitle, hash: model.hash, created: df.format(model.discussionCreatedOn),
+					type: "dis", userAvatarURL: model.discussionOwnerAvatarURL, userName: model.discussionOwner, userHash: model.discussionOwnerHash,
 				isAdmin: true, totalComments: model.totalPostCount, groupName: model.groupName, id: model.discussionId], success: true])
 		} else {
 			log.debug "Failed to create discussion"
@@ -68,7 +68,7 @@ class DiscussionController extends LoginController {
 
 	def show() {
 		User user = sessionUser()
-		
+
 		log.debug "Showing discussion:" + params.id
 
 		Discussion discussion = Discussion.findByHash(params.id)
@@ -110,7 +110,7 @@ class DiscussionController extends LoginController {
 			renderJSONGet([success: true, discussionDetails: model])
 		}
 	}
-	
+
 	def disableComments(boolean disable, String id) {
 		debug("Attempting to disable comments on trackathon $params")
 
@@ -180,17 +180,17 @@ class DiscussionController extends LoginController {
 		User user = sessionUser()
 
 		if (!discussion) {
-			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["Discussion"])]) 
+			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["Discussion"])])
 			return
 		}
 		def discussionUserId = discussion.getUserId()
 		if ((user?.id == discussionUserId) || !discussionUserId) {
 			discussion.setIsPublic(true)
 			Utils.save(discussion, true)
-			renderJSONGet([success: true, message: g.message(code: "default.updated.message", args: ["Discussion"])]) 
+			renderJSONGet([success: true, message: g.message(code: "default.updated.message", args: ["Discussion"])])
 		} else {
 			log.debug "Failed to publish discussion: user ID does not match owner"
-			renderJSONGet([success: false, message: g.message(code: "default.permission.denied", args: ["Discussion"])]) 
+			renderJSONGet([success: false, message: g.message(code: "default.permission.denied", args: ["Discussion"])])
 		}
 	}
 
@@ -199,7 +199,7 @@ class DiscussionController extends LoginController {
 		User user = sessionUser()
 		Discussion discussion = Discussion.findByHash(params.id)
 		boolean unfollow = params.unfollow ? true : false
-		
+
 		if (!user) {
 			log.debug "Failed to follow discussion: not logged in"
 			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["User"])])

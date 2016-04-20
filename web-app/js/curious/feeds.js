@@ -26,7 +26,7 @@ function getURLSocialAll(offset, max) {
 	return getSearchControllerURL(
 			"getAllSocialData",
 			{
-				offset: offset, 
+				offset: offset,
 				max: max,
 				nextSuggestionOffset: nextSuggestionOffset  //global variable
 			}
@@ -37,7 +37,7 @@ function getURLSocialDiscussions(offset, max) {
 	return getSearchControllerURL(
 			"getDiscussionSocialData",
 			{
-				offset: offset, 
+				offset: offset,
 				max: max
 			}
 		)
@@ -47,27 +47,27 @@ function getURLSocialNotifications(offset, max) {
 	return getSearchControllerURL(
 			"getSocialNotifications",
 			{
-				offset: offset, 
+				offset: offset,
 				max: max
 			}
-		)	
+		)
 }
 
 function getURLSocialPeople(offset, max) {
 	return getSearchControllerURL(
 			"getPeopleSocialData",
 			{
-				offset: offset, 
+				offset: offset,
 				max: max
 			}
-		)	
+		)
 }
 
 function getURLSocialOwned(offset, max) {
 	return getSearchControllerURL(
 			"getOwnedSocialData",
 			{
-				offset: offset, 
+				offset: offset,
 				max: max
 			}
 		)
@@ -78,7 +78,7 @@ function getURLSprintsAll(offset, max) {
 	return getSearchControllerURL(
 			"getAllSprintData",
 			{
-				offset: offset, 
+				offset: offset,
 				max: max,
 				nextSuggestionOffset: nextSuggestionOffset //global variable
 			}
@@ -90,7 +90,7 @@ function getURLSprintsOwned(offset, max) {
 	return getSearchControllerURL(
 			"getOwnedSprintData",
 			{
-				offset: offset, 
+				offset: offset,
 				max: max
 			}
 		)
@@ -101,7 +101,7 @@ function getURLSprintsStarted(offset, max) {
 	return getSearchControllerURL(
 			"getStartedSprintData",
 			{
-				offset: offset, 
+				offset: offset,
 				max: max
 			}
 		)
@@ -111,7 +111,7 @@ function getURLSearchAll(offset, max) {
 	return getSearchControllerURLSearch(
 			"searchAllData",
 			{
-				offset: offset, 
+				offset: offset,
 				max: max
 			}
 		)
@@ -121,7 +121,7 @@ function getURLSearchDiscussions(offset, max) {
 	return getSearchControllerURLSearch(
 			"searchDiscussionData",
 			{
-				offset: offset, 
+				offset: offset,
 				max: max
 			}
 		)
@@ -131,17 +131,17 @@ function getURLSearchSprints(offset, max) {
 	return getSearchControllerURLSearch(
 			"searchSprintData",
 			{
-				offset: offset, 
+				offset: offset,
 				max: max
 			}
-		)	
+		)
 }
 
 function getURLSearchPeople(offset, max) {
 	return getSearchControllerURLSearch(
 			"searchPeopleData",
 			{
-				offset: offset, 
+				offset: offset,
 				max: max
 			}
 		)
@@ -151,7 +151,7 @@ function getURLSearchOwned(offset, max) {
 	return getSearchControllerURLSearch(
 			"searchAllOwnedData",
 			{
-				offset: offset, 
+				offset: offset,
 				max: max
 			}
 		)
@@ -265,7 +265,7 @@ function processResults(data) {
 		}
 
 		$("#feed").text("No feeds to display.");
-	}	
+	}
 }
 
 function displaySocialPage() {
@@ -279,16 +279,16 @@ function displaySocialPage() {
 		window.location.href = sprintShowURL + hash.split("/")[1];
 		return;
 	}
-	
+
 	if (!isHash(["all", "discussions", "people", "notifications", "owned"])) {
 		displayDetail();
 		return;
 	}
-	
+
 	initializeListing();
-	
+
 	setQueryHeader("Social Activity", false);
-	
+
 	switch (hash) {
 	case "#all":
 		queueJSON("Getting feeds", getURLSocialAll(0, 5), processResults)
@@ -318,11 +318,11 @@ function displaySprintPage() {
 		displayDetail();
 		return;
 	}
-	
+
 	initializeListing();
-		
+
 	setQueryHeader("Trackathons", false);
-	
+
 	switch (window.location.hash) {
 	case "#all":
 		queueJSON("Getting trackathons feed", getURLSprintsAll(0, 5), processResults)
@@ -344,11 +344,11 @@ function displaySearchPage() {
 		displayDetail();
 		return;
 	}
-	
+
 	initializeListing();
-	
+
 	setQueryHeader('Search Results: ' + $("#global-search input[name=q]").val(), false);
-	
+
 	switch (window.location.hash) {
 	case "#all":
 		queueJSON("Getting search results", getURLSearchAll(0, 5), processResults)
@@ -396,7 +396,7 @@ function checkAndDisplayTabData() {
 	// Reset these variables as we change state/tab
 	nextSuggestionOffset = 0;
 	commentsArgs = {offset: 0, sort: "created", order: "desc", max: maxCommentsPerDiscussion};
-	
+
 	// Clear the main content and display a spinner
 	$("#feed").html('<div class="text-center"><i class="fa fa-circle-o-notch fa-spin fa-3x"></i></div>');
 
@@ -405,7 +405,7 @@ function checkAndDisplayTabData() {
 	$('#feed').infiniteScroll('stop');
 
 	$("#feed").addClass("feed-items");
-		
+
 	// If no "hash" is specified or hash is empty
 	if (!window.location.hash) {
 		window.location.hash = "#all";
@@ -419,7 +419,7 @@ function checkAndDisplayTabData() {
 	} else if (isSearchGSP) {
 		displaySearchPage()
 	}
-	
+
 	$(window).scrollTop(0);
 }
 
@@ -482,7 +482,7 @@ $(document).ready(function() {
 		var repeatType = $(this).data('repeatType');
 		var id = $(this).data('id');
 		console.log('repeat type: ', repeatType);
-		deleteGhost($element, id, true);
+		deleteEntry($element, id, true);
 		return false;
 	});
 
@@ -515,7 +515,7 @@ $(document).ready(function() {
 	});
 
 	// Handlers for discussion form input fields
-	$(document).on('keypress', '#discussion-topic', function(e) { 
+	$(document).on('keypress', '#discussion-topic', function(e) {
 		var key = e.which;
 		if (key == 13) {
 			var value = $(this).val();
@@ -558,7 +558,7 @@ $(document).ready(function() {
 	$('#close-sprint-modal').click(function() {
 		$('#createSprintOverlay').modal('hide').data('bs.modal', null);
 		clearSprintFormData();
-		queuePostJSON('Canceling sprint edit', '/data/cancelSprintEdit', getCSRFPreventionObject('cancelSprintEditCSRF', 
+		queuePostJSON('Canceling sprint edit', '/data/cancelSprintEdit', getCSRFPreventionObject('cancelSprintEditCSRF',
 				{username: userName, sprintHash: $('#sprintIdField').val()}),
 				function(data) {
 			if (!checkData(data))
@@ -593,7 +593,7 @@ function extractDiscussionNameAndPost(value) {
 	// Trim the entered text max upto the 100 characters and use it as the discussion name/title
 	if (discussionName.length > 100) {
 		discussionName = shorten(discussionName, 100).trim();		// See base.js for "shorten" method
-		// And the rest of the string (if any) will be used as first discussion comment message, 
+		// And the rest of the string (if any) will be used as first discussion comment message,
 		// reducing 3 characters as trailing ellipsis appended at the end of the post title
 		discussionPost = value.substring(discussionName.length - 3).trim();
 	} else {
@@ -663,9 +663,9 @@ function clearSprintFormData() {
 function deleteParticipantsOrAdmins($element, username, actionType) {
 	var actionName = (actionType === 'participants') ? 'deleteMember' : 'deleteAdmin';
 
-	queuePostJSON('Removing members', '/api/sprint/action/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
-			{username: username, now: new Date().toUTCString(), sprintHash: $('#sprintIdField').val(), 
-			timeZoneName: jstz.determine().name()}), 
+	queuePostJSON('Removing members', '/api/sprint/action/' + actionName, getCSRFPreventionObject(actionName + 'CSRF',
+			{username: username, now: new Date().toUTCString(), sprintHash: $('#sprintIdField').val(),
+			timeZoneName: jstz.determine().name()}),
 			function(data) {
 		if (!checkData(data))
 			return;
@@ -692,7 +692,7 @@ function createAutocomplete(inputId, autocompleteId) {
 
 	$('#' + inputId).on('keyup', function() {
 		var searchString = $('#' + inputId).val();
-		queueJSON('Getting autocomplete', '/data/getAutocompleteParticipantsData?' + getCSRFPreventionURI("getAutocompleteParticipantsDataCSRF") + "&callback=?", 
+		queueJSON('Getting autocomplete', '/data/getAutocompleteParticipantsData?' + getCSRFPreventionURI("getAutocompleteParticipantsDataCSRF") + "&callback=?",
 				{searchString: searchString, max: 10},
 				function(data) {
 			if (!checkData(data))
@@ -711,7 +711,7 @@ function createAutocomplete(inputId, autocompleteId) {
 		var key = e.which;
 		if (key == 13) { // the enter key code
 			addSprintMemberOrAdmin(inputId, userName);
-			return false;  
+			return false;
 		}
 	});
 
@@ -724,7 +724,7 @@ function createAutocomplete(inputId, autocompleteId) {
 function addSprintMemberOrAdmin(inputId, userName) {
 	var actionName = (inputId === 'sprint-participants') ? 'addMember' : 'addAdmin';
 	var deleteButtonClass = (inputId === 'sprint-participants') ? 'deleteParticipants' : 'deleteAdmins';
-	queuePostJSON('Adding members', '/api/sprint/action/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
+	queuePostJSON('Adding members', '/api/sprint/action/' + actionName, getCSRFPreventionObject(actionName + 'CSRF',
 			{username: userName, sprintHash: $('#sprintIdField').val()}),
 			function(data) {
 		if (!checkData(data))
@@ -771,11 +771,16 @@ function deleteSimpleEntry(id, $element) {
 	});
 }
 
-function deleteGhost($tagToDelete, entryId, allFuture) {
-	this.baseDate = new Date('January 1, 2001 12:00 am').toUTCString();
-
-	queueJSON("deleting entry", makeGetUrl("deleteGhostEntryData"), makeGetArgs(getCSRFPreventionObject("deleteGhostEntryDataCSRF", {entryId:entryId,
-		all:(allFuture ? "true" : "false"), date: this.baseDate, baseDate: this.baseDate})),
+function deleteEntry($tagToDelete, entryId, allFuture) {
+	var baseDate = new Date('January 1, 2001 12:00 am').toUTCString();
+	var args = {
+		entryId: entryId,
+		currentTime: new Date().toUTCString(),
+		baseDate: baseDate,
+		timeZoneName: jstz.determine().name(),
+		displayDate: baseDate
+	};
+	queueJSON("deleting entry", makeGetUrl("deleteEntrySData"), makeGetArgs(getCSRFPreventionObject("deleteEntryDataCSRF", args)),
 		function(response) {
 			if (!checkData(response))
 				return;
@@ -792,7 +797,14 @@ function deleteGhost($tagToDelete, entryId, allFuture) {
 function addEntryToSprint(inputElement, suffix) {
 	var $inputElement = $('#' + inputElement);
 	var virtualUserId = $('#sprintVirtualUserId').val();
-	$inputElement.val($inputElement.val() + ' ' + suffix);
+	var repeatTypeId;
+	if (suffix == 'repeat') {
+		repeatTypeId = RepeatType.REPEAT_BIT;
+	} else if (suffix == 'remind') {
+		repeatTypeId = RepeatType.REMIND_BIT;
+	} else {
+		repeatTypeId = RepeatType.CONTINUOUS_BIT;
+	}
 
 	var now = new Date();
 	var currentTimeUTC = now.toUTCString();
@@ -802,7 +814,7 @@ function addEntryToSprint(inputElement, suffix) {
 
 	queueJSON("adding new entry", "/home/addEntrySData?currentTime=" + currentTimeUTC
 			+ "&userId=" + virtualUserId + "&text=" + $inputElement.val() + "&baseDate=" + baseDate
-			+ "&timeZoneName=" + timeZoneName + "&defaultToNow=" + (true ? '1':'0') + "&"
+			+ "&timeZoneName=" + timeZoneName + "&defaultToNow=" + (true ? '1':'0') + "&repeatTypeId=" + repeatTypeId + "&"
 			+ getCSRFPreventionURI("addEntryCSRF") + "&callback=?",
 			function(entries) {
 		if (checkData(entries, 'success', "Error adding entry")) {
@@ -819,15 +831,22 @@ function addEntryToSprint(inputElement, suffix) {
 }
 
 function addTagsToList(addedEntry) {
+	if (RepeatType.isRemind(addedEntry.repeatType)) {
+		addedEntry.comment = 'remind';
+	} else if (RepeatType.isRepeat(addedEntry.repeatType)) {
+		addedEntry.comment = 'repeat';
+	} else if (RepeatType.isContinuous(addedEntry.repeatType)) {
+		addedEntry.comment = 'bookmark';
+	}
 	$('#sprint-tag-list').append('<li><div class="' + addedEntry.comment + 'DarkLabelImage"></div> ' + addedEntry.description + (addedEntry.comment ?
-			' (<i>' + _stripParens(addedEntry.comment.capitalizeFirstLetter()) + '</i>)' : '') + ' <button type="button" class="deleteSprintEntry" data-id="' + 
-			addedEntry.id + '" data-repeat-type="' + 
+			' (<i>' + _stripParens(addedEntry.comment.capitalizeFirstLetter()) + '</i>)' : '') + ' <button type="button" class="deleteSprintEntry" data-id="' +
+			addedEntry.id + '" data-repeat-type="' +
 			addedEntry.repeatType + '"><i class="fa fa-times-circle"></i></button></li>');
 }
 
 function addParticipantsAndAdminsToList($element, deleteButtonClass, userName) {
-	$element.append('<li>' + userName + 
-			' (<i>invited</i>) <button type="button" class="' + deleteButtonClass + '" data-username="' + 
+	$element.append('<li>' + userName +
+			' (<i>invited</i>) <button type="button" class="' + deleteButtonClass + '" data-username="' +
 			userName + '"><i class="fa fa-times-circle"></i></button></li>');
 }
 
@@ -837,7 +856,7 @@ $(document).on('click', '.create-new-sprint', function() {
 });
 
 function createSprint() {
-	queuePostJSON('Creating sprint', '/api/sprint', getCSRFPreventionObject('createNewSprintDataCSRF'), 
+	queuePostJSON('Creating sprint', '/api/sprint', getCSRFPreventionObject('createNewSprintDataCSRF'),
 		function(data) {
 			console.log('data: ', data);
 			if (!data.error) {
@@ -861,11 +880,9 @@ function editSprint(sprintHash) {
 		if (!checkData(data))
 			return;
 
-		console.log('data: ', data);
 		if (!data.success) {
 			showAlert(data.message);
 		} else {
-			console.log(data.sprint);
 			//Clearing data from last load
 			clearSprintFormData();
 			$('#sprintIdField').val(data.sprint.hash);
@@ -889,13 +906,13 @@ function editSprint(sprintHash) {
 			});
 			$.each(data.participants, function(index, participant) {
 				if (!participant.virtual) {
-					addParticipantsAndAdminsToList($("#sprint-participants-list"), 
+					addParticipantsAndAdminsToList($("#sprint-participants-list"),
 							'deleteParticipants', participant.username);
 				}
 			});
 			$.each(data.admins, function(index, admin) {
 				if (!admin.virtual) {
-					addParticipantsAndAdminsToList($("#sprint-admins-list"), 
+					addParticipantsAndAdminsToList($("#sprint-admins-list"),
 							'deleteAdmins', admin.username);
 				}
 			});
@@ -908,12 +925,12 @@ function editSprint(sprintHash) {
 function deleteSprint(sprintHash) {
 	var httpArgs ={requestMethod:'delete'};
 	showYesNo('Delete this sprint?', function() {
-		queueJSONAll('Deleting sprint', '/api/sprint/' + sprintHash, 
-				getCSRFPreventionObject('deleteSprintDataCSRF'), 
+		queueJSONAll('Deleting sprint', '/api/sprint/' + sprintHash,
+				getCSRFPreventionObject('deleteSprintDataCSRF'),
 			function(data) {
 				if (!checkData(data))
 					return;
-	
+
 				console.log('data: ', data);
 				if (!data.success) {
 					showAlert('Unable to delete sprint!');
@@ -947,8 +964,8 @@ function toggleCommentsList(discussionHash) {
 
 function showUserDetails(hash) {
 	queueJSON('Getting user details', '/api/user/' + hash + '?' + getCSRFPreventionURI('getUserDataCSRF') + '&callback=?',
-			function(data) { 
-		if (data.success) { 
+			function(data) {
+		if (data.success) {
 			data.user.followButtonText = data.user.followed ? 'UNFOLLOW' : 'FOLLOW';
 			var compiledHTML = compileTemplate("_peopleDetails", {'user': data.user});
 			$('#feed').html(compiledHTML);
@@ -968,7 +985,7 @@ function setQueryHeader(text, setGobackButton) {
 	}
 	if (setGobackButton) {
 		$('#queryTitle').parent().prepend('<img alt="back" id="go-back-arrow" class="date-left-arrow" src="/images/left-arrow-white.png" onclick="window.history.back()" style="cursor: pointer; margin-right: 15px;">');
-	} 
+	}
 	$('#queryTitle').text(text);
 }
 
