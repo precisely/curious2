@@ -1,20 +1,13 @@
 package us.wearecurio.controller.integration
 
-import org.springframework.web.servlet.ModelAndView
-
-import grails.test.*
-
-import us.wearecurio.controller.LoginController;
-import us.wearecurio.model.*
-import grails.util.GrailsUtil
-import us.wearecurio.utility.Utils
-import grails.util.GrailsWebUtil
-import org.springframework.web.util.WebUtils
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-
-import static org.junit.Assert.*
-import org.junit.*
-import grails.test.mixin.*
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import us.wearecurio.controller.LoginController
+import us.wearecurio.model.PasswordRecovery
+import us.wearecurio.model.Tag
+import us.wearecurio.model.User
+import us.wearecurio.model.UserGroup
 
 public class LoginControllerTests extends CuriousControllerTestCase {
 	static transactional = true
@@ -370,6 +363,17 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert rU.endsWith('/login/register')
 	}
 
+	Map getRegisterParams() {
+		return [
+			username:'q',
+			email:'q@q.com',
+			confirm_email: 'q@q.com',
+			password:'q',
+			name:'q q',
+			sex:'F'
+		]
+	}
+
 	@Test
 	void testDoregisterDataSuccess() {
 		LoginController controller = new LoginController()
@@ -377,14 +381,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = null
 		
 		controller.params.clear()
-		controller.params.putAll([
-			username:'q',
-			email:'q@q.com',
-			confirm_email: 'q@q.com',
-			password:'q',
-			name:'q q',
-			sex:'F'
-		])
+		controller.params.putAll(getRegisterParams())
 		
 		controller.doregisterData()
 		
@@ -412,6 +409,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert !controller.response.json.success
 		assert controller.response.json.message == "Email and confirm email fields do not match"
 	}
+
 	@Test
 	void testDoregisterDataNoUsername() {
 		LoginController controller = new LoginController()
@@ -482,5 +480,92 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		controller.logout()
 		
 		assert controller.session.userId == null
+	}
+
+	@Test
+	void "test dologinData for updating the VISITED_MOBILE_APP bit when user logs in from mobile app"() {
+		LoginController controller = new LoginController()
+
+		controller.session.userId = null
+		controller.params['username'] = user.getUsername()
+		controller.params['password'] = 'y'
+
+		// Sending the mobileSessionId parameter
+		controller.params.mobileSessionId = false
+
+		int VISITED_MOBILE_APP = 23
+		user.settings.clear(VISITED_MOBILE_APP)
+
+		assert !user.settings.get(VISITED_MOBILE_APP)
+		assert !user.settings.hasVisitedMobileApp()
+
+		controller.dologinData()
+
+		assert user.settings.get(VISITED_MOBILE_APP)
+		assert user.settings.hasVisitedMobileApp()
+	}
+
+	@Test
+	void "test dologinData for not updating the VISITED_MOBILE_APP bit when user logs in from web"() {
+		LoginController controller = new LoginController()
+
+		controller.session.userId = null
+		controller.params['username'] = user.getUsername()
+		controller.params['password'] = 'y'
+
+		int VISITED_MOBILE_APP = 23
+		user.settings.clear(VISITED_MOBILE_APP)
+
+		assert !user.settings.get(VISITED_MOBILE_APP)
+		assert !user.settings.hasVisitedMobileApp()
+
+		controller.dologinData()
+
+		// There will be no change in the user settings bits for visited mobile app
+		assert !user.settings.get(VISITED_MOBILE_APP)
+		assert !user.settings.hasVisitedMobileApp()
+	}
+
+	@Test
+	void "test doregisterData for updating the VISITED_MOBILE_APP bit when a user registers from mobile app"() {
+		LoginController controller = new LoginController()
+
+		controller.session.userId = null
+
+		controller.params.clear()
+		
+		// Sending the mobileSessionId parameter
+		controller.params.mobileSessionId = false
+		
+		controller.params.putAll(getRegisterParams())
+
+		controller.doregisterData()
+
+		int VISITED_MOBILE_APP = 23
+		
+		User user = User.findByUsername('q')
+		
+		assert user.settings.get(VISITED_MOBILE_APP)
+		assert user.settings.hasVisitedMobileApp()
+	}
+
+	@Test
+	void "test doregisterData for not updating the VISITED_MOBILE_APP bit when a user registers from web"() {
+		LoginController controller = new LoginController()
+
+		controller.session.userId = null
+
+		controller.params.clear()
+
+		controller.params.putAll(getRegisterParams())
+
+		controller.doregisterData()
+
+		int VISITED_MOBILE_APP = 23
+
+		User user = User.findByUsername('q')
+
+		assert !user.settings.get(VISITED_MOBILE_APP)
+		assert !user.settings.hasVisitedMobileApp()
 	}
 }

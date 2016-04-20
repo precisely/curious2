@@ -5,6 +5,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import us.wearecurio.controller.DataController
+import us.wearecurio.data.RepeatType
 import us.wearecurio.model.*
 import us.wearecurio.model.Model.Visibility
 import us.wearecurio.services.EntryParserService
@@ -504,25 +505,182 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert controller.response.contentAsString.equals("callback('success')")
 	}
 
+	Map getEntryParams() {
+		Map params = [:]
+
+		params['currentTime'] = 'Fri, 21 Jan 2011 21:46:20 GMT'
+		params['text'] = '3:30pm testing 25 units (comment)'
+		params['timeZoneName'] = 'America/Los_Angeles'
+		params['userId'] = userId.toString()
+		params['callback'] = 'jsonp1295646296016'
+		params['_'] = '1295646380043'
+		params['defaultToNow'] = '1'
+		params['baseDate'] = 'Fri, 21 Jan 2011 05:00:00 GMT'
+		params['action'] = 'addEntrySData'
+		params['controller'] = 'home'
+
+		return params 
+	}
+
 	@Test
 	void testAddEntrySData() {
 		controller.session.userId = userId
 
-		controller.params['currentTime'] = 'Fri, 21 Jan 2011 21:46:20 GMT'
-		controller.params['text'] = '3:30pm testing 25 units (comment)'
-		controller.params['timeZoneName'] = 'America/Los_Angeles'
-		controller.params['userId'] = userId.toString()
-		controller.params['callback'] = 'jsonp1295646296016'
-		controller.params['_'] = '1295646380043'
-		controller.params['defaultToNow'] = '1'
-		controller.params['baseDate'] = 'Fri, 21 Jan 2011 05:00:00 GMT'
-		controller.params['action'] = 'addEntrySData'
-		controller.params['controller'] = 'home'
+		controller.params.putAll(getEntryParams())
 
 		controller.addEntrySData()
 
 		assert controller.response.contentAsString.contains(',"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":')
 		assert controller.response.contentAsString.contains(',"description":"testing","amount":25.000000000,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null,"repeatEnd":null,"amounts":{"0":{"amount":25.0000,"amountPrecision":3,"units":"units"}},"normalizedAmounts"')
+	}
+
+	@Test
+	void "test AddEntrySData for updating the FIRST_ENTRY and SECOND_ENTRY bits when user creates entries from mobile app"() {
+		controller.session.userId = userId
+
+		User user = User.get(userId)
+		int FIRST_ENTRY = 11
+		int SECOND_ENTRY = 12
+
+		// First clearing the previously set bits. (Just to ensure that this call sets the bits correctly)
+		user.settings.clear(FIRST_ENTRY)
+		user.settings.clear(SECOND_ENTRY)
+
+		assert !user.settings.get(FIRST_ENTRY)
+		assert !user.settings.get(SECOND_ENTRY)
+		assert !user.settings.hasEntryCreationCountCompleted()
+
+		// Sending the mobileSessionId parameter
+		controller.params.mobileSessionId = "abcdefghij1245231"
+
+		controller.params.putAll(getEntryParams())
+
+		// First entry count
+		controller.addEntrySData()
+
+		assert controller.response.contentAsString.contains(',"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":')
+		assert controller.response.contentAsString.contains(',"description":"testing","amount":25.000000000,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null,"repeatEnd":null,"amounts":{"0":{"amount":25.0000,"amountPrecision":3,"units":"units"}},"normalizedAmounts"')
+		
+		assert user.settings.get(FIRST_ENTRY)
+		assert !user.settings.get(SECOND_ENTRY)
+		assert !user.settings.hasEntryCreationCountCompleted()
+
+		// Second entry count
+		controller.params['currentTime'] = 'Fri, 22 Jan 2011 21:46:20 GMT'
+		controller.params['text'] = '4:30pm testing 25 units (comment)'
+		controller.addEntrySData()
+
+		assert user.settings.get(FIRST_ENTRY)
+		assert user.settings.get(SECOND_ENTRY)
+		assert user.settings.hasEntryCreationCountCompleted()
+	}
+
+	@Test
+	void "test AddEntrySData for not updating the FIRST_ENTRY and SECOND_ENTRY bits when user creates entries from web"() {
+		controller.session.userId = userId
+
+		User user = User.get(userId)
+		int FIRST_ENTRY = 11
+		int SECOND_ENTRY = 12
+
+		// First clearing the previously set bits. (Just to ensure that this call sets the bits correctly)
+		user.settings.clear(FIRST_ENTRY)
+		user.settings.clear(SECOND_ENTRY)
+
+		assert !user.settings.get(FIRST_ENTRY)
+		assert !user.settings.get(SECOND_ENTRY)
+		assert !user.settings.hasEntryCreationCountCompleted()
+
+		controller.params.putAll(getEntryParams())
+
+		controller.addEntrySData()
+
+		assert controller.response.contentAsString.contains(',"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":')
+		assert controller.response.contentAsString.contains(',"description":"testing","amount":25.000000000,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null,"repeatEnd":null,"amounts":{"0":{"amount":25.0000,"amountPrecision":3,"units":"units"}},"normalizedAmounts"')
+
+		// There will be no change in the user settings bits for entry creation count
+		assert !user.settings.get(FIRST_ENTRY)
+		assert !user.settings.get(SECOND_ENTRY)
+		assert !user.settings.hasEntryCreationCountCompleted()
+	}
+
+	@Test
+	void "test AddEntrySData for updating the BOOKMARK_CREATED bits when user creates bookmarks from mobile app"() {
+		controller.session.userId = userId
+
+		User user = User.get(userId)
+		int BOOKMARK_CREATED_1 = 19
+		int BOOKMARK_CREATED_2 = 20
+		int BOOKMARK_CREATED_3 = 21
+
+		// First clearing the previously set bits. (Just to ensure that this call sets the bits correctly)
+		user.settings.clear(BOOKMARK_CREATED_1)
+		user.settings.clear(BOOKMARK_CREATED_2)
+		user.settings.clear(BOOKMARK_CREATED_3)
+
+		assert !user.settings.get(BOOKMARK_CREATED_1)
+		assert !user.settings.get(BOOKMARK_CREATED_2)
+		assert !user.settings.get(BOOKMARK_CREATED_3)
+
+		// Sending the mobileSessionId parameter
+		controller.params.mobileSessionId = "abcdefghij1245231"
+
+		controller.params.putAll(getEntryParams())
+		controller.params['text'] = 'Bookmark 1'
+		controller.params['repeatTypeId'] = RepeatType.CONTINUOUS.id.toString()
+
+		// For first bookmark
+		controller.addEntrySData()
+
+		assert user.settings.get(BOOKMARK_CREATED_1)
+		assert !user.settings.get(BOOKMARK_CREATED_2)
+		assert !user.settings.get(BOOKMARK_CREATED_3)
+		assert !user.settings.hasBookmarkCreationCountCompleted()
+
+		// For second bookmark
+		controller.params['currentTime'] = 'Fri, 22 Jan 2011 21:46:20 GMT'
+		controller.params['text'] = 'Bookmark 2'
+		controller.addEntrySData()
+
+		assert user.settings.get(BOOKMARK_CREATED_1)
+		assert user.settings.get(BOOKMARK_CREATED_2)
+		assert !user.settings.get(BOOKMARK_CREATED_3)
+		assert !user.settings.hasBookmarkCreationCountCompleted()
+
+		// For third bookmark
+		controller.params['currentTime'] = 'Fri, 23 Jan 2011 21:46:20 GMT'
+		controller.params['text'] = 'Bookmark 3'
+		controller.addEntrySData()
+
+		assert user.settings.get(BOOKMARK_CREATED_1)
+		assert user.settings.get(BOOKMARK_CREATED_2)
+		assert user.settings.get(BOOKMARK_CREATED_3)
+		assert user.settings.hasBookmarkCreationCountCompleted()
+	}
+
+	@Test
+	void "test AddEntrySData for updating the FIRST_ALERT_ENTRY bit when user creates an alert entry from mobile app"() {
+		controller.session.userId = userId
+
+		User user = User.get(userId)
+		int FIRST_ALERT_ENTRY = 22
+
+		// First clearing the previously set bits. (Just to ensure that this call sets the bits correctly)
+		user.settings.clear(FIRST_ALERT_ENTRY)
+
+		assert !user.settings.get(FIRST_ALERT_ENTRY)
+		assert !user.settings.hasFirstAlertEntryCountCompleted()
+
+		// Sending the mobileSessionId parameter
+		controller.params.mobileSessionId = "abcdefghij1245231"
+
+		controller.params.putAll(getEntryParams())
+		controller.params['repeatTypeId'] = RepeatType.ALERT.id.toString()
+
+		controller.addEntrySData()
+
+		assert user.settings.get(FIRST_ALERT_ENTRY)
+		assert user.settings.hasFirstAlertEntryCountCompleted()
 	}
 
 	@Test

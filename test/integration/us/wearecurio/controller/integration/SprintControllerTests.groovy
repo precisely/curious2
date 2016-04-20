@@ -1,15 +1,13 @@
 package us.wearecurio.controller.integration
 
-import static org.junit.Assert.*
-import org.junit.*
-import org.scribe.model.Response
-
-import us.wearecurio.model.Model.Visibility
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 import us.wearecurio.controller.SprintController
-import us.wearecurio.model.*
-import us.wearecurio.test.common.MockedHttpURLConnection
+import us.wearecurio.model.Model
+import us.wearecurio.model.Sprint
+import us.wearecurio.model.User
 import us.wearecurio.utility.Utils
-import us.wearecurio.hashids.DefaultHashIDGenerator
 
 class SprintControllerTests extends CuriousControllerTestCase {
 	static transactional = true
@@ -619,5 +617,172 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		assert controller.response.json.success == true
 		assert dummySprint.hasMember(dummyUser2.getId()) == true
 	}
-/**/
+
+	@Test
+	void "test discussions for updating the 'DISCUSSION_DETAIL_VISIT' bits as the user visits a discussion from mobile app"() {
+		controller.session.userId = user.getId()
+		controller.params["id"] = dummySprint.hash
+
+		// Sending the mobileSessionId parameter
+		controller.params.mobileSessionId = "abcdefghij1245231"
+
+		int DISCUSSION_DETAIL_VISIT_1 = 16
+		int DISCUSSION_DETAIL_VISIT_2 = 17
+		int DISCUSSION_DETAIL_VISIT_3 = 18
+
+		// First clearing the previously set bits. (Just to ensure that this call sets the bits correctly)
+		user.settings.clear(DISCUSSION_DETAIL_VISIT_1)
+		user.settings.clear(DISCUSSION_DETAIL_VISIT_2)
+		user.settings.clear(DISCUSSION_DETAIL_VISIT_3)
+
+		assert !user.settings.get(DISCUSSION_DETAIL_VISIT_1)
+		assert !user.settings.get(DISCUSSION_DETAIL_VISIT_2)
+		assert !user.settings.get(DISCUSSION_DETAIL_VISIT_3)
+		assert !user.settings.hasDiscussionDetailVisitCountCompleted()
+
+		// For first visit
+		controller.discussions(dummySprint.hash, 10, 0)
+
+		assert user.settings.get(DISCUSSION_DETAIL_VISIT_1)
+		assert !user.settings.get(DISCUSSION_DETAIL_VISIT_2)
+		assert !user.settings.get(DISCUSSION_DETAIL_VISIT_3)
+		assert !user.settings.hasDiscussionDetailVisitCountCompleted()
+
+		// For second visit
+		controller.discussions(dummySprint.hash, 10, 0)
+
+		assert user.settings.get(DISCUSSION_DETAIL_VISIT_1)
+		assert user.settings.get(DISCUSSION_DETAIL_VISIT_2)
+		assert !user.settings.get(DISCUSSION_DETAIL_VISIT_3)
+		assert !user.settings.hasDiscussionDetailVisitCountCompleted()
+
+		// For third visit
+		controller.discussions(dummySprint.hash, 10, 0)
+
+		assert user.settings.get(DISCUSSION_DETAIL_VISIT_1)
+		assert user.settings.get(DISCUSSION_DETAIL_VISIT_2)
+		assert user.settings.get(DISCUSSION_DETAIL_VISIT_3)
+		assert user.settings.hasDiscussionDetailVisitCountCompleted()
+	}
+
+	@Test
+	void "test discussions for not updating the 'DISCUSSION_DETAIL_VISIT' bits as the user visits a discussion from web"() {
+		controller.session.userId = user.getId()
+		controller.params["id"] = dummySprint.hash
+
+		int DISCUSSION_DETAIL_VISIT_1 = 16
+		int DISCUSSION_DETAIL_VISIT_2 = 17
+		int DISCUSSION_DETAIL_VISIT_3 = 18
+
+		// First clearing the previously set bits. (Just to ensure that this call sets the bits correctly)
+		user.settings.clear(DISCUSSION_DETAIL_VISIT_1)
+		user.settings.clear(DISCUSSION_DETAIL_VISIT_2)
+		user.settings.clear(DISCUSSION_DETAIL_VISIT_3)
+
+		assert !user.settings.get(DISCUSSION_DETAIL_VISIT_1)
+		assert !user.settings.get(DISCUSSION_DETAIL_VISIT_2)
+		assert !user.settings.get(DISCUSSION_DETAIL_VISIT_3)
+		assert !user.settings.hasDiscussionDetailVisitCountCompleted()
+
+		controller.discussions(dummySprint.hash, 10, 0)
+
+		// There will be no change in the user settings bits for discussion detail visit
+		assert !user.settings.get(DISCUSSION_DETAIL_VISIT_1)
+		assert !user.settings.get(DISCUSSION_DETAIL_VISIT_2)
+		assert !user.settings.get(DISCUSSION_DETAIL_VISIT_3)
+		assert !user.settings.hasDiscussionDetailVisitCountCompleted()
+	}
+
+	@Test
+	void "test start for updating the TRACKATHON_STARTED bits when user starts a trackathon from the mobile app"() {
+		controller.session.userId = user.getId()
+		controller.params["id"] = dummySprint.hash
+		controller.params["now"] = "Wed, 25 Feb 2015 10:44:07 GMT"
+
+		int TRACKATHON_STARTED_1 = 13
+		int TRACKATHON_STARTED_2 = 14
+		int TRACKATHON_STARTED_3 = 15
+
+		// First clearing the previously set bits. (Just to ensure that this call sets the bits correctly)
+		user.settings.clear(TRACKATHON_STARTED_1)
+		user.settings.clear(TRACKATHON_STARTED_2)
+		user.settings.clear(TRACKATHON_STARTED_3)
+
+		assert !user.settings.get(TRACKATHON_STARTED_1)
+		assert !user.settings.get(TRACKATHON_STARTED_2)
+		assert !user.settings.get(TRACKATHON_STARTED_3)
+		assert !user.settings.hasTrackathonStartCountCompleted()
+
+		// Sending the mobileSessionId parameter
+		controller.params.mobileSessionId = "abcdefghij1245231"
+
+		// For first trackathon start
+		controller.start()
+
+		assert user.settings.get(TRACKATHON_STARTED_1)
+		assert !user.settings.get(TRACKATHON_STARTED_2)
+		assert !user.settings.get(TRACKATHON_STARTED_3)
+		assert !user.settings.hasTrackathonStartCountCompleted()
+
+		// Stop this trackathon (Just for testing, so that we can test the start counts without creating new sprints)
+		controller.response.reset()
+		controller.params["now"] = "Wed, 25 Feb 2015 11:44:07 GMT"
+		controller.stop()
+
+		// For second trackathon start
+		controller.session.userId = user.getId()
+		controller.params["id"] = dummySprint.hash
+		controller.params["now"] = "Wed, 26 Feb 2015 10:44:07 GMT"
+		controller.start()
+
+		assert user.settings.get(TRACKATHON_STARTED_1)
+		assert user.settings.get(TRACKATHON_STARTED_2)
+		assert !user.settings.get(TRACKATHON_STARTED_3)
+		assert !user.settings.hasTrackathonStartCountCompleted()
+
+		controller.response.reset()
+		controller.params["now"] = "Wed, 26 Feb 2015 11:44:07 GMT"
+		controller.stop()
+
+		// For third trackathon start
+		controller.session.userId = user.getId()
+		controller.params["id"] = dummySprint.hash
+		controller.params["now"] = "Wed, 27 Feb 2015 10:44:07 GMT"
+		controller.start()
+
+		assert user.settings.get(TRACKATHON_STARTED_1)
+		assert user.settings.get(TRACKATHON_STARTED_2)
+		assert user.settings.get(TRACKATHON_STARTED_3)
+		assert user.settings.hasTrackathonStartCountCompleted()
+	}
+
+	@Test
+	void "test start for not updating the TRACKATHON_STARTED bits when user starts a trackathon from the web"() {
+		controller.session.userId = user.getId()
+		controller.params["id"] = dummySprint.hash
+		controller.params["now"] = "Wed, 25 Feb 2015 10:44:07 GMT"
+
+		int TRACKATHON_STARTED_1 = 13
+		int TRACKATHON_STARTED_2 = 14
+		int TRACKATHON_STARTED_3 = 15
+
+		// First clearing the previously set bits. (Just to ensure that this call sets the bits correctly)
+		user.settings.clear(TRACKATHON_STARTED_1)
+		user.settings.clear(TRACKATHON_STARTED_2)
+		user.settings.clear(TRACKATHON_STARTED_3)
+
+		assert !user.settings.get(TRACKATHON_STARTED_1)
+		assert !user.settings.get(TRACKATHON_STARTED_2)
+		assert !user.settings.get(TRACKATHON_STARTED_3)
+		assert !user.settings.hasTrackathonStartCountCompleted()
+
+		// For first trackathon start
+		controller.start()
+
+		// There will be no change in the user settings bits for trackathon start
+		assert !user.settings.get(TRACKATHON_STARTED_1)
+		assert !user.settings.get(TRACKATHON_STARTED_2)
+		assert !user.settings.get(TRACKATHON_STARTED_3)
+		assert !user.settings.hasTrackathonStartCountCompleted()
+	}
 }
