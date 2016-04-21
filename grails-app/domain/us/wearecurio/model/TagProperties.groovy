@@ -84,8 +84,6 @@ class TagProperties {
 
 		if (!props) {
 			props = TagProperties.findByTagIdAndUserId(tagId, userId)
-			if (props)
-				props.classifyAsEvent()
 		}
 		
 		return props
