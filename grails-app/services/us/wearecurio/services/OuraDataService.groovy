@@ -147,6 +147,7 @@ class OuraDataService extends DataService {
 			}
 		}
 
+		account.markLastPolled(stats.lastDate)
 		stats.finish()
 
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
@@ -241,6 +242,7 @@ class OuraDataService extends DataService {
 			previousEntry = null
 		}
 
+		account.markLastPolled(stats.lastDate)
 		stats.finish()
 
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
@@ -313,6 +315,7 @@ class OuraDataService extends DataService {
 			}
 		}
 
+		account.markLastPolled(stats.lastDate)
 		stats.finish()
 
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {

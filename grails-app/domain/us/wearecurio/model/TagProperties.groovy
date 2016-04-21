@@ -68,15 +68,26 @@ class TagProperties {
 	}
 
 	static TagProperties createOrLookup(long userId, long tagId) {
-		def props = TagProperties.findByTagIdAndUserId(tagId, userId)
-
-		if (!props) {
-			props = new TagProperties(tagId:tagId, userId:userId)
-			props.classifyAsEvent()
-			if (!Utils.save(props, true))
-				props = null
+		TagProperties props
+		
+		TagProperties.withTransaction {
+			props = TagProperties.findByTagIdAndUserId(tagId, userId)
+	
+			if (!props) {
+				props = new TagProperties(tagId:tagId, userId:userId)
+				props.classifyAsEvent()
+				if (!Utils.save(props, true)) {
+					props = null
+				}
+			}
 		}
 
+		if (!props) {
+			props = TagProperties.findByTagIdAndUserId(tagId, userId)
+			if (props)
+				props.classifyAsEvent()
+		}
+		
 		return props
 	}
 
