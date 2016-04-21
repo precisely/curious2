@@ -453,8 +453,11 @@ class DataController extends LoginController {
 			return
 		}
 
-		// Currently showing the balloons only for the mobile app. TODO add support for balloons on web.
-		if (params.containsKey('mobileSessionId')) {
+		/* Currently showing the balloons only for the mobile app.
+		 * TODO add support for balloons on web.
+		 * TODO The params['balloonData'] check will be removed once the updated app is in the app store.
+		 */
+		if (params.containsKey('mobileSessionId') && params.balloonData) {
 			boolean showRemindAlertBalloon = !user.settings.hasFirstAlertEntryCountCompleted()
 			renderJSONGet([entries, showRemindAlertBalloon])
 			
