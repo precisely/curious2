@@ -89,8 +89,8 @@ class OAuthAccount {
 		Utils.save(this, true)
 	}
 	
-	Date fetchLastData() {
-		if (lastData == null)
+	Date fetchLastDataDate() {
+		if (lastData == null || lastData < (new Date() - 61))
 			return new Date() - 61
 		return lastData
 	}

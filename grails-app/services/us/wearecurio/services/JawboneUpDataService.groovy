@@ -72,7 +72,7 @@ class JawboneUpDataService extends DataService {
 			throw new IllegalArgumentException("No OAuthAccount instance was passed")
 		}
 
-		startDate = startDate ?: account.fetchLastData()
+		startDate = startDate ?: account.fetchLastDataDate()
 		endDate = endDate ?: new Date()
 
 		getDataBody(account, startDate, endDate, refreshAll)

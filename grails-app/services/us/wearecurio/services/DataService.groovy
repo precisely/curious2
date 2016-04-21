@@ -2,6 +2,7 @@ package us.wearecurio.services
 
 import grails.converters.JSON
 import grails.util.Environment
+import us.wearecurio.datetime.DateUtils
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
 
@@ -90,7 +91,7 @@ abstract class DataService {
 			throw new MissingOAuthAccountException(provider)
 		}
 
-		if ((instance instanceof Token) && !instance.token) {
+		if (((instance instanceof Token) && !instance.token) || ((instance instanceof OAuthAccount) && !instance.accessToken)) {
 			log.debug "Authentication required. Either null or blank token received."
 			throw new InvalidAccessTokenException()
 		}
@@ -413,24 +414,30 @@ abstract class DataService {
 
 		Long nowTime = new Date().getTime()
 
-		Long lastPoll = lastPollTimestamps.get(accountId)
-		
-		if (notificationDate != null && lastPoll != null && notificationDate < lastPoll) {
-			lastPoll = notificationDate
-			lastPollTimestamps.put(accountId, lastPoll)
-		} else if ((lastPoll != null) && (nowTime - lastPoll < 60000)) { // don't allow polling faster than once every minute
+		Long lastPollDOS = lastPollTimestamps.get(accountId)
+
+		Date dateToPollFrom = account.fetchLastDataDate() - 1
+		Date pollEndDate = null;
+
+		if ((lastPollDOS != null) && (nowTime - lastPollDOS < 60000)) { // don't allow polling faster than once every minute
 			log.warn "Polling faster than 1 minute for $provider with accountId: [$accountId]"
 			return false
 		}
 
+		if (notificationDate != null && dateToPollFrom != null && notificationDate < dateToPollFrom) {
+			dateToPollFrom = notificationDate
+			pollEndDate = DateUtils.getEndOfTheDay(notificationDate)
+		}
+
 		OAuthAccount.withTransaction {
 			try {
-				getDataDefault(account, account.fetchLastData() - 1, null, false)
+				getDataDefault(account, dateToPollFrom, pollEndDate, false)
 			} catch (InvalidAccessTokenException e) {
 				log.warn "Token expired while polling for $account"
 				account.clearAccessToken()
 			}
 		}
+		lastPollTimestamps[account.id] = account.lastPolled
 	}
 
 	/**
@@ -441,7 +448,7 @@ abstract class DataService {
 		OAuthAccount.findAllByTypeId(typeId).each { OAuthAccount account ->
 			DatabaseService.retry(account) {
 				try {
-					getDataDefault(account, account.fetchLastData() - 1, null, refreshAll)
+					getDataDefault(account, account.fetchLastDataDate() - 1, new Date(), refreshAll)
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while polling account: [$account] for $typeId."
 					account.clearAccessToken()

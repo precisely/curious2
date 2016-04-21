@@ -60,7 +60,7 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 					OAuthAccount.findAllByTimeZoneIdAndTypeId(timeZoneId, ThirdParty.WITHINGS).each { account ->
 						log.debug "DeviceIntegrationHourlyJob.execute() calling getDataForWithings " + account
 						try {
-							withingsDataService.getDataDefault(account, account.fetchLastData(), null, false)
+							withingsDataService.getDataDefault(account, account.fetchLastDataDate(), null, false)
 						} catch (InvalidAccessTokenException e) {
 							log.warn "Token expired while polling account: [$account] for Withings."
 						}
