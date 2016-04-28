@@ -192,7 +192,7 @@ function doLogout() {
 			/**
 			 * Code to scroll to selected group in the publish chart modal when group has been selected by default.
 			 */
-			$(document).on('shown.bs.modal','#publish-to-groups', function() {
+			$(document).on('shown.bs.modal', '#publish-to-groups', function() {
 				var $shareModal = $('#publish-to-groups');
 				var $checkedItem = $shareModal.find('input[type="radio"]:checked');
 

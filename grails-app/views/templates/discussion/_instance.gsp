@@ -30,7 +30,7 @@
 				</div>
 			</div>
 			<div class="group">
-				{{- discussionData.groupName }}
+				%{--{{- discussionData.groupName }}--}%
 			</div>
 			<div class="row">
 				<div class="col-md-5">

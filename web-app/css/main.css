@@ -2050,9 +2050,7 @@ body.track-page #datepicker {
 body.track-page #area0 .panel-wrapper {
 	border-bottom: 0;
 }
-body.track-page ol#entry0 li.entry.ghost:not(.ui-selected) {
 
-}
 .comment-label {
 	color: #C0C8C9;
 	font-size: 12px;
@@ -4071,6 +4069,10 @@ body .modal-header button {
 
 .feed .pull-right {
 	display: flex;
+}
+
+.red-header .search-area .help {
+	margin-top: 7px;
 }
 
 .red-header .help {

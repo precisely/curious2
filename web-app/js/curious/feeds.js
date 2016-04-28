@@ -425,6 +425,11 @@ function checkAndDisplayTabData() {
 
 $(window).load(checkAndDisplayTabData).on('hashchange', checkAndDisplayTabData);
 
+function showDiscussionAffordance(type) {
+	var placeholder = (type==='howto') ? 'Enter text of your how-to article' : 'Ask a support question of the community?';
+	$('#create-discussion').show('fast').find('input').prop('placeholder', placeholder).data('type', type);
+}
+
 $(document).ready(function() {
 	$('html').on('click', function(e) {
 		if (typeof $(e.target).data('original-title') == 'undefined' && !$(e.target).is('.share-button img')) {
@@ -525,7 +530,7 @@ $(document).ready(function() {
 
 			var data = extractDiscussionNameAndPost(value);
 			var questionType = $(this).data('type');
-			data.name = !questionType ? data.name : (data.name + ' #' + questionType);
+			data.name = questionType ? (data.name + ' #' + questionType) : data.name;
 
 			// See base.js for implementation details of $.serializeObject()
 			var params = $('#create-discussion').serializeObject();

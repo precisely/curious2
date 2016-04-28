@@ -65,7 +65,7 @@
 			</ul>
 			<ul class="col-md-8 search-area disable-select" >
 				<li class="pull-right">
-					<div class="help" style="margin-top: 7px">
+					<div class="help">
 						<i class="fa fa-question"></i>
 					</div>
 				</li>
