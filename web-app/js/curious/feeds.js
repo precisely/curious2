@@ -144,7 +144,7 @@ function getURLSearchPeople(offset, max) {
 				offset: offset,
 				max: max
 			}
-	)
+		)
 }
 
 function getURLSearchOwned(offset, max) {
@@ -154,7 +154,7 @@ function getURLSearchOwned(offset, max) {
 				offset: offset,
 				max: max
 			}
-	)
+		)
 }
 
 function isTabActive(anchor) {
@@ -927,7 +927,6 @@ function editSprint(sprintHash) {
 		}
 		autocompleteWidget = new AutocompleteWidget('autocomplete1', 'sprint-tags');
 	});
-	$('#createSprintOverlay').modal({show: true});
 }
 
 function deleteSprint(sprintHash) {

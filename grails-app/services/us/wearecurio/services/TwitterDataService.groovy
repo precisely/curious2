@@ -106,6 +106,12 @@ class TwitterDataService extends DataService {
 		return null
 	}
 
+	/**
+	 * Used to post data to twitter through the twitter API.
+	 * @param tokenInstance Acces Token used for transactions with the twitter API.
+	 * @param status Data to post.
+	 * @return Map containing success or failure attributes.
+	 */
 	Map postStatus(Token tokenInstance, String status) {
 		JSONObject tweetResponse = getResponse(tokenInstance, BASE_URL + "/statuses/update.json", "post", [status: status])
 		if (tweetResponse.getCode() == 200) {
