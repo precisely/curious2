@@ -1,4 +1,9 @@
 package us.wearecurio.controller
+
+import us.wearecurio.security.NoAuth
+
+import java.text.SimpleDateFormat
+
 import grails.converters.JSON
 import org.springframework.http.HttpStatus
 import us.wearecurio.model.PasswordRecovery
@@ -92,7 +97,8 @@ class LoginController extends SessionController {
 		def repl = str.replaceAll("'", "\\\\'")
 		render "'${repl}'"
 	}
-	
+
+	@NoAuth
 	def login() {
 		debug "LoginController.login()"
 		
@@ -112,7 +118,8 @@ class LoginController extends SessionController {
 		render(view:loginView(),
 				model:[precontroller:flash.precontroller ?: name(), preaction:flash.preaction ?: 'index', parm:flash.parm ?: [:], message:flash.message, templateVer:urlService.template(request)])
 	}
-	
+
+	@NoAuth
 	def dologin() {
 		debug "LoginController.dologin()"
 		
@@ -133,8 +140,9 @@ class LoginController extends SessionController {
 			redirect(url:toUrl(controller:"home", action:"login"))
 			return
 		}
-	} 	
-	
+	}
+
+	@NoAuth
 	def dologinData() {
 		debug "LoginController.dologinData()"
 		
@@ -157,7 +165,8 @@ class LoginController extends SessionController {
 			renderJSONGet([success:false])
 		}
 	}
-	
+
+	@NoAuth
 	def forgot() {
 		debug "LoginController.forgot()"
 
@@ -216,7 +225,8 @@ class LoginController extends SessionController {
 		}
 		return execForgotUser(user)
 	}
-	
+
+	@NoAuth
 	def doforgot() {
 		debug "LoginController.doforgot()"
 		
@@ -236,7 +246,8 @@ class LoginController extends SessionController {
 					model:[precontroller:params.precontroller, preaction:params.preaction]))
 		}
 	}
-	
+
+	@NoAuth
 	def doforgotData() {
 		debug "LoginController.doForgotData()"
 		
@@ -247,7 +258,7 @@ class LoginController extends SessionController {
 			renderJSONGet([message:"We don't recognize that user.",success:false])
 		}
 	}
-	
+
 	def dosendverify() {
 		debug "LoginController.dosendverify()"
 		
@@ -287,6 +298,8 @@ class LoginController extends SessionController {
 		}
 	}
 	
+
+	@NoAuth
 	def recover() {
 		debug "LoginController.recover()"
 		
@@ -305,7 +318,8 @@ class LoginController extends SessionController {
 		render(view:"/" + name() + "/recover",
 				model:[precontroller:params.precontroller, preaction:params.preaction, code:params.code, templateVer:urlService.template(request)])
 	}
-	
+
+	@NoAuth
 	def verify() {
 		debug "LoginController.verify()"
 		
@@ -344,7 +358,8 @@ class LoginController extends SessionController {
 	def setLoginUser(user) {
 		securityService.setLoginUser(user)
 	}
-	
+
+	@NoAuth
 	def dorecover() {
 		debug "LoginController.dorecover()"
 		
@@ -392,7 +407,8 @@ class LoginController extends SessionController {
 		
 		redirect(url:toUrl(controller:'home', action:'index'))
 	}
-	
+
+	@NoAuth
 	def register() {
 		debug "LoginController.register()"
 
@@ -474,7 +490,8 @@ class LoginController extends SessionController {
 			return retVal
 		}
 	}
-	
+
+	@NoAuth
 	def doregister() {
 		debug "LoginController.doregister()"
 		
@@ -510,7 +527,7 @@ class LoginController extends SessionController {
 			redirect(url:toUrl(action:"register"))
 		}
 	}
-	
+
 	// This method only sets the user settings bit, if the request is from the mobile app.
 	protected boolean checkIfVisitedMobileApp(User user, Map params) {
 		if (!user) {
@@ -528,6 +545,7 @@ class LoginController extends SessionController {
 		return hasVisitedMobileApp
 	}
 
+	@NoAuth
 	def doregisterData() {
 		debug "LoginController.doregisterData()"
 		
