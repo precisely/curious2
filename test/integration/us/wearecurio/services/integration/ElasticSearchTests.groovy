@@ -210,6 +210,83 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	}
 	
 	@Test
+	void "Test Get Discussion Post Info for User Belonging to One Group with One Discussion"() {
+		def groups = UserGroup.list()
+		def groups2 = GroupMemberReader.list()
+		
+		UserGroup groupA = UserGroup.create("curious A", "Group A", "Discussion topics for Sprint A",
+				[isReadOnly:false, defaultNotify:false])
+		groupA.addMember(user)
+		
+		UserGroup groupB = UserGroup.create("curious B", "Group B", "Discussion topics for Sprint B",
+				[isReadOnly:false, defaultNotify:true])
+		groupB.addMember(user2)
+		
+		Discussion discussionA = Discussion.create(user, "groupA discussion", groupA, currentTime - 2)
+		Discussion discussionB = Discussion.create(user2, "groupB discussion", groupB, currentTime - 1)
+		assert discussionA
+		assert discussionB
+		
+		DiscussionPost postA1 = discussionA.createPost(user, "postA1", currentTime)
+		DiscussionPost postA2 = discussionA.createPost(user, "postA2", currentTime + 1)
+		DiscussionPost postB1 = discussionB.createPost(user2, "postB1", currentTime + 2)
+		DiscussionPost postB2 = discussionB.createPost(user2, "postB2", currentTime + 3)
+		
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+		
+		def dbGroupIds = GroupMemberReader.lookupGroupIds(userId)
+		assert dbGroupIds.size() == 3
+		assert dbGroupIds.contains(user.virtualUserGroupIdDiscussions)
+        assert dbGroupIds.contains(discussionA.virtualUserGroupIdFollowers)
+		assert dbGroupIds.contains(groupA.id)
+        assert !dbGroupIds.contains(discussionB.virtualUserGroupIdFollowers)
+		assert !dbGroupIds.contains(groupB.id)
+		
+		def discussionResults = Discussion.search(searchType:'query_and_fetch') {
+			query_string(query:  "groupIds:" + dbGroupIds[0].toString())
+		}
+		assert discussionResults
+		assert discussionResults.searchResults.size() == 1
+		assert discussionResults.searchResults[0].name == discussionA.name
+		
+		elasticSearchHelper.withElasticSearch{ client ->
+			SearchResponse sr = client
+					.prepareSearch("us.wearecurio.model_v0")
+					.setTypes("discussionPost")
+					.setQuery(
+					boolQuery()
+					.must(
+					queryString("discussionId:" + discussionResults.searchResults[0].id.toString()))
+					.mustNot(
+					termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
+					)
+					)
+					.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
+					.addAggregation(
+					AggregationBuilders
+					.terms("by_discussionId")
+					.field("discussionId")
+					.subAggregation(
+					AggregationBuilders
+					.topHits("top_hits")
+					.setSize(1)  // number of post documents to show PER discussion id
+					.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
+					)
+					)
+					.execute()
+					.actionGet()
+			
+			def bucket = sr.getAggregations().get("by_discussionId").getBuckets().find{ b -> b.key == discussionA.id.toString() }
+			assert bucket.docCount == 1
+			def hits = bucket.getAggregations().get("top_hits").getHits().getHits()
+			assert hits
+			assert hits.size() == 1
+			assert hits[0].getSource().message == postA2.message // second post to discussionA
+		}
+	}
+	
+	@Test
 	void "Test Search Discussion by userId"() {
 		testSimpleSearch(Discussion.create(user), "userId")
 	}
@@ -1080,83 +1157,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	}
 	
 	@Test
-	void "Test Get Discussion Post Info for User Belonging to One Group with One Discussion"() {
-		def groups = UserGroup.list()
-		def groups2 = GroupMemberReader.list()
-		
-		UserGroup groupA = UserGroup.create("curious A", "Group A", "Discussion topics for Sprint A",
-				[isReadOnly:false, defaultNotify:false])
-		groupA.addMember(user)
-		
-		UserGroup groupB = UserGroup.create("curious B", "Group B", "Discussion topics for Sprint B",
-				[isReadOnly:false, defaultNotify:true])
-		groupB.addMember(user2)
-		
-		Discussion discussionA = Discussion.create(user, "groupA discussion", groupA, currentTime - 2)
-		Discussion discussionB = Discussion.create(user2, "groupB discussion", groupB, currentTime - 1)
-		assert discussionA
-		assert discussionB
-		
-		DiscussionPost postA1 = discussionA.createPost(user, "postA1", currentTime)
-		DiscussionPost postA2 = discussionA.createPost(user, "postA2", currentTime + 1)
-		DiscussionPost postB1 = discussionB.createPost(user2, "postB1", currentTime + 2)
-		DiscussionPost postB2 = discussionB.createPost(user2, "postB2", currentTime + 3)
-		
-		elasticSearchService.index()
-		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
-		
-		def dbGroupIds = GroupMemberReader.lookupGroupIds(userId)
-		assert dbGroupIds.size() == 3
-		assert dbGroupIds.contains(user.virtualUserGroupIdDiscussions)
-        assert dbGroupIds.contains(discussionA.virtualUserGroupIdFollowers)
-		assert dbGroupIds.contains(groupA.id)
-        assert !dbGroupIds.contains(discussionB.virtualUserGroupIdFollowers)
-		assert !dbGroupIds.contains(groupB.id)
-		
-		def discussionResults = Discussion.search(searchType:'query_and_fetch') {
-			query_string(query:  "groupIds:" + dbGroupIds[0].toString())
-		}
-		assert discussionResults
-		assert discussionResults.searchResults.size() == 1
-		assert discussionResults.searchResults[0].name == discussionA.name
-		
-		elasticSearchHelper.withElasticSearch{ client ->
-			SearchResponse sr = client
-					.prepareSearch("us.wearecurio.model_v0")
-					.setTypes("discussionPost")
-					.setQuery(
-					boolQuery()
-					.must(
-					queryString("discussionId:" + discussionResults.searchResults[0].id.toString()))
-					.mustNot(
-					termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
-					)
-					)
-					.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
-					.addAggregation(
-					AggregationBuilders
-					.terms("by_discussionId")
-					.field("discussionId")
-					.subAggregation(
-					AggregationBuilders
-					.topHits("top_hits")
-					.setSize(1)  // number of post documents to show PER discussion id
-					.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
-					)
-					)
-					.execute()
-					.actionGet()
-			
-			def bucket = sr.getAggregations().get("by_discussionId").getBuckets().find{ b -> b.key == discussionA.id.toString() }
-			assert bucket.docCount == 1
-			def hits = bucket.getAggregations().get("top_hits").getHits().getHits()
-			assert hits
-			assert hits.size() == 1
-			assert hits[0].getSource().message == postA2.message // second post to discussionA
-		}
-	}
-	
-	@Test
 	void "Test Get Discussion Post Info for User Belonging to Two Groups One Discussion Each"() {
 		UserGroup groupA = UserGroup.create("curious A", "Group A", "Discussion topics for Sprint A",
 				[isReadOnly:false, defaultNotify:false])
@@ -1455,4 +1455,5 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 			assert bucket == null
 		}
 	}
+/**/
 }

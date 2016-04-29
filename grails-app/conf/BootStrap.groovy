@@ -6,10 +6,12 @@ import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.filters.EmailVerificationCheckFilters
 import us.wearecurio.marshaller.EnumMarshaller
 import us.wearecurio.model.TagStats
+import us.wearecurio.model.User
 import us.wearecurio.server.BackgroundTask
 import us.wearecurio.services.AlertGenerationService
 import us.wearecurio.services.AnalyticsService
 import us.wearecurio.services.DatabaseService
+import us.wearecurio.services.DataService
 import us.wearecurio.services.EmailService
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.MigrationService
@@ -59,6 +61,10 @@ class BootStrap {
 		springContext.getBean( "customObjectMarshallers" ).register()
 		BackgroundTask.launch {
 			migrationService.doBackgroundMigrations()
+			def userList = User.list()
+			for (user in userList) {
+				DataService.pollAllForUserId(user.id)
+			}
 		}
 
 		TagStats.initializeSharedTags()
