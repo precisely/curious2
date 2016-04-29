@@ -909,7 +909,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		$(document).trigger(beforeLinePlotEvent, [initialTag]);
 		var plotLine = new PlotLine({plot:this, name:initialTag.description, color:this.leastUsedPlotLineColor(),
 			tag: initialTag,showYAxis: false/*this.countYAxesShowing() == 0*/,
-			isContinuous:initialTag.isContinuous, showPoints:initialTag.showPoints, sumData:(initialTag.isContinuous ? 0 : 1)});
+			isContinuous:initialTag.isContinuous, showPoints:initialTag.showPoints, sumData:0});
 
 		this.lines['id' + plotLine.id] = plotLine;
 

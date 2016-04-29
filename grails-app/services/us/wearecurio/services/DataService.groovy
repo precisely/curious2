@@ -425,7 +425,7 @@ abstract class DataService {
 
 		OAuthAccount.withTransaction {
 			try {
-				getDataDefault(account, account.fetchLastData(), null, false)
+				getDataDefault(account, account.fetchLastData() - 1, null, false)
 			} catch (InvalidAccessTokenException e) {
 				log.warn "Token expired while polling for $account"
 				account.clearAccessToken()

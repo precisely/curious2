@@ -16,7 +16,7 @@ class DeviceIntegrationDailyJob extends TimerJob {
 	GrailsApplication grailsApplication
 
 	static triggers = {
-		cron name:'deviceIntegrationTrigger', startDelay: 2 * HOUR, cronExpression: '0 30 2 * * ? *' //2:30 AM 
+		cron name:'deviceIntegrationTrigger', startDelay: HOUR, cronExpression: '0 30 2,12 * * ? *' //2:30 AM, 12:30 PM
 	}
 
 	def execute() {

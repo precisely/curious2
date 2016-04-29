@@ -54,7 +54,7 @@ class OuraDataService extends DataService {
 		endDate = endDate ?: new Date()
 
 		getDataSleep(account, startDate, endDate, false)
-		// Uncomment these below 2 lines when Oura starts sending the activity & excercise data
+		// Uncomment these below 2 lines when Oura starts sending the activity & exercise data
 		//getDataExercise(account, startDate, endDate, false)
 		//getDataActivity(account, startDate, endDate, false)
 
