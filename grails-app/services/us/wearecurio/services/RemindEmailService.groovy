@@ -1,18 +1,17 @@
 package us.wearecurio.services
 
-import org.apache.commons.logging.LogFactory
-
-import org.springframework.transaction.annotation.Transactional
-
 import grails.util.Environment
-
-import us.wearecurio.server.DateRecord
-import us.wearecurio.utility.Utils
-import us.wearecurio.model.*
-import us.wearecurio.data.RepeatType
+import org.apache.commons.logging.LogFactory
+import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
-import org.joda.time.*
+import org.springframework.transaction.annotation.Transactional
+import us.wearecurio.model.AlertNotification
+import us.wearecurio.model.Entry
+import us.wearecurio.model.PushNotificationDevice
+import us.wearecurio.model.User
+import us.wearecurio.server.DateRecord
+import us.wearecurio.utility.Utils
 
 class RemindEmailService {
 	EmailService emailService
@@ -42,17 +41,19 @@ class RemindEmailService {
 			}
 			def notificationMessage = "Reminder to track:" + alert.text
 			devices.each { userDevice ->
+				Map params = ['entryId': alert.objectId, 'entryDate': dateTimeFormatter.print(alert.date.getTime())]
+
 				if (userDevice && userDevice.deviceType == PushNotificationDevice.ANDROID_DEVICE) {
-					googleMessageService.sendMessage(notificationMessage, [userDevice.token])
-					log.debug "Notifying Android device for user "+ alert.userId
+					params["entryId"] = params["entryId"].toString()
+					googleMessageService.sendMessage(notificationMessage, [userDevice.token], "Curious", params)
+					log.debug "Notifying Android device for user " + alert.userId
 				} else if (userDevice && userDevice.deviceType == PushNotificationDevice.IOS_DEVICE) {
 					//TODO Send APN message for reminder
-					log.debug "Notifying iOS device for user "+ alert.userId
-					appleNotificationService.sendMessage(notificationMessage, [userDevice.token],"Curious",
-						['entryId':alert.objectId,'entryDate':dateTimeFormatter.print(alert.date.getTime())])
+					log.debug "Notifying iOS device for user " + alert.userId
+					appleNotificationService.sendMessage(notificationMessage, [userDevice.token], "Curious", params)
 				}
 			}
-			
+
 			return true
 		}
 		

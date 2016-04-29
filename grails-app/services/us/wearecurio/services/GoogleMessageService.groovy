@@ -1,21 +1,9 @@
 package us.wearecurio.services
-import java.io.IOException
-import java.util.ArrayList
-
-import org.springframework.transaction.annotation.Transactional
-
-import javax.servlet.ServletException
-import javax.servlet.annotation.WebServlet
-import javax.servlet.http.HttpServlet
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-
-import org.apache.commons.logging.LogFactory;
 
 import com.google.android.gcm.server.Message
 import com.google.android.gcm.server.MulticastResult
 import com.google.android.gcm.server.Sender
-
+import org.apache.commons.logging.LogFactory
 
 class GoogleMessageService {
 	private static def log = LogFactory.getLog(this)
@@ -26,7 +14,7 @@ class GoogleMessageService {
 	
 	def grailsApplication
 	
-    def sendMessage(def messageTxt, def devices = [], def collapseKey = 'Curious') {
+    def sendMessage(def messageTxt, def devices = [], def collapseKey = 'Curious', Map customPayLoad = [:]) {
 		def gcmConfig = grailsApplication.config.pushNotification.gcm
 		if (devices.size() == 0) {
 			debug ("Need at least one device token to send")
@@ -35,6 +23,10 @@ class GoogleMessageService {
         // Instance of com.android.gcm.server.Sender, that does the
         // transmission of a Message to the Google Cloud Messaging service.
         Sender sender = new Sender(gcmConfig.senderID)
+		
+		customPayLoad.message = messageTxt
+		customPayLoad.title = "We Are Curious"
+		customPayLoad.image = 'https://curiousinc.box.com/shared/static/iq883e100ppo2pudcfog6cbl48tcavyy.png'
          
         // This Message object will hold the data that is being transmitted
         // to the Android client devices.  For this demo, it is a simple text
@@ -48,7 +40,7 @@ class GoogleMessageService {
 		        .collapseKey(collapseKey)
 		        .timeToLive(30)
 		        .delayWhileIdle(true)
-		        .addData("message", messageTxt)
+		        .setData(customPayLoad)
 		        .build()
          
         try {
