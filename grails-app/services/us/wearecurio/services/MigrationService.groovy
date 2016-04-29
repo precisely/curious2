@@ -80,6 +80,7 @@ class MigrationService {
 	OuraDataService ouraDataService
 	UrlService urlService
 	EmailService emailService
+	OauthAccountService oauthAccountService
 	
 	boolean skipMigrations = false
 	
@@ -845,6 +846,9 @@ class MigrationService {
 		}
 		tryMigration("Re-import Oura data") {
 			ouraDataService.pollAll()
+		}
+		tryMigration("Refresh all oauth accounts") {
+			oauthAccountService.refreshAllToken()
 		}
 	}
 }

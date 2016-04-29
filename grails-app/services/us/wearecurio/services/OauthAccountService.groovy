@@ -87,11 +87,11 @@ class OauthAccountService {
 	}
 
 	/**
-	 * Refresh all tokens which will expire in between from now & next day.
+	 * Refresh all tokens which will expire before two days from now
 	 */
 	void refreshAllToken() {
 		OAuthAccount.withCriteria {
-			between("expiresOn", new Date(), new Date() + 1)
+			lessThan("expiresOn", new Date() + 2)
 		}.each { account ->
 			refreshToken(account)
 		}
