@@ -66,18 +66,22 @@ class LoginController extends SessionController {
 	}
 	
 	protected def renderJSONGet(data) {
-		//debug "${params.callback}(${new JSON(data)})"
+		/*
+		 * Adding the correct content type in the response header to support Android/Chrome. The 
+		 * "X-Content-Type-Options: nosniff" response header is enabling the strict mime type checking in chrome 
+		 * browser which is not allowing the response with mime type text/html to execute as a javascript. 
+		 */
 		if (params.callback)
-			render "${params.callback}(${new JSON(data)})"
+			render "${params.callback}(${new JSON(data)})", contentType: "application/javascript"
 		else
-			render "${new JSON(data)}"
+			render "${new JSON(data)}", contentType: "application/json"
 	}
 	
 	protected def renderDataGet(data) {
 		if (params.callback)
-			render "${params.callback}(${data})"
+			render "${params.callback}(${data})", contentType: "application/javascript"
 		else
-			render "${data}"
+			render "${data}", contentType: "application/json"
 	}
 	
 	protected def renderStringGet(str) {
