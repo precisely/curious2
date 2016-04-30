@@ -21,8 +21,8 @@
 								We Are Curious helps you investigate <strong>questions</strong> about yourself.
 								For example,<br><br>
 								<ul class="ul-fix">
-									<li>${raw(initialConfig?.customQuestion1)}</li>
-									<li>${raw(initialConfig?.customQuestion2)}</li>
+									<li>${raw(initialConfig?.tutorialInfo?.customQuestion1)}</li>
+									<li>${raw(initialConfig?.tutorialInfo?.customQuestion2)}</li>
 								</ul>
 							</div>
 						</div>
@@ -32,8 +32,8 @@
 							<div>
 								<strong>Track</strong> bits of your life for a few days or weeks using <strong>tags
 								</strong> based on your questions.
-								For instance, you could track ${raw(initialConfig?.trackExample1)}, ${raw(initialConfig?.trackExample2)}, ${raw(initialConfig?.trackExample3)}, and ${raw(initialConfig?.trackExample4)}. You can track automatically using <strong>
-								devices</strong> such as ${raw(initialConfig?.deviceExample)}.
+								For instance, you could track ${raw(initialConfig?.tutorialInfo?.trackExample1)}, ${raw(initialConfig?.tutorialInfo?.trackExample2)}, ${raw(initialConfig?.tutorialInfo?.trackExample3)}, and ${raw(initialConfig?.tutorialInfo?.trackExample4)}. You can track automatically using <strong>
+								devices</strong> such as ${raw(initialConfig?.tutorialInfo?.deviceExample)}.
 							</div>
 						</div>
 
@@ -57,27 +57,27 @@
 								</p>
 								<hr>
 								<h3 class="questions">
-									${raw(initialConfig?.sampleQuestionDuration)}
+									${raw(initialConfig?.tutorialInfo?.sampleQuestionDuration)}
 								</h3>
 								<div class="alert alert-danger hide help-alert" role="alert">
 									Some error has occurred while performing the operation.
 								</div>
 								<input type="text" id="sleep-hour"
-										placeholder="${raw(initialConfig?.sampleQuestionDurationExampleAnswers)}" />
+										placeholder="${raw(initialConfig?.tutorialInfo?.sampleQuestionDurationExampleAnswers)}" />
 								<h4 class="entry-label"><span id="sleep-entry-label" class="label"></span></h4>
 								<input type="hidden" name="entry.0" id="sleep-hour-entry" />
 							</div>
 
 							<div class="item mood">
-								<h3 class="questions">${raw(initialConfig?.sampleQuestionRating)}</h3>
+								<h3 class="questions">${raw(initialConfig?.tutorialInfo?.sampleQuestionRating)}</h3>
 								<p>
-									Please enter ${raw(initialConfig?.sampleQuestionRatingRange)}<br><br>Examples:<br>${raw(initialConfig?.sampleQuestionRatingExampleAnswer1)}<br>
-									${raw(initialConfig?.sampleQuestionRatingExampleAnswer2)}<br>${raw(initialConfig?.sampleQuestionRatingExampleAnswer3)}<br><br>
+									Please enter ${raw(initialConfig?.tutorialInfo?.sampleQuestionRatingRange)}<br><br>Examples:<br>${raw(initialConfig?.tutorialInfo?.sampleQuestionRatingExampleAnswer1)}<br>
+									${raw(initialConfig?.tutorialInfo?.sampleQuestionRatingExampleAnswer2)}<br>${raw(initialConfig?.tutorialInfo?.sampleQuestionRatingExampleAnswer3)}<br><br>
 								</p>
 								<div class="alert alert-danger hide mood-help-alert" role="alert">
 									Some error has occurred while performing the operation.
 								</div>
-								<input type="number" min="1" max="10" id="mood-box" placeholder="Click to enter ${raw(initialConfig?.sampleQuestionRatingRange)}"/> 
+								<input type="number" min="1" max="10" id="mood-box" placeholder="Click to enter ${raw(initialConfig?.tutorialInfo?.sampleQuestionRatingRange)}"/> 
 								<h4 class="entry-label"><span id="mood-entry-label" class="label"></span></h4>
 								<input type="hidden" name="entry.1" id="mood-entry"/>
 							</div>
@@ -89,25 +89,25 @@
 								<h3 class="questions">What have you done today (all are optional)?</h3>
 								<form id="helpWizardExerciseForm">
 									<label for="cardio">
-										${raw(initialConfig?.today1)}
+										${raw(initialConfig?.tutorialInfo?.today1)}
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="cardio"
-											placeholder="${raw(initialConfig?.today1Example)}" autofocus />
+											placeholder="${raw(initialConfig?.tutorialInfo?.today1Example)}" autofocus />
 									<label for="resistance">
-										${raw(initialConfig?.today2)}
+										${raw(initialConfig?.tutorialInfo?.today2)}
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="resistance"
-											placeholder="${raw(initialConfig?.today2Example)}" />
+											placeholder="${raw(initialConfig?.tutorialInfo?.today2Example)}" />
 									<label for="stretch">
-										${raw(initialConfig?.today3)}
+										${raw(initialConfig?.tutorialInfo?.today3)}
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="stretch"
-											placeholder="${raw(initialConfig?.today3Example)}" />
+											placeholder="${raw(initialConfig?.tutorialInfo?.today3Example)}" />
 									<label for="metabolic">
-										${raw(initialConfig?.today4)}
+										${raw(initialConfig?.tutorialInfo?.today4)}
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="metabolic"
-											placeholder="${raw(initialConfig?.today4Example)}" />
+											placeholder="${raw(initialConfig?.tutorialInfo?.today4Example)}" />
 									<input type="hidden" name="currentTime" id="current-time-input" />
 									<input type="hidden" name="baseDate" id="base-date-input" />
 									<input type="hidden" name="timeZoneName" id="time-zone-name-input" />

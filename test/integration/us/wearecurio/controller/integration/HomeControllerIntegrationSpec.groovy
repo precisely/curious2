@@ -3,13 +3,19 @@ package us.wearecurio.controller.integration
 import grails.test.spock.IntegrationSpec
 
 import us.wearecurio.model.InitialLoginConfiguration
+import us.wearecurio.model.InterestArea
+import us.wearecurio.model.InterestAreaBoolean
+import us.wearecurio.model.InterestSubject
+import us.wearecurio.model.InterestSubjectBoolean
 import us.wearecurio.model.Tag
+import us.wearecurio.model.TutorialInfo
 import us.wearecurio.model.User
 import us.wearecurio.controller.HomeController
 import us.wearecurio.utility.Utils
 
 //NOTE: These are spock tests (my preferred form) and will focus on promo code stuff
 class HomeControllerIntegrationSpec extends IntegrationSpec {
+	static transactional = true
 	User user
 	HomeController controller
 	InitialLoginConfiguration defaultILC
@@ -30,319 +36,329 @@ class HomeControllerIntegrationSpec extends IntegrationSpec {
 		controller.session.userId = user.id
 		defaultILC = InitialLoginConfiguration.defaultConfiguration()
     }
+
+	static Boolean hasSubjects(InitialLoginConfiguration ilc){
+		return ( 
+			ilc != null && 
+			ilc.interestAreas != null &&
+			ilc.interestAreas.size() > 0 && 
+			ilc.interestAreas[0].interest != null &&
+			ilc.interestAreas[0]
+				.interest
+				.interestSubjects != null &&
+			ilc.interestAreas[0]
+				.interest
+				.interestSubjects.size() > 0 &&
+			ilc.interestAreas[0]
+				.interest
+				.interestSubjects[0]
+				.subject != null
+		)
+	}
+	
+	static Boolean hasInterestTags(InitialLoginConfiguration ilc){
+		return (
+			hasSubjects(ilc) &&
+			ilc
+				.interestAreas[0]
+				.interest
+				.interestSubjects[0]
+				.subject
+				.interestTags != null &&
+			ilc
+				.interestAreas[0]
+				.interest
+				.interestSubjects[0]
+				.subject
+				.interestTags.size() > 0
+		)
+	}
+	
+	static Boolean hasBookmarks(InitialLoginConfiguration ilc){
+		return (
+			hasSubjects(ilc) &&
+			ilc
+				.interestAreas[0]
+				.interest
+				.interestSubjects[0]
+				.subject
+				.bookmarks != null &&
+			ilc
+				.interestAreas[0]
+				.interest
+				.interestSubjects[0]
+				.subject
+				.bookmarks.size() > 0
+		)		
+	}
+	
+	static List interestTags(InitialLoginConfiguration ilc){
+		List ret = []
+		if (hasInterestTags(ilc)) {
+			ilc
+				.interestAreas[0]
+				.interest
+				.interestSubjects[0]
+				.subject
+				.interestTags
+				.each{
+					ret << it
+				}
+		}
+		
+		return ret
+	}
+	
+	static List bookmarks(InitialLoginConfiguration ilc){
+		List ret = []
+		if (hasInterestTags(ilc)) {
+			ilc
+				.interestAreas[0]
+				.interest
+				.interestSubjects[0]
+				.subject
+				.bookmarks
+				.each{
+					ret << it
+				}
+		}
+		
+		return ret		
+	}
+	
+	static Boolean compareTutorialInfo(
+		InitialLoginConfiguration a, 
+		InitialLoginConfiguration b ) {
+		return (
+			a.tutorialInfo.customQuestion1 == 
+				b.tutorialInfo.customQuestion1 &&
+			a.tutorialInfo.customQuestion2 == 
+				b.tutorialInfo.customQuestion2 &&
+			a.tutorialInfo.trackExample1 == 
+				b.tutorialInfo.trackExample1 &&
+			a.tutorialInfo.trackExample2 == 
+				b.tutorialInfo.trackExample2 &&
+			a.tutorialInfo.trackExample3 == 
+				b.tutorialInfo.trackExample3 &&
+			a.tutorialInfo.deviceExample == 
+				b.tutorialInfo.deviceExample &&
+			a.tutorialInfo.sampleQuestionDuration == 
+				b.tutorialInfo.sampleQuestionDuration &&
+			a.tutorialInfo.sampleQuestionDurationExampleAnswers == 
+				b.tutorialInfo.sampleQuestionDurationExampleAnswers &&
+			a.tutorialInfo.sampleQuestionRating == 
+				b.tutorialInfo.sampleQuestionRating &&
+			a.tutorialInfo.sampleQuestionRatingRange == 
+				b.tutorialInfo.sampleQuestionRatingRange &&
+			a.tutorialInfo.sampleQuestionRatingExampleAnswer1 == 
+				b.tutorialInfo.sampleQuestionRatingExampleAnswer1 &&
+			a.tutorialInfo.sampleQuestionRatingExampleAnswer2 == 
+				b.tutorialInfo.sampleQuestionRatingExampleAnswer2 &&
+			a.tutorialInfo.sampleQuestionRatingExampleAnswer3 == 
+				b.tutorialInfo.sampleQuestionRatingExampleAnswer3 &&
+			a.tutorialInfo.today1 == 
+				b.tutorialInfo.today1 &&
+			a.tutorialInfo.today1Example == 
+				b.tutorialInfo.today1Example &&
+			a.tutorialInfo.today2 == 
+				b.tutorialInfo.today2 &&
+			a.tutorialInfo.today2Example == 
+				b.tutorialInfo.today2Example &&
+			a.tutorialInfo.today3 == 
+				b.tutorialInfo.today3 &&
+			a.tutorialInfo.today3Example == 
+				b.tutorialInfo.today3Example &&
+			a.tutorialInfo.today4 == 
+				b.tutorialInfo.today4 &&
+			a.tutorialInfo.today4Example == 
+				b.tutorialInfo.today4Example
+		)
+	}
 	
 	//@spock.lang.IgnoreRest
 	void "test promo code found"() {
 		given: "a promo code"
-		String code = "test-promo"
+		String code = "test-promo-home"
 		
-		and: "some non-default login configuration data"
-		String trackExample1 = "trackExample1 test"
-		String sampleQuestionRatingExampleAnswer1 = "sampleQuestionRatingExampleAnswer1 test"
-		List interestTags = ["testInterestTag1", "testInterestTag2"]
-		List bookmarks = ["run 100 miles", "eat 2000 calories"]
-		
-		and: "a new login configuration"
+		and: "an InitialLoginConfiguration for that promo code"
 		InitialLoginConfiguration ilc = InitialLoginConfiguration.createFromDefault(code, false)
 		
-		and: "the non-default data is applied to it"
-		ilc.trackExample1 = trackExample1
-		ilc.sampleQuestionRatingExampleAnswer1 = sampleQuestionRatingExampleAnswer1
-		ilc.interestTags = interestTags
-		ilc.bookmarks = bookmarks
+		and: "some non-default login configuration data"
+		String trackExample1 = 
+			"trackExample1 test"
+		String sampleQuestionRatingExampleAnswer1 = 
+			"sampleQuestionRatingExampleAnswer1 test"
+		List tags = 
+			["testInterestTag1", "testInterestTag2"]
+		List bkmrks = 
+			["run 100 miles", "eat 2000 calories"]
+				
+		and: "set non-default tutorial info"
+		TutorialInfo ti = TutorialInfo.createFromDefault(code)
+		ti.trackExample1 = trackExample1
+		ti.sampleQuestionRatingExampleAnswer1 = sampleQuestionRatingExampleAnswer1
+		Utils.save(ti,true)
+		
+		and: "set non-default subject info"
+		ilc
+			.interestAreas[0]
+			.interest
+			.interestSubjects[0]
+			.subject
+			.interestTags
+			.clear()
+		ilc
+			.interestAreas[0]
+			.interest
+			.interestSubjects[0]
+			.subject
+			.bookmarks
+			.clear()
+		tags
+			.each {
+				ilc
+					.interestAreas[0]
+					.interest
+					.interestSubjects[0]
+					.subject
+					.addToInterestTags(it)}
+		bkmrks
+			.each {
+				ilc
+					.interestAreas[0]
+					.interest
+					.interestSubjects[0]
+					.subject
+					.addToBookmarks(it)}
 		Utils.save(ilc, true)
-		
+				
 		when: "params.promoCode is set"
 		controller.params.clear()
 		controller.params.putAll([
-			promoCode: code,
+			promoCode: code
 		])
 		
 		and: "index is called"
 		def result = controller.index()
 		
-		then: "initialConfig matches ilc"
+		then: "promo Code is correct"
 		InitialLoginConfiguration ilcResult = result.initialConfig
+		ilcResult.promoCode == ilc.promoCode
 		
-		ilcResult.promoCode == ilc.promoCode 
-		ilcResult.customQuestion1 == ilc.customQuestion1
-		ilcResult.customQuestion2 == ilc.customQuestion2
-		ilcResult.trackExample1 == ilc.trackExample1
-		ilcResult.trackExample1 == trackExample1
-		ilcResult.trackExample2 == ilc.trackExample2
-		ilcResult.trackExample3 == ilc.trackExample3
-		ilcResult.deviceExample == ilc.deviceExample
-		ilcResult.sampleQuestionDuration == ilc.sampleQuestionDuration
-		ilcResult.sampleQuestionDurationExampleAnswers == ilc.sampleQuestionDurationExampleAnswers
-		ilcResult.sampleQuestionRating == ilc.sampleQuestionRating
-		ilcResult.sampleQuestionRatingRange == ilc.sampleQuestionRatingRange
-		ilcResult.sampleQuestionRatingExampleAnswer1 == ilc.sampleQuestionRatingExampleAnswer1
-		ilcResult.sampleQuestionRatingExampleAnswer1 == sampleQuestionRatingExampleAnswer1
-		ilcResult.sampleQuestionRatingExampleAnswer2 == ilc.sampleQuestionRatingExampleAnswer2
-		ilcResult.sampleQuestionRatingExampleAnswer3 == ilc.sampleQuestionRatingExampleAnswer3
-		ilcResult.today1 == ilc.today1
-		ilcResult.today1Example == ilc.today1Example
-		ilcResult.today2 == ilc.today2
-		ilcResult.today2Example == ilc.today2Example
-		ilcResult.today3 == ilc.today3
-		ilcResult.today3Example == ilc.today3Example
-		ilcResult.today4 == ilc.today4
-		ilcResult.today4Example == ilc.today4Example
-		ilcResult.interestTags.equals(ilc.interestTags)
-		ilcResult.bookmarks.equals(ilc.bookmarks)
+		and: "tutorial info matches"
+		compareTutorialInfo(ilcResult, ilc)
+		ilcResult.tutorialInfo.trackExample1 == 
+			trackExample1
+		ilcResult.tutorialInfo.sampleQuestionRatingExampleAnswer1 == 
+			sampleQuestionRatingExampleAnswer1
+
+		and: "interest Tags match"
+		interestTags(ilcResult).sort().equals(interestTags(ilc).sort())
 		
-		and: "user interest tags are set"
-		ilc.interestTags.each{ user.hasInterestTag(Tag.create(it)) }
-		
-		and: "user bookmarks are set"
-		def tags = User.getTags(user.id)
-		tags
-		tags.size == 2
-		tags.find{ it.description == "eat [calories]" }
-		tags.find{ it.description == "run [distance]" }		
+		and: "bookmarks match"
+		bookmarks(ilcResult).sort().equals(bookmarks(ilc).sort())
 	}
 	
-	void "test promo code not found"() {
-		given: "an invalid promo code"
-		String code = "invalid"
-		
+	@spock.lang.Unroll
+	void "test promo code #promoCode returns default"(){
 		when: "params.promoCode is set"
 		controller.params.clear()
 		controller.params.putAll([
-			promoCode: code,
+			promoCode: promoCode
 		])
 		
 		and: "index is called"
 		def result = controller.index()
 
-		then: "initialConfig matches defaultILC"
+		then: "promo Code is correct"
 		InitialLoginConfiguration ilcResult = result.initialConfig
-		ilcResult.promoCode == defaultILC.promoCode 
-		ilcResult.customQuestion1 == defaultILC.customQuestion1
-		ilcResult.customQuestion2 == defaultILC.customQuestion2
-		ilcResult.trackExample1 == defaultILC.trackExample1
-		ilcResult.trackExample2 == defaultILC.trackExample2
-		ilcResult.trackExample3 == defaultILC.trackExample3
-		ilcResult.deviceExample == defaultILC.deviceExample
-		ilcResult.sampleQuestionDuration == defaultILC.sampleQuestionDuration
-		ilcResult.sampleQuestionDurationExampleAnswers == defaultILC.sampleQuestionDurationExampleAnswers
-		ilcResult.sampleQuestionRating == defaultILC.sampleQuestionRating
-		ilcResult.sampleQuestionRatingRange == defaultILC.sampleQuestionRatingRange
-		ilcResult.sampleQuestionRatingExampleAnswer1 == defaultILC.sampleQuestionRatingExampleAnswer1
-		ilcResult.sampleQuestionRatingExampleAnswer2 == defaultILC.sampleQuestionRatingExampleAnswer2
-		ilcResult.sampleQuestionRatingExampleAnswer3 == defaultILC.sampleQuestionRatingExampleAnswer3
-		ilcResult.today1 == defaultILC.today1
-		ilcResult.today1Example == defaultILC.today1Example
-		ilcResult.today2 == defaultILC.today2
-		ilcResult.today2Example == defaultILC.today2Example
-		ilcResult.today3 == defaultILC.today3
-		ilcResult.today3Example == defaultILC.today3Example
-		ilcResult.today4 == defaultILC.today4
-		ilcResult.today4Example == defaultILC.today4Example
-		ilcResult.interestTags.equals(defaultILC.interestTags)
-		ilcResult.bookmarks.equals(defaultILC.bookmarks)
+		ilcResult.promoCode == 
+			InitialLoginConfiguration.DEFAULT_PROMO_CODE
 		
-		and: "user interest tags are set"
-		defaultILC.interestTags.each{ user.hasInterestTag(Tag.create(it)) }
+		and: "tutorial info matches"
+		compareTutorialInfo(ilcResult, defaultILC)
+
+		and: "interest Tags match"
+		interestTags(ilcResult).sort().equals(interestTags(defaultILC).sort())
 		
-		and: "user bookmarks are set"
-		def tags = User.getTags(user.id)
-		tags
-		tags.size == 1
-		tags.find{ it.description == "sleep [time]" }		
+		and: "bookmarks match"
+		bookmarks(ilcResult).sort().equals(bookmarks(defaultILC).sort())
+				
+		where:
+		promoCode << [
+		"",
+		null,
+		"invalid",
+		InitialLoginConfiguration.DEFAULT_PROMO_CODE
+		]
 	}
 	
-	void "test promo code not specified"() {
-		when: "index is called without a promo code being specified"
-		def result = controller.index()
-
-		then: "initialConfig matches defaultILC"
-		InitialLoginConfiguration ilcResult = result.initialConfig
-		ilcResult.promoCode == defaultILC.promoCode 
-		ilcResult.customQuestion1 == defaultILC.customQuestion1
-		ilcResult.customQuestion2 == defaultILC.customQuestion2
-		ilcResult.trackExample1 == defaultILC.trackExample1
-		ilcResult.trackExample2 == defaultILC.trackExample2
-		ilcResult.trackExample3 == defaultILC.trackExample3
-		ilcResult.deviceExample == defaultILC.deviceExample
-		ilcResult.sampleQuestionDuration == defaultILC.sampleQuestionDuration
-		ilcResult.sampleQuestionDurationExampleAnswers == defaultILC.sampleQuestionDurationExampleAnswers
-		ilcResult.sampleQuestionRating == defaultILC.sampleQuestionRating
-		ilcResult.sampleQuestionRatingRange == defaultILC.sampleQuestionRatingRange
-		ilcResult.sampleQuestionRatingExampleAnswer1 == defaultILC.sampleQuestionRatingExampleAnswer1
-		ilcResult.sampleQuestionRatingExampleAnswer2 == defaultILC.sampleQuestionRatingExampleAnswer2
-		ilcResult.sampleQuestionRatingExampleAnswer3 == defaultILC.sampleQuestionRatingExampleAnswer3
-		ilcResult.today1 == defaultILC.today1
-		ilcResult.today1Example == defaultILC.today1Example
-		ilcResult.today2 == defaultILC.today2
-		ilcResult.today2Example == defaultILC.today2Example
-		ilcResult.today3 == defaultILC.today3
-		ilcResult.today3Example == defaultILC.today3Example
-		ilcResult.today4 == defaultILC.today4
-		ilcResult.today4Example == defaultILC.today4Example
-		ilcResult.interestTags.equals(defaultILC.interestTags)
-		ilcResult.bookmarks.equals(defaultILC.bookmarks)
-		
-		and: "user interest tags are set"
-		defaultILC.interestTags.each{ user.hasInterestTag(Tag.create(it)) }
-		
-		and: "user bookmarks are set"
-		def tags = User.getTags(user.id)
-		tags
-		tags.size == 1
-		tags.find{ it.description == "sleep [time]" }		
-	}	
-	
-	void "test promo code null"() {
-		when: "params.promoCode is explicitly set to null"
-		controller.params.clear()
-		controller.params.putAll([
-			promoCode: null,
-		])
-		
-		and: "index is called"
-		def result = controller.index()
-
-		then: "initialConfig matches defaultILC"
-		InitialLoginConfiguration ilcResult = result.initialConfig
-		ilcResult.promoCode == defaultILC.promoCode 
-		ilcResult.customQuestion1 == defaultILC.customQuestion1
-		ilcResult.customQuestion2 == defaultILC.customQuestion2
-		ilcResult.trackExample1 == defaultILC.trackExample1
-		ilcResult.trackExample2 == defaultILC.trackExample2
-		ilcResult.trackExample3 == defaultILC.trackExample3
-		ilcResult.deviceExample == defaultILC.deviceExample
-		ilcResult.sampleQuestionDuration == defaultILC.sampleQuestionDuration
-		ilcResult.sampleQuestionDurationExampleAnswers == defaultILC.sampleQuestionDurationExampleAnswers
-		ilcResult.sampleQuestionRating == defaultILC.sampleQuestionRating
-		ilcResult.sampleQuestionRatingRange == defaultILC.sampleQuestionRatingRange
-		ilcResult.sampleQuestionRatingExampleAnswer1 == defaultILC.sampleQuestionRatingExampleAnswer1
-		ilcResult.sampleQuestionRatingExampleAnswer2 == defaultILC.sampleQuestionRatingExampleAnswer2
-		ilcResult.sampleQuestionRatingExampleAnswer3 == defaultILC.sampleQuestionRatingExampleAnswer3
-		ilcResult.today1 == defaultILC.today1
-		ilcResult.today1Example == defaultILC.today1Example
-		ilcResult.today2 == defaultILC.today2
-		ilcResult.today2Example == defaultILC.today2Example
-		ilcResult.today3 == defaultILC.today3
-		ilcResult.today3Example == defaultILC.today3Example
-		ilcResult.today4 == defaultILC.today4
-		ilcResult.today4Example == defaultILC.today4Example
-		ilcResult.interestTags.equals(defaultILC.interestTags)
-		ilcResult.bookmarks.equals(defaultILC.bookmarks)
-		
-		and: "user interest tags are set"
-		defaultILC.interestTags.each{ user.hasInterestTag(Tag.create(it)) }
-		
-		and: "user bookmarks are set"
-		def tags = User.getTags(user.id)
-		tags
-		tags.size == 1
-		tags.find{ it.description == "sleep [time]" }		
-	}
-	
-	void "test default promo code"() {
-		when: "params.promoCode is explicitly set to default"
-		controller.params.clear()
-		controller.params.putAll([
-			promoCode: InitialLoginConfiguration.DEFAULT_PROMO_CODE,
-		])
-		
-		and: "index is called"
-		def result = controller.index()
-
-		then: "initialConfig matches defaultILC"
-		InitialLoginConfiguration ilcResult = result.initialConfig
-		ilcResult.promoCode == defaultILC.promoCode 
-		ilcResult.customQuestion1 == defaultILC.customQuestion1
-		ilcResult.customQuestion2 == defaultILC.customQuestion2
-		ilcResult.trackExample1 == defaultILC.trackExample1
-		ilcResult.trackExample2 == defaultILC.trackExample2
-		ilcResult.trackExample3 == defaultILC.trackExample3
-		ilcResult.deviceExample == defaultILC.deviceExample
-		ilcResult.sampleQuestionDuration == defaultILC.sampleQuestionDuration
-		ilcResult.sampleQuestionDurationExampleAnswers == defaultILC.sampleQuestionDurationExampleAnswers
-		ilcResult.sampleQuestionRating == defaultILC.sampleQuestionRating
-		ilcResult.sampleQuestionRatingRange == defaultILC.sampleQuestionRatingRange
-		ilcResult.sampleQuestionRatingExampleAnswer1 == defaultILC.sampleQuestionRatingExampleAnswer1
-		ilcResult.sampleQuestionRatingExampleAnswer2 == defaultILC.sampleQuestionRatingExampleAnswer2
-		ilcResult.sampleQuestionRatingExampleAnswer3 == defaultILC.sampleQuestionRatingExampleAnswer3
-		ilcResult.today1 == defaultILC.today1
-		ilcResult.today1Example == defaultILC.today1Example
-		ilcResult.today2 == defaultILC.today2
-		ilcResult.today2Example == defaultILC.today2Example
-		ilcResult.today3 == defaultILC.today3
-		ilcResult.today3Example == defaultILC.today3Example
-		ilcResult.today4 == defaultILC.today4
-		ilcResult.today4Example == defaultILC.today4Example
-		ilcResult.interestTags.equals(defaultILC.interestTags)
-		ilcResult.bookmarks.equals(defaultILC.bookmarks)
-		
-		and: "user interest tags are set"
-		defaultILC.interestTags.each{ user.hasInterestTag(Tag.create(it)) }
-		
-		and: "user bookmarks are set"
-		def tags = User.getTags(user.id)
-		tags
-		tags.size == 1
-		tags.find{ it.description == "sleep [time]" }		
-	}
-	
-	//@spock.lang.IgnoreRest
 	void "test new default data"() {
 		given: "some non-default login configuration data"
-		String trackExample2 = "new default trackExample2 test"
-		String sampleQuestionRatingExampleAnswer2 = "new default sampleQuestionRatingExampleAnswer2 test"
-		List interestTags = ["testInterestTag1", "testInterestTag2", "testInterestTag3"]
-		List bookmarks = ["run 100 miles", "eat 2000 calories", "walk 20 miles"]
+		String trackExample2 = 
+			"new default trackExample2 test"
+		String sampleQuestionRatingExampleAnswer2 = 
+			"new default sampleQuestionRatingExampleAnswer2 test"
+		List tags = 
+			["testInterestTag1", "testInterestTag2", "testInterestTag3"]
+		List bkmrks = 
+			["run 100 miles", "eat 2000 calories", "walk 20 miles"]
 		
-		and: "the non-default data is applied as new defaults"
-		defaultILC.trackExample2 = trackExample2
-		defaultILC.sampleQuestionRatingExampleAnswer2 = sampleQuestionRatingExampleAnswer2
-		defaultILC.interestTags = interestTags
-		defaultILC.bookmarks = bookmarks
+		and: "set non-default tutorial info"
+		TutorialInfo defaultTI = TutorialInfo.defaultTutorialInfo()
+		defaultTI.trackExample2 = trackExample2
+		defaultTI.sampleQuestionRatingExampleAnswer2 = 
+			sampleQuestionRatingExampleAnswer2
+		Utils.save(defaultTI,true)
+		
+		and: "set non-default subject info"
+		defaultILC
+			.interestAreas[0]
+			.interest
+			.interestSubjects[0]
+			.subject
+			.interestTags
+			.clear()
+		defaultILC
+			.interestAreas[0]
+			.interest
+			.interestSubjects[0]
+			.subject
+			.bookmarks
+			.clear()
+		tags
+			.each {
+				defaultILC
+					.interestAreas[0]
+					.interest
+					.interestSubjects[0]
+					.subject
+					.addToInterestTags(it)}
+		bkmrks
+			.each {
+				defaultILC
+					.interestAreas[0]
+					.interest
+					.interestSubjects[0]
+					.subject
+					.addToBookmarks(it)}
 		Utils.save(defaultILC, true)
 		
 		when: "index is called without parameters"
 		def result = controller.index()
 		
-		then: "initialConfig matches new ILCDefault values"
+		then: "promo code is correct"
 		InitialLoginConfiguration ilcResult = result.initialConfig
-		ilcResult.promoCode == defaultILC.promoCode 
-		ilcResult.customQuestion1 == defaultILC.customQuestion1
-		ilcResult.customQuestion2 == defaultILC.customQuestion2
-		ilcResult.trackExample1 == defaultILC.trackExample1
-		ilcResult.trackExample2 == defaultILC.trackExample2
-		ilcResult.trackExample2 == trackExample2
-		ilcResult.trackExample3 == defaultILC.trackExample3
-		ilcResult.deviceExample == defaultILC.deviceExample
-		ilcResult.sampleQuestionDuration == defaultILC.sampleQuestionDuration
-		ilcResult.sampleQuestionDurationExampleAnswers == defaultILC.sampleQuestionDurationExampleAnswers
-		ilcResult.sampleQuestionRating == defaultILC.sampleQuestionRating
-		ilcResult.sampleQuestionRatingRange == defaultILC.sampleQuestionRatingRange
-		ilcResult.sampleQuestionRatingExampleAnswer1 == defaultILC.sampleQuestionRatingExampleAnswer1
-		ilcResult.sampleQuestionRatingExampleAnswer2 == defaultILC.sampleQuestionRatingExampleAnswer2
-		ilcResult.sampleQuestionRatingExampleAnswer2 == sampleQuestionRatingExampleAnswer2
-		ilcResult.sampleQuestionRatingExampleAnswer3 == defaultILC.sampleQuestionRatingExampleAnswer3
-		ilcResult.today1 == defaultILC.today1
-		ilcResult.today1Example == defaultILC.today1Example
-		ilcResult.today2 == defaultILC.today2
-		ilcResult.today2Example == defaultILC.today2Example
-		ilcResult.today3 == defaultILC.today3
-		ilcResult.today3Example == defaultILC.today3Example
-		ilcResult.today4 == defaultILC.today4
-		ilcResult.today4Example == defaultILC.today4Example
-		ilcResult.interestTags.equals(defaultILC.interestTags)
-		ilcResult.bookmarks.equals(defaultILC.bookmarks)
+		ilcResult.promoCode == 
+			InitialLoginConfiguration.DEFAULT_PROMO_CODE
 		
-		and: "user interest tags are set"
-		defaultILC.interestTags.each{ user.hasInterestTag(Tag.create(it)) }
+		and: "tutorial info matches"
+		compareTutorialInfo(ilcResult, defaultILC)
+
+		and: "interest Tags match"
+		interestTags(ilcResult).sort().equals(interestTags(defaultILC).sort())
 		
-		and: "user bookmarks are set"
-		def tags = User.getTags(user.id)
-		tags
-		tags.size == 3
-		tags.find{ it.description == "eat [calories]" }
-		tags.find{ it.description == "run [distance]" }
-		tags.find{ it.description == "walk [distance]"}
+		and: "bookmarks match"
+		bookmarks(ilcResult).sort().equals(bookmarks(defaultILC).sort())
 	}
 }

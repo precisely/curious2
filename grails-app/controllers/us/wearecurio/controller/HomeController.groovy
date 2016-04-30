@@ -524,6 +524,13 @@ class HomeController extends DataController {
 
 	def index() {
 		debug "HomeController.index() called with params: $params"
+		//**********************************************************************
+		//**********************************************************************
+		//*********   REMOVE THIS LINE WHEN INTERESTS UI INCORPORATED **********
+		//*********   THIS SETS DEFAULT INTEREST SUBJECT (preSelect==true)******
+		userRegistrationService.selectPromoCodeDefaults(sessionUser(), params?.promoCode)
+		//**********************************************************************
+		//**********************************************************************
 		def user = sessionUser()
 		[	prefs:user.getPreferences(), 
 			showTime:params.showTime?:0, templateVer:urlService.template(request),
