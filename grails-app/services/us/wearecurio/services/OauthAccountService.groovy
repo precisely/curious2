@@ -91,7 +91,7 @@ class OauthAccountService {
 	 */
 	void refreshAllToken() {
 		OAuthAccount.withCriteria {
-			lessThan("expiresOn", new Date() + 2)
+			lessThan("expiresOn", new Date() + 5)
 		}.each { account ->
 			refreshToken(account)
 		}
@@ -103,6 +103,7 @@ class OauthAccountService {
 	 */
 	@Transactional
 	void refreshToken(OAuthAccount account) {
+		log.debug "Attempting to refresh OAuthAccount: " + account
 		if (!account.typeId.supportsOAuth2()) {
 			log.warn "Can't renew access token for account: [$account] since associated thirdparty doesn't supports OAuth2."
 			return
