@@ -1,7 +1,5 @@
 package us.wearecurio.services
 
-import org.hibernate.proxy.HibernateProxyHelper
-
 import us.wearecurio.model.InitialLoginConfiguration
 import us.wearecurio.model.InterestArea
 import us.wearecurio.model.InterestSubject
