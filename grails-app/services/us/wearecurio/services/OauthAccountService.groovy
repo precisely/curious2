@@ -121,6 +121,7 @@ class OauthAccountService {
 
 		if (newTokenInstance.token) {
 			createOrUpdate(account, newTokenInstance)
+			log.debug "New expiredOn for acccont " + account + " is: " + account.expiresOn
 		} else {
 			log.error "Error refreshing access token for account: [$account]. Response body: $newTokenInstance.rawResponse"
 		}
