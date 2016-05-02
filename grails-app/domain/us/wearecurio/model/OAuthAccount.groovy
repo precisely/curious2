@@ -3,8 +3,11 @@ package us.wearecurio.model
 import org.scribe.model.Token
 import us.wearecurio.services.DataService
 import us.wearecurio.utility.Utils
+import org.apache.commons.logging.LogFactory
 
 class OAuthAccount {
+
+	static def log = LogFactory.getLog(this)
 
 	ThirdParty typeId
 	Long userId
