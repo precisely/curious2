@@ -96,12 +96,14 @@ class OAuthAccount {
 	}
 
 	void markLastPolled(Date lastData, Date lastPolled = null) {
+		log.debug "Trying to set lastData for account " + this.id + " userId " + this.userId + " type " + this.typeId + ": " + lastData
 		if (this.lastData == null)
 			this.lastData = lastData
 		else if (lastData != null && lastData > this.lastData)
 			this.lastData = lastData
 		this.lastPolled = lastPolled ?: new Date()
 		this.merge()
+		log.debug "Set lastData date for " + this.id + " to: " + this.lastData
 		Utils.save(this, false)
 	}
 }

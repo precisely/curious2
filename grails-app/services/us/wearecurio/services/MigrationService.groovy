@@ -847,7 +847,7 @@ class MigrationService {
 		tryMigration("Re-import Oura data") {
 			ouraDataService.pollAll()
 		}
-		tryMigration("Refresh all oauth accounts") {
+		tryMigration("Refresh all oauth accounts again") {
 			oauthAccountService.refreshAllToken()
 		}
 	}

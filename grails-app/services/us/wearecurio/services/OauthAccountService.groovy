@@ -91,7 +91,7 @@ class OauthAccountService {
 	 */
 	void refreshAllToken() {
 		OAuthAccount.withCriteria {
-			lessThan("expiresOn", new Date() + 5)
+			lt("expiresOn", new Date() + 5)
 		}.each { account ->
 			refreshToken(account)
 		}

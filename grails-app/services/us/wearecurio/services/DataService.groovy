@@ -441,7 +441,7 @@ abstract class DataService {
 		OAuthAccount.findAllByTypeId(typeId).each { OAuthAccount account ->
 			DatabaseService.retry(account) {
 				try {
-					getDataDefault(account, account.fetchLastData(), new Date(), refreshAll)
+					getDataDefault(account, account.fetchLastData() - 1, null, refreshAll)
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while polling account: [$account] for $typeId."
 					account.clearAccessToken()
