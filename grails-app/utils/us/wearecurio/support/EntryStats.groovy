@@ -24,6 +24,7 @@ class EntryStats {
 	Set<Long> tagIds = new HashSet<Long>()
 	boolean alertEdited = false
 	Date startDate
+	Date lastDate
 	Integer timeZoneId = null
 	boolean batchCreation = false
 	
@@ -51,14 +52,14 @@ class EntryStats {
 			startDate = entry.date
 		else if (startDate > entry.date)
 			startDate = entry.date
+		if (lastDate == null)
+			lastDate = entry.date
+		else if (entry.date > lastDate)
+			lastDate = entry.date
 		timeZoneId = entry.getTimeZoneId()
 		
 		if (entry.isAlert())
 			alertEdited = true
-	}
-	
-	Date getLastDate() {
-		startDate
 	}
 	
 	ArrayList<TagStats> finish() { // after finalizing all entry creation, call this to update statistics
