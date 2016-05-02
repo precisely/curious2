@@ -149,8 +149,6 @@ class OuraDataService extends DataService {
 		account.markLastPolled(stats.lastDate)
 		stats.finish()
 
-		account.markLastPolled(stats.lastDate)
-
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
 			log.debug "Processing get sleep data for paginated URL"
 			getDataSleep(account, apiResponse["links"]["nextPageURL"].toString())
@@ -246,8 +244,6 @@ class OuraDataService extends DataService {
 		account.markLastPolled(stats.lastDate)
 		stats.finish()
 
-		account.markLastPolled(stats.lastDate)
-
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
 			log.debug "Processing get exercise data for paginated URL"
 			getDataExercise(account, apiResponse["links"]["nextPageURL"].toString())
@@ -320,8 +316,6 @@ class OuraDataService extends DataService {
 
 		account.markLastPolled(stats.lastDate)
 		stats.finish()
-
-		account.markLastPolled(stats.lastDate)
 
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
 			log.debug "Processing get activity data for paginated URL"
