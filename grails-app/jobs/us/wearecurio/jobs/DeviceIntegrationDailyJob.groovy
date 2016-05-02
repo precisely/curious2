@@ -1,7 +1,10 @@
 package us.wearecurio.jobs
 
 import us.wearecurio.services.JawboneUpDataService
+import us.wearecurio.services.OauthAccountService
+import us.wearecurio.services.WithingsDataService
 import us.wearecurio.services.OuraDataService
+import us.wearecurio.services.DataService
 import us.wearecurio.utility.TimerJob
 import grails.util.Environment
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -9,8 +12,8 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 class DeviceIntegrationDailyJob extends TimerJob {
 	static transactional = false
 
-	def oauthAccountService
-	def withingsDataService
+	OauthAccountService oauthAccountService
+	WithingsDataService withingsDataService
 	OuraDataService ouraDataService
 	JawboneUpDataService jawboneUpDataService
 	GrailsApplication grailsApplication
@@ -30,10 +33,9 @@ class DeviceIntegrationDailyJob extends TimerJob {
 			log.debug "Aborted executing Daily basis job.."
 			return
 		}
-		oauthAccountService.refreshAllToken()
-		withingsDataService.refreshSubscriptions()
-		ouraDataService.pollAll()
-		jawboneUpDataService.pollAll()
+		oauthAccountService.refreshAll()
+		DataService.pollAllDataServices()
+		
 		log.debug "Finished executing Daily basis job.."
 	}
 

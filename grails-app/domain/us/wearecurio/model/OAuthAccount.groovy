@@ -2,6 +2,7 @@ package us.wearecurio.model
 
 import org.scribe.model.Token
 import us.wearecurio.services.DataService
+import us.wearecurio.services.EmailService
 import us.wearecurio.utility.Utils
 import org.apache.commons.logging.LogFactory
 
@@ -96,6 +97,18 @@ class OAuthAccount {
 		if (lastData == null)
 			return new Date() - 61
 		return lastData
+	}
+	
+	void setAccountFailure() {
+		clearAccessToken()
+		User user = User.get(userId)
+		if (!user) return
+		String email = user.email
+		log.debug "Trying to send notification email for OAuthAccount failure to " + email
+		def messageBody = "Your " + typeId.getTextName() + " account has had a synchronization failure. Please log into your We Are Curious account and re-link your external account from your user profile to resume data synchronization."
+		
+		def messageSubject = "Your " + typeId.getTextName() + " external account needs to be re-linked"
+		EmailService.get().send(email, messageSubject, messageBody)
 	}
 
 	void markLastPolled(Date lastData, Date lastPolled = null) {

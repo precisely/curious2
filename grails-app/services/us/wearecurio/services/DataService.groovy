@@ -190,7 +190,7 @@ abstract class DataService {
 				parsedResponse = JSON.parse(responseBody)
 			}
 		} catch (ConverterException e) {
-			log.error "Error parsing response data.", e
+			Utils.reportError("CURIOUS OAUTH DATA SERVICE ERROR", e)
 		} finally {
 			if (!parsedResponse) {
 				parsedResponse = new JSONObject()
@@ -361,12 +361,13 @@ abstract class DataService {
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while processing notification of type: [$account.typeId.providerName] for $provider."
 					// Clear the access token to not process this notification again until the user re-link the account
-					account.clearAccessToken()
+					account.setAccountFailure()
 				} catch (Throwable t) {
 					log.error "Unknown exception thrown during notification processing " + t
 					t.printStackTrace()
 					account.lastPolled = saveLastPolled
 					account.lastData = saveLastData
+					account.setAccountFailure()
 					Utils.save(account, true)
 				}
 				return notification
@@ -405,6 +406,28 @@ abstract class DataService {
 	}
 
 	/**
+	 * Used to poll all connected account of a given user Id.
+	 * @param userId Curious user id.
+	 * @return
+	 */
+	@Transactional
+	static boolean pollAllDataServices() {
+		log.debug "Polling all oauth accounts"
+		def accounts = OAuthAccount.findAll()
+
+		for (OAuthAccount account in accounts) {
+			DataService dataService = account.getDataService()
+
+			try {
+				dataService.poll(account)
+			} catch (Throwable t) {
+				log.error("Error while polling " + account)
+				t.printStackTrace()
+			}
+		}
+	}
+
+	/**
 	 * @param account
 	 * @return
 	 */
@@ -428,7 +451,11 @@ abstract class DataService {
 				getDataDefault(account, account.fetchLastData() - 1, null, false)
 			} catch (InvalidAccessTokenException e) {
 				log.warn "Token expired while polling for $account"
-				account.clearAccessToken()
+				account.setAccountFailure()
+			} catch (Throwable t) {
+				log.error("Error while polling account " + account)
+				t.printStackTrace()
+				account.setAccountFailure()
 			}
 		}
 	}
@@ -444,7 +471,14 @@ abstract class DataService {
 					getDataDefault(account, account.fetchLastData() - 1, null, refreshAll)
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while polling account: [$account] for $typeId."
-					account.clearAccessToken()
+					account.setAccountFailure()
+				} catch (Throwable t) {
+					log.error "Unknown exception thrown during polling for " + account
+					t.printStackTrace()
+					account.lastPolled = saveLastPolled
+					account.lastData = saveLastData
+					account.setAccountFailure()
+					Utils.save(account, true)
 				}
 			}
 		}

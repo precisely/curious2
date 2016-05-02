@@ -515,8 +515,14 @@ class WithingsDataService extends DataService {
 		for (OAuthAccount account in results) {
 			try {
 				subscribe(account)
-			} catch (InvalidAccessTokenException) {
-				account.clearAccessToken()
+			} catch (InvalidAccessTokenException e) {
+				log.warn("Account access token invalid")
+				e.printStackTrace()
+				account.setAccountFailure()
+			} catch (Throwable t) {
+				log.error("Error while refreshing Withings account")
+				t.printStackTrace()
+				account.setAccountFailure()
 			}
 		}
 	}

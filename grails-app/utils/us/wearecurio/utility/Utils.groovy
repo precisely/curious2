@@ -52,6 +52,23 @@ class Utils {
 		def uncompressedStr = inflaterStream.getText('UTF-8')
 		return uncompressedStr
 	}
+	
+	static reportError(String title, Exception e) {
+		ByteArrayOutputStream os = new ByteArrayOutputStream()
+		e.printStackTrace(new PrintStream(os))
+		String output = os.toString("UTF8")
+		
+		log.error "Exception during operation " + title + ": " + e
+		e.printStackTrace()
+		def messageBody = "Error:\n" + output
+		def messageSubject = title + GrailsUtil.environment
+		EmailService.get().sendMail {
+			to "server@wearecurio.us"
+			from "server@wearecurio.us"
+			subject messageSubject
+			body messageBody
+		}
+	}
 
 	static def save(obj) {
 		return save(obj, false)

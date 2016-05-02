@@ -173,20 +173,8 @@ class AnalyticsService {
 			AnalyticsTask.incBusy()
 			prepareUser(childTask)
 			childTask.startProcessing()
-		} catch(e) {
-			ByteArrayOutputStream os = new ByteArrayOutputStream()
-			e.printStackTrace(new PrintStream(os))
-			String output = os.toString("UTF8")
-			
-		   	def messageBody = "Error while executing Curious analytics:\n" + output
-			def messageSubject = "CURIOUS ANALYTICS ERROR: " + GrailsUtil.environment
-			EmailService.get().sendMail {
-				to "server@wearecurio.us"
-				from "server@wearecurio.us"
-				subject messageSubject
-				body messageBody
-			}
-			
+		} catch (Exception e) {
+			Utils.reportError("CURIOUS ANALYTICS ERROR", e)
 			return false
 		} finally {
 			AnalyticsTask.decBusy()

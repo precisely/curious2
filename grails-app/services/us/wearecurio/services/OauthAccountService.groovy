@@ -19,7 +19,8 @@ class OauthAccountService {
 	static transactional = false
 
 	def oauthService
-	def securityService
+	SecurityService securityService
+	WithingsDataService withingsDataService
 
 	/**
 	 * Accepts instance of OAuthAccount & Token to update account's token & expiry related informations.
@@ -89,12 +90,19 @@ class OauthAccountService {
 	/**
 	 * Refresh all tokens which will expire before two days from now
 	 */
-	void refreshAllToken() {
+	void refreshAll() {
 		OAuthAccount.withCriteria {
 			lt("expiresOn", new Date() + 5)
 		}.each { account ->
-			refreshToken(account)
+			try {
+				refreshToken(account)
+			} catch (Throwable t) {
+				log.error("Error while refreshing token for account " + account)
+				t.printStackTrace()
+				account.setAccountFailure()
+			}
 		}
+		withingsDataService.refreshSubscriptions()
 	}
 
 	/**
@@ -126,5 +134,4 @@ class OauthAccountService {
 			log.error "Error refreshing access token for account: [$account]. Response body: $newTokenInstance.rawResponse"
 		}
 	}
-
 }
