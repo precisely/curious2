@@ -24,7 +24,7 @@ class BackgroundTask implements Runnable {
 				c()
 			}
 		} catch (Exception e) {
-			e.printStackTrace()
+			Utils.reportError("Error while launching background task", e)
 		}
 		success = true
 	}

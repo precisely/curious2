@@ -94,6 +94,7 @@ class BootStrap {
 				new IntraDayDataThread().start()
 			} catch(IllegalStateException ie) {
 				log.debug "Bootstrap: Could not start IntraDayDataThread"
+				Utils.reportError("Bootstrap: Could not start IntraDayDataThread","")
 			}
 		}
 

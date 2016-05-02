@@ -61,7 +61,7 @@ class GoogleMessageService {
              
         } catch (Exception e) {
 			debug("Exception occured while trying to send GCM message")
-            e.printStackTrace()
+			Utils.reportError("Exception while sending GoogleMessageService", e)
 			return false
         }
 

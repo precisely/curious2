@@ -3,6 +3,7 @@ package us.wearecurio.controller
 import org.springframework.dao.DataIntegrityViolationException
 
 import us.wearecurio.model.UserGroup
+import us.wearecurio.utility.Utils
 
 class UserGroupController extends LoginController {
 
@@ -38,6 +39,7 @@ class UserGroupController extends LoginController {
 			flash.message = message(code: 'default.deleted.message', args: [message(code: 'userGroup.label'), id])
 			redirect uri: "userGroup/list"
 		} catch (DataIntegrityViolationException e) {
+			Utils.reportError("Error while deleting user group", e)
 			flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'userGroup.label'), id])
 			redirect uri: "userGroup/list"
 		}

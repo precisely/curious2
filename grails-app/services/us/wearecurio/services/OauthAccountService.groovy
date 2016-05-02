@@ -35,7 +35,8 @@ class OauthAccountService {
 		try {
 			rawResponse = tokenInstance.rawResponse
 		} catch (IllegalStateException e) {
-			// Okay. Nothing to do. Thrown when there is no rawResponse.
+			e.printStackTrace()
+			account.setAccountFailure()
 		}
 		
 		def refreshToken

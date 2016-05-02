@@ -37,6 +37,7 @@ class RemindEmailService {
 					emailService.send(email, messageSubject, messageBody)
 				} catch (Throwable t) {
 					log.debug "Error while sending email: " + t
+					t.printStackTrace()
 				}
 			}
 			def notificationMessage = "Reminder to track:" + alert.text

@@ -41,6 +41,7 @@ class UserSurveyAnswer {
 				Utils.save(userSurveyAnswer, false)
 				return userSurveyAnswer
 			} catch (Exception e) {
+				Utils.reportError("Error while creating user survey answer", e)
 				return null
 			}
 		}

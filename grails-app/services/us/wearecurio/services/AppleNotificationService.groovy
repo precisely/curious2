@@ -4,6 +4,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.transaction.annotation.Transactional
 import grails.util.*
 import com.notnoop.apns.*
+import us.wearecurio.utility.Utils
 
 import grails.util.Environment
 
@@ -59,9 +60,8 @@ class AppleNotificationService {
 				service.push(token, payload);
 				debug("Sent push notification message '" + messageTxt + "' to " + token)
 			}
-		} catch(Exception e) {
-			debug("Exception occured while trying to send APNS message")
-			e.printStackTrace()
+		} catch (Exception e) {
+			Utils.reportError("Exception while trying to send APNS message", e)
 			return false
 		}
 		return true

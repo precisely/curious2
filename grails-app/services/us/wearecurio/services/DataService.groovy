@@ -176,6 +176,7 @@ abstract class DataService {
 			responseBody = response.body
 		} catch (IllegalArgumentException e) {
 			// Okay. Nothing to do. Thrown when response code are like 204, means there are no response body.
+			Utils.reportError("Error while getting reponse for data service", e)
 		}
 
 		log.debug "[$currentTime] Fetched data for [$provider] with response code: [$response.code] & body: [${response.body}]"
@@ -226,6 +227,7 @@ abstract class DataService {
 				timeZoneName = getTimeZoneName(account)	// Getting timezone name from userInfo.
 			} catch (InvalidAccessTokenException e) {
 				log.warn "Found expired token while getting timezone for [$account]"
+				Utils.reportError("Expired token while getting timezone for [$account]", e)
 			}
 
 			if (!timeZoneName) {	// Using user's last accessed timezone if timezone name not found from userInfo.
@@ -358,8 +360,9 @@ abstract class DataService {
 					}
 				} catch (MissingMethodException e) {
 					log.warn "No method implementation found for collection type: [$account.typeId.providerName] for $provider.", e
+					account.setAccountFailure()
 				} catch (InvalidAccessTokenException e) {
-					log.warn "Token expired while processing notification of type: [$account.typeId.providerName] for $provider."
+					log.warn "Token expired while processing notification of type: [$account.typeId.providerName] for $provider.", e
 					// Clear the access token to not process this notification again until the user re-link the account
 					account.setAccountFailure()
 				} catch (Throwable t) {

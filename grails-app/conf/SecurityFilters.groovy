@@ -4,6 +4,7 @@ import us.wearecurio.model.UserGroup
 import us.wearecurio.services.SecurityService
 import us.wearecurio.services.TokenService
 import us.wearecurio.services.UrlService
+import us.wearecurio.utility.Utils
 import org.apache.commons.logging.LogFactory
 
 /*
@@ -141,6 +142,7 @@ class SecurityFilters {
 						adminKey = grailsApplication.config.wearecurious.adminKey
 					} catch (Throwable t) {
 						log.debug "No admin key in config file"
+						Utils.reportError("SecurityFilters: no admin key in config file", "")
 						adminKey = null
 					}
 					if (!adminKey) {

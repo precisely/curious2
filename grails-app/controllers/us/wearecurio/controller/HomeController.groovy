@@ -69,9 +69,10 @@ class HomeController extends DataController {
 		try {
 			result = withingsDataService.subscribe(userId)
 		} catch (MissingOAuthAccountException e) {
+			Utils.reportError("Error while registering withings", e)
 			throw new AuthenticationRequiredException("withings")
 		} catch (InvalidAccessTokenException e) {
-			e = e
+			Utils.reportError("Error while registering withings", e)
 			throw new AuthenticationRequiredException("withings")
 		}
 
@@ -109,8 +110,10 @@ class HomeController extends DataController {
 		try {
 			result = withingsDataService.unsubscribe(userId)
 		} catch (InvalidAccessTokenException e) {
+			Utils.reportError("Error while unregistering withings", e)
 			throw new AuthenticationRequiredException("withings")
 		} catch (MissingOAuthAccountException e) {
+			Utils.reportError("Error while registering withings", e)
 			result = [success: false, message: "No subscription found."]
 		}
 
@@ -127,8 +130,10 @@ class HomeController extends DataController {
 		try {
 			result = twenty3AndMeDataService.storeGenomesData(userId)
 		} catch (MissingOAuthAccountException e) {
+			Utils.reportError("Error while registering 23andme", e)
 			throw new AuthenticationRequiredException("Twenty3AndMe")
 		} catch (InvalidAccessTokenException e) {
+			Utils.reportError("Error while registering 23andme", e)
 			throw new AuthenticationRequiredException("Twenty3AndMe")
 		}
 
@@ -152,8 +157,10 @@ class HomeController extends DataController {
 		try {
 			result = movesDataService.subscribe(userId)
 		} catch (InvalidAccessTokenException e) {
+			Utils.reportError("Error while registering Moves", e)
 			throw new AuthenticationRequiredException("moves")
 		} catch (MissingOAuthAccountException e) {
+			Utils.reportError("Error while registering Moves", e)
 			throw new AuthenticationRequiredException("moves")
 		}
 
@@ -169,8 +176,10 @@ class HomeController extends DataController {
 		try {
 			result = movesDataService.unsubscribe(userId)
 		} catch (InvalidAccessTokenException e) {
+			Utils.reportError("Error while unregistering Moves", e)
 			throw new AuthenticationRequiredException("moves")
 		} catch (MissingOAuthAccountException e) {
+			Utils.reportError("Error while unregistering Moves", e)
 			result = [success: false, message: "No subscription found."]
 		}
 
@@ -187,8 +196,10 @@ class HomeController extends DataController {
 		try {
 			result = jawboneUpDataService.subscribe(userId)
 		} catch (InvalidAccessTokenException e) {
+			Utils.reportError("Error while registering Jawbone", e)
 			throw new AuthenticationRequiredException("jawboneup")
 		} catch (MissingOAuthAccountException e) {
+			Utils.reportError("Error while registering Jawbone", e)
 			throw new AuthenticationRequiredException("jawboneup")
 		}
 
@@ -204,8 +215,10 @@ class HomeController extends DataController {
 		try {
 			result = jawboneUpDataService.unsubscribe(userId)
 		} catch (InvalidAccessTokenException e) {
+			Utils.reportError("Error while unregistering Jawbone", e)
 			throw new AuthenticationRequiredException("jawboneup")
 		} catch (MissingOAuthAccountException e) {
+			Utils.reportError("Error while unregistering Jawbone", e)
 			result = [success: false, message: "No subscription found."]
 		}
 
@@ -244,8 +257,10 @@ class HomeController extends DataController {
 		try {
 			result = fitBitDataService.subscribe(userId)
 		} catch (MissingOAuthAccountException e) {
+			Utils.reportError("Error while registering FitBit", e)
 			throw new AuthenticationRequiredException("fitbit")
 		} catch (InvalidAccessTokenException e) {
+			Utils.reportError("Error while registering FitBit", e)
 			throw new AuthenticationRequiredException("fitbit")
 		}
 
@@ -266,8 +281,10 @@ class HomeController extends DataController {
 		try {
 			result = fitBitDataService.unsubscribe(userId)
 		} catch (InvalidAccessTokenException e) {
+			Utils.reportError("Error while unregistering FitBit", e)
 			throw new AuthenticationRequiredException("fitbit")
 		} catch (MissingOAuthAccountException e) {
+			Utils.reportError("Error while unregistering FitBit", e)
 			result = [success: false, message: "No subscription found."]
 		}
 
@@ -291,8 +308,10 @@ class HomeController extends DataController {
 		try {
 			result = ouraDataService.subscribe(userId)
 		} catch (MissingOAuthAccountException e) {
+			Utils.reportError("Error while registering Oura", e)
 			throw new AuthenticationRequiredException("oura")
 		} catch (InvalidAccessTokenException e) {
+			Utils.reportError("Error while registering Oura", e)
 			throw new AuthenticationRequiredException("oura")
 		}
 
@@ -313,8 +332,10 @@ class HomeController extends DataController {
 		try {
 			result = ouraDataService.unsubscribe(userId)
 		} catch (InvalidAccessTokenException e) {
+			Utils.reportError("Error while unregistering Oura", e)
 			throw new AuthenticationRequiredException("oura")
 		} catch (MissingOAuthAccountException e) {
+			Utils.reportError("Error while unregistering Oura", e)
 			result = [success: false, message: "No subscription found."]
 		}
 		thirdPartyLinkResultHandler(result, "unsubscribe", "Oura")
@@ -399,6 +420,7 @@ class HomeController extends DataController {
 			twitterUsername = twitterDataService.usernameFromAuthTokens(params.oauth_token,
 					params.oauth_verifier)
 		} catch (Throwable t) {
+			Utils.reportError("Error while registering Twitter", t)
 			t.printStackTrace()
 		}
 		if (twitterUsername == null) {

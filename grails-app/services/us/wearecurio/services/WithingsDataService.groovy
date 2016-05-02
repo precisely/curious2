@@ -265,7 +265,7 @@ class WithingsDataService extends DataService {
 				try {
 					intraDayQueue.add(intraDayQueueItem)
 				} catch (IllegalStateException queueFullException) {
-					log.debug "WithingsDataService: intraDayQueue is full" 
+					Utils.reportError("WithingsDataService: intraDayQueue is full", queueFullException)
 				}
 			}
 			synchronized(intraDayQueue) {
@@ -319,6 +319,7 @@ class WithingsDataService extends DataService {
 				}
 			} catch (org.springframework.dao.CannotAcquireLockException le) {
 				log.debug("WithingsDataService.getDataIntraDayActivity: CannotAcquireLockException")
+				Utils.reportError("WithingsDataService error", le)
 				le.printStackTrace()
 			}
 			log.debug("WithingsDataService.getDataIntraDayActivity: Starting to aggregate data")
@@ -397,7 +398,7 @@ class WithingsDataService extends DataService {
 				intraDayQueue.addAll(intraDayQueueItems as List)
 			}
 		} catch (IllegalStateException queueFullException) {
-			log.debug "WithingsDataService: intraDayQueue is full" 
+			Utils.reportError ("WithingsDataService: intraDayQueue is full", queueFullException)
 		}
 	}
 

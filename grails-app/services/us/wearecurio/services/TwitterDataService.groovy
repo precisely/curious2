@@ -105,7 +105,7 @@ class TwitterDataService {
 
 			user = twitter.verifyCredentials()
 		} catch (TwitterException e) {
-			e.printStackTrace(System.out)
+			Utils.reportError("Twitter error", e)
 			return null
 		}
 
@@ -143,6 +143,7 @@ class TwitterDataService {
 			try {
 				accessToken = twitter.getOAuthAccessToken(requestToken, authVerifier);
 			} catch (TwitterException te) {
+				Utils.reportError("Twitter error while getting access token", te)
 				if (401 == te.getStatusCode()) {
 					log.debug("Unable to get the access token.");
 				} else {
@@ -261,7 +262,7 @@ class TwitterDataService {
 					}
 			} catch (Throwable t) {
 				log.debug "Failed to parse tweet due to exception"
-				t.printStackTrace()
+				Utils.reportError("Failed to parse tweet", t)
 				continue;
 			}
 		}

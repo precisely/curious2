@@ -109,6 +109,8 @@ class OAuthAccount {
 		
 		def messageSubject = "Your " + typeId.getTextName() + " external account needs to be re-linked"
 		EmailService.get().send(email, messageSubject, messageBody)
+		
+		Utils.reportError("OAuthAccount failure", typeId.getTextName() + " external account needs to be re-linked for " + this + " username " + user.username)
 	}
 
 	void markLastPolled(Date lastData, Date lastPolled = null) {

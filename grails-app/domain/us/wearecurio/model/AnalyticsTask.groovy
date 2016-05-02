@@ -348,11 +348,14 @@ class AnalyticsTask {
 		clients.eachWithIndex { http, i ->
 			requests[i] = makeRequest(http, analyticsService.servers.size(), i)
 		}
+		
+		def error = null
 
 		requests.eachWithIndex { request, i ->
 			try {
 				request.get()
 			} catch(e) {
+				error = e
 				if (e.message =~ /refused/) {
 					analyticsService.responses.set(i, OFF.intValue())
 					//println "\nCould not connect to analytics server.  Maybe it's not running."
@@ -364,6 +367,10 @@ class AnalyticsTask {
 					println "Message: ${e.message}"
 				}
 			}
+		}
+		
+		if (error != null) {
+			Utils.reportError("ANALYTICS SERVER PING FAILURE", error)
 		}
 		def serverList = makeServerList(analyticsService.responses)
 		serverList

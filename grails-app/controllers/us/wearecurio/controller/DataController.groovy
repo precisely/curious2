@@ -992,6 +992,7 @@ class DataController extends LoginController {
 
 			renderJSONPost(['success', plotDataObj.getId()])
 		} catch (Exception e) {
+			Utils.reportError("Error while saving plot data", e)
 			renderJSONPost(['error'])
 		}
 	}
@@ -1059,6 +1060,7 @@ class DataController extends LoginController {
 
 			renderStringGet('success')
 		} catch (Exception e) {
+			Utils.reportError("Error while deleting plot data", e)
 			renderStringGet('error')
 		}
 	}
@@ -1421,6 +1423,7 @@ class DataController extends LoginController {
 				session.survey = null
 				renderJSONPost([success: true])
 			} catch (IllegalArgumentException e) {
+				Utils.reportError("Error while saving survey data", e)
 				status.setRollbackOnly()
 				renderJSONPost([success: false, message: g.message(code: "not.saved.message", args: ["Answers"])])
 			}
@@ -1469,8 +1472,10 @@ class DataController extends LoginController {
 			Utils.save(user, true)
 			renderJSONPost([success: true])
 		} catch (IllegalArgumentException e) {
+			Utils.reportError("Error while saving device entries state", e)
 			renderJSONPost([success: false, message: e.message])
 		} catch(e) {
+			Utils.reportError("Error while saving device entries state", e)
 			renderJSONPost([success: false, message: e.message])
 		}
 	}

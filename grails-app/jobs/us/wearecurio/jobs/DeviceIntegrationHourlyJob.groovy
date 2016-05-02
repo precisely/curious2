@@ -11,6 +11,7 @@ import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.utility.TimerJob
+import us.wearecurio.utility.Utils
 import org.codehaus.groovy.grails.commons.GrailsApplication
 
 class DeviceIntegrationHourlyJob extends TimerJob {
@@ -62,9 +63,8 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 						try {
 							withingsDataService.getDataDefault(account, account.fetchLastData(), null, false)
 						} catch (InvalidAccessTokenException e) {
-							log.warn "Token expired while polling account: [$account] for Withings."
+							Utils.reportError("Token expired while polling account: [$account]", e)
 						}
-
 					}
 				}
 			}
