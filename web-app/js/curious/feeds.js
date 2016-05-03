@@ -932,7 +932,7 @@ function editSprint(sprintHash) {
 			$('#createSprintOverlay').modal({show: true});
 		}
 		autocompleteWidget = new AutocompleteWidget('autocomplete1', 'sprint-tags');
-	});
+	}, null, 0, false, {spinner: {selector: $("#edit-sprint")}});
 }
 
 function deleteSprint(sprintHash) {
