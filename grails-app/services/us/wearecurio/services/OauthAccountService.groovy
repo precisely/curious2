@@ -126,7 +126,17 @@ class OauthAccountService {
 
 		OAuthService service = oauthService.findService(account.typeId.providerName)
 
-		Token newTokenInstance = service.getAccessToken(null, tokenVerifier)
+		Token newTokenInstance
+		
+		try {
+			newTokenInstance = service.getAccessToken(null, tokenVerifier)
+		} catch (Throwable t) {
+			log.error("Error while refreshing token for account " + account)
+			t.printStackTrace()
+			account.refreshToken = ""
+			account.setAccountFailure()
+			return
+		}
 
 		if (newTokenInstance.token) {
 			createOrUpdate(account, newTokenInstance)
