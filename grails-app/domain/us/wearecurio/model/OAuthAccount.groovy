@@ -90,8 +90,9 @@ class OAuthAccount {
 	}
 	
 	Date fetchLastDataDate() {
-		if (lastData == null || lastData < (new Date() - 61))
-			return new Date() - 61
+		Date twoMonthsAgo = new Date() - 61
+		if (lastData == null || lastData < twoMonthsAgo)
+			return twoMonthsAgo
 		return lastData
 	}
 

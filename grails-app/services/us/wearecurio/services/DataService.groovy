@@ -419,12 +419,12 @@ abstract class DataService {
 		Date dateToPollFrom = account.fetchLastDataDate() - 1
 		Date pollEndDate = null;
 
-		if ((lastPollDOS != null) && (nowTime - lastPollDOS < 60000)) { // don't allow polling faster than once every minute
+		if ((lastPollDOS) && (nowTime - lastPollDOS < 60000)) { // don't allow polling faster than once every minute
 			log.warn "Polling faster than 1 minute for $provider with accountId: [$accountId]"
 			return false
 		}
 
-		if (notificationDate != null && dateToPollFrom != null && notificationDate < dateToPollFrom) {
+		if (notificationDate && dateToPollFrom && notificationDate < dateToPollFrom) {
 			dateToPollFrom = notificationDate
 			pollEndDate = DateUtils.getEndOfTheDay(notificationDate)
 		}
@@ -437,7 +437,8 @@ abstract class DataService {
 				account.clearAccessToken()
 			}
 		}
-		lastPollTimestamps[account.id] = account.lastPolled
+		lastPollTimestamps[accountId] = account.lastPolled.getTime()
+		return true
 	}
 
 	/**
@@ -448,7 +449,7 @@ abstract class DataService {
 		OAuthAccount.findAllByTypeId(typeId).each { OAuthAccount account ->
 			DatabaseService.retry(account) {
 				try {
-					getDataDefault(account, account.fetchLastDataDate() - 1, new Date(), refreshAll)
+					getDataDefault(account, account.fetchLastDataDate() - 1, null, refreshAll)
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while polling account: [$account] for $typeId."
 					account.clearAccessToken()
