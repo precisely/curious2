@@ -276,6 +276,22 @@ $(document).ready(function() {
 		}
 	});
 
+	$('.red-header .help').click(function() {
+		if ((location.pathname.indexOf('sprint') > -1)) {
+			if (!($('#sprint-explanation-card').css('display'))) {
+				showExplanationCardTrackathon();
+			} else {
+				closeExplanationCard(true);
+			}
+		} else if (location.pathname.indexOf('curiosities') > -1) {
+			if (!($('#curiosity-explanation-card').css('display'))) {
+				showExplanationCardCuriosity();
+			} else {
+				closeExplanationCard(false);
+			}
+		}
+	});
+
 });
 
 function submitExerciseForm(callback) {

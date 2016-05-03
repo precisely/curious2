@@ -70,7 +70,7 @@ input, optgroup, select, textarea {
 .discussion-topic-input {
 	color: #fc3f28;
 	padding-left: 85px;
-	padding-right: 160px;
+	padding-right: 85px;
 }
 .discussion-topic-description {
 	color: #A0A0A0;
@@ -1551,6 +1551,10 @@ body.tags-displayed .floating-column {
 	color:#FC3F28;
 }
 
+.input-affordance.left-addon {
+	margin-top: 9px;
+}
+
 .user-name-radio .input-affordance input[type=radio]:checked + label {
 	color:#787878;
 }
@@ -2568,11 +2572,30 @@ div.graph-header-container .red-header {
 	list-style: none;
 }
 .new-post {
-	text-align: right;
+	margin-bottom: 7px;
 }
-.new-post textarea {
-	padding: 3px;
+.new-post .new-post-container {
+	display: inline-block;
 }
+
+.btn-discussion {
+	margin: 5px !important;
+}
+
+.btn-discussion, .btn-discussion:focus {
+	color: #fc3f28 !important;
+	background: #ffffff;
+	border: 1px solid #fc3f28 !important;
+	border-radius: 2px;
+	font-weight: 400 !important;
+	text-transform: none !important;
+}
+
+.btn-discussion:hover {
+	color: #ffffff !important;
+	background: #fc3f28 !important;
+}
+
 .new-post input[type='submit'] {
 	background-color: #869293;
 	color: #ffffff;
@@ -4048,7 +4071,11 @@ body .modal-header button {
 	display: flex;
 }
 
-.feed .help {
+.red-header .search-area .help {
+	margin-top: 7px;
+}
+
+.red-header .help {
 	cursor: pointer;
 	height: 35px;
 	width: 35px;
@@ -4903,7 +4930,12 @@ input.cropit-image-zoom-input {
 
 .publish-group-select .modal-body {
 	max-height: 500px;
-	overflow-y: auto;
+	overflow-y: hidden;
 	padding-top: 10px;
 	padding-bottom: 10px;
+}
+
+.share-group-list {
+	overflow-y: auto;
+	max-height: 270px;
 }
