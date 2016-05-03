@@ -361,7 +361,7 @@ class UserGroup {
 		GroupMemberReader.create(id, user.getId())
 
 		def n = this.notifyNotifiedMajors("New user '" + user.getUsername() + "' joined group '" + this.description + "'",
-						"New user '" + user.getUsername() + "' (" + user.getName() + " <" + user.getEmail() + ">) joined group '" + this.description + "'")
+						"New user '" + user.getUsername() + "' joined group '" + this.description + "'")
 
 		def discussionIds = GroupMemberDiscussion.lookupMemberIds(id)
 		if (discussionIds != null) {
