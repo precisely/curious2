@@ -12,11 +12,13 @@ import us.wearecurio.model.DiscussionPost
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.utility.Utils
+import us.wearecurio.security.NoAuth
 
 class DiscussionPostController extends LoginController{
 
 	static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
+	@NoAuth
 	def index(Integer offset, Integer max) {
 		Discussion discussion = Discussion.findByHash(params.discussionHash)
 		if (!discussion) {
@@ -31,7 +33,7 @@ class DiscussionPostController extends LoginController{
 		User currentUser = sessionUser()
 
 		Map discussionDetails = [isAdmin: UserGroup.canAdminDiscussion(currentUser, discussion), 
-				canWrite: UserGroup.canWriteDiscussion(currentUser, discussion), isFollowing: discussion.isFollower(currentUser.id)]
+				canWrite: UserGroup.canWriteDiscussion(currentUser, discussion), isFollowing: discussion.isFollower(currentUser?.id)]
 
 		// Discussion details are only needed for the first page
 		if (params.offset == 0) {
@@ -39,12 +41,13 @@ class DiscussionPostController extends LoginController{
 		}
 
 		JSON.use("jsonDate") {
-			renderJSONGet([posts: posts ? posts*.getJSONDesc() : false, userId: sessionUser().id, success: true,
+			renderJSONGet([posts: posts ? posts*.getJSONDesc() : false, userId: sessionUser()?.id, success: true,
 					discussionDetails: discussionDetails])
 		}
 	}
 
 	@EmailVerificationRequired
+	@NoAuth
 	def save() {
 		debug "Attempting to add comment '" + params.message +
 				"for discussion with hash: ${params.discussionHash}"
@@ -56,6 +59,10 @@ class DiscussionPostController extends LoginController{
 		}
 
 		User user = sessionUser()
+		if (!user) {
+			renderJSONPost(["login"])
+			return
+		}
 		def comment
 		try {
 			comment = DiscussionPost.createComment(params.message, user, discussion, params)
@@ -73,7 +80,7 @@ class DiscussionPostController extends LoginController{
 		}
 
 		JSON.use("jsonDate") {
-			renderJSONPost([success: true, post: comment.getJSONDesc(), userId: sessionUser().id, idAdmin:
+			renderJSONPost([success: true, post: comment.getJSONDesc(), userId: user.id, idAdmin:
 					UserGroup.canAdminDiscussion(sessionUser(), discussion)])
 		}
 	}

@@ -3,6 +3,8 @@ package us.wearecurio.controller
 import org.springframework.http.HttpStatus
 import us.wearecurio.annotations.EmailVerificationRequired
 import us.wearecurio.exception.CreationNotAllowedException
+import us.wearecurio.security.NoAuth
+import us.wearecurio.services.TwitterDataService
 
 import java.text.SimpleDateFormat
 import java.text.DateFormat
@@ -14,6 +16,8 @@ import us.wearecurio.model.Model.Visibility
 class DiscussionController extends LoginController {
 
 	static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
+
+	TwitterDataService twitterDataService
 
 	// Not being used right now as all discussion lists are comming form feed
 	def index() {
@@ -66,6 +70,7 @@ class DiscussionController extends LoginController {
 		}
 	}
 
+	@NoAuth
 	def show() {
 		User user = sessionUser()
 
@@ -85,8 +90,20 @@ class DiscussionController extends LoginController {
 		}
 
 		Map model = discussion.getJSONDesc()
-		model.putAll([notLoggedIn: user ? false : true, userId: user?.id, associatedGroups: [],		// Public discussion
-				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion), isFollowing: discussion.isFollower(user.id),
+		boolean notLoggedIn
+		int userId
+		String username
+		if (user) {
+			notLoggedIn = false
+			userId = user.id
+			username = user.getUsername()
+		} else {
+			notLoggedIn = true
+			userId = null
+			username = "(anonymous)"
+		}
+		model.putAll([notLoggedIn: notLoggedIn, userId: userId, associatedGroups: [],		// Public discussion
+				username: username, isAdmin: UserGroup.canAdminDiscussion(user, discussion), isFollowing: discussion.isFollower(userId),
 				templateVer: urlService.template(request), discussionHash: discussion.hash, canWrite: UserGroup.canWriteDiscussion(user, discussion)])
 
 		/*if (user) {
@@ -192,6 +209,53 @@ class DiscussionController extends LoginController {
 			log.debug "Failed to publish discussion: user ID does not match owner"
 			renderJSONGet([success: false, message: g.message(code: "default.permission.denied", args: ["Discussion"])])
 		}
+	}
+
+	/**
+	 * Used to handle sharing on twitter.
+	 */
+	def tweetDiscussion() {
+		log.debug "Posting to twitter : " + params.message
+
+		User user = sessionUser()
+		if (!user) {
+			renderJSONPost(["login"])
+			return
+		}
+		String message = params.message ?: session["tweetMessage"]
+		int messageLength = params.messageLength ? Integer.parseInt(params.messageLength) : session["messageLength"]
+		// If sent message is longer than 140 with url shortened to 23 characters, then return with error message.
+		if (!message || messageLength > 140) {
+			session["tweetMessage"] == null
+			String messageCode = message ? "twitter.long.message" : "twitter.empty.message"
+			log.debug g.message(code: messageCode)
+			renderJSONPost([success: false, message: g.message(code: messageCode)])
+			return
+		}
+
+		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(ThirdParty.TWITTER, user.id)
+		// This is to handle the case when the user has not been authorized by twitter yet.
+		if (!account) {
+			session["returnURIWithToken"] = "api/discussion/action/tweetDiscussion"
+			session["requestOrigin"] = params.requestOrigin
+			session["tweetMessage"] = message
+			session["messageLength"] = messageLength
+			renderJSONPost([success: false, authenticated: false])
+			return
+		}
+
+		Map tweetResponse = twitterDataService.postStatus(account.getTokenInstance(), message)
+
+		// This is to handle the case when the tweet is being made immediately after authorization.
+		if (session["tweetMessage"]) {
+			String redirectLocation = session["requestOrigin"] ?: "home/social#all"
+			session["tweetMessage"] = null
+			session["messageLength"] = null
+			session["requestOrigin"] = null
+			redirect(url: toUrl(controller: "home", action: "social", fragment: redirectLocation,
+					params: [tweetStatus: tweetResponse.success, duplicateTweet: tweetResponse.duplicateTweet]))
+		}
+		renderJSONPost([success: true, authenticated: true, message: g.message(code: tweetResponse.messageCode)])
 	}
 
 	def follow() {
