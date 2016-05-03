@@ -91,6 +91,37 @@ enum ThirdParty {
 		map.get(id)
 	}
 
+	String getTextName() {
+		switch (this) {
+		case WITHINGS:
+			return "Withings";
+			
+		case FITBIT:
+			return "FitBit";
+			
+		case TWENTY_THREE_AND_ME:
+			return "23andMe";
+			
+		case MOVES:
+			return "Moves";
+			
+		case IHEALTH:
+			return "IHealth";
+			
+		case HUMAN:
+			return "Human API";
+			
+		case TWITTER:
+			return "Twitter";
+			
+		case JAWBONE:
+			return "Jawbone";
+			
+		case OURA:
+			return "Oura";			
+		}
+	}
+
 	boolean supportsOAuth2() {
 		oauthVersion == SupportedOauthVersion.TWO
 	}

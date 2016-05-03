@@ -100,6 +100,7 @@ class OAuthAccount {
 	}
 	
 	void setAccountFailure() {
+		if (!this.accessToken) return // do nothing if account already cleared
 		clearAccessToken()
 		User user = User.get(userId)
 		if (!user) return
