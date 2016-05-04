@@ -25,13 +25,18 @@ function __removePrefix(str, prefix) {
  * Updating the popover position on scrolling the recordList.
  */
 $('#recordList').scroll(function() {
-	var $popover = $('.popover');
-	var popoverPosition = $popover.position();
 	var $selectee = $('.ui-selected');
-	if (!$selectee.length || !popoverPosition) {
+	if (!$selectee || !$selectee.length) {
+		// Returning if there is no selected entry.
+		return;
+	}
+
+	var $popover = $('.popover');
+	if (!$popover || !$popover.length) {
 		// Returning if there is no popover.
 		return;
 	}
+
 	$popoverLauncher = $selectee.find('.track-input-modifiers');
 	var listPosition = $(this).position();
 	var entryPosition = $selectee.position();
@@ -60,8 +65,8 @@ function createPopover(element, content, containerId) {
 		html: true,
 		container: containerId,
 		content: content,
-		template: '<div class="popover dropdown-menu" style="max-width:290px"><div class="arrow"></div><h3 class="popover-title">' +
-				'</h3><div class="popover-content" style="padding:0px;"></div></div>'
+		template: '<div class="popover dropdown-menu"><div class="arrow"></div><h3 class="popover-title">' +
+				'</h3><div class="popover-content"></div></div>'
 	});
 }
 
@@ -352,12 +357,11 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			commentLabel = '<div class="comment-label "></div>';
 		}
 
-		var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': id + '-', 'entryId': this.editId + "entryid" + id});
 		innerHTMLContent += (timeAfterTag ? '<span class="entryTime">'
 				+ escapehtml(dateStr) + '</span>' : '') + commentHTML + '</div>' + commentLabel;
 
 		if (!isDeviceSummaryEntry) {
-			var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': id + '-', 'entryId': this.editId+ "entryid" +id});
+		var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': id + '-', 'entryId': this.editId + "entryid" + id});
 
 			innerHTMLContent += '<button class="edit">Edit</button><button class="btn-purple save save-entry hide">Save' +
 					' Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' +
@@ -854,17 +858,17 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	}
 
 	this.getRepeatTypeId = function(idSelector) {
-		var isRepeat = $('#' + idSelector + 'repeat-checkbox').is(':checked');
-		var setAlert = $('#' + idSelector + 'remind-checkbox').is(':checked');
+		var isRepeat = $('#' + idSelector + '-repeat-checkbox').is(':checked');
+		var setAlert = $('#' + idSelector + '-remind-checkbox').is(':checked');
 
 		if (!isRepeat && !setAlert) {
 			return false;
 		}
 
-		var confirmRepeat = $('#' + idSelector + 'confirm-each-repeat').is(':checked');
+		var confirmRepeat = $('#' + idSelector + '-confirm-each-repeat').is(':checked');
 		var frequencyBit = RepeatType.DAILY_BIT;	// Repeat daily by default
 		var repeatTypeBit;
-		var frequency = $('input[name=' + idSelector + 'repeat-frequency]:checked').val();
+		var frequency = $('input[name=' + idSelector + '-repeat-frequency]:checked').val();
 
 		if (isRepeat) {
 			if (frequency == 'daily') {
@@ -1005,27 +1009,8 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' +
 				this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0px; width: calc(100% - 75px);" /></span>');
 		$('#' + $selectee.attr('id') + ' .track-input-dropdown').show();
-
-		var popoverContent = _.template($('#entry-details-popover-content').html())({'editType': currentEntryId + '-', entryId: $selectee.attr('id')});
-		$('.entry-details-popover-temp-container').html(popoverContent);
-
-		if (RepeatType.isRemind(repeatType)) {
-			$('#' + currentEntryId + '-remind-checkbox').attr('checked', 'checked');
-		}
-		if (RepeatType.isRepeat(repeatType)) {
-			$('#' + currentEntryId + '-repeat-checkbox').attr('checked', 'checked');
-			$('[data-for-entry="' + $selectee.attr('id') + '"] .repeat-modifiers').toggleClass('hide');
-		}
-		if (RepeatType.isDaily(repeatType)) {
-			$('#' + currentEntryId + '-daily').attr('checked', 'checked');
-		} else if (RepeatType.isWeekly(repeatType)) {
-			$('#' + currentEntryId + '-weekly').attr('checked', 'checked');
-		} else if (RepeatType.isMonthly(repeatType)) {
-			$('#' + currentEntryId + '-monthly').attr('checked', 'checked');
-		}
-		if (RepeatType.isGhost(repeatType)) {
-			$('#' + entry.id + '-confirm-each-repeat').attr('checked', 'checked');
-		}
+		var popoverContent = _.template($('#entry-details-popover-content').html())({editType: currentEntryId, entryId: $selectee.attr('id'), repeatType: repeatType});
+		createPopover($selectee.find('.track-input-dropdown'), popoverContent, '#recordList');
 
 		$('#' + self.editId + 'tagTextInput')
 			.val(entryText).focus()
@@ -1042,8 +1027,6 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		if (selectRange) {
 			$('#' + self.editId + 'tagTextInput').selectRange(selectRange[0], selectRange[1]);
 		}
-		createPopover($selectee.find('.track-input-dropdown'), $('.entry-details-popover-temp-container').html(), '#recordList');
-		$('.entry-details-popover-temp-container').html('');
 
 		$(".choose-date-input").datepicker();
 		if (entry.repeatEnd) {
@@ -1070,7 +1053,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			return;
 		}
 		var currentEntryId = $unselectee.data('entryId');
-		var repeatTypeId = this.getRepeatTypeId(currentEntryId + '-');
+		var repeatTypeId = this.getRepeatTypeId(currentEntryId);
 		var repeatEnd = $('.choose-date-input').val();
 		var oldRepeatEnd = $unselectee.data('entry').repeatEnd;
 		var oldRepeatEndMidnightTime = oldRepeatEnd ? oldRepeatEnd.setHours(0, 0, 0, 0) : null;

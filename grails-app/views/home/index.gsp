@@ -123,20 +123,20 @@
 
 			$('#addData').prepend(newEntryDetailsPopover);
 			$('#addData .track-input-dropdown').show();
-			newEntryDetailsPopoverContent = _.template($('#entry-details-popover-content').clone().html())({'editType': 'new', entryId: ""});
+			var newEntryDetailsPopoverContent = _.template($('#entry-details-popover-content').clone().html())({'editType': 'new', entryId: '', repeatType: 0});
 			createPopover($('.track-input-modifiers'), newEntryDetailsPopoverContent, '#addData');
 			$(document).on('change', '.repeat-entry-checkbox', function() {
 				$('.repeat-modifiers').toggleClass('hide');
 			});
 			$('#addData .track-input-modifiers').click(function() {
-				if ($('.ui-selected').length) {
-					entryListWidget.unselectEntry($('.ui-selected'));
+				var $selectee = $('.ui-selected');
+				if ($selectee.length) {
+					entryListWidget.unselectEntry($selectee);
 				}
 			})
 		});
 	</script>
 	<g:render template="/templates/track/entryDetailsPopover" />
 	<g:render template="/templates/track/entryDetailsPopoverContent"/>
-	<div class="entry-details-popover-temp-container"></div>
 </body>
 </html>

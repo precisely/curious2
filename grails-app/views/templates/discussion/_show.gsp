@@ -1,19 +1,19 @@
 <div class="discuss-page">
 	{{ if (firstPost && firstPost.plotDataId) { }}
-	<div id="plotLeftNav" style="margin-top: 4px;">
-		<div class="discussPlotLines plotlines clearfix" id="plotLinesplotDiscussArea"></div>
-	</div>
-	<div class="row row-custom">
-		<div class="col-xs-12">
-			<div class="main discussmain" style="margin: 0">
-				<div id="dialogDivplotDiscussArea" class="display:none;"></div>
-				<div class="graphData">
-					<div class="discussPlotArea" id="plotDiscussArea"></div>
+		<div id="plotLeftNav" style="margin-top: 4px;">
+			<div class="discussPlotLines plotlines clearfix" id="plotLinesplotDiscussArea"></div>
+		</div>
+		<div class="row row-custom">
+			<div class="col-xs-12">
+				<div class="main discussmain" style="margin: 0">
+					<div id="dialogDivplotDiscussArea" class="display:none;"></div>
+					<div class="graphData">
+						<div class="discussPlotArea" id="plotDiscussArea"></div>
 
-					<div class="main discusscontrols">
-						<div class="calendarRange">
-							<div class="zoomline">
-								<div id="zoomcontrol1"></div>
+						<div class="main discusscontrols">
+							<div class="calendarRange">
+								<div class="zoomline">
+									<div id="zoomcontrol1"></div>
 							</div>
 							<div class="dateline row">
 								<div class="col-xs-4">
@@ -57,23 +57,23 @@
 						<div class="col-xs-3 discussion-topic-span discussion-header">
 							<span class="posting-time" data-time="{{- discussionCreatedOn }}"></span>
 							{{ if (isAdmin) { }}
-							<div class="dropdown">
-								<a href="#" data-toggle="dropdown">
-									<b class="caret"></b>
-								</a>
-								<ul class="dropdown-menu" role="menu">
-									<li>
-										<a href="#" class="delete-discussion" data-discussion-hash="{{- discussionHash }}">
-											<i class="fa fa-trash fa-fw"></i> Delete
-										</a>
-									</li>
-									<li>
-										<a href="#" class="edit-discussion" data-discussion-hash="{{- discussionHash }}">
-											<i class="fa fa-pencil-square fa-fw"></i> Edit
-										</a>
-									</li>
-								</ul>
-							</div>
+								<div class="dropdown">
+									<a href="#" data-toggle="dropdown">
+										<b class="caret"></b>
+									</a>
+									<ul class="dropdown-menu" role="menu">
+										<li>
+											<a href="#" class="delete-discussion" data-discussion-hash="{{- discussionHash }}">
+												<i class="fa fa-trash fa-fw"></i> Delete
+											</a>
+										</li>
+										<li>
+											<a href="#" class="edit-discussion" data-discussion-hash="{{- discussionHash }}">
+												<i class="fa fa-pencil-square fa-fw"></i> Edit
+											</a>
+										</li>
+									</ul>
+								</div>
 							{{ } }}
 						</div>
 					</div>

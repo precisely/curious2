@@ -364,6 +364,7 @@ a, a:link,a:hover, a:visited {
 .entry-details-dropdown-menu {
 	display: block !important;
 }
+
 .entry-details-dropdown-menu ul {
 	list-style: none;
 }
@@ -398,6 +399,11 @@ a, a:link,a:hover, a:visited {
 
 #recordList .dropdown-menu {
 	right: 199px;
+	max-width: 290px;
+}
+
+.dropdown-menu .popover-content {
+	padding: 0px;
 }
 
 /**
