@@ -402,9 +402,13 @@ abstract class DataService {
 		def accounts = OAuthAccount.findAllByUserId(userId)
 
 		for (OAuthAccount account in accounts) {
-			DataService dataService = account.getDataService()
-
-			dataService.poll(account)
+			try {
+				DataService dataService = account.getDataService()
+	
+				dataService.poll(account)
+			} catch (Throwable t) {
+				Utils.reportError("Error while polling " + account, t)
+			}
 		}
 	}
 
@@ -424,8 +428,7 @@ abstract class DataService {
 			try {
 				dataService.poll(account)
 			} catch (Throwable t) {
-				log.error("Error while polling " + account)
-				t.printStackTrace()
+				Utils.reportError("Error while polling " + account, t)
 			}
 		}
 	}
@@ -476,11 +479,7 @@ abstract class DataService {
 					log.warn "Token expired while polling account: [$account] for $typeId."
 					account.setAccountFailure()
 				} catch (Throwable t) {
-					log.error "Unknown exception thrown during polling for " + account
-					t.printStackTrace()
-					account.lastPolled = saveLastPolled
-					account.lastData = saveLastData
-					account.setAccountFailure()
+					Utils.reportError("Unknown exception thrown during polling for " + account, t)
 					Utils.save(account, true)
 				}
 			}
