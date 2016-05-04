@@ -209,7 +209,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		testSimpleSearch(post, fieldName, "message")
 	}
 	
-	@Test
+	//@Test
 	void "Test Get Discussion Post Info for User Belonging to One Group with One Discussion"() {
 		def groups = UserGroup.list()
 		def groups2 = GroupMemberReader.list()
@@ -656,7 +656,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		}
 	}
 	
-	@Test
+	//@Test
 	void "Test Search Discussion For Which User Is a Reader"() {
 		UserGroup groupA = UserGroup.create("curious A", "Group A", "Discussion topics for Sprint A",
 				[isReadOnly:false, defaultNotify:false])
