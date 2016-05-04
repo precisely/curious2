@@ -69,7 +69,6 @@ class HomeController extends DataController {
 		try {
 			result = withingsDataService.subscribe(userId)
 		} catch (MissingOAuthAccountException e) {
-			Utils.reportError("Error while registering withings", e)
 			throw new AuthenticationRequiredException("withings")
 		} catch (InvalidAccessTokenException e) {
 			Utils.reportError("Error while registering withings", e)
@@ -130,7 +129,6 @@ class HomeController extends DataController {
 		try {
 			result = twenty3AndMeDataService.storeGenomesData(userId)
 		} catch (MissingOAuthAccountException e) {
-			Utils.reportError("Error while registering 23andme", e)
 			throw new AuthenticationRequiredException("Twenty3AndMe")
 		} catch (InvalidAccessTokenException e) {
 			Utils.reportError("Error while registering 23andme", e)
@@ -160,7 +158,6 @@ class HomeController extends DataController {
 			Utils.reportError("Error while registering Moves", e)
 			throw new AuthenticationRequiredException("moves")
 		} catch (MissingOAuthAccountException e) {
-			Utils.reportError("Error while registering Moves", e)
 			throw new AuthenticationRequiredException("moves")
 		}
 
@@ -199,7 +196,6 @@ class HomeController extends DataController {
 			Utils.reportError("Error while registering Jawbone", e)
 			throw new AuthenticationRequiredException("jawboneup")
 		} catch (MissingOAuthAccountException e) {
-			Utils.reportError("Error while registering Jawbone", e)
 			throw new AuthenticationRequiredException("jawboneup")
 		}
 
@@ -257,7 +253,6 @@ class HomeController extends DataController {
 		try {
 			result = fitBitDataService.subscribe(userId)
 		} catch (MissingOAuthAccountException e) {
-			Utils.reportError("Error while registering FitBit", e)
 			throw new AuthenticationRequiredException("fitbit")
 		} catch (InvalidAccessTokenException e) {
 			Utils.reportError("Error while registering FitBit", e)
@@ -308,7 +303,6 @@ class HomeController extends DataController {
 		try {
 			result = ouraDataService.subscribe(userId)
 		} catch (MissingOAuthAccountException e) {
-			Utils.reportError("Error while registering Oura", e)
 			throw new AuthenticationRequiredException("oura")
 		} catch (InvalidAccessTokenException e) {
 			Utils.reportError("Error while registering Oura", e)
