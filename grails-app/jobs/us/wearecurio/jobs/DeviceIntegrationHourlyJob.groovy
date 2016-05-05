@@ -57,14 +57,10 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 				LocalDateTime localTime = now.toLocalDateTime()
 				log.debug "DeviceIntegrationHourlyJob.execute() Local Hour of the day: " + localTime.getHourOfDay()
 
-				if (localTime.getHourOfDay() == 0) {
+				if (localTime.getHourOfDay() % 3 == 0) { // change to polling every 3 hours
 					OAuthAccount.findAllByTimeZoneIdAndTypeId(timeZoneId, ThirdParty.WITHINGS).each { account ->
 						log.debug "DeviceIntegrationHourlyJob.execute() calling getDataForWithings " + account
-						try {
-							withingsDataService.getDataDefault(account, account.fetchLastData(), null, false)
-						} catch (InvalidAccessTokenException e) {
-							Utils.reportError("Token expired while polling account: [$account]", e)
-						}
+						withingsDataService.poll(account)
 					}
 				}
 			}
