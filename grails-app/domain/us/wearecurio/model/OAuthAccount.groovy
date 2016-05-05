@@ -121,8 +121,8 @@ class OAuthAccount {
 		else if (lastData != null && lastData > this.lastData)
 			this.lastData = lastData
 		this.lastPolled = lastPolled ?: new Date()
-		this.merge()
+		OAuthAccount merged = this.merge()
 		log.debug "Set lastData date for " + this.id + " to: " + this.lastData
-		Utils.save(this, false)
+		Utils.save(merged, false)
 	}
 }
