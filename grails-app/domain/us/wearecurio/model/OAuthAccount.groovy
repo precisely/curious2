@@ -88,9 +88,10 @@ class OAuthAccount {
 		this.accessToken = ""
 	}
 
-	void clearAccessToken() {
-		removeAccessToken()
+	OAuthAccount clearAccessToken() {
 		OAuthAccount merged = this.merge()
+		merged.removeAccessToken()
+		removeAccessToken()
 		Utils.save(merged, true)
 	}
 	
@@ -102,8 +103,8 @@ class OAuthAccount {
 	
 	void setAccountFailure() {
 		if (!this.accessToken) return // do nothing if account already cleared
-		clearAccessToken()
-		User user = User.get(userId)
+		OAuthAccount merged = clearAccessToken()
+		User user = User.get(merged.userId)
 		if (!user) return
 		String email = user.email
 		log.debug "Trying to send notification email for OAuthAccount failure to " + email
@@ -115,15 +116,18 @@ class OAuthAccount {
 		Utils.reportError("OAuthAccount failure", typeId.getTextName() + " external account needs to be re-linked for " + this + " username " + user.username)
 	}
 
-	void markLastPolled(Date lastData, Date lastPolled = null) {
+	OAuthAccount markLastPolled(Date lastData, Date lastPolled = null) {
 		log.debug "Trying to set lastData for account " + this.id + " userId " + this.userId + " type " + this.typeId + ": " + lastData
-		if (this.lastData == null)
-			this.lastData = lastData
-		else if (lastData != null && lastData > this.lastData)
-			this.lastData = lastData
-		this.lastPolled = lastPolled ?: new Date()
 		OAuthAccount merged = this.merge()
+		if (merged.lastData == null)
+			merged.lastData = lastData
+		else if (lastData != null && lastData > merged.lastData)
+			merged.lastData = lastData
+		merged.lastPolled = lastPolled ?: new Date()
+		this.lastData = merged.lastData
+		this.lastPolled = merged.lastPolled
 		log.debug "Set lastData date for " + this.id + " to: " + this.lastData
 		Utils.save(merged, false)
+		return merged
 	}
 }
