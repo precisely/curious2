@@ -90,7 +90,8 @@ class OAuthAccount {
 
 	void clearAccessToken() {
 		removeAccessToken()
-		Utils.save(this, true)
+		OAuthAccount merged = this.merge()
+		Utils.save(merged, true)
 	}
 	
 	Date fetchLastData() {
