@@ -521,9 +521,7 @@ class WithingsDataService extends DataService {
 				e.printStackTrace()
 				account.setAccountFailure()
 			} catch (Throwable t) {
-				log.error("Error while refreshing Withings account")
-				t.printStackTrace()
-				account.setAccountFailure()
+				Utils.reportError("Error while refreshing Withings account" + account, t)
 			}
 		}
 	}

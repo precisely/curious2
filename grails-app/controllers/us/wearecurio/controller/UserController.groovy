@@ -109,8 +109,7 @@ class UserController extends LoginController {
 			renderJSONPost([success: true, avatarURL: avatar.path])
 			currentUserInstance.reindexAssociations()
 		} catch (Exception e) {
-			log.error "Unable to change or add avatar for ${currentUserInstance}", e
-			Utils.reportError("Error while saving avatar", e)
+			Utils.reportError("Unable to change or add avatar for ${currentUserInstance}", e)
 			renderJSONPost([success: false], message: g.message(code: "default.not.updated.message", args: ["Avatar"]))
 		}
 	}

@@ -366,12 +366,7 @@ abstract class DataService {
 					// Clear the access token to not process this notification again until the user re-link the account
 					account.setAccountFailure()
 				} catch (Throwable t) {
-					log.error "Unknown exception thrown during notification processing " + t
-					t.printStackTrace()
-					account.lastPolled = saveLastPolled
-					account.lastData = saveLastData
-					account.setAccountFailure()
-					Utils.save(account, true)
+					Utils.reportError("Unknown exception thrown during notification processing ", t)
 				}
 				return notification
 			}
@@ -459,9 +454,7 @@ abstract class DataService {
 				log.warn "Token expired while polling for $account"
 				account.setAccountFailure()
 			} catch (Throwable t) {
-				log.error("Error while polling account " + account)
-				t.printStackTrace()
-				account.setAccountFailure()
+				Utils.reportError("Error while polling account " + account, t)
 			}
 		}
 	}
@@ -480,7 +473,6 @@ abstract class DataService {
 					account.setAccountFailure()
 				} catch (Throwable t) {
 					Utils.reportError("Unknown exception thrown during polling for " + account, t)
-					Utils.save(account, true)
 				}
 			}
 		}

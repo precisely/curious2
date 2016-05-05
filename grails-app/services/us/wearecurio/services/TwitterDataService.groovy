@@ -261,7 +261,6 @@ class TwitterDataService {
 							log.debug "Failed to parse entry '" + entryStr + "'"
 					}
 			} catch (Throwable t) {
-				log.debug "Failed to parse tweet due to exception"
 				Utils.reportError("Failed to parse tweet", t)
 				continue;
 			}

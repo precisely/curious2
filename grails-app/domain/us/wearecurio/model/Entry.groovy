@@ -1443,8 +1443,7 @@ class Entry implements Comparable {
 		try {
 			Utils.save(this, true)
 		} catch (Throwable t) {
-			System.err.println("Invalid entry, failed to save: " + this)
-			t.printStackTrace()
+			Utils.reportError("Invalid entry, failed to save: " + this, t)
 			return
 		}
 	}
