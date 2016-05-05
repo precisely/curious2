@@ -757,6 +757,7 @@ class Sprint {
 				createAlias("avatar", "avatarAlias", CriteriaSpecification.LEFT_JOIN)
 				projections {
 					property "username", "username"
+					property "name", "name"
 					property "avatarAlias.path", "avatarURL"
 					property "id", "userId"
 				}
