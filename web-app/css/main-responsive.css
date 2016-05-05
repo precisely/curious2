@@ -9,6 +9,12 @@
 	}
 }
 
+@media (max-width: 650px) {
+	.option-container {
+		display: block;
+	}
+}
+
 @media only screen and (max-device-width : 767px) and (orientation : portrait) {
 	.get-started-buttons .ios-app-link img {
 		height: 28px;
@@ -100,6 +106,9 @@
 }
 
 @media (max-width: 480px) {
+	.option-container {
+		display: block;
+	}
 	div.red-header.date-controls input#datepicker {
 		width: 120px;
 		font-size: 13px;
@@ -170,6 +179,13 @@
 }
 
 @media (max-width: 768px) {
+	#share-modal {
+		margin-left: 110px !important;
+		margin-right: 110px !important;
+	}
+	.option-container {
+		float: none !important;
+	}
 	.container {
 		width: 960px !important;
 	}
