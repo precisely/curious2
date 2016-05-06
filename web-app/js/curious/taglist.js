@@ -623,7 +623,7 @@ function TagView(args) {
 		}
 
 		var html = '<li id="'+this.element+'" class="'+ this.getTreeItemViewCssClass() +' tag" data-type="tag"><span class="description">' 
-		+ this.data.description +'</span><span class="ui-icon '+pinIcon+'"></span>';
+		+ escapehtml(this.data.description) +'</span><span class="ui-icon '+pinIcon+'"></span>';
 
 		var deleteHtml = '<span class="hide ui-icon ui-icon-close"></span>';
 
@@ -647,7 +647,7 @@ function TagView(args) {
 	
 	this.update = function(data) {
 		var $element = $(this.getDOMElement());
-		$("> .description",$element).html(data.description);
+		$("> .description",$element).text(data.description);
 	}
 	
 	this.highlight = function(isTemporary) {
@@ -698,7 +698,7 @@ function TagGroupView(args) {
 
 		var html = '<li id="'+this.element+'" class="'+ classes + ' '+ this.data.type + '" data-type="' + this.data.type + 
 		'"><span class="ui-icon ui-icon-triangle-1-e"></span><span class="description">'
-		+ this.data.description;
+		+ escapehtml(this.data.description);
 
 		if (this.data.type === 'sharedTagGroup' && this.data.groupName) {
 			html += ' [' + this.data.groupName + ']';
@@ -735,7 +735,7 @@ function TagGroupView(args) {
 	
 	this.update = function(data) {
 		var $element = $(this.getDOMElement());
-		$("> .description",$element).html(data.description);
+		$("> .description",$element).text(data.description);
 	}
 
 	this.getChildrenWrapper = function() {

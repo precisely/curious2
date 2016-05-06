@@ -411,13 +411,13 @@ $(document).ready(function() {
 	 */
 	$(document).on("click", ".edit-discussion", function() {
 		var existingTitle = $(".discussion-title").text().trim();
-		var existingDescription = $(".first-post-message").html();
+		var existingDescription = $(".first-post-message").text();
 		if (existingDescription) {
 			existingDescription = existingDescription.trim().brToNewLine();
 		}
 
 		$("#new-discussion-name").val(existingTitle);
-		$("#new-description").val(_.unlinkify(existingDescription));
+		$("#new-description").val(existingDescription);
 
 		$modal.modal("show");
 		return false;

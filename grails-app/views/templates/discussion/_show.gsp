@@ -87,7 +87,7 @@
 
 					<div class="first-post-container">
 						{{ if (firstPost && firstPost.message) { }}
-						<span class="first-post-message">{{= _.linkify(_.escape(firstPost.message).newLineToBr()) }}</span>
+						<span class="first-post-message">{{= _.linkify(firstPost.message.newLineToBr()) }}</span>
 						{{ } else { }}
 						<span class="first-post-message"></span>
 						{{ } }}
@@ -189,9 +189,6 @@
 						{{ } else if (canWrite) { }}--}%
 						{{ if (canWrite) { }}
 							<g:render template="/templates/discussionPost/commentField" ></g:render>
-						</div>
-						{{ } else if (canWrite) { }}
-						<g:render template="/templates/discussionPost/commentField" ></g:render>
 						{{ } }}
 
 						<input type="hidden" name="discussionHash" value="{{- discussionHash }}">

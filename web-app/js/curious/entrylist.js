@@ -42,7 +42,7 @@ $('#recordList').scroll(function() {
 	var entryPosition = $selectee.position();
 	entryPosition.bottom = entryPosition.top + $selectee.outerHeight(true);
 	listPosition.bottom = listPosition.top + $(this).outerHeight(true);
-	if (entryPosition && ((entryPosition.top <= listPosition.top) || (entryPosition.bottom >= listPosition.bottom))) {
+	if (entryPosition && (((entryPosition.top + 3) <= listPosition.top) || ((entryPosition.bottom - 3) >= listPosition.bottom))) {
 		// Hiding popover when it exceeds the bounds of the list.
 		$popover.css({'visibility': 'hidden'});
 		return

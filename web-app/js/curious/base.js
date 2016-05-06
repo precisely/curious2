@@ -35,10 +35,6 @@ _.linkify = function(textToLinkify) {
 	return Autolinker.link(_.escape(textToLinkify), {className: 'auto-link-color'});
 };
 
-_.unlinkify = function(textToUnlinkify) {
-	return textToUnlinkify.replace(/(<([^>]+)>)/ig,"");
-};
-
 function _stripParens(str) {
 	if (str.slice(0, 1) == '(' && str.slice(-1) == ')')
 		return str.slice(1, -1);
@@ -196,7 +192,8 @@ function removeElem(arr, elem) {
 function getSearchParams() {
 	var vars = {};
 	var currentURL = window.location.href;
-	var parts = currentURL.slice(0, currentURL.indexOf('#')).replace(/[?&]+([^=&]+)=([^&]*)/gi,
+	var currentURLWithoutHash = (currentURL.indexOf('#') < 0) ? currentURL : currentURL.slice(0, currentURL.indexOf('#'));
+	currentURLWithoutHash.replace(/[?&]+([^=&]+)=([^&]*)/gi,
 			function(m, key, value) {
 				vars[key] = value;
 			}

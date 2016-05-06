@@ -50,7 +50,7 @@ class DiscussionPostController extends LoginController{
 	@NoAuth
 	def save() {
 		debug "Attempting to add comment '" + params.message +
-				"for discussion with hash: ${params.discussionHash}"
+				"' for discussion with hash: ${params.discussionHash}"
 
 		Discussion discussion = Discussion.findByHash(params.discussionHash)
 		if (!discussion) {
