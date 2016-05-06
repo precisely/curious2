@@ -90,30 +90,42 @@ class Utils {
 		return save(obj, false)
 	}
 
-	static boolean save(obj, boolean flush) {
+	static def save(obj, boolean flush) {
 		//quick workaround to avoid saving empty string sprint description
 		//alternative is to create an unanalyzed index for sprints so empty strings can be filtered
 		if (obj instanceof us.wearecurio.model.Sprint && obj.description == "") {
 			obj.description = null
 		}
-		if (!obj.save(flush: flush)) {
-			log.debug "Error saving $obj: $obj.errors"
-		   	def messageBody = "Error saving while executing Curious app:\n" + obj.errors + "\n" + Arrays.toString(new Exception().getStackTrace())
-			def messageSubject = "CURIOUS SERVER SAVE ERROR: " + GrailsUtil.environment
-			EmailService.get().sendMail {
-				to "server@wearecurio.us"
-				from "server@wearecurio.us"
-				subject messageSubject
-				body messageBody
+		try {
+			if (!obj.save(flush: flush)) {
+				def messageBody = "Error saving while executing Curious app:\n" + obj.errors + "\n" + Arrays.toString(new Exception().getStackTrace())
+				reportError("CURIOUS SERVER SAVE ERROR", messageBody)
+				
+				return null
+			} else {
+				log.debug "Object saved successfully $obj."
+				SearchService.get()?.index(obj)
 			}
-			
-			return false
-		} else {
-			log.debug "Object saved successfully $obj."
-			SearchService.get()?.index(obj)
+	
+		} catch (org.springframework.dao.DuplicateKeyException e) {
+			def merged = obj.merge() // avoid hibernate errors - we don't care about transactions in our app
+			try {
+				if (!merged.save(flush: flush)) {
+					def messageBody = "Error saving while executing Curious app:\n" + merged.errors + "\n" + Arrays.toString(new Exception().getStackTrace())
+					reportError("CURIOUS SERVER SAVE ERROR", messageBody)
+					
+					return null
+				} else {
+					log.debug "Object saved successfully $merged."
+					SearchService.get()?.index(merged)
+				}
+			} catch (org.springframework.dao.DuplicateKeyException t) {
+				reportError("CURIOUS SERVER FINAL SAVE ERROR", t)
+			}
+			return merged
 		}
 
-		return true
+		return obj
 	}
 
 	static def testResetClosures
