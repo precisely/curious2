@@ -14,6 +14,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.OuraDataService
+import us.wearecurio.services.DataService.DataRequestContext
 import us.wearecurio.support.EntryStats
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
@@ -101,7 +102,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		]
 		// When oura returns a non-zero response code
 		try {
-			ouraDataService.getDataSleep(account, new Date(), false)
+			ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
 		} catch(e) {
 			assert e instanceof InvalidAccessTokenException
 		}
@@ -119,7 +120,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				}
 		]
 
-		ouraDataService.getDataSleep(account, new Date(), false)
+		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
 		assert Entry.getCount() == 12
 
 		List<Entry> entryList = Entry.getAll()
@@ -144,7 +145,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				"bread 2pm", null, null, new Date(), true), new EntryStats())
 
 		// When first time entries are imported
-		ouraDataService.getDataSleep(account, new Date(), false)
+		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
 
 		// Then 3 sleep entries should be created (and one simple entry)
 		assert Entry.getCount() == 4
@@ -160,7 +161,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[1].userId == account.userId
 
 		// When same data is re-imported again
-		ouraDataService.getDataSleep(account, new Date(), false)
+		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
 
 		// Then previously imported entries from Oura should be unset
 		assert Entry.getCount() == 7
@@ -196,7 +197,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				"bread 2pm", null, null, new Date(), true), new EntryStats())
 
 		// When first time entries are imported
-		ouraDataService.getDataSleep(account, new Date(), null, false)
+		ouraDataService.getDataSleep(account, new Date(), null, false, new DataRequestContext())
 
 		// Then 3 sleep entries should be created (and one simple entry)
 		assert Entry.getCount() == 4
@@ -212,7 +213,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[1].userId == account.userId
 
 		// When same data is re-imported again
-		ouraDataService.getDataSleep(account, new Date(), false)
+		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
 
 		// Then previously imported entries from Oura should be unset
 		assert Entry.getCount() == 7
@@ -248,7 +249,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				"bread 2pm", null, null, new Date(), true), new EntryStats())
 
 		// When first time entries are imported
-		ouraDataService.getDataSleep(account, new Date(), false)
+		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
 
 		// Then 3 sleep entries should be created (and one simple entry)
 		assert Entry.getCount() == 4
@@ -271,7 +272,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[1].userId == account.userId
 
 		// When same data is re-imported again with polling for 4 days of interval
-		ouraDataService.getDataSleep(account, new Date() - 2, new Date() + 2, false)
+		ouraDataService.getDataSleep(account, new Date() - 2, new Date() + 2, false, new DataRequestContext())
 
 		// Then previously imported entries (with old set name) from Oura should be unset
 		assert Entry.getCount() == 7
@@ -301,7 +302,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		]
 		// When oura returns a non-zero response code
 		try {
-			ouraDataService.getDataExercise(account, new Date(), false)
+			ouraDataService.getDataExercise(account, new Date(), false, new DataRequestContext())
 		} catch(e) {
 			assert e instanceof InvalidAccessTokenException
 		}
@@ -319,7 +320,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				}
 		]
 
-		ouraDataService.getDataExercise(account, new Date(), false)
+		ouraDataService.getDataExercise(account, new Date(), false, new DataRequestContext())
 		assert Entry.getCount() == 2
 
 		List<Entry> entryList = Entry.getAll()
@@ -346,7 +347,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				}
 		]
 
-		ouraDataService.getDataExercise(account, new Date(), false)
+		ouraDataService.getDataExercise(account, new Date(), false, new DataRequestContext())
 		assert Entry.getCount() == 2
 
 		List<Entry> entryList = Entry.getAll()
@@ -368,7 +369,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				}
 		]
 
-		ouraDataService.getDataExercise(account, new Date(), false)
+		ouraDataService.getDataExercise(account, new Date(), false, new DataRequestContext())
 		// 6 entries should be created as pair of 2-2 entries will be merged into 1
 		assert Entry.getCount() == 6
 
@@ -412,7 +413,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				}
 		]
 
-		ouraDataService.getDataExercise(account, new Date(), false)
+		ouraDataService.getDataExercise(account, new Date(), false, new DataRequestContext())
 		assert Entry.getCount() == 3
 
 		List<Entry> entryList = Entry.getAll()
@@ -444,7 +445,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		]
 
 		try {
-			ouraDataService.getDataExercise(account, new Date(), false)
+			ouraDataService.getDataExercise(account, new Date(), false, new DataRequestContext())
 		} catch (e) {
 			assert e instanceof NumberFormatException
 		}
@@ -459,7 +460,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		]
 		// When oura returns a non-zero response code
 		try {
-			ouraDataService.getDataActivity(account, new Date(), false)
+			ouraDataService.getDataActivity(account, new Date(), false, new DataRequestContext())
 		} catch(e) {
 			assert e instanceof InvalidAccessTokenException
 		}
@@ -478,7 +479,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				}
 		]
 
-		ouraDataService.getDataActivity(account, new Date(), false)
+		ouraDataService.getDataActivity(account, new Date(), false, new DataRequestContext())
 		assert Entry.getCount() == 10
 
 		Entry entry1 = Entry.first()

@@ -16,6 +16,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.UrlService
+import us.wearecurio.services.DataService.DataRequestContext
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
@@ -122,7 +123,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		]
 		// When fitbit returns a non-zero response code
 		try {
-			fitBitDataService.getDataDefault(account, new Date(), null, false)
+			fitBitDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
 		} catch(e) {
 			assert e instanceof InvalidAccessTokenException
 		}
@@ -137,7 +138,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 			}
 		]
 
-		Map result = fitBitDataService.getDataDefault(account, new Date(), null, false)
+		Map result = fitBitDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
 
 		assert result.success == true
 	}
@@ -153,7 +154,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 				return new Response(new MockedHttpURLConnection(mockedResponseData))
 			}
 		]
-		Map result = fitBitDataService.getDataSleep(account, forDay, false)
+		Map result = fitBitDataService.getDataSleep(account, forDay, false, new DataRequestContext())
 		assert result.success == true
 
 		// Fetch entry with tag 'sleep'

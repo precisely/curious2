@@ -66,6 +66,14 @@ abstract class DataService {
 			earlyStartDate = new Date(-5364658800L)
 		}
 	}
+	
+	static class DataRequestContext {
+		Set<String> alreadyUnset
+		
+		DataRequestContext() {
+			alreadyUnset = new HashSet<String>()
+		}
+	}
 
 	// register data service for lookup
 	@PostConstruct
@@ -117,12 +125,12 @@ abstract class DataService {
 	 * @return	Returns a map with required data.
 	 */
 	@Transactional
-	abstract Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
+	abstract Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
 			InvalidAccessTokenException
 
-	Map getDataDefault(OAuthAccount account, Date forDate, boolean refreshAll) throws InvalidAccessTokenException {
+	Map getDataDefault(OAuthAccount account, Date forDate, boolean refreshAll, DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug "getDataDefault(): account ${account?.id} forDay: $forDate refreshAll: $refreshAll"
-		return getDataDefault(account, forDate, null, refreshAll)
+		return getDataDefault(account, forDate, null, refreshAll, context)
 	}
 
 	/**
@@ -449,7 +457,7 @@ abstract class DataService {
 
 		OAuthAccount.withTransaction {
 			try {
-				getDataDefault(account, account.fetchLastData() - 1, null, false)
+				getDataDefault(account, account.fetchLastData() - 1, null, false, new DataRequestContext())
 			} catch (InvalidAccessTokenException e) {
 				log.warn "Token expired while polling for $account"
 				account.setAccountFailure()
@@ -467,7 +475,7 @@ abstract class DataService {
 		OAuthAccount.findAllByTypeId(typeId).each { OAuthAccount account ->
 			DatabaseService.retry(account) {
 				try {
-					getDataDefault(account, account.fetchLastData() - 1, null, refreshAll)
+					getDataDefault(account, account.fetchLastData() - 1, null, refreshAll, new DataRequestContext())
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while polling account: [$account] for $typeId."
 					account.setAccountFailure()
@@ -583,9 +591,13 @@ abstract class DataService {
 	 * @param userId Identifier of the user for which older entries need to be unset
 	 * @param setName Set name of the entries
 	 */
-	void unsetOldEntries(Long userId, String setName) {
+	void unsetOldEntries(Long userId, String setName, Set<String> alreadyUnset) {
+		if (alreadyUnset.contains(setName))
+			return
+		log.debug "Unset old entries for user $userId with set name $setName"
 		Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
 				e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
+		alreadyUnset.add(setName)
 	}
 
 	/**
@@ -594,16 +606,24 @@ abstract class DataService {
 	 * @param userId Identifier of the user for which older entries need to be unset
 	 * @param setNames List of different set names of the entries
 	 */
-	void unsetOldEntries(Long userId, List<String> setNames) {
-		log.debug "Unself old entries for user $userId with set names $setNames"
+	void unsetOldEntries(Long userId, List<String> setNames, Set<String> alreadyUnset) {
+		log.debug "Unset old entries for user $userId with set names $setNames"
 		if (!setNames) {
-			log.debug "Pass at least one set name"
 			return
+		}
+		
+		Set<String> unsetSetNames = new HashSet<String>()
+		
+		for (String setName in setNames) {
+			if (!alreadyUnset.contains(setName)) {
+				unsetSetNames.add(setName)
+				alreadyUnset.add(setName)
+			}
 		}
 
 		Entry.executeUpdate("update Entry e set e.userId = null where e.userId = :userId and e.setIdentifier in " +
 				"(select i.id from Identifier i where value in (:values))",
-				[values: setNames, userId: userId])
+				[values: unsetSetNames, userId: userId])
 	}
 
 	/**

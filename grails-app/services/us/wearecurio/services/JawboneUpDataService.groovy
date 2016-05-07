@@ -13,6 +13,7 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
+import us.wearecurio.services.DataService.DataRequestContext
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
@@ -65,7 +66,7 @@ class JawboneUpDataService extends DataService {
 	}
 
 	@Override
-	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
+	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
 			InvalidAccessTokenException {
 		log.debug "getDataDefault(): ${account} start: $startDate, end: $endDate refreshAll: $refreshAll"
 		if (!account) {
@@ -75,9 +76,9 @@ class JawboneUpDataService extends DataService {
 		startDate = startDate ?: account.fetchLastData()
 		endDate = endDate ?: new Date()
 
-		getDataBody(account, startDate, endDate, refreshAll)
-		getDataMove(account, startDate, endDate, refreshAll)
-		getDataSleep(account, startDate, endDate, refreshAll)
+		getDataBody(account, startDate, endDate, refreshAll, context)
+		getDataMove(account, startDate, endDate, refreshAll, context)
+		getDataSleep(account, startDate, endDate, refreshAll, context)
 
 		return [success: true]
 	}
@@ -86,21 +87,21 @@ class JawboneUpDataService extends DataService {
 		return response && response["meta"] && response["meta"]["code"] == 200
 	}
 
-	Map getDataBody(OAuthAccount account, Date forDay, boolean refreshAll) {
+	Map getDataBody(OAuthAccount account, Date forDay, boolean refreshAll, DataRequestContext context) {
 		log.debug "getDataBody(): ${account} forDay: $forDay refreshAll: $refreshAll"
 
-		return getDataBody(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll)
+		return getDataBody(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll, context)
 	}
 
-	Map getDataBody(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) {
+	Map getDataBody(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) {
 		log.debug "getDataBody(): ${account} start: $startDate, end: $endDate refreshAll: $refreshAll"
 
 		validateParams(account, startDate, endDate, refreshAll)
-		return getDataBody(account, getRequestURL(JawboneUpDataType.BODY, startDate, endDate))
+		return getDataBody(account, getRequestURL(JawboneUpDataType.BODY, startDate, endDate), context)
 	}
 
 	// Overloaded method to support pagination
-	Map getDataBody(OAuthAccount account, String requestURL) {
+	Map getDataBody(OAuthAccount account, String requestURL, DataRequestContext context) {
 
 		Integer timeZoneIdNumber = getTimeZoneId(account)
 		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
@@ -129,7 +130,7 @@ class JawboneUpDataService extends DataService {
 			Date entryDate = shortDateParser.parse(bodyEntry["date"].toString())
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
 
-			unsetOldEntries(userId, setName)
+			unsetOldEntries(userId, setName, context.alreadyUnset)
 
 			tagUnitMap.buildEntry(creationMap, stats, "weight", new BigDecimal((String)bodyEntry["weight"]), userId, timeZoneIdNumber,
 					entryDate, COMMENT, setName)
@@ -149,27 +150,27 @@ class JawboneUpDataService extends DataService {
 		if (bodyData["links"] && bodyData["links"]["next"]) {
 			log.debug "Processing get sleep data for paginated URL"
 
-			return getDataBody(account, bodyData["links"]["next"])
+			return getDataBody(account, bodyData["links"]["next"], context)
 		}
 
 		return [success: true]
 	}
 
-	Map getDataMove(OAuthAccount account, Date forDay, boolean refreshAll) {
+	Map getDataMove(OAuthAccount account, Date forDay, boolean refreshAll, DataRequestContext context) {
 		log.debug "getDataMoves(): ${account} forDay: $forDay refreshAll: $refreshAll"
 
-		return getDataMove(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll)
+		return getDataMove(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll, context)
 	}
 
-	Map getDataMove(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) {
+	Map getDataMove(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) {
 		log.debug "getDataMove(): ${account} start: $startDate, end: $endDate refreshAll: $refreshAll"
 
 		validateParams(account, startDate, endDate, refreshAll)
-		return getDataMove(account, getRequestURL(JawboneUpDataType.MOVE, startDate, endDate))
+		return getDataMove(account, getRequestURL(JawboneUpDataType.MOVE, startDate, endDate), context)
 	}
 
 	// Overloaded method to support pagination
-	Map getDataMove(OAuthAccount account, String requestURL) {
+	Map getDataMove(OAuthAccount account, String requestURL, DataRequestContext context) {
 
 		Integer timeZoneIdNumber = getTimeZoneId(account)
 		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
@@ -209,7 +210,7 @@ class JawboneUpDataService extends DataService {
 			Date entryDate = dateOnlyFormatter.parse(rawDate)
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
 
-			unsetOldEntries(userId, setName)
+			unsetOldEntries(userId, setName, context.alreadyUnset)
 
 			if (movesDetails["distance"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "miles", movesDetails["distance"], userId,
@@ -293,7 +294,7 @@ class JawboneUpDataService extends DataService {
 		if (moveData["links"] && moveData["links"]["next"]) {
 			log.debug "Processing get moves data for paginated URL"
 
-			return getDataMove(account, moveData["links"]["next"])
+			return getDataMove(account, moveData["links"]["next"], context)
 		}
 
 		return [success: true]
@@ -376,21 +377,21 @@ class JawboneUpDataService extends DataService {
 		return groupData.collect { it[key] ?: 0 }.sum() / groupData.size()
 	}
 
-	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) {
+	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll, DataRequestContext context) {
 		log.debug "getDataSleep(): ${account} forDay: $forDay refreshAll: $refreshAll"
 
-		return getDataSleep(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll)
+		return getDataSleep(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll, context)
 	}
 
-	Map getDataSleep(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) {
+	Map getDataSleep(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) {
 		log.debug "getDataSleep(): ${account} start: $startDate, end: $endDate refreshAll: $refreshAll"
 
 		validateParams(account, startDate, endDate, refreshAll)
-		return getDataSleep(account, getRequestURL(JawboneUpDataType.SLEEP, startDate, endDate))
+		return getDataSleep(account, getRequestURL(JawboneUpDataType.SLEEP, startDate, endDate), context)
 	}
 
 	// Overloaded method to support pagination
-	Map getDataSleep(OAuthAccount account, String requestURL) {
+	Map getDataSleep(OAuthAccount account, String requestURL, DataRequestContext context) {
 
 		Integer timeZoneIdNumber = getTimeZoneId(account)
 		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
@@ -425,7 +426,7 @@ class JawboneUpDataService extends DataService {
 			Date entryDate = new Date(sleepDetails["asleep_time"].toLong() * 1000)
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
 
-			unsetOldEntries(userId, setName)
+			unsetOldEntries(userId, setName, context.alreadyUnset)
 
 			if (sleepDetails["duration"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "duration", sleepDetails["duration"], userId,
@@ -454,7 +455,7 @@ class JawboneUpDataService extends DataService {
 		if (sleepData["links"] && sleepData["links"]["next"]) {
 			log.debug "Processing get sleep data for paginated URL"
 
-			return getDataSleep(account, sleepData["links"]["next"])
+			return getDataSleep(account, sleepData["links"]["next"], context)
 		}
 		return [success: true]
 	}

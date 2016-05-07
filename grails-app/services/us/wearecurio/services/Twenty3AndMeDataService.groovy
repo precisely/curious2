@@ -7,6 +7,7 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.Twenty3AndMeData
+import us.wearecurio.services.DataService.DataRequestContext
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.utility.Utils
@@ -50,7 +51,7 @@ class Twenty3AndMeDataService extends DataService {
 	}
 
 	@Override
-	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
+	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
 			InvalidAccessTokenException {
 		Token tokenInstance = account.tokenInstance
 		JSONObject userInfo = getUserProfile(tokenInstance)
@@ -96,7 +97,7 @@ class Twenty3AndMeDataService extends DataService {
 	Map storeGenomesData(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		OAuthAccount account = getOAuthAccountInstance(userId)
 		checkNotNull(account)
-		getDataDefault(account, null, null, false)
+		getDataDefault(account, null, null, false, new DataRequestContext())
 	}
 
 }

@@ -18,6 +18,7 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
+import us.wearecurio.services.DataService.DataRequestContext;
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
@@ -49,7 +50,7 @@ class FitBitDataService extends DataService {
 	}
 
 	@Transactional
-	Map getDataActivities(OAuthAccount account, Date forDay, boolean refreshAll) {
+	Map getDataActivities(OAuthAccount account, Date forDay, boolean refreshAll, DataRequestContext context) {
 		log.debug("FitBitDataServices.getDataActivities(): account " + account.getId() + " forDay: " + forDay + " refreshAll: " + refreshAll)
 		String accountId = account.accountId
 		Long userId = account.userId
@@ -131,7 +132,7 @@ class FitBitDataService extends DataService {
 	}
 
 	@Transactional
-	Map getDataBody(OAuthAccount account, Date forDay, boolean refreshAll) {
+	Map getDataBody(OAuthAccount account, Date forDay, boolean refreshAll, DataRequestContext context) {
 		// Getting body measurements
 		//requestUrl = String.format(BASE_URL, "/${accountId}/body/date/${forDate}.json")
 		//getResponse(account.tokenInstance, requestUrl)
@@ -148,21 +149,21 @@ class FitBitDataService extends DataService {
 
 	@Override
 	@Transactional
-	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
+	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
 			InvalidAccessTokenException {
 		log.debug("FitBitDataService.getDataDefault() account " + account.getId() + " startDate: " + startDate + " refreshAll: " + refreshAll)
 		startDate = startDate ?: account.fetchLastData() ?: earlyStartDate
 
-		getDataActivities(account, startDate, false)
-		getDataBody(account, startDate, false)
-		getDataFoods(account, startDate, false)
-		getDataSleep(account, startDate, false)
+		getDataActivities(account, startDate, false, context)
+		getDataBody(account, startDate, false, context)
+		getDataFoods(account, startDate, false, context)
+		getDataSleep(account, startDate, false, context)
 
 		[success: true]
 	}
 
 	@Transactional
-	Map getDataFoods(OAuthAccount account, Date forDay, boolean refreshAll) {
+	Map getDataFoods(OAuthAccount account, Date forDay, boolean refreshAll, DataRequestContext context) {
 		log.debug("FitBitDataService.getDataFoods() account " + account.getId() + " forDay: " + forDay + " refreshAll: " + refreshAll)
 		//requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/log/date/${forDate}.json")
 		log.debug("This method is stubbed out, not doing anything at present")
@@ -170,7 +171,7 @@ class FitBitDataService extends DataService {
 	}
 
 	@Transactional
-	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
+	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll, DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug("FitBitDataService.getDataSleep() account " + account.getId() + " forDay: " + forDay + " refreshAll: " + refreshAll)
 		Long userId = account.userId
 

@@ -16,6 +16,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.Twenty3AndMeData
 import us.wearecurio.model.User
 import us.wearecurio.services.Twenty3AndMeDataService
+import us.wearecurio.services.DataService.DataRequestContext
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 
@@ -88,7 +89,7 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 				return new Response(new MockedHttpURLConnection(url.startsWith(Twenty3AndMeDataService.GENOME_URL) ? genomeResponse : profileResponse))
 			}]
 
-		Map response = twenty3AndMeDataService.getDataDefault(account, new Date(), null, false)
+		Map response = twenty3AndMeDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
 		assert response.success == true
 		
 		assert Twenty3AndMeData.countByAccountAndProfileId(account, 1) == 2

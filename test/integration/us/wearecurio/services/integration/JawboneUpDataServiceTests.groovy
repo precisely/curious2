@@ -13,6 +13,7 @@ import us.wearecurio.model.ThirdPartyNotification.Status
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.services.JawboneUpDataService
+import us.wearecurio.services.DataService.DataRequestContext
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.utility.Utils
 
@@ -75,7 +76,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		]
 
 		when:
-		Map result = jawboneUpDataService.getDataSleep(account, startDate, false)
+		Map result = jawboneUpDataService.getDataSleep(account, startDate, false, new DataRequestContext())
 
 		then:
 		result.success == true
@@ -100,7 +101,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		userEntries.find { it.tag.description == "sleep quality" }.units == "%"
 	}
 
-/*	void "test get data body"() {
+	void "test get data body"() {
 		String mockedResponseData = new File(testDataPath("body")).text
 
 		Date startDate = new Date()
@@ -115,7 +116,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		]
 
 		when:
-		Map result = jawboneUpDataService.getDataBody(account, startDate, false)
+		Map result = jawboneUpDataService.getDataBody(account, startDate, false, new DataRequestContext())
 
 		then:
 		result.success == true
@@ -144,7 +145,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		]
 
 		when:
-		Map result = jawboneUpDataService.getDataBody(account, new Date(), false)
+		Map result = jawboneUpDataService.getDataBody(account, new Date(), false, new DataRequestContext())
 
 		then:
 		result.success == false
@@ -168,7 +169,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US)
 
 		when:
-		Map result = jawboneUpDataService.getDataMove(account, startDate, false)
+		Map result = jawboneUpDataService.getDataMove(account, startDate, false, new DataRequestContext())
 
 		then:
 		result.success == true
@@ -270,7 +271,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		]
 
 		when:
-		Map result = jawboneUpDataService.getDataSleep(account, new Date(), false)
+		Map result = jawboneUpDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
 
 		then:
 		result.success == true
@@ -287,7 +288,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		]
 
 		when:
-		Map result = jawboneUpDataService.getDataSleep(account, new Date(), false)
+		Map result = jawboneUpDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
 
 		then:
 		result.success == false

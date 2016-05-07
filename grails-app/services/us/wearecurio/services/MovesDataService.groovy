@@ -3,6 +3,7 @@ package us.wearecurio.services
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
 import org.springframework.transaction.annotation.Transactional
+
 import us.wearecurio.model.DurationType
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
@@ -10,6 +11,7 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
+import us.wearecurio.services.DataService.DataRequestContext;
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
@@ -40,7 +42,7 @@ class MovesDataService extends DataService {
 
 	@Override
 	@Transactional
-	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
+	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
 			InvalidAccessTokenException {
 		log.debug("MovesDataService.getDataDefault(): account " + account.getId() + " startDate: " + startDate + " refreshAll: " + refreshAll)
 		
@@ -98,7 +100,7 @@ class MovesDataService extends DataService {
 					[userId:userId, identifier: oldSetIdentifier, currentDateA:currentDate, currentDateB: currentDate + 1])
 
 			// Using new set name
-			unsetOldEntries(userId, setName)
+			unsetOldEntries(userId, setName, context.alreadyUnset)
 
 			List<JSONObject> activities = []
 			List<String> allowedTypes = ["walking", "running", "cycling"]

@@ -8,6 +8,7 @@ import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.*
 import us.wearecurio.services.MovesDataService
+import us.wearecurio.services.DataService.DataRequestContext
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.TagUnitMap
 import us.wearecurio.utility.Utils
@@ -68,7 +69,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 				return new Response(new MockedHttpURLConnection(parsedResponse))
 			}]
 
-		Map response = movesDataService.getDataDefault(account, null, null, false)
+		Map response = movesDataService.getDataDefault(account, null, null, false, new DataRequestContext())
 		assert response.success == true
 		Collection entries = Entry.findAllByUserId(user.getId())
 		Date date = null
@@ -82,7 +83,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		assert Entry.count() == 15
 
 		// Ensuring entries of the same day will be replaced with new entries.
-		response = movesDataService.getDataDefault(account, null, null, false)
+		response = movesDataService.getDataDefault(account, null, null, false, new DataRequestContext())
 		assert response.success == true
 		
 		testEntries(user, "America/Los_Angeles", date, date) {
@@ -100,7 +101,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 			return new Response(new MockedHttpURLConnection(parsedResponse))
 		}]
 
-		Map response = movesDataService.getDataDefault(account, null, null, false)
+		Map response = movesDataService.getDataDefault(account, null, null, false, new DataRequestContext())
 		assert response.success == true
 		List<Entry> entries = Entry.findAllByUserId(user.getId(), [sort: "id", order: "asc"])
 

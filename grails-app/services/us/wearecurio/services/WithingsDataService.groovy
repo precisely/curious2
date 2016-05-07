@@ -12,6 +12,7 @@ import org.scribe.model.Response
 import org.scribe.model.Token
 
 import us.wearecurio.model.*
+import us.wearecurio.services.DataService.DataRequestContext;
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
@@ -20,6 +21,7 @@ import us.wearecurio.thirdparty.TooManyRequestsException
 import us.wearecurio.thirdparty.withings.WithingsTagUnitMap
 import us.wearecurio.thirdparty.TagUnitMap
 import us.wearecurio.utility.Utils
+
 import java.util.concurrent.PriorityBlockingQueue
 
 class WithingsDataService extends DataService {
@@ -68,7 +70,7 @@ class WithingsDataService extends DataService {
 
 	@Override
 	@Transactional
-	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws
+	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
 			InvalidAccessTokenException {
 		log.debug "WithingsDataService.getData() account:" + account + " refreshAll: " + refreshAll
 
@@ -121,7 +123,7 @@ class WithingsDataService extends DataService {
 				Date date = new Date(group.date * 1000L)
 				setName = SET_NAME + "m" + date
 				JSONArray measures = group.measures
-				unsetOldEntries(userId, setName)
+				unsetOldEntries(userId, setName, context.alreadyUnset)
 
 				for (measure in measures) {
 					BigDecimal value = new BigDecimal(measure.value, -measure.unit)
@@ -167,9 +169,9 @@ class WithingsDataService extends DataService {
 		}
 
 		if (account.lastData != null) {
-			getDataActivityMetrics(account, account.lastData - 1, new Date() + 1)
+			getDataActivityMetrics(account, account.lastData - 1, new Date() + 1, context)
 		} else {
-			getDataActivityMetrics(account, startDate - 1, new Date() + 1)
+			getDataActivityMetrics(account, startDate - 1, new Date() + 1, context)
 		}
 
 		stats.finish()
@@ -189,7 +191,7 @@ class WithingsDataService extends DataService {
 	 *
 	 * @see "Activity Metrics documentation at http://www.withings.com/en/api"
 	 */
-	Map getDataActivityMetrics(OAuthAccount account, Date startDate, Date endDate) throws InvalidAccessTokenException {
+	Map getDataActivityMetrics(OAuthAccount account, Date startDate, Date endDate, DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug "WithingsDataService.getDataActivityMetrics() account:" + account + " dateRange:" + (startDate?:'null') + ":" + (endDate?:'null')
 		
 		if (startDate == null || endDate == null) {
@@ -235,7 +237,7 @@ class WithingsDataService extends DataService {
 			}
 			entryDate = new Date(entryDate.getTime() + 12 * 60 * 60000L) // move activity time 12 hours later to make data appear at noon
 			setName = SET_NAME + "a" + entryDate.getTime()/1000
-			unsetOldEntries(userId, setName)
+			unsetOldEntries(userId, setName, context.alreadyUnset)
 
 			Map args = [isSummary: true] // Indicating that these entries are summary entries
 
@@ -280,7 +282,7 @@ class WithingsDataService extends DataService {
 		[success: true]
 	}
 
-	Map getDataIntraDayActivity(OAuthAccount account, Date startDate, Date endDate)
+	Map getDataIntraDayActivity(OAuthAccount account, Date startDate, Date endDate, DataRequestContext context)
 			throws InvalidAccessTokenException, TooManyRequestsException {
 		if (!account) {
 			log.error "Null account, aborting!"
@@ -315,7 +317,7 @@ class WithingsDataService extends DataService {
 			setName = SET_NAME + "i" + timestamp
 			try {
 				DatabaseService.retry(account) {
-					unsetOldEntries(userId, setName)
+					unsetOldEntries(userId, setName, context.alreadyUnset)
 				}
 			} catch (org.springframework.dao.CannotAcquireLockException le) {
 				log.debug("WithingsDataService.getDataIntraDayActivity: CannotAcquireLockException")

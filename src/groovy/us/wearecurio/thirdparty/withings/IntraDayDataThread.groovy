@@ -1,6 +1,7 @@
 package us.wearecurio.thirdparty.withings
 
 import us.wearecurio.services.*
+import us.wearecurio.services.DataService.DataRequestContext
 import us.wearecurio.model.*
 import us.wearecurio.thirdparty.*
 import org.apache.commons.logging.LogFactory
@@ -33,7 +34,7 @@ class IntraDayDataThread extends Thread {
 						log.debug "IntraDayDataThread: OAuthAccount retrieved ${account?.dump()}"
 					}
 					log.debug "IntraDayDataThread: Querying intra day data for ${account?.id} and date ${queueItem?.queryDate}"
-					withingsDataService.getDataIntraDayActivity(account, queueItem.queryDate, queueItem.queryDate + 1)
+					withingsDataService.getDataIntraDayActivity(account, queueItem.queryDate, queueItem.queryDate + 1, new DataRequestContext())
 					queueItem?.delete()
 				} catch (TooManyRequestsException te) {
 					log.debug "IntraDayDataThread: TooManyRequestsException - Exceeded query rate"
