@@ -23,14 +23,14 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 class MovesDataService extends DataService {
-	
+
 	static transactional = false
 
 	static final String BASE_URL = "https://api.moves-app.com/api/1.1%s"
 	static final String COMMENT = "(Moves)"
 	static final String SET_NAME = "moves import"
 	static final String SOURCE_NAME = "Moves Data"
-	
+
 	MovesTagUnitMap tagUnitMap = new MovesTagUnitMap()
 
 	MovesDataService() {
@@ -45,7 +45,7 @@ class MovesDataService extends DataService {
 	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
 			InvalidAccessTokenException {
 		log.debug("MovesDataService.getDataDefault(): account " + account.getId() + " startDate: " + startDate + " refreshAll: " + refreshAll)
-		
+
 		Long userId = account.userId
 
 		startDate = startDate ?: earlyStartDate
@@ -56,7 +56,9 @@ class MovesDataService extends DataService {
 
 		SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd")
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
-		SimpleDateFormat startEndTimeFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmssZ")
+		SimpleDateFormat startEndTimeFormatWithTimezone = new SimpleDateFormat("yyyyMMdd'T'HHmmssZ")
+		SimpleDateFormat startEndTimeFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'")
+		SimpleDateFormat selectedStartEndTimeFormat
 
 		format.setTimeZone(timeZoneInstance)
 		formatter.setTimeZone(timeZoneInstance)
@@ -72,21 +74,21 @@ class MovesDataService extends DataService {
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
-		
+
 		def parsedResponse = getResponse(tokenInstance, pollURL)
 
 		if (parsedResponse.getCode() != 200) {
 			log.error "Error fetching data from moves api for userId [$account.userId]. Body: [$parsedResponse]"
 			return [success: false]
 		}
-		
+
 		Identifier oldSetIdentifier = Identifier.look(SET_NAME)
 
 		parsedResponse.each { daySummary ->
 			Date currentDate = format.parse(daySummary.date)
 			log.debug "Processing moves api summary for userId [$account.userId] for date: $daySummary.date"
 
-			if(!daySummary["segments"]?.asBoolean()) {
+			if (!daySummary["segments"]?.asBoolean()) {
 				return
 			}
 
@@ -121,11 +123,16 @@ class MovesDataService extends DataService {
 					previousActivity = currentActivity
 					return
 				}
+				if (previousActivity["endTime"].endsWith('Z')) {
+					selectedStartEndTimeFormat = startEndTimeFormat
+				} else {
+					selectedStartEndTimeFormat = startEndTimeFormatWithTimezone
+				}
 
 				// IF type of previous and current activity is same
 				if ((previousActivity["activity"] == currentActivity["activity"])) {
-					Date previousActivityEndTime = startEndTimeFormat.parse(previousActivity["endTime"])
-					Date currentActivityStartTime = startEndTimeFormat.parse(currentActivity["startTime"])
+					Date previousActivityEndTime = selectedStartEndTimeFormat.parse(previousActivity["endTime"])
+					Date currentActivityStartTime = selectedStartEndTimeFormat.parse(currentActivity["startTime"])
 
 					/*
 					 * And if the duration between previous & current is less than 15 minutes,
@@ -147,13 +154,13 @@ class MovesDataService extends DataService {
 					}
 				}
 
-				processActivity(creationMap, stats, previousActivity, userId, timeZoneId, startEndTimeFormat, args)
+				processActivity(creationMap, stats, previousActivity, userId, timeZoneId, selectedStartEndTimeFormat, args)
 				previousActivity = currentActivity
 			}
 
 			// Make sure to process the last previous activity after the above loop finishes
 			if (previousActivity) {
-				processActivity(creationMap, stats, previousActivity, userId, timeZoneId, startEndTimeFormat, args)
+				processActivity(creationMap, stats, previousActivity, userId, timeZoneId, selectedStartEndTimeFormat, args)
 			}
 		}
 
