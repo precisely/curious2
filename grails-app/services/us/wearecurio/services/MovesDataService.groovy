@@ -49,6 +49,7 @@ class MovesDataService extends DataService {
 		Long userId = account.userId
 
 		startDate = startDate ?: earlyStartDate
+		endDate = endDate ?: new Date()
 
 		Integer timeZoneId = getTimeZoneId(account)
 
@@ -58,7 +59,6 @@ class MovesDataService extends DataService {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
 		SimpleDateFormat startEndTimeFormatWithTimezone = new SimpleDateFormat("yyyyMMdd'T'HHmmssZ")
 		SimpleDateFormat startEndTimeFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'")
-		SimpleDateFormat selectedStartEndTimeFormat
 
 		format.setTimeZone(timeZoneInstance)
 		formatter.setTimeZone(timeZoneInstance)
@@ -70,7 +70,8 @@ class MovesDataService extends DataService {
 
 		Token tokenInstance = account.tokenInstance
 
-		String pollURL = String.format(BASE_URL, ("/user/activities/daily/" + formatter.format(startDate)))
+		String pollURL = String.format(BASE_URL, ("/user/activities/daily?from=" + formatter.format(startDate) +
+				"&to=" + formatter.format(endDate)))
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
@@ -123,16 +124,13 @@ class MovesDataService extends DataService {
 					previousActivity = currentActivity
 					return
 				}
-				if (previousActivity["endTime"].endsWith('Z')) {
-					selectedStartEndTimeFormat = startEndTimeFormat
-				} else {
-					selectedStartEndTimeFormat = startEndTimeFormatWithTimezone
-				}
 
 				// IF type of previous and current activity is same
 				if ((previousActivity["activity"] == currentActivity["activity"])) {
-					Date previousActivityEndTime = selectedStartEndTimeFormat.parse(previousActivity["endTime"])
-					Date currentActivityStartTime = selectedStartEndTimeFormat.parse(currentActivity["startTime"])
+					Date previousActivityEndTime = (previousActivity["endTime"].endsWith("Z") ? startEndTimeFormat :
+							startEndTimeFormatWithTimezone).parse(previousActivity["endTime"])
+					Date currentActivityStartTime = (currentActivity["startTime"].endsWith("Z") ? startEndTimeFormat :
+							startEndTimeFormatWithTimezone).parse(currentActivity["startTime"])
 
 					/*
 					 * And if the duration between previous & current is less than 15 minutes,
@@ -154,13 +152,15 @@ class MovesDataService extends DataService {
 					}
 				}
 
-				processActivity(creationMap, stats, previousActivity, userId, timeZoneId, selectedStartEndTimeFormat, args)
+				processActivity(creationMap, stats, previousActivity, userId, timeZoneId,
+						previousActivity["endTime"].endsWith("Z") ? startEndTimeFormat : startEndTimeFormatWithTimezone, args)
 				previousActivity = currentActivity
 			}
 
 			// Make sure to process the last previous activity after the above loop finishes
 			if (previousActivity) {
-				processActivity(creationMap, stats, previousActivity, userId, timeZoneId, selectedStartEndTimeFormat, args)
+				processActivity(creationMap, stats, previousActivity, userId, timeZoneId,
+						previousActivity["endTime"].endsWith("Z") ? startEndTimeFormat : startEndTimeFormatWithTimezone, args)
 			}
 		}
 

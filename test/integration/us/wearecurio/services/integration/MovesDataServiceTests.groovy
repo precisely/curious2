@@ -165,7 +165,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		 * All activities in the mocked response have end date and start date in the format yyyyMMdd'T'HHmmss'Z'
 		 */
 
-		String parsedResponse = """[{"date":"20121212","segments":[{"type":"move","startTime":"20121212T071430Z","endTime":"20121212T074617Z","activities":[{"activity":"running","startTime":"20121212T071430Z","endTime":"20121212T072732Z","duration":782,"distance":1251,"steps":1353}]},{"type":"move","startTime":"20121212T100051Z","endTime":"20121212T100715Z","activities":[{"activity":"walking","startTime":"20121212T100051Z","endTime":"20121212T100715Z","duration":384,"distance":421,"steps":488,"calories":99}]},{"type":"move","startTime":"20121212T153638Z","endTime":"20121212T160744Z","activities":[{"activity":"transport","startTime":"20121212T153638Z","endTime":"20121212T155321Z","duration":1003,"distance":8058},{"activity":"cycling","startTime":"20121212T155322Z","endTime":"20121212T160744Z","duration":862,"distance":1086,"steps":1257,"calories":99}]}]}]"""
+		String parsedResponse = new File("./test/integration/test-files/moves/default-data-2.json").text
 
 		movesDataService.oauthService = [getMovesResource: {token, url, param, header ->
 				return new Response(new MockedHttpURLConnection(parsedResponse))
@@ -174,8 +174,8 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		Map response = movesDataService.getDataDefault(account, null, null, false, new DataRequestContext())
 		assert response.success == true
 		Collection entries = Entry.findAllByUserId(user.getId())
-		assert Entry.count() == 11
-		assert entries[0].amount == 1353.000000000
-		assert entries[0].tag.description == "run [steps]"
+		assert Entry.count() == 42
+		assert entries[0].amount == 81.000000000
+		assert entries[0].tag.description == "walk [steps]"
 	}
 }
