@@ -360,7 +360,7 @@ abstract class DataService {
 				Date saveLastData = account.lastData
 				
 				try {
-					DatabaseService.retry(notification) {
+					OAuthAccount.withTransaction {
 						if (this.poll(account, notification.date)) {
 							notification.status = ThirdPartyNotification.Status.PROCESSED
 							Utils.save(notification, true)
@@ -399,7 +399,6 @@ abstract class DataService {
 	 * @param userId Curious user id.
 	 * @return
 	 */
-	@Transactional
 	static boolean pollAllForUserId(Long userId) {
 		log.debug "Polling all devices for userId: [$userId]"
 		def accounts = OAuthAccount.findAllByUserId(userId)
@@ -420,7 +419,6 @@ abstract class DataService {
 	 * @param userId Curious user id.
 	 * @return
 	 */
-	@Transactional
 	static boolean pollAllDataServices() {
 		log.debug "Polling all oauth accounts"
 		def accounts = OAuthAccount.findAll()
@@ -473,7 +471,7 @@ abstract class DataService {
 	 */
 	void pollAll(Boolean refreshAll = false) {
 		OAuthAccount.findAllByTypeId(typeId).each { OAuthAccount account ->
-			DatabaseService.retry(account) {
+			OAuthAccount.withTransaction {
 				try {
 					getDataDefault(account, account.fetchLastData() - 1, null, refreshAll, new DataRequestContext())
 				} catch (InvalidAccessTokenException e) {
