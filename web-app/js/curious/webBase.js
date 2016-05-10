@@ -25,7 +25,7 @@ $(document).ready(function() {
 	 * class will also prevent "Shift + Enter" to insert a new line and will submit the parent form. To allow "Shift
 	 * + Enter" to insert a new line, add class "allow-shift" also.
 	 */
-	$(document).on("keydown", ".enter-submit", function() {
+	$(document).on("keydown", ".enter-submit", function(event) {
 		var $this = $(this);
 		var doesntAllowShiftEnter = !$this.hasClass("allow-shift");
 

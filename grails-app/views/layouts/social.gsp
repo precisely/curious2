@@ -10,6 +10,7 @@
 	<script type="text/javascript" src="/js/curious/discussion.js?ver=25"></script>
 	<script type="text/javascript" src="/js/curious/sprint.js?ver=24"></script>
 	<script src="/js/zero.clipboard.min.js"></script>
+	<script type="text/javascript" src="/js/Autolinker.min.js"></script>
 	<c:jsCSRFToken keys="deleteGhostEntryDataCSRF, deleteEntryDataCSRF, addEntryCSRF, getPeopleDataCSRF, getCommentsCSRF,
 			getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF, fetchSprintDataCSRF, createNewSprintDataCSRF, 
 			deleteSprintDataCSRF, stopSprintDataCSRF, startSprintDataCSRF, addMemberToSprintDataCSRF, addAdminToSprintDataCSRF, 

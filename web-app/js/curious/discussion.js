@@ -190,7 +190,7 @@ $(document).ready(function() {
 		var $this = $(this);
 		var $parent = $this.parents(".discussion-comment");
 		var $message = $parent.find(".message");
-		var previousMessage = $message.html().trim().brToNewLine();
+		var previousMessage = $message.text().trim().brToNewLine();
 		var postID = $this.data("postId");
 
 		var html = compileTemplate("_commentEditForm", {id: postID, message: previousMessage});
@@ -306,7 +306,7 @@ $(document).ready(function() {
 						setDescription(params.message);
 					} else {
 						hideInlinePostEdit($parentComment);
-						$parentComment.find(".message").html(params.message.newLineToBr());
+						$parentComment.find(".message").html(_.linkify(params.message.newLineToBr()));
 					}
 				}, function(xhr) {
 					console.log('Internal server error');
@@ -411,13 +411,14 @@ $(document).ready(function() {
 	 */
 	$(document).on("click", ".edit-discussion", function() {
 		var existingTitle = $(".discussion-title").text().trim();
-		var existingDescription = $(".first-post-message").html();
+		var existingDescription = $(".first-post-message").text();
 		if (existingDescription) {
 			existingDescription = existingDescription.trim().brToNewLine();
 		}
 
 		$("#new-discussion-name").val(existingTitle);
 		$("#new-description").val(existingDescription);
+
 		$modal.modal("show");
 		return false;
 	});
@@ -562,7 +563,7 @@ function getCommentFormData($form) {
  */
 function setDescription(message) {
 	message = message || "";
-	$(".first-post-message").html(message.newLineToBr());
+	$(".first-post-message").html(_.linkify(message.newLineToBr()));
 
 	if (message) {
 		$(".first-post-message").show();

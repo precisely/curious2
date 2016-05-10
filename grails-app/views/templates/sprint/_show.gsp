@@ -9,10 +9,10 @@
 						<h2>
 							{{- name }}
 						</h2>
-						<p>{{ _.each(_.initial(lines), function(entry) { }}
-							{{- entry }}<br/>
+						<p style="word-wrap: break-word">{{ _.each(_.initial(lines), function(entry) { }}
+							{{= entry }}<br/>
 							{{ }) }}
-							{{- _.last(lines) }}
+							{{= _.last(lines) }}
 						</p>
 					</div>
 				</div>

@@ -91,7 +91,7 @@ class DiscussionController extends LoginController {
 
 		Map model = discussion.getJSONDesc()
 		boolean notLoggedIn
-		int userId
+		Integer userId
 		String username
 		if (user) {
 			notLoggedIn = false
