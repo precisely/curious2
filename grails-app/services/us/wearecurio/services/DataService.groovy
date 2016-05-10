@@ -438,6 +438,7 @@ abstract class DataService {
 	 * @param account
 	 * @return
 	 */
+	@Transactional
 	boolean poll(OAuthAccount account, Date notificationDate = null) {
 		String accountId = account.accountId
 
@@ -453,15 +454,13 @@ abstract class DataService {
 			return false
 		}
 
-		OAuthAccount.withTransaction {
-			try {
-				getDataDefault(account, account.fetchLastData() - 1, null, false, new DataRequestContext())
-			} catch (InvalidAccessTokenException e) {
-				log.warn "Token expired while polling for $account"
-				account.setAccountFailure()
-			} catch (Throwable t) {
-				Utils.reportError("Error while polling account " + account, t)
-			}
+		try {
+			getDataDefault(account, account.fetchLastData() - 1, null, false, new DataRequestContext())
+		} catch (InvalidAccessTokenException e) {
+			log.warn "Token expired while polling for $account"
+			account.setAccountFailure()
+		} catch (Throwable t) {
+			Utils.reportError("Error while polling account " + account, t)
 		}
 	}
 
@@ -471,16 +470,7 @@ abstract class DataService {
 	 */
 	void pollAll(Boolean refreshAll = false) {
 		OAuthAccount.findAllByTypeId(typeId).each { OAuthAccount account ->
-			OAuthAccount.withTransaction {
-				try {
-					getDataDefault(account, account.fetchLastData() - 1, null, refreshAll, new DataRequestContext())
-				} catch (InvalidAccessTokenException e) {
-					log.warn "Token expired while polling account: [$account] for $typeId."
-					account.setAccountFailure()
-				} catch (Throwable t) {
-					Utils.reportError("Unknown exception thrown during polling for " + account, t)
-				}
-			}
+			poll(account)
 		}
 	}
 

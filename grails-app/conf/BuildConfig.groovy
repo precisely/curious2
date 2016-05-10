@@ -97,6 +97,7 @@ grails.project.dependency.resolution = {
         //runtime ":hibernate4:4.3.8.1" // or
 		runtime ":hibernate:3.6.10.19"
 		//runtime ':hibernate4:4.3.5.5'
+		//runtime "org.grails.plugins:hibernate4:5.0.0.RC1"
         //runtime ":database-migration:1.4.0"
 
         // Uncomment these to enable additional asset-pipeline capabilities
