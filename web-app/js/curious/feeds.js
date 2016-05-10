@@ -438,8 +438,16 @@ function checkAndDisplayTabData() {
 $(window).load(checkAndDisplayTabData).on('hashchange', checkAndDisplayTabData);
 
 function showDiscussionAffordance(type) {
-	var placeholder = (type==='howto') ? 'Enter text of your how-to article' : 'Ask a support question of the community?';
+	var placeholder;
+	if (type === 'howto') {
+		placeholder  = 'Enter text of your how-to article';
+	} else if (type === 'support') {
+		placeholder = 'Ask a support question of the community?';
+	} else {
+		placeholder = 'New question or discussion topic?'
+	}
 	$('#create-discussion').show('fast').find('input').prop('placeholder', placeholder).data('type', type);
+	$('.discussion-topic-input').focus();
 }
 
 $(document).ready(function() {
