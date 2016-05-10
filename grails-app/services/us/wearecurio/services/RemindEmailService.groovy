@@ -32,7 +32,7 @@ class RemindEmailService {
 			if (email != null && email.length() > 1) {
 				try {
 					log.debug "Trying to send reminder email " + alert + " to " + email
-					def messageBody = url + "?entryId=" + alert.objectId
+					def messageBody = "https://www.wearecurio.us/home/index"
 					def messageSubject = "Reminder to track: " + alert.text
 					emailService.send(email, messageSubject, messageBody)
 				} catch (Throwable t) {
