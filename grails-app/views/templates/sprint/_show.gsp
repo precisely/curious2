@@ -82,7 +82,7 @@
 								<div class="new-post-container">
 									<button class="btn btn-discussion" onclick="location.href='/home/graph?group={{- virtualGroupName}}'">Chart of your data</button>
 									<button class="btn btn-discussion"
-										onclick="$('#create-discussion').show('fast').find('input').prop('placeholder', 'New question or discussion topic?')">
+										onclick="showDiscussionAffordance()">
 										Create a new trackathon discussion topic
 									</button>
 								</div>
