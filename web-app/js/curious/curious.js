@@ -105,6 +105,11 @@ function formatUnits(units) {
 	return "";
 }
 
+function logoutAndRedirect() {
+	doLogout();
+	location.href = '/home/login';
+}
+
 /*
  * Curious data json return value check
  */
@@ -116,10 +121,15 @@ function checkData(data, status, errorMessage, successMessage) {
 	}
 	if (data == 'login') {
 		if (status != 'cached') {
-			showAlert("Session timed out.");
-			doLogout();
-			location.reload(true);
+			// Checking whether user's session timed out or the user hadn't logged in in the first place.
+			var message = currentUserId ? "Session timed out." : "Please login first."
+			showAlert(message, logoutAndRedirect);
+			setTimeout(logoutAndRedirect, 30000);
 		}
+		return false;
+	}
+	if (data == 'access denied') {
+		location.href = '/accessDenied';
 		return false;
 	}
 	if (data == 'success') {
@@ -273,6 +283,22 @@ $(document).ready(function() {
 				$(this).nextAll().eq(1).focus();
 			}
 			event.preventDefault();
+		}
+	});
+
+	$('.red-header .help').click(function() {
+		if ((location.pathname.indexOf('sprint') > -1)) {
+			if (!($('#sprint-explanation-card').css('display'))) {
+				showExplanationCardTrackathon();
+			} else {
+				closeExplanationCard(true);
+			}
+		} else if (location.pathname.indexOf('curiosities') > -1) {
+			if (!($('#curiosity-explanation-card').css('display'))) {
+				showExplanationCardCuriosity();
+			} else {
+				closeExplanationCard(false);
+			}
 		}
 	});
 

@@ -30,7 +30,7 @@
 				</div>
 			</div>
 			<div class="group">
-				{{- discussionData.groupName }}
+				%{--{{- discussionData.groupName }}--}%
 			</div>
 			<div class="row">
 				<div class="col-md-5">
@@ -44,16 +44,22 @@
 					<div class="buttons">
 						{{ if (discussionData.isFollower) {  }}
 							<button id="follow-button-{{- discussionData.hash }}" onclick="followDiscussion({id: '{{- discussionData.hash }}', unfollow: true})">
-							<img src="/images/unfollow.png" alt="unfollow" >Unfollow
+								<img src="/images/unfollow.png" alt="unfollow" >Unfollow
+							</button>
 						{{ } else { }}
 							<button id="follow-button-{{- discussionData.hash }}" onclick="followDiscussion({id: '{{- discussionData.hash }}' })">
-							<img src="/images/follow.png" alt="follow">Follow
+								<img src="/images/follow.png" alt="follow">Follow
+							</button>
 						{{ } }}
-						</button>
-						<button class="share-button" data-toggle="popover" title="Share:"
-							data-placement="top" data-content="<input class='share-link' type='text' value='{{- serverURL}}/home/social#discussions/{{- discussionData.hash }}'>">
-							<img src="/images/share.png" alt="share">Share
-						</button>
+						{{ if (discussionData.isAdmin) {  }}
+							<button class="share-button" data-toggle="modal" data-target="#share-modal"
+									data-share-url="{{- serverURL }}/home/social/discussions/{{- discussionData.hash }}"
+									data-discussion-title="{{- discussionData.name }}">
+								<img src="/images/share.png" alt="share" data-target="#share-modal"
+										data-share-url="{{- serverURL }}/home/social/discussions/{{- discussionData.hash }}"
+										data-discussion-title="{{- discussionData.name }}">Share
+							</button>
+						{{ } }}
 						<button onclick="toggleCommentsList('{{- discussionData.hash }}')">
 							{{ if (!discussionData.totalComments || discussionData.totalComments < 1) {  }}
 								<img src="/images/comment.png" alt="comment"> Comment
@@ -80,7 +86,6 @@
 		<div class="add-comment">
 			<form class="comment-form new-comment-form {{- isCommentAllowed ? '' : 'comment-disabled' }}">
 				<g:render template="/templates/discussionPost/commentField" ></g:render>
-
 				<input type="hidden" name="discussionHash" value="{{- discussionData.hash }}">
 			</form>
 		</div>

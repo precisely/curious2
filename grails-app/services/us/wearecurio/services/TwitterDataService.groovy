@@ -1,7 +1,10 @@
 package us.wearecurio.services
 
+import grails.converters.JSON
 import org.apache.commons.logging.LogFactory
-
+import org.codehaus.groovy.grails.web.json.JSONObject
+import org.scribe.model.Response
+import org.scribe.model.Token
 import org.springframework.transaction.annotation.Transactional
 
 import twitter4j.Twitter
@@ -13,6 +16,9 @@ import twitter4j.auth.RequestToken
 import twitter4j.auth.AccessToken
 import twitter4j.Status
 import twitter4j.Paging
+import uk.co.desirableobjects.oauth.scribe.OauthService
+import us.wearecurio.thirdparty.InvalidAccessTokenException
+import us.wearecurio.thirdparty.MissingOAuthAccountException
 
 import java.net.URL
 import java.util.HashMap
@@ -23,7 +29,7 @@ import us.wearecurio.model.*
 
 import grails.util.GrailsUtil
 
-class TwitterDataService {
+class TwitterDataService extends DataService {
 
 	private static def log = LogFactory.getLog(this)
 
@@ -31,9 +37,15 @@ class TwitterDataService {
 
 	static String curiousDataToken = "297564720-I2lqE8a3zVVbQlnmAI7suLviyaVFuel9kiAyaOcZ"
 	static String curiousDataSecret = "pN2HFeBdTluBgJVDslWu7YBo2sUIxADcGFHyj9qUVo"
-
+	static String BASE_URL = "https://api.twitter.com/1.1"
 	TwitterData twitterData
 	EntryParserService entryParserService
+	OauthService oauthService
+
+	TwitterDataService() {
+		provider = "Twitter"
+		typeId = ThirdParty.TWITTER
+	}
 
 	def fetchTwitterData() {
 		if (twitterData == null) {
@@ -77,6 +89,37 @@ class TwitterDataService {
 		requestMap.put(requestToken.getToken(), requestToken)
 
 		return requestToken.getAuthorizationURL()
+	}
+
+	@Override
+	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll) throws InvalidAccessTokenException {
+		return null
+	}
+
+	@Override
+	String getTimeZoneName(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException {
+		return null
+	}
+
+	@Override
+	List<ThirdPartyNotification> notificationHandler(String notificationData) {
+		return null
+	}
+
+	/**
+	 * Used to post data to twitter through the twitter API.
+	 * @param tokenInstance Acces Token used for transactions with the twitter API.
+	 * @param status Data to post.
+	 * @return Map containing success or failure attributes.
+	 */
+	Map postStatus(Token tokenInstance, String status) {
+		JSONObject tweetResponse = getResponse(tokenInstance, BASE_URL + "/statuses/update.json", "post", [status: status])
+		if (tweetResponse.getCode() == 200) {
+			return [success: true, messageCode: "twitter.tweet.success", duplicateTweet: false]
+		} else if (tweetResponse?.errors?.getAt(0)?.code == 187) {
+			return [success: true, messageCode: "twitter.duplicate.tweet", duplicateTweet: true]
+		}
+		return [success: false]
 	}
 
 	/**

@@ -58,8 +58,8 @@
 }
 
 .btn-purple {
-	background-color: #c04f7f;
-	color: #ffffff;
+	background-color: #c04f7f !important;
+	color: #ffffff !important;
 }
 
 .text-purple {
