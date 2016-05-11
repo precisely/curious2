@@ -33,6 +33,8 @@ class UserSettings extends BitSet {
 	private static final int FIRST_ALERT_ENTRY = 22
 	// This bit is set when a user logs in to the mobile app for the first time (or register in the mobile app).
 	private static final int VISITED_MOBILE_APP = 23
+	private static final int FIRST_CHART_PLOT = 24
+	
 
 	/**
 	 * Do not save following fields into the database. In a embedded groovy domain class, Hibernate try to persist
@@ -214,6 +216,16 @@ class UserSettings extends BitSet {
 	
 	boolean hasVisitedMobileApp() {
 		return get(VISITED_MOBILE_APP)
+	}
+
+	void markFirstChartPlot() {
+		if (!get(FIRST_CHART_PLOT)) {
+			set(FIRST_CHART_PLOT)
+		}
+	}
+
+	boolean hasPlottedFirstChart() {
+		return get(FIRST_CHART_PLOT)
 	}
 
 	boolean isDeviceEntriesCollapsed(ThirdParty thirdParty) {
