@@ -37,7 +37,7 @@ $('#recordList').scroll(function() {
 		return;
 	}
 
-	$popoverLauncher = $selectee.find('.track-input-modifiers');
+	var $popoverLauncher = $selectee.find('.track-input-modifiers');
 	var listPosition = $(this).position();
 	var entryPosition = $selectee.position();
 	entryPosition.bottom = entryPosition.top + $selectee.outerHeight(true);
@@ -58,9 +58,23 @@ function hidePopover(element) {
 	element.popover('hide');
 }
 
+/**
+ * Used to hide all previously opened popovers and launch the required popover.
+ */
+function showPopover($launcher) {
+	var $popover = $('.popover');
+	if ($popover.length !== 0) {
+		$.each($popover, function(popover) {
+			hidePopover($('[aria-describedby="' + popover.id + '"]'));
+		});
+	}
+
+	$launcher.popover('show');
+}
+
 function createPopover(element, content, containerId) {
 	element.popover({
-		trigger: 'click manual',
+		trigger: 'manual',
 		placement: 'bottom',
 		html: true,
 		container: containerId,
@@ -663,7 +677,6 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	}
 
 	this.deleteEntryId = function(entryId) {
-		hidePopover($('#input0entryid' + entryId).find('.track-input-modifiers'));
 		this.cacheNow();
 
 		if (entryId == undefined) {
@@ -939,7 +952,6 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		$unselectee.find(".edit").show();
 		$unselectee.find(".save").hide();
 
-		$unselectee.removeClass("open");
 		$('#' + $unselectee.attr('id') + ' .track-input-dropdown').hide();
 
 		$contentWrapper.html(displayText);
@@ -1093,10 +1105,15 @@ function EntryListWidget(divIds, autocompleteWidget) {
 
 		if ($target[0].className == 'make-pin-button' || $target[0].className === 'bookmark-icon') {
 			if ($target.closest('#recordList').length == 0) {
+				// On clicking the bookmark button from input-affordance, hide the popoup and reset the affordance.
 				self.createPinnedEntry();
+				$('#input0').val('');
+				$('.entry-details-form').trigger('reset');
+				$('.repeat-modifiers').addClass('hide');
 			} else {
 				self.createPinnedEntry('input0tagTextInput');
 			}
+			hidePopover($target.parents('#addData').find('.track-input-dropdown'));
 			return;
 		}
 
@@ -1110,6 +1127,20 @@ function EntryListWidget(divIds, autocompleteWidget) {
 
 		// If such elements are clicked, where we not have to do anything. (Like deleteEntry)
 		var isEventToCancel = ($target.closest(".entryNoBlur").length > 0) || $target.is(".save-entry");
+
+		// On clicking Details button show Popover.
+		if ($target.is('.track-input-dropdown, .track-input-dropdown img')) {
+			var $launcher = $target.hasClass('track-input-dropdown') ? $target : $target.parent();
+			showPopover($launcher);
+			return
+		}
+
+		// Hide popover on clicking on either popover close button or Save entry button or delete entry button.
+		if ($target.is('#close-track-input-modifier, #close-track-input-modifier .fa-times, .save-entry, .edit-delete')) {
+			if ($('.popover').length !== 0) {
+				hidePopover();
+			}
+		}
 
 		if (isEventToCancel) {
 			return;
@@ -1136,22 +1167,12 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			return false;
 		}
 
-		if ($target.closest('.dropdown-menu').length == 0 && $target.closest('#ui-datepicker-div').length == 0) {
-			hidePopover();
-		} else {
-			return;
-		}
-
-		if ($($target.context).hasClass('track-input-dropdown')) {
-			$($target.context).parent().toggleClass("open");
-			return;
-		} else if ($target.is('.track-input-dropdown img')) {
-			// get parent of enclosing dropdown button
-			$target.parents().eq(1).toggleClass("open");
-			return;
-		}
-
-		if (isAnyEntrySelected) {
+		/*
+		 * Unselect entry only if there is a previously selected entry and target was not the Details button or was not
+		 * in the popover or datepicker.
+		 */
+		if (isAnyEntrySelected && !$target.is('.track-input-dropdown, .track-input-dropdown img') && $target.parents('.popover').length === 0 &&
+			$target.parents('#ui-datepicker-div').length === 0 ) {
 			console.debug('Mousedown: There is a selected entry. Will now unselect.');
 			// Do nothing when user click outside https://github.com/syntheticzero/curious2/issues/783#issue-123920844
 			//self.checkAndUpdateEntry($("li.entry.ui-selected"));
@@ -1161,12 +1182,19 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		}
 
 		if (clickedOnEntry) {
-			// parents() method returns all anscestors as list. So element at 0th position will be li.entry
+			// parents() method returns all ancestors as list. So element at 0th position will be li.entry
 			var selectee = $target.parents("li.entry").andSelf()[0];
 			console.debug('Mousedown: Clicked on an entry. Will now select.');
 			self.selectEntry($(selectee));
 			return false;
 		}
+
+		// Hide popover if clicked anywhere outside the popover ,details button or datepicker.
+		if (!$target.is('.track-input-dropdown, .track-input-dropdown img') && $target.parents('.popover').length === 0 &&
+			$target.parents('#ui-datepicker-div').length === 0 ) {
+			hidePopover();
+		}
+
 	});
 
 	this.adjustDatePicker = function() {
@@ -1242,12 +1270,10 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		if (!$selectedEntry || ($selectedEntry.length === 0)) {
 			// Means button is clicked for a new entry
 			self.processInput();
-			$('.entry-details-dropdown-menu').parent().removeClass('open');
 			return;
 		}
 
 		self.checkAndUpdateEntry($selectedEntry);
-		$('.entry-details-dropdown-menu').parent().removeClass('open');
 	});
 
 	/**

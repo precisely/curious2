@@ -945,7 +945,7 @@ function editSprint(sprintHash) {
 
 function deleteSprint(sprintHash) {
 	var httpArgs ={requestMethod:'delete'};
-	showYesNo('Delete this sprint?', function() {
+	showYesNo('Delete this trackathon?', function() {
 		queueJSONAll('Deleting sprint', '/api/sprint/' + sprintHash,
 				getCSRFPreventionObject('deleteSprintDataCSRF'),
 				function(data) {
