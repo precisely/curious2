@@ -1,5 +1,8 @@
 package us.wearecurio.services
 
+import java.util.Date
+import org.springframework.transaction.annotation.Transactional
+
 import grails.converters.JSON
 import groovyx.net.http.URIBuilder
 import org.codehaus.groovy.grails.web.json.JSONElement
@@ -68,6 +71,8 @@ class JawboneUpDataService extends DataService {
 	@Override
 	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
 			InvalidAccessTokenException {
+		log.debug "getDataDefault(): JAWBONE - DISABLED FOR NOW"
+		/*
 		log.debug "getDataDefault(): ${account} start: $startDate, end: $endDate refreshAll: $refreshAll"
 		if (!account) {
 			throw new IllegalArgumentException("No OAuthAccount instance was passed")
@@ -78,11 +83,16 @@ class JawboneUpDataService extends DataService {
 
 		getDataBody(account, startDate, endDate, refreshAll, context)
 		getDataMove(account, startDate, endDate, refreshAll, context)
-		getDataSleep(account, startDate, endDate, refreshAll, context)
+		getDataSleep(account, startDate, endDate, refreshAll, context)*/
 
 		return [success: true]
 	}
 
+	@Transactional
+	boolean poll(OAuthAccount account, Date notificationDate = null) {
+		log.debug "getDataDefault(): JAWBONE - DISABLED FOR NOW"
+	}
+	
 	private boolean isRequestSucceeded(JSONObject response) {
 		return response && response["meta"] && response["meta"]["code"] == 200
 	}

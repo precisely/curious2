@@ -33,7 +33,7 @@ class ThirdPartyNotificationJob extends us.wearecurio.utility.TimerJob {
 		fitBitDataService.notificationProcessor()
 		withingsDataService.notificationProcessor()
 		ouraDataService.notificationProcessor()
-		jawboneUpDataService.notificationProcessor()
+		//jawboneUpDataService.notificationProcessor()
 		log.debug "Finished executing ThirdPartyNotificationJob."
 	}
 }
