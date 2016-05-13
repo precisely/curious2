@@ -30,11 +30,11 @@ import java.text.SimpleDateFormat
 class JawboneUpDataService extends DataService {
 
 	static final String BASE_URL = "https://jawbone.com"
-	static final String COMMON_BASE_URL = "/nudge/api%s"
+	static final String COMMON_BASE_URL = "/nudge/api/v.1.1%s"
 	static final String COMMENT = "(Jawbone Up)"
 	static final String SET_NAME = "JUP"
 	static final String SOURCE_NAME = "Jawbone Up Data"
-	
+
 	/**
 	 * Helper constant to represent an high activity data means the hourly data which has
 	 * active_time greater than 300.
@@ -154,7 +154,7 @@ class JawboneUpDataService extends DataService {
 		}
 
 		stats.finish()
-		
+
 		account.markLastPolled(stats.lastDate)
 
 		if (bodyData["links"] && bodyData["links"]["next"]) {
@@ -181,7 +181,6 @@ class JawboneUpDataService extends DataService {
 
 	// Overloaded method to support pagination
 	Map getDataMove(OAuthAccount account, String requestURL, DataRequestContext context) {
-
 		Integer timeZoneIdNumber = getTimeZoneId(account)
 		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
 		DateTimeZone dateTimeZoneInstance = timeZoneIdInstance.toDateTimeZone()
@@ -302,7 +301,7 @@ class JawboneUpDataService extends DataService {
 		account.markLastPolled(stats.lastDate)
 
 		if (moveData["links"] && moveData["links"]["next"]) {
-			log.debug "Processing get moves data for paginated URL"
+			log.debug "Processing get moves data for paginated URL and:" + moveData["links"]["next"]
 
 			return getDataMove(account, moveData["links"]["next"], context)
 		}
@@ -376,9 +375,9 @@ class JawboneUpDataService extends DataService {
 	 * @param groupData the list of map for data
 	 * @param key key to collect & get average
 	 * @return
-	 * 
+	 *
 	 * @example
-	 * 
+	 *
 	 * assert getAverage([[name: 'A', count: 2], [name: 'B', count: 3]], "count") == 2.5
 	 * If any key is missing
 	 * assert getAverage([[name: 'A', count: 2], [name: 'B']], "count") == 1
@@ -530,6 +529,7 @@ class JawboneUpDataService extends DataService {
 		// API accepts the timestamp in EPOCH time (i.e. in seconds)
 		builder.addQueryParam("startTimestamp", Long.toString((long)(startTime / 1000)))
 		builder.addQueryParam("endTimestamp", Long.toString((long)(endTime / 1000)))
+		builder.addQueryParam("updated_after", Long.toString((long)(startTime / 1000)))
 
 		return String.format(COMMON_BASE_URL, builder.toString())
 	}
@@ -585,7 +585,7 @@ class JawboneUpDataService extends DataService {
 			log.debug "Saving $notification."
 
 			// Jawbone also sends notification when band buttons are pressed (has no type)
-			if (!notification["type"] || !(notification["type"] in supportedNotificationTypes) || 
+			if (!notification["type"] || !(notification["type"] in supportedNotificationTypes) ||
 					!notification["timestamp"]) {
 				log.debug "Notification type or timestamp not received."
 				return false	// continue looping
