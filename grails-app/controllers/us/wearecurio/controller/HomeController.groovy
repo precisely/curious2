@@ -1,5 +1,6 @@
 package us.wearecurio.controller
 
+import us.wearecurio.security.NoAuth
 import grails.gsp.PageRenderer
 import org.codehaus.groovy.grails.web.json.JSONObject
 import us.wearecurio.model.Discussion
@@ -33,6 +34,7 @@ class HomeController extends DataController {
 	MovesDataService movesDataService
 	OuraDataService ouraDataService
 	def jawboneUpDataService
+
 	def oauthService
 	PageRenderer groovyPageRenderer
 	Twenty3AndMeDataService twenty3AndMeDataService
@@ -62,7 +64,6 @@ class HomeController extends DataController {
 		Long userId = user.id
 
 		debug "userId: $userId"
-
 
 		Map result = [:]
 
@@ -138,6 +139,7 @@ class HomeController extends DataController {
 		thirdPartyLinkResultHandler(result, "subscribe", "Twenty3AndMe")
 	}
 
+	@NoAuth
 	def notifywithings() {
 		debug "HomeController.notifywithings() from IP: [$request.remoteAddr] with params:" + params
 
@@ -150,6 +152,7 @@ class HomeController extends DataController {
 		debug "HomeController.registermoves() params:" + params
 		User user = sessionUser()
 		Long userId = user.id
+
 		Map result = [:]
 
 		try {
@@ -357,6 +360,7 @@ class HomeController extends DataController {
 	/**
 	 * Oura Subscriber Endpoints
 	 */
+	@NoAuth
 	def notifyOura() {
 		String notificationData = request.JSON.toString()
 		debug "HomeController.notifyOura() from IP: [$request.remoteAddr] with params: $params data: $notificationData"
@@ -371,6 +375,7 @@ class HomeController extends DataController {
 	/**
 	 * FitBit Subscriber Endpoint
 	 */
+	@NoAuth
 	def notifyfitbit() {
 		// Fitbit now sends notification data as request body
 		String notificationData = request.JSON.toString()
@@ -381,6 +386,7 @@ class HomeController extends DataController {
 		return
 	}
 
+	@NoAuth
 	def notifyJawbone() {
 		def requestBodyData = request.JSON
 
@@ -589,6 +595,7 @@ class HomeController extends DataController {
 		[templateVer:urlService.template(request)]
 	}
 
+	@NoAuth
 	def termsofservice_home() {
 		debug "HomeController.termsofservice_home()"
 		[templateVer:urlService.template(request)]
@@ -609,6 +616,7 @@ class HomeController extends DataController {
 		render(view:"/home/graph", model:[plotDataId:params.plotDataId, templateVer:urlService.template(request)])
 	}
 
+	@NoAuth
 	def homepage() {
 		render(view:"/home/homepage")
 	}
@@ -625,6 +633,7 @@ class HomeController extends DataController {
 		redirect(url:toUrl(action:'social'))
 	}
 
+	@NoAuth
 	def social() {
 		debug "HomeController.social(): $params"
 

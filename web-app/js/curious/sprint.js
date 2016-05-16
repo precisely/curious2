@@ -96,11 +96,13 @@ function sprintShow(hash) {
 				}
 				sprintInstance.entries = entries;
 				sprintInstance.participants = data.participants;
+				sprintInstance.description = _.linkify(sprintInstance.description);
 				sprintInstance.lines = sprintInstance.description ? sprintInstance.description.split("\n") : [];
 				var compiledHTML = compileTemplate("_showSprints", sprintInstance);
 				$('#feed').html(compiledHTML);
 
 				showDiscussionData(data.discussions, sprintInstance.hash);
+				offset = 10;
 				$('#participants-list ul>li>ul').infiniteScroll({
 					bufferPx: 15,
 					scrollHorizontally: true,
@@ -138,6 +140,7 @@ function startSprint(sprintHash) {
 			$('#join-sprint').hide();
 			$('#start-sprint').hide();
 			$('#stop-sprint').show();
+			sprintShow(sprintHash);
 		} else {
 			showAlert(data.message);
 		}
@@ -183,6 +186,7 @@ function leaveSprint(sprintHash) {
 			$('#stop-sprint').hide();
 			$('#start-sprint').show();
 			getSprintElement(sprintHash).addClass('not-following').removeClass('following');
+			sprintShow(sprintHash);
 		} else {
 			showAlert(data.message);
 		}
@@ -202,6 +206,7 @@ function joinSprint(sprintHash) {
 			$('#stop-sprint').hide();
 			$('#start-sprint').show();
 			getSprintElement(sprintHash).removeClass('not-following').addClass('following');
+			sprintShow(sprintHash);
 		} else {
 			showAlert(data.message);
 		}

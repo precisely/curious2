@@ -70,7 +70,7 @@ input, optgroup, select, textarea {
 .discussion-topic-input {
 	color: #fc3f28;
 	padding-left: 85px;
-	padding-right: 160px;
+	padding-right: 85px;
 }
 .discussion-topic-description {
 	color: #A0A0A0;
@@ -350,9 +350,9 @@ a, a:link,a:hover, a:visited {
 	padding-left:2px;
 }
 
-.entry-container .dropdown-menu {
+#trackmain .dropdown-menu {
 	background-color: #fff;
-	left: auto;
+	left: auto !important;
 	right: 10px;
 	text-align: center;
 	width: 290px;
@@ -362,31 +362,27 @@ a, a:link,a:hover, a:visited {
 }
 
 .entry-details-dropdown-menu {
+	display: block !important;
+}
+
+.entry-details-dropdown-menu ul {
+	list-style: none;
+}
+.entry-details-dropdown-menu {
+	list-style: none;
+	text-align: center;
 	opacity: 1 !important;
 }
 
-.entry-details-dropdown-menu:after, .entry-details-dropdown-menu:before {
-	bottom: 100%;
-	left: 90%;
-	border: solid transparent;
-	content: " ";
-	height: 0;
-	width: 0;
-	position: absolute;
-	pointer-events: none;
+.entry-details-dropdown-menu .instructions {
+	font-style: italic;
+	color:#5F5F5F;
+	font-weight: 100;
 }
 
-.entry-details-dropdown-menu:after {
-	border-color: rgba(255, 255, 255, 0);
-	border-bottom-color: #fff;
-	border-width: 15px;
-	margin-left: -35px;
-}
-.entry-details-dropdown-menu:before {
-	border-color: rgba(158, 158, 158, 0);
-	border-bottom-color: #9e9e9e;
-	border-width: 16px;
-	margin-left: -36px;
+.entry-details-dropdown-menu li {
+	margin-bottom: 15px;
+	margin-top: 15px;
 }
 
 .entry-details-form li:nth-last-child(2) {
@@ -402,7 +398,12 @@ a, a:link,a:hover, a:visited {
 }
 
 #recordList .dropdown-menu {
-	right: 135px;
+	right: 199px;
+	max-width: 290px;
+}
+
+.dropdown-menu .popover-content {
+	padding: 0px;
 }
 
 /**
@@ -1177,6 +1178,19 @@ body.tags-displayed .floating-column {
 	border-right:60px solid #08BBF1;
 }
 
+.comment-form p {
+	font-weight: 500;
+}
+
+.comment-form label {
+	margin: 10px 0px 5px 0px;
+	font-weight: normal;
+}
+
+.comment-form textarea {
+	padding: 15px;
+}
+
 .entryComment {
 	text-transform: none;
 	vertical-align: baseline;
@@ -1216,6 +1230,11 @@ body.tags-displayed .floating-column {
 /**
  * Generic & common stuff, useful for every where. Starts here.
  */
+
+.auto-link-color {
+	color:#428bca !important;
+}
+
 .red-header {
 	background-color: #fc3f28;
 	vertical-align: middle;
@@ -1551,6 +1570,10 @@ body.tags-displayed .floating-column {
 	color:#FC3F28;
 }
 
+.input-affordance.left-addon {
+	margin-top: 9px;
+}
+
 .user-name-radio .input-affordance input[type=radio]:checked + label {
 	color:#787878;
 }
@@ -1774,10 +1797,14 @@ body.tags-displayed .floating-column {
 	padding: 0;
 }
 
-#addData .dropdown-menu .divider, #recordList .dropdown-menu .divider {
-	width: 288px;
-	background-color: #e4e4e4;
-	margin-left: -15px;
+.dropdown-menu .arrow {
+	left:80% !important;
+}
+
+#addData .dropdown-menu .divider, .entry-details-dropdown-menu .divider {
+	width: 288px !important;
+	background-color: #e4e4e4 !important;
+	margin-left: -15px !important;
 }
 
 #addData ul {
@@ -2248,7 +2275,7 @@ div.graph-header-container .red-header {
 }
 
 .sprint button {
-	margin: 0 10px 10px 10px;
+	margin: 0px 10px 10px 10px !important;
 	text-transform: uppercase;
 	font-weight: 600;
 	color: dimgrey;
@@ -2568,11 +2595,30 @@ div.graph-header-container .red-header {
 	list-style: none;
 }
 .new-post {
-	text-align: right;
+	margin-bottom: 7px;
 }
-.new-post textarea {
-	padding: 3px;
+.new-post .new-post-container {
+	display: inline-block;
 }
+
+.btn-discussion {
+	margin: 5px !important;
+}
+
+.btn-discussion, .btn-discussion:focus {
+	color: #fc3f28 !important;
+	background: #ffffff;
+	border: 1px solid #fc3f28 !important;
+	border-radius: 2px;
+	font-weight: 400 !important;
+	text-transform: none !important;
+}
+
+.btn-discussion:hover {
+	color: #ffffff !important;
+	background: #fc3f28 !important;
+}
+
 .new-post input[type='submit'] {
 	background-color: #869293;
 	color: #ffffff;
@@ -4048,7 +4094,11 @@ body .modal-header button {
 	display: flex;
 }
 
-.feed .help {
+.red-header .search-area .help {
+	margin-top: 7px;
+}
+
+.red-header .help {
 	cursor: pointer;
 	height: 35px;
 	width: 35px;
@@ -4804,7 +4854,7 @@ input.cropit-image-zoom-input {
 }
 
 #close-track-input-modifier .fa {
-	color: rgba(8, 8, 8, 0.32);;
+	color: rgba(8, 8, 8, 0.32);
 	font-size: 16px;
 	position: relative;
 }
@@ -4903,7 +4953,122 @@ input.cropit-image-zoom-input {
 
 .publish-group-select .modal-body {
 	max-height: 500px;
-	overflow-y: auto;
+	overflow-y: hidden;
 	padding-top: 10px;
 	padding-bottom: 10px;
+}
+
+.share-group-list {
+	overflow-y: auto;
+	max-height: 270px;
+}
+
+#share-modal {
+	min-width: 350px;
+	margin-top: 15%;
+	-ms-word-wrap: break-word;
+	word-wrap: break-word;
+}
+
+#share-modal .modal-header {
+	color: #FF935F;
+}
+
+#share-modal .modal-header h4 {
+	margin: 10px 10px;
+}
+
+#share-modal .modal-header .fa {
+	color: #c1c1c1;
+	margin-top: 8px;
+}
+
+#share-modal .modal-body {
+	text-align: center;
+}
+
+.share-options {
+	margin-top: 10px;
+}
+
+.share-options .option {
+	display: inline;
+
+}
+
+#message-link {
+	text-align: left;
+	color:grey;
+}
+
+.twitter-share-tooltip {
+	margin-top: -2px;
+	margin-left: .5em;
+	padding-left: 4px;
+	padding-top: 5px;
+	padding-right: 5px;
+	border-radius: 50%;
+	color: #c1c1c1;
+}
+
+#share-message-length {
+	color: #616B6B;
+}
+.share-options button {
+	height: 80px;
+	width: 80px;
+	border-radius: 50%;
+	border: 1px solid #c1c1c1;
+	background: transparent;
+}
+
+#share-modal label {
+	margin: 10px auto;
+}
+
+#share-modal .share-options .fa {
+	font-size: 40px;
+}
+
+#share-modal textarea {
+	color: #000;
+	font-style: italic;
+	font-size: 14px;
+	border: none;
+	width: 100%;
+	resize: none;
+	margin-bottom: 10px;
+}
+
+#share-modal .fa-facebook {
+	color: #3b5791;
+}
+
+#share-modal .fa-twitter {
+	color: #32a7e0;
+}
+
+#share-modal .modal-footer {
+	padding: 10px;
+	height: auto;
+}
+
+#share-modal .modal-footer button {
+	width: auto;
+	padding: 5px 20px;
+	padding: 5px 20px;
+	background-color: #FF935F;
+	border: none;
+	border-radius: 2px;
+}
+
+.warning-page .main {
+	min-height: 400px;
+}
+
+.warning-page h1 {
+	color: #5d5d5d;
+	font-weight: 700;
+	font-size: 20px;
+	margin: 20px 0px;
 }
