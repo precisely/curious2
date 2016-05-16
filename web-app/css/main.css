@@ -3213,7 +3213,7 @@ body {
 	margin-right: 7px;
 }
 
-.comment-disabled input[type=text] {
+.comment-disabled textarea {
 	pointer-events: none;
 	font-family: 'Open Sans', sans, sans-serif, 'FontAwesome';
 }

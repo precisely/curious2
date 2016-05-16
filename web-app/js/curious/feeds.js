@@ -860,7 +860,7 @@ function addTagsToList(addedEntry) {
 	} else if (RepeatType.isContinuous(addedEntry.repeatType)) {
 		addedEntry.comment = 'bookmark';
 	}
-	$('#sprint-tag-list').append('<li><div class="' + addedEntry.comment + 'DarkLabelImage"></div> ' + addedEntry.description + (addedEntry.comment ?
+	$('#sprint-tag-list').append('<li><div class="' + addedEntry.comment + 'DarkLabelImage"></div> ' + escapehtml(addedEntry.description )+ (addedEntry.comment ?
 			' (<i>' + _stripParens(addedEntry.comment.capitalizeFirstLetter()) + '</i>)' : '') + ' <button type="button" class="deleteSprintEntry" data-id="' +
 			addedEntry.id + '" data-repeat-type="' +
 			addedEntry.repeatType + '"><i class="fa fa-times-circle"></i></button></li>');

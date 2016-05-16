@@ -47,9 +47,13 @@ $('#recordList').scroll(function() {
 		$popover.css({'visibility': 'hidden'});
 		return
 	}
+	repositionPopover($popoverLauncher, $popover);
+});
+
+function repositionPopover($popoverLauncher, $popover) {
 	var top = $popoverLauncher.offset().top + $popoverLauncher.outerHeight(true);
 	$popover.css({'top': top, 'visibility': 'visible'});
-});
+}
 
 function hidePopover(element) {
 	if (!element) {
@@ -504,6 +508,12 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				}
 			);
 		});
+
+		if (onlyPinned) {
+			// Reposition popover in case the bookmark container height increases.
+			var $popoverLauncher = $('.ui-selected').find('.track-input-dropdown');
+			repositionPopover($popoverLauncher, $('.popover'));
+		}
 	};
 
 	this.refreshEntries = function(entries) {
@@ -1065,14 +1075,23 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			return;
 		}
 		var currentEntryId = $unselectee.data('entryId');
-		var repeatTypeId = this.getRepeatTypeId(currentEntryId);
-		var repeatEnd = $('.choose-date-input').val();
-		var oldRepeatEnd = $unselectee.data('entry').repeatEnd;
-		var oldRepeatEndMidnightTime = oldRepeatEnd ? oldRepeatEnd.setHours(0, 0, 0, 0) : null;
+		var repeatTypeId;
+		var repeatEnd;
+		var oldRepeatEnd;
+		var oldRepeatEndMidnightTime;
 		var isOldRepeatEndChanged = false;
 
-		if (oldRepeatEndMidnightTime || !isNaN(new Date(repeatEnd).getTime())) {
-			isOldRepeatEndChanged = !(oldRepeatEndMidnightTime == new Date(repeatEnd).getTime());
+		if (!$('.popover').length) {
+			repeatTypeId = $unselectee.data('entry').repeatType;
+			repeatEnd = $unselectee.data('entry').repeatEnd;
+		} else {
+			repeatTypeId = this.getRepeatTypeId(currentEntryId);
+			repeatEnd = $('.choose-date-input').val();
+			oldRepeatEnd = $unselectee.data('entry').repeatEnd;
+			oldRepeatEndMidnightTime = oldRepeatEnd ? oldRepeatEnd.setHours(0, 0, 0, 0) : null;
+			if (oldRepeatEndMidnightTime || !isNaN(new Date(repeatEnd).getTime())) {
+				isOldRepeatEndChanged = !(oldRepeatEndMidnightTime == new Date(repeatEnd).getTime());
+			}
 		}
 
 		if ($unselectee.data('isContinuous')) {
@@ -1088,7 +1107,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			this.unselectEntry($unselectee, true, true);
 			this.updateEntry(currentEntryId, newText, this.defaultToNow, repeatTypeId, repeatEnd);
 		}
-	}
+	};
 
 	/**
 	 * Global mousedown handler for entry & data.
@@ -1110,10 +1129,10 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				$('#input0').val('');
 				$('.entry-details-form').trigger('reset');
 				$('.repeat-modifiers').addClass('hide');
+				hidePopover($target.parents('#addData').find('.track-input-dropdown'));
 			} else {
 				self.createPinnedEntry('input0tagTextInput');
 			}
-			hidePopover($target.parents('#addData').find('.track-input-dropdown'));
 			return;
 		}
 
