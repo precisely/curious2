@@ -356,6 +356,7 @@ a, a:link,a:hover, a:visited {
 	right: 10px;
 	text-align: center;
 	width: 290px;
+	max-width: none;
 	padding: 0 15px;
 	-webkit-box-shadow: 0 1px 5px rgba(0,0,0,0.175);
 	box-shadow: 0 1px 5px rgba(0,0,0,0.175);
@@ -1801,6 +1802,10 @@ body.tags-displayed .floating-column {
 	left:80% !important;
 }
 
+#addData .dropdown-menu {
+	z-index: 1100;
+}
+
 #addData .dropdown-menu .divider, .entry-details-dropdown-menu .divider {
 	width: 288px !important;
 	background-color: #e4e4e4 !important;
@@ -3208,7 +3213,7 @@ body {
 	margin-right: 7px;
 }
 
-.comment-disabled input[type=text] {
+.comment-disabled textarea {
 	pointer-events: none;
 	font-family: 'Open Sans', sans, sans-serif, 'FontAwesome';
 }

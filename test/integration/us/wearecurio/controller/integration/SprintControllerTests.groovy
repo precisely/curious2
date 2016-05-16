@@ -41,6 +41,9 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		
 		controller.start()
 		assert controller.response.json.success == true
+		assert controller.response.json.hash == dummySprint.hash
+		assert controller.response.json.participants == dummySprint.getParticipants(10,0)
+		assert controller.response.json.totalParticipants == dummySprint.getParticipantsCount()
 		assert dummySprint.hasStarted(dummyUser2.getId(), new Date() + 1)
 	}
 
@@ -190,6 +193,9 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		
 		controller.start()
 		assert controller.response.json.success == true
+		assert controller.response.json.hash == dummySprint.hash
+		assert controller.response.json.participants == dummySprint.getParticipants(10,0)
+		assert controller.response.json.totalParticipants == dummySprint.getParticipantsCount()
 		assert dummySprint.hasStarted(user.getId(), new Date())
 	}
 
@@ -575,6 +581,9 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		
 		controller.leave()
 		assert controller.response.json.success == true
+		assert controller.response.json.hash == dummySprint.hash
+		assert controller.response.json.participants == dummySprint.getParticipants(10,0)
+		assert controller.response.json.totalParticipants == dummySprint.getParticipantsCount()
 		assert dummySprint.hasMember(user.getId()) == false
 	}
 
@@ -615,6 +624,9 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		
 		controller.join()
 		assert controller.response.json.success == true
+		assert controller.response.json.hash == dummySprint.hash
+		assert controller.response.json.participants == dummySprint.getParticipants(10,0)
+		assert controller.response.json.totalParticipants == dummySprint.getParticipantsCount()
 		assert dummySprint.hasMember(dummyUser2.getId()) == true
 	}
 

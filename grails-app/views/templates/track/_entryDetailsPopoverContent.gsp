@@ -1,6 +1,6 @@
 <script type="text/html" id="entry-details-popover-content">
 	<ul class="entry-details-dropdown-menu" data-for-entry="{{- entryId}}">
-		<button id="close-track-input-modifier" onclick="hidePopover()">
+		<button id="close-track-input-modifier">
 			<i class="fa fa-times"></i>
 		</button>
 		<form class="entry-details-form">
@@ -65,7 +65,7 @@
 			</li>
 			<li role="separator" class="divider"></li>
 			<li class="text-center">
-				<button class="btn btn-orange btn-outline save-entry" type="button" onclick="hidePopover()">SAVE</button>
+				<button class="btn btn-orange btn-outline save-entry" type="button">SAVE</button>
 			</li>
 		</form>
 	</ul>
