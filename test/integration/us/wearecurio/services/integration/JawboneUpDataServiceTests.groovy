@@ -70,7 +70,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 				String startTime = Long.toString((long)(startDate.getTime() / 1000))
 				String endTime = Long.toString((long)(DateUtils.getEndOfTheDay(startDate).getTime() / 1000))
 
-				assert url == "https://jawbone.com/nudge/api/v.1.1/users/@me/sleeps?startTimestamp=${startTime}&endTimestamp=${endTime}&updated_after=${startTime}"
+				assert url == "https://jawbone.com/nudge/api/v.1.1/users/@me/sleeps?start_time=${startTime}&end_time=${endTime}&updated_after=${startTime}"
 				return new Response(new MockedHttpURLConnection(mockedResponseData))
 			}
 		]
@@ -110,7 +110,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 				String startTime = Long.toString((long)(startDate.getTime() / 1000))
 				String endTime = Long.toString((long)(DateUtils.getEndOfTheDay(startDate).getTime() / 1000))
 
-				assert url == "https://jawbone.com/nudge/api/v.1.1/users/@me/body_events?startTimestamp=${startTime}&endTimestamp=${endTime}&updated_after=${startTime}"
+				assert url == "https://jawbone.com/nudge/api/v.1.1/users/@me/body_events?start_time=${startTime}&end_time=${endTime}&updated_after=${startTime}"
 				return new Response(new MockedHttpURLConnection(mockedResponseData))
 			}
 		]
@@ -161,7 +161,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 				String startTime = Long.toString((long)(startDate.getTime() / 1000))
 				String endTime = Long.toString((long)(DateUtils.getEndOfTheDay(startDate).getTime() / 1000))
 
-				assert url == "https://jawbone.com/nudge/api/v.1.1/users/@me/moves?startTimestamp=${startTime}&endTimestamp=${endTime}&updated_after=${startTime}"
+				assert url == "https://jawbone.com/nudge/api/v.1.1/users/@me/moves?start_time=${startTime}&end_time=${endTime}&updated_after=${startTime}"
 				return new Response(new MockedHttpURLConnection(mockedResponseData))
 			}
 		]

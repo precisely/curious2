@@ -19,7 +19,7 @@ class ThirdPartyNotificationJob extends us.wearecurio.utility.TimerJob {
 	OuraDataService ouraDataService
 	JawboneUpDataService jawboneUpDataService
 	def grailsApplication
-	
+
 	def execute() {
 		log.debug "Started executing ThirdPartyNotificationJob.."
 		if (!grailsApplication.config.wearecurious.runImportJobs) {
@@ -33,7 +33,7 @@ class ThirdPartyNotificationJob extends us.wearecurio.utility.TimerJob {
 		fitBitDataService.notificationProcessor()
 		withingsDataService.notificationProcessor()
 		ouraDataService.notificationProcessor()
-		//jawboneUpDataService.notificationProcessor()
+		jawboneUpDataService.notificationProcessor()
 		log.debug "Finished executing ThirdPartyNotificationJob."
 	}
 }

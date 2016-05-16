@@ -71,8 +71,6 @@ class JawboneUpDataService extends DataService {
 	@Override
 	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
 			InvalidAccessTokenException {
-		log.debug "getDataDefault(): JAWBONE - DISABLED FOR NOW"
-		/*
 		log.debug "getDataDefault(): ${account} start: $startDate, end: $endDate refreshAll: $refreshAll"
 		if (!account) {
 			throw new IllegalArgumentException("No OAuthAccount instance was passed")
@@ -83,16 +81,11 @@ class JawboneUpDataService extends DataService {
 
 		getDataBody(account, startDate, endDate, refreshAll, context)
 		getDataMove(account, startDate, endDate, refreshAll, context)
-		getDataSleep(account, startDate, endDate, refreshAll, context)*/
+		getDataSleep(account, startDate, endDate, refreshAll, context)
 
 		return [success: true]
 	}
 
-	@Transactional
-	boolean poll(OAuthAccount account, Date notificationDate = null) {
-		log.debug "getDataDefault(): JAWBONE - DISABLED FOR NOW"
-	}
-	
 	private boolean isRequestSucceeded(JSONObject response) {
 		return response && response["meta"] && response["meta"]["code"] == 200
 	}
@@ -527,8 +520,8 @@ class JawboneUpDataService extends DataService {
 
 		URIBuilder builder = new URIBuilder("/users/@me/${type.endpointSuffix}")
 		// API accepts the timestamp in EPOCH time (i.e. in seconds)
-		builder.addQueryParam("startTimestamp", Long.toString((long)(startTime / 1000)))
-		builder.addQueryParam("endTimestamp", Long.toString((long)(endTime / 1000)))
+		builder.addQueryParam("start_time", Long.toString((long)(startTime / 1000)))
+		builder.addQueryParam("end_time", Long.toString((long)(endTime / 1000)))
 		builder.addQueryParam("updated_after", Long.toString((long)(startTime / 1000)))
 
 		return String.format(COMMON_BASE_URL, builder.toString())
