@@ -647,7 +647,7 @@ class HomeController extends DataController {
 			Discussion discussion = Discussion.findByHash(params.hash)
 			model = discussion?.getJSONDesc()
 		} else if (params.hash) {
-			redirect(uri: "home/social#" + params.id + "/" + params.hash);
+			redirect(uri: "home/social#" + params.tab + "/" + params.hash);
 		}
 
 		model

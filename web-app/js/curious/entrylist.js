@@ -1081,6 +1081,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		var oldRepeatEndMidnightTime;
 		var isOldRepeatEndChanged = false;
 
+		// Checking if the popover is open. If not, pulling the repeat type from the entry's data attributes.
 		if (!$('.popover').length) {
 			repeatTypeId = $unselectee.data('entry').repeatType;
 			repeatEnd = $unselectee.data('entry').repeatEnd;
