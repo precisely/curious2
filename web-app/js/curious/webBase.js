@@ -13,7 +13,7 @@ $(document).ready(function() {
 	 *
 	 * http://www.alanflavell.org.uk/www/formquestion.html
 	 */
-	$(document).on("keydown", ".ctrl-enter", function() {
+	$(document).on("keydown", ".ctrl-enter", function(event) {
 		// On pressing Ctrl + Enter in textarea for commenting "http://stackoverflow.com/a/9343095/2405040"
 		if ((event.keyCode == 10 || event.keyCode == 13) && event.ctrlKey) {
 			$(this).parents("form").submit();
