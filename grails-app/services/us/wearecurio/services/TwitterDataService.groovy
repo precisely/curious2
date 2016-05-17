@@ -19,6 +19,7 @@ import twitter4j.Paging
 import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
+import us.wearecurio.services.DataService.DataRequestContext
 
 import java.net.URL
 import java.util.HashMap
@@ -40,7 +41,6 @@ class TwitterDataService extends DataService {
 	static String BASE_URL = "https://api.twitter.com/1.1"
 	TwitterData twitterData
 	EntryParserService entryParserService
-	OauthService oauthService
 
 	TwitterDataService() {
 		provider = "Twitter"

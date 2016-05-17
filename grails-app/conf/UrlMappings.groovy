@@ -10,6 +10,14 @@ class UrlMappings {
 			action = "graphCuriosities"
 		}
 
+		"/home/social/$tab?/$hash?"{
+			controller = "home"
+			action = "social"
+			constraints {
+				// apply constraints here
+			}
+		}
+
 		"/correlation/index/$flavor" {
 			controller = "correlation"
 			action = "index"
@@ -19,7 +27,7 @@ class UrlMappings {
 			controller = "correlation"
 		}
 
-		"/$controller/$action?/$id?(.$format)?/$hash?"{
+		"/$controller/$action?/$id?(.$format)?"{
 			constraints {
 				// apply constraints here
 			}

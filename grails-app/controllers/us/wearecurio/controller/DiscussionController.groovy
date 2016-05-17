@@ -254,6 +254,7 @@ class DiscussionController extends LoginController {
 			session["requestOrigin"] = null
 			redirect(url: toUrl(controller: "home", action: "social", fragment: redirectLocation,
 					params: [tweetStatus: tweetResponse.success, duplicateTweet: tweetResponse.duplicateTweet]))
+			return
 		}
 		renderJSONPost([success: true, authenticated: true, message: g.message(code: tweetResponse.messageCode)])
 	}
