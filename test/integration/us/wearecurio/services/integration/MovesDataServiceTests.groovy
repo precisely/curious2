@@ -17,7 +17,7 @@ import java.math.RoundingMode
 
 class MovesDataServiceTests extends CuriousServiceTestCase {
 	static transactional = true
-	
+
 	User user2
 	OAuthAccount account
 
@@ -43,23 +43,23 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 
 	int testEntries(User user, String timeZoneName, Date baseDate, Date currentTime, Closure test) {
 		def list = Entry.fetchListData(user, timeZoneName, baseDate, currentTime)
-		
+
 		int c = 0
 		for (record in list) {
 			test(record)
 			++c
 		}
-		
+
 		return c
 	}
-	
+
 	@Test
 	void testNormalizedData() {
 		/**
 		 * There are 5 activities in the mocked response, out of which four are valid & one is of type "trp" (invalid).
 		 * Out of 4 valid entries, three of them having calories & others not. So according to code, 6 entries for each
 		 * activity having calories & 5 entry for activity not having calories will be created. Total 23 entries will be created.
-		 * 
+		 *
 		 * @see this in http://jsoneditoronline.org/index.html
 		 */
 
@@ -85,7 +85,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		// Ensuring entries of the same day will be replaced with new entries.
 		response = movesDataService.getDataDefault(account, null, null, false, new DataRequestContext())
 		assert response.success == true
-		
+
 		testEntries(user, "America/Los_Angeles", date, date) {
 			def i = it
 			//assert !it.normalizedAmounts[0].sum
@@ -157,5 +157,25 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 				index++
 			}
 		}
+	}
+
+	@Test
+	void "Test for records with start and end time format yyyyMMdd'T'HHmmss'Z'"() {
+		/**
+		 * All activities in the mocked response have end date and start date in the format yyyyMMdd'T'HHmmss'Z'
+		 */
+
+		String parsedResponse = new File("./test/integration/test-files/moves/default-data-2.json").text
+
+		movesDataService.oauthService = [getMovesResource: {token, url, param, header ->
+				return new Response(new MockedHttpURLConnection(parsedResponse))
+			}]
+
+		Map response = movesDataService.getDataDefault(account, null, null, false, new DataRequestContext())
+		assert response.success == true
+		Collection entries = Entry.findAllByUserId(user.getId())
+		assert Entry.count() == 42
+		assert entries[0].amount == 81.000000000
+		assert entries[0].tag.description == "walk [steps]"
 	}
 }
