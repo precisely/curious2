@@ -149,13 +149,14 @@ class LoginController extends SessionController {
 				return
 			}
 
-			boolean hasVisitedMobileApp = checkIfVisitedMobileApp(user, params)
+			Map userSettings = getUserSettings(user, params)
 
 			def uuid = session.persistentSession.fetchUuid()
 			debug "Logged in, persistent session ID " + uuid
 			// TODO: mobileSessionId is deprecated, will be removed eventually
 			renderJSONGet([user: user.getJSONDesc(), success:true, persistentSessionId:uuid, mobileSessionId:uuid, 
-						   hasVisitedMobileApp: hasVisitedMobileApp])
+					hasVisitedMobileApp: userSettings.hasVisitedMobileApp,
+					hasPlottedFirstChart: userSettings.hasPlottedFirstChart])
 		} else {
 			debug "auth failure"
 			renderJSONGet([success:false])
@@ -514,22 +515,24 @@ class LoginController extends SessionController {
 			redirect(url:toUrl(action:"register"))
 		}
 	}
-	
+
 	// This method only sets the user settings bit, if the request is from the mobile app.
-	protected boolean checkIfVisitedMobileApp(User user, Map params) {
+	protected Map getUserSettings(User user, Map params) {
 		if (!user) {
 			return
 		}
 
+		boolean hasPlottedFirstChart = user.settings.hasPlottedFirstChart()
 		boolean hasVisitedMobileApp = user.settings.hasVisitedMobileApp()
+
 		if (params.containsKey('mobileSessionId')) {
 			if (!hasVisitedMobileApp) {
 				user.settings.markFirstVisit()
 				Utils.save(user, true)
 			}
 		}
-		
-		return hasVisitedMobileApp
+
+		return [hasPlottedFirstChart: hasPlottedFirstChart, hasVisitedMobileApp: hasVisitedMobileApp]
 	}
 
 	def doregisterData() {
@@ -546,12 +549,14 @@ class LoginController extends SessionController {
 		p.birthdate = p.birthdate ?: '1/1/1901'
 		
 		def retVal = execRegister(params)
-		
-		boolean hasVisitedMobileApp = checkIfVisitedMobileApp(retVal['user'], params)
+
+		Map userSettings = getUserSettings(retVal['user'], params)
 		
 		if (retVal['success']) {
 			def uuid = session.persistentSession.fetchUuid()
-			renderJSONPost([success:true, persistentSessionId:uuid, mobileSessionId:uuid, hasVisitedMobileApp: hasVisitedMobileApp])
+			renderJSONPost([success:true, persistentSessionId:uuid, mobileSessionId:uuid,
+					hasVisitedMobileApp: userSettings.hasVisitedMobileApp,
+					hasPlottedFirstChart: userSettings.hasPlottedFirstChart])
 		} else if (retVal['errorCode'] == REGISTER_ERROR_USER_ALREADY_EXISTS) {
 			renderJSONPost([success:false, message:"User " + params.username + " already exists"])
 		} else if (retVal['errorCode'] == REGISTER_MISSING_FIELDS) {

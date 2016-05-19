@@ -1,12 +1,7 @@
 package us.wearecurio.controller
 
-import grails.converters.*
-
+import grails.converters.JSON
 import org.apache.commons.logging.LogFactory
-
-import us.wearecurio.exceptions.*
-import us.wearecurio.model.*
-import us.wearecurio.utility.Utils
 
 class PublicController {
 	
@@ -29,6 +24,6 @@ class PublicController {
 		debug "PublicController.getSurveyOptions()"
 		Map surveyOptions = ["Sleep": "sleep", "Mood": "mood", "Fitness": "fitness", 
 				"Productivity": "productivity", "Food": "food", "Supplements": "supplements"]
-		render "${params.callback}(${new JSON(surveyOptions)})"
+		render "${params.callback}(${new JSON(surveyOptions)})", contentType: "application/javascript"
 	}
 }

@@ -152,6 +152,11 @@ class UserController extends LoginController {
 		updateUserSettings("markTrackathonVisited")
 	}
 
+	def markFirstChartPlotted() {
+		debug "UserController.markFirstChartPlotted()"
+		updateUserSettings("markFirstChartPlot")
+	}
+
 	def addTutorialTags() {
 		User user = sessionUser()
 		if (!user) {

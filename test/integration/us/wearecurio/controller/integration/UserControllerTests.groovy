@@ -1,18 +1,13 @@
 package us.wearecurio.controller.integration
 
-import java.util.Date
-
-import us.wearecurio.model.User
-
-import static org.junit.Assert.*
-import org.junit.*
-import org.scribe.model.Response
-
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 import us.wearecurio.controller.UserController
-import us.wearecurio.model.*
-import us.wearecurio.test.common.MockedHttpURLConnection
+import us.wearecurio.model.Entry
+import us.wearecurio.model.Tag
+import us.wearecurio.model.User
 import us.wearecurio.utility.Utils
-import us.wearecurio.hashids.DefaultHashIDGenerator
 
 class UserControllerTests extends CuriousControllerTestCase {
 	static transactional = true
@@ -100,5 +95,21 @@ class UserControllerTests extends CuriousControllerTestCase {
 				++found
 		}
 		assert found == 1
+	}
+
+	@Test
+	void "test markFirstChartPlotted for correctly setting the FIRST_CHART_PLOT bit"() {
+		controller.session.userId = dummyUser2.id
+
+		int FIRST_CHART_PLOT = 24
+
+		// First clearing the previously set bits. (Just to ensure that this call sets the bits correctly)
+		dummyUser2.settings.clear(FIRST_CHART_PLOT)
+
+		assert !dummyUser2.settings.get(FIRST_CHART_PLOT)
+
+		controller.markFirstChartPlotted()
+
+		assert dummyUser2.settings.get(FIRST_CHART_PLOT)
 	}
 }
