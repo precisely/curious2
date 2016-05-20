@@ -955,7 +955,7 @@ function deleteSprint(sprintHash) {
 
 			console.log('data: ', data);
 			if (!data.success) {
-				showAlert('Unable to delete sprint!');
+				showAlert('Unable to delete trackathon!');
 			} else {
 				if (!window.history.back()) {
 					location.href = sprintListURL;

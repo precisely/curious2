@@ -329,7 +329,8 @@ $(document).ready(function() {
 		var targetElement = $(event.relatedTarget); // Element that triggered the modal
 		var shareURL = targetElement.data('shareUrl');
 		var discussionTitle = targetElement.data('discussionTitle');
-		$('#social-share-message').data({shareURL: shareURL, discussionTitle: discussionTitle});
+		$('#social-share-message').data({shareURL: shareURL,
+				discussionTitle: (discussionTitle.length >= 115) ? shorten(discussionTitle, 112) : discussionTitle});
 	});
 
 	$('.twitter-share-tooltip').popover();
@@ -448,6 +449,7 @@ $(document).ready(function() {
 				if (checkData(data)) {
 					$("#edit-discussion-modal").modal("hide");
 					$(".discussion-title").text(newName);
+					$("#discussion-" + discussionHash + " .share-button").data('discussionTitle', newName);
 					setDescription(newDescription);
 					displayFlashMessage("#title-updated", 2500);
 				} else {
@@ -632,4 +634,3 @@ $(document).on('hidden.bs.modal', function() {
 	$('#share-modal').modal('hide');
 	$('#share-message-length').css({"color": "#616B6B", "font-weight": "100"});
 });
-
