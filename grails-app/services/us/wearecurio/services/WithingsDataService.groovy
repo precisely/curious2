@@ -26,13 +26,13 @@ import java.util.concurrent.PriorityBlockingQueue
 
 class WithingsDataService extends DataService {
 
-	static final String BASE_URL = "http://wbsapi.withings.net"
+	static transactional = false
+	static final String BASE_URL = "https://wbsapi.withings.net"
 	static final String COMMENT = "(Withings)"
 	static final String SET_NAME = "WI"
 	static final String SOURCE_NAME = "Withings Data"
 
 	static PriorityBlockingQueue<IntraDayQueueItem> intraDayQueue = new PriorityBlockingQueue<IntraDayQueueItem>(600)
-	static transactional = false
 
 	WithingsDataService() {
 		provider = "Withings"
@@ -87,7 +87,7 @@ class WithingsDataService extends DataService {
 		}
 
 		Integer timeZoneId = getTimeZoneId(account)
-		
+
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
 
@@ -99,8 +99,10 @@ class WithingsDataService extends DataService {
 				queryParameters.put("offset", offset.toString())
 
 			Long lastPolled = startDate.time / 1000L
-			if (!refreshAll)
+			if (!refreshAll) {
 				queryParameters.put("startdate", lastPolled)
+				queryParameters.put("enddate", endDate ? endDate.time / 1000L : new Date().time / 1000L)
+			}
 
 			String subscriptionURL = urlService.makeQueryString(BASE_URL + "/measure", queryParameters)
 
@@ -177,10 +179,10 @@ class WithingsDataService extends DataService {
 		stats.finish()
 
 		account.markLastPolled(stats.lastDate, serverTimestamp > 0 ? new Date(serverTimestamp) : null)
-		
+
 		[success: true]
 	}
-	
+
 	protected static final String QUERY_DATE_FORMAT = "yyyy-MM-dd"
 
 	/**
@@ -193,7 +195,7 @@ class WithingsDataService extends DataService {
 	 */
 	Map getDataActivityMetrics(OAuthAccount account, Date startDate, Date endDate, DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug "WithingsDataService.getDataActivityMetrics() account:" + account + " dateRange:" + (startDate?:'null') + ":" + (endDate?:'null')
-		
+
 		if (startDate == null || endDate == null) {
 			return [success: false]
 		}
@@ -214,7 +216,7 @@ class WithingsDataService extends DataService {
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
-		
+
 		SimpleDateFormat dateFormat = new SimpleDateFormat(QUERY_DATE_FORMAT)
 
 		JSONArray activities = data["body"]["activities"]
@@ -224,13 +226,13 @@ class WithingsDataService extends DataService {
 
 		activities.each { JSONObject activity ->
 			log.debug "Parsing entry with data: $activity"
-			
+
 			TimeZoneId timeZoneId = TimeZoneId.look(activity["timezone"])
 			Integer timeZoneIdNumber = timeZoneId.getId()
 			TimeZone timeZone = timeZoneId.toTimeZone()
-			
+
 			dateFormat.setTimeZone(timeZone)
-			
+
 			Date entryDate = dateFormat.parse(activity["date"])
 			if (activity['steps'] > 0) {
 				datesWithSummaryData.push(entryDate)
@@ -242,23 +244,23 @@ class WithingsDataService extends DataService {
 			Map args = [isSummary: true] // Indicating that these entries are summary entries
 
 			if (activity["steps"]) {
-				tagUnitMap.buildEntry(creationMap, stats, "activitySteps", activity["steps"], userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activitySteps", activity["steps"], userId,
 					timeZoneIdNumber, entryDate, COMMENT, setName, args)
 			}
 			if (activity["distance"]) {
-				tagUnitMap.buildEntry(creationMap, stats, "activityDistance", activity["distance"], userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activityDistance", activity["distance"], userId,
 					timeZoneIdNumber, entryDate, COMMENT, setName, args)
 			}
 			if (activity["calories"]) {
-				tagUnitMap.buildEntry(creationMap, stats, "activityCalorie", activity["calories"], userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activityCalorie", activity["calories"], userId,
 					timeZoneIdNumber, entryDate, COMMENT, setName, args)
 			}
 			if (activity["elevation"]) {
-				tagUnitMap.buildEntry(creationMap, stats, "activityElevation", activity["elevation"], userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activityElevation", activity["elevation"], userId,
 					timeZoneIdNumber, entryDate, COMMENT, setName, args)
 			}
 		}
-		
+
 		if (datesWithSummaryData.size() > 0) {
 			log.debug "WithingsDataService: Adding items to the intra day queue"
 			datesWithSummaryData.each { summaryDate ->
@@ -274,11 +276,11 @@ class WithingsDataService extends DataService {
 				intraDayQueue.notify()
 			}
 		}
-		
+
 		stats.finish()
-		
+
 		account.markLastPolled(stats.lastDate)
-		
+
 		[success: true]
 	}
 
@@ -288,23 +290,23 @@ class WithingsDataService extends DataService {
 			log.error "Null account, aborting!"
 			return [success: false]
 		}
-		
+
 		def intraDayResponse = fetchActivityData(account, account.accountId, startDate, endDate, true)
 		def userId = account.userId
-		
+
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
-		
+
 		Date entryDate
 		String setName
 		Integer timeZoneIdNumber = account.timeZoneId
 
 		if (intraDayResponse.status == 601) {
-			log.debug "WithingsDataService.getDataIntraDayActivity: TooManyRequestsException code 601" 
-			throw new TooManyRequestsException(provider)	
+			log.debug "WithingsDataService.getDataIntraDayActivity: TooManyRequestsException code 601"
+			throw new TooManyRequestsException(provider)
 		}
-		
-		log.debug("WithingsDataService.getDataIntraDayActivity: Processing intra day data size " 
+
+		log.debug("WithingsDataService.getDataIntraDayActivity: Processing intra day data size "
 			+ intraDayResponse.body.series?.size())
 		def aggregatedData = resetAggregatedData()
 		def lastEntryTimestamp = 0
@@ -325,7 +327,7 @@ class WithingsDataService extends DataService {
 				le.printStackTrace()
 			}
 			log.debug("WithingsDataService.getDataIntraDayActivity: Starting to aggregate data")
-			
+
 			if (data.size() > 1) {
 				data.each { metric, amount ->
 					log.debug("WithingsDataService.getDataIntraDayActivity: ${metric} ${amount} for ${timestamp}")
@@ -349,18 +351,18 @@ class WithingsDataService extends DataService {
 			lastEntryTimestamp = entryTimestamp
 			index++
 		}
-		
+
 		stats.finish()
 
 		account.markLastPolled(stats.lastDate)
-		
+
 		[success: true]
 	}
 
 	def resetAggregatedData() {
 		return ['steps': 0, 'distance': 0, 'calories': 0, 'elevation': 0,'duration': 0 ]
 	}
-	
+
 	void aggregatedDataToEntries(EntryCreateMap creationMap, EntryStats stats, def data, Long userId, Integer
 			timeZoneIdNumber, Date entryDate, String comment, String setName) {
 		data.each { metric, amount ->
@@ -368,23 +370,23 @@ class WithingsDataService extends DataService {
 			if (amount == 0)
 				return
 			if (metric.equals("steps")) {
-				tagUnitMap.buildEntry(creationMap, stats, "activitySteps", amount, userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activitySteps", amount, userId,
 					timeZoneIdNumber, entryDate, comment, setName)
 			}
 			if (metric.equals("distance")) {
-				tagUnitMap.buildEntry(creationMap, stats, "activityDistance", amount, userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activityDistance", amount, userId,
 					timeZoneIdNumber, entryDate, comment, setName)
 			}
 			if (metric.equals("calories")) {
-				tagUnitMap.buildEntry(creationMap, stats, "activityCalorie", amount, userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activityCalorie", amount, userId,
 					timeZoneIdNumber, entryDate, comment, setName)
 			}
 			if (metric.equals("elevation")) {
-				tagUnitMap.buildEntry(creationMap, stats, "activityElevation", amount, userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activityElevation", amount, userId,
 					timeZoneIdNumber, entryDate, comment, setName)
 			}
 			if (metric.equals("duration")) {
-				tagUnitMap.buildEntry(creationMap, stats, "activityDuration", amount, userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activityDuration", amount, userId,
 					timeZoneIdNumber, entryDate, comment, setName)
 			}
 		}
@@ -426,14 +428,14 @@ class WithingsDataService extends DataService {
 
 		queryParameters
 	}
-	
+
 	@Transactional
 	Map getActivityDataParameters(String accountId, Date startDate, Date endDate, boolean intraDay) {
-		log.debug "WithingsDataService.getActivityDataParameters() accountId:" + 
+		log.debug "WithingsDataService.getActivityDataParameters() accountId:" +
 			accountId + " startDate: " + startDate + " endDate: " + endDate + " intraDay " + intraDay
-		
+
 		Map queryParameters
-		
+
 		if (intraDay) {
 			queryParameters = ["action": "getintradayactivity", userid: accountId]
 			queryParameters["startdate"] = (startDate.getTime()/1000).toString()
@@ -486,12 +488,12 @@ class WithingsDataService extends DataService {
 	@Transactional
 	JSONObject fetchActivityData(Token tokenInstance, String accountId, Date startDate, Date endDate, boolean intraDay) {
 		log.debug "WithingsDataService.fetchActivityData() accountId:" + accountId + " startDate: " + startDate + " endDate: " + endDate
-		
+
 		Map queryParameters = getActivityDataParameters(accountId, startDate, endDate, intraDay)
 
 		getResponse(tokenInstance, BASE_URL + "/v2/measure", "get", queryParameters)
 	}
-	
+
 	@Transactional
 	JSONObject fetchActivityData(OAuthAccount account, String accountId, Date startDate, Date endDate, boolean intraDay) {
 		fetchActivityData(account.tokenInstance, accountId, startDate, endDate, intraDay)
@@ -499,7 +501,7 @@ class WithingsDataService extends DataService {
 
 	@Transactional
 	void listSubscription(OAuthAccount account) {
-		Response response = oauthService.getWithingsResource(account.tokenInstance, "http://wbsapi.withings.net/notify?action=list&userid=$account.accountId")
+		Response response = oauthService.getWithingsResource(account.tokenInstance, "https://wbsapi.withings.net/notify?action=list&userid=$account.accountId")
 		log.info "Subscription list response, code: [$response.code], body: [$response.body]"
 	}
 
@@ -555,7 +557,7 @@ class WithingsDataService extends DataService {
 			}
 			log.warn "Subscription failed for account: $account with status: " + withingsResponseStatus
 			Map result = [success: false, status: withingsResponseStatus, account: account]
-	
+
 			switch (withingsResponseStatus) {
 				case 293:	// Notification URL is not responding.
 				case 2555:	// Notification URL not found.

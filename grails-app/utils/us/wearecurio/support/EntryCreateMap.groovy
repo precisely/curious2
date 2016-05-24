@@ -10,24 +10,24 @@ import us.wearecurio.model.EntryGroup
  */
 class EntryCreateMap {
 	static mapWith = "none"
-	
-	Map<Date, Entry> entries = new HashMap<Date, Entry>()
-	
+
+	Map<String, Entry> entries = new HashMap<String, Entry>()
+
 	EntryCreateMap() {
 	}
 
-	EntryGroup groupForDate(Date date) {
-		Entry entry = entries.get(date)
-		
+	EntryGroup groupForDate(Date date, String baseTag) {
+		Entry entry = entries.get(date.getTime() + "+" + baseTag)
+
 		if ((entry != null) && (entry.getUserId() != null)) {
 			return entry.createOrFetchGroup()
 		}
-		
+
 		return null
 	}
-	
+
 	void add(Entry entry) {
 		if (entry != null)
-			entries.put(entry.getDate(), entry)
+			entries.put(entry.getDate().getTime() + "+" + entry.baseTag?.description, entry)
 	}
 }

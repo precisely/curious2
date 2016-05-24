@@ -13,7 +13,7 @@ import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 
 abstract class TagUnitMap {
-	
+
 	String name
 
 	final static String ACTIVITY = "activity"
@@ -27,22 +27,22 @@ abstract class TagUnitMap {
 	// The above constants are used for common string across various tag maps.
 
 	final static int AVERAGE = 1
-	
+
 	/**
 	 * @return A map containing tag names as key and their entry description as value.
 	 * Used for creating entries from data coming from third party APIs.
-	 */	
+	 */
 	Map tagUnitMappings = null
 
 	static Map commonTagMap = [:]
 	static Map<String, TagUnitMap> theMaps = Collections.synchronizedMap([:])
 	static Map<String, String> theSourceSetIdentifiers = Collections.synchronizedMap([:]) // map from device set identifier to device group name in UI
-	
+
 	static void addSourceSetIdentifier(String setIdentifier, String deviceGroupName) {
 		theSourceSetIdentifiers.put(setIdentifier, deviceGroupName)
 		log.debug "Source set identifier added. $theSourceSetIdentifiers"
 	}
-	
+
 	static String setIdentifierToSource(String setIdentifier) {
 		if (setIdentifier == null) return null
 
@@ -56,21 +56,21 @@ abstract class TagUnitMap {
 	}
 
 	private static def log = LogFactory.getLog(this)
-	
+
 	UnitGroupMap unitGroupMap
-	
+
 	boolean active
-	
+
 	Set<String> baseTagNames = new HashSet<String>()
-	
+
 	TagUnitMap(String name, boolean active = true) {
 		this.name = name
-		
+
 		unitGroupMap = UnitGroupMap.fetchTheMap()
-		
+
 		if (active)
 			theMaps[name] = this
-		
+
 		this.active = active
 	}
 
@@ -84,16 +84,16 @@ abstract class TagUnitMap {
 
 			bpDiastolic: [tag: "blood pressure", suffix: "diastolic", unit: "mmHg"],
 			bpSystolic: [tag: "blood pressure", suffix: "systolic", unit: "mmHg"],
-			fatFreeMass: [tag: "fat free mass", unit: "lbs", amountPrecision: 2, convert: true, from:"kg"],
-			fatRatio: [tag: "fat ratio", unit: "%"],
-			fatMassWeight: [tag: "fat mass weight", unit: "lbs", amountPrecision: 2, convert: true, from: "kg"],
+			fatFreeMass: [tag: "fat", unit: "lbs free", amountPrecision: 2, convert: true, from:"kg"],
+			fatRatio: [tag: "fat", unit: "% ratio"],
+			fatMassWeight: [tag: "fat", unit: "lbs mass", amountPrecision: 2, convert: true, from: "kg"],
 			heartRate: [tag: "heart rate", unit: "bpm"],
 			height: [tag: "height", unit: "feet", amountPrecision: 5, convert: true, from: "meters"],
 			steps: [tag: "$ACTIVITY", unit: "steps"],	// @Deprecated. Use `activitySteps` instead.
 			weight: [tag: "weight", unit: "lbs", amountPrecision: 2, convert: true, from: "kg"],
 		]
 	}
-	
+
 	Map initializeTagUnitMappings(Map map) {
 		for (Map value : map.values()) {
 			UnitGroupMap theMap = UnitGroupMap.fetchTheMap()
@@ -102,7 +102,7 @@ abstract class TagUnitMap {
 				value['ratio'] = theMap.fetchConversionRatio(value['from'], value['unit'])
 			baseTagNames.add(value['tag'])
 		}
-		
+
 		tagUnitMappings = map
 	}
 
@@ -128,7 +128,7 @@ abstract class TagUnitMap {
 		}
 
 		log.debug "The tag map is: $currentMapping"
-		
+
 		if (currentMapping.convert) {
 			amount = convert(amount, currentMapping.ratio)
 		}
@@ -145,37 +145,37 @@ abstract class TagUnitMap {
 		args["timeZoneName"] = args["timeZoneName"] ?: "America/Los_Angeles"
 
 		String description = args["tagName"] ?: currentMapping["tag"]
-		
+
 		Tag baseTag = Tag.look(description)
-		
+
 		Tag tag
-		
+
 		String units = currentMapping.unit
-		
+
 		if (currentMapping["suffix"]) {
 			tag = Tag.look(description + ' ' + currentMapping["suffix"])
 		} else {
 			tag = EntryParserService.get().tagWithSuffixForUnits(baseTag, units, 0)
 		}
-		
+
 		if (args["isSummary"]) {
-			description += " summary" 
+			description += " summary"
 			args['datePrecisionSecs'] = Entry.VAGUE_DATE_PRECISION_SECS
 		} else
 			args['datePrecisionSecs'] = Entry.DEFAULT_DATEPRECISION_SECS
-		
+
 		ParseAmount parseAmount = new ParseAmount(tag, baseTag, amount, amountPrecision, units, currentMapping.unitRatio, durationType)
-		
+
 		DecoratedUnitRatio unitRatio = currentMapping.unitRatio
-		
+
 		Map parsedEntry = [userId: userId, date: date, description: description, amount: parseAmount, comment: comment, setName: setName, timeZoneId: timeZoneId, durationType:durationType]
-		
+
 		parsedEntry.putAll(args)
-		
-		Entry e = Entry.updatePartialOrCreate(userId, parsedEntry, creationMap.groupForDate(date), stats)
-		
+
+		Entry e = Entry.updatePartialOrCreate(userId, parsedEntry, creationMap.groupForDate(date, baseTag?.description), stats)
+
 		creationMap.add(e)
-		
+
 		return e
 	}
 
@@ -195,7 +195,7 @@ abstract class TagUnitMap {
 					comment: args.comment, setName: args.setName, timeZoneId: args.timeZoneId, units: bucket.unit, datePrecisionSecs:Entry.DEFAULT_DATEPRECISION_SECS]
 
 				DatabaseService.retry(args) {
-					Entry e = Entry.updatePartialOrCreate(userId, parsedEntry, creationMap.groupForDate(date), bucket.unitRatio, stats)
+					Entry e = Entry.updatePartialOrCreate(userId, parsedEntry, creationMap.groupForDate(date, averageAmount.baseTag?.description), bucket.unitRatio, stats)
 					creationMap.add(e)
 				}
 			}
