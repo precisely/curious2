@@ -36,7 +36,7 @@
 
 	<!-- MAIN -->
 	<!-- TODO Fix indentation after merge -->
-			<div class="main entry-container clearfix">
+			<div class="main entry-container clearfix" id="trackmain">
 				<div id="autocomplete" style="position: absolute; top: 10px; right: 10px;"></div>
 				<div id="area0">
 					<div id="addData" class="input-affordance addon">
@@ -120,16 +120,26 @@
 
 		$(document).ready(function() {
 			var newEntryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': 'new'});
-			
+
 			$('#addData').prepend(newEntryDetailsPopover);
 			$('#addData .track-input-dropdown').show();
-			$("#addData .choose-date-input").datepicker({changeYear: true, changeMonth: true, yearRange: "-120:+0"});
+			var newEntryDetailsPopoverContent = _.template($('#entry-details-popover-content').clone().html())({'editType': 'new', entryId: '', repeatType: 0});
+			createPopover($('.track-input-dropdown'), newEntryDetailsPopoverContent, '#addData');
 
-			$('#addData .repeat-entry-checkbox').change(function() {
-				$('#addData .repeat-modifiers').toggleClass('hide');
+			$(document).on('change', '.repeat-entry-checkbox', function() {
+				$('.repeat-modifiers').toggleClass('hide');
 			});
+
+			$('#addData .track-input-dropdown').click(function() {
+				var $selectee = $('.ui-selected');
+				if ($selectee.length) {
+					entryListWidget.unselectEntry($selectee);
+				}
+				showPopover($(this));
+			})
 		});
 	</script>
 	<g:render template="/templates/track/entryDetailsPopover" />
-	</body>
+	<g:render template="/templates/track/entryDetailsPopoverContent"/>
+</body>
 </html>

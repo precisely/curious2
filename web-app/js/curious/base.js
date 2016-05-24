@@ -2,7 +2,7 @@
 
 /*
  * Using {{ }} to escape/evaluate/interpolate template using Loadash instead of <% %>
- * 
+ *
  * https://lodash.com/docs#templateSettings
  * http://stackoverflow.com/a/15625454/2405040
  */
@@ -20,6 +20,7 @@ _.formatDate = function(stamp, pattern) {
 	return $.datepicker.formatDate(pattern, date)
 };
 
+var serverURL = location.protocol + '//' + location.host;
 /*
  * A simple helper method to return the compiled lodash based HTML template available in any script tag with given "id".
  * data is passed to the compile the HTML template.
@@ -29,6 +30,10 @@ function compileTemplate(id, data) {
 
 	return _.template(rawTemplate)(data);
 }
+
+_.linkify = function(textToLinkify) {
+	return Autolinker.link(_.escape(textToLinkify), {className: 'auto-link-color'});
+};
 
 function _stripParens(str) {
 	if (str.slice(0, 1) == '(' && str.slice(-1) == ')')
@@ -125,7 +130,7 @@ String.prototype.sanitizeTitle = function(){
 	return this.trim().toLowerCase().replace(/\s/g, '-');
 };
 
-/* 
+/*
  * This function will capitalize first letter of a String
  * Reference: http://stackoverflow.com/questions/1026069/capitalize-the-first-letter-of-string-in-javascript
  */
@@ -135,25 +140,25 @@ String.prototype.capitalizeFirstLetter = function() {
 
 /*
  * Simple, clean Javascript inheritance scheme
- * 
+ *
  * Based on: http://kevinoncode.blogspot.com/2011/04/understanding-javascript-inheritance.html
- * 
+ *
  * Usage:
- * 
+ *
  * function Person(age) {
  * 	this.age = age;
  * }
- * 
+ *
  * function Fireman(age, station) {
  * 	Person.call(this, age);
  * 	this.station = station;
  * }
  * inherit(Fireman, Person);
- * 
+ *
  * var fireman = new Fireman(35, 1001);
  * assert(fireman.age == 35);
- * 
- * 
+ *
+ *
  */
 function inherit(subclass, superclass) {
 	function TempClass() {}
@@ -186,12 +191,19 @@ function removeElem(arr, elem) {
 //This function returns url parameters as key value pair
 function getSearchParams() {
 	var vars = {};
-	var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,
+	var currentURL = window.location.href;
+	var currentURLWithoutHash = (currentURL.indexOf('#') < 0) ? currentURL : currentURL.slice(0, currentURL.indexOf('#'));
+	currentURLWithoutHash.replace(/[?&]+([^=&]+)=([^&]*)/gi,
 			function(m, key, value) {
 				vars[key] = value;
 			}
 	);
 	return vars;
+}
+
+// This function will remove the query string params without reloading the page.
+function removeQueryString() {
+	history.pushState({}, '', window.location.pathname + window.location.hash);
 }
 
 /*

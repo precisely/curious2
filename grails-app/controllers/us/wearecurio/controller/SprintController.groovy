@@ -296,7 +296,9 @@ class SprintController extends LoginController {
 		}
 		
 		if (sprintInstance.start(currentUser.id, baseDate, now, timeZoneName, stats)) {
-			renderJSONGet([success: true, showSprintStartBalloon: showSprintStartBalloon])
+			renderJSONGet([success: true, showSprintStartBalloon: showSprintStartBalloon,
+					hash: sprintInstance.getHash(), participants: sprintInstance.getParticipants(10, 0),
+					totalParticipants: sprintInstance.getParticipantsCount()])
 			return
 		}
 
@@ -351,7 +353,8 @@ class SprintController extends LoginController {
 		sprintInstance.stop(currentUser.id, baseDate, now, timeZoneName, stats)
 
 		sprintInstance.removeMember(currentUser.id)
-		renderJSONGet([success: true])
+		renderJSONGet([success: true, hash: sprintInstance.getHash(), participants: sprintInstance.getParticipants(10, 0),
+					   totalParticipants: sprintInstance.getParticipantsCount()])
 	}
 
 	def join() {
@@ -369,7 +372,8 @@ class SprintController extends LoginController {
 		}
 
 		sprintInstance.addMember(currentUser.id)
-		renderJSONGet([success: true])
+		renderJSONGet([success: true, hash: sprintInstance.getHash(), participants: sprintInstance.getParticipants(10, 0),
+				totalParticipants: sprintInstance.getParticipantsCount()])
 	}
 
 	def discussions(String sprintHash, int max, int offset) {

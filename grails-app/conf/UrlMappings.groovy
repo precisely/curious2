@@ -10,6 +10,14 @@ class UrlMappings {
 			action = "graphCuriosities"
 		}
 
+		"/home/social/$tab?/$hash?"{
+			controller = "home"
+			action = "social"
+			constraints {
+				// apply constraints here
+			}
+		}
+
 		"/correlation/index/$flavor" {
 			controller = "correlation"
 			action = "index"
@@ -82,7 +90,11 @@ class UrlMappings {
 
 		"500" (controller: "authentication", action: "authenticateProvider", exception: AuthenticationRequiredException)
 
-		"/"(view:"/index")
-		"500"(view:'/error')
+		"/"(view: "/index")
+
+		// Default page to be loaded when access is denied
+		"/accessDenied"(view: "/accessDenied")
+
+		"500"(view: '/error')
 	}
 }

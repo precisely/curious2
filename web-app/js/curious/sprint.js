@@ -84,6 +84,40 @@ function showMoreDiscussions(sprintHash, infiniteScroll) {
 	});
 }
 
+/**
+ * Used to reset the participant list, when it gets updated.
+ * @param sprintInstanceData
+ */
+function resetParticipantList(sprintInstanceData) {
+	var htmlString = '<div id="participants-list" class="inline-block"><ul><li><ul>';
+	$.each(sprintInstanceData.participants, function(index, participant) {
+		htmlString += '<li>';
+		var avatarUrl = participant.avatarURL ? participant.avatarURL : '/images/track-avatar.png';
+		htmlString += '<img src="' + avatarUrl + '" alt="avatar" class="participantsAvatar img-circle"> ' +
+			'<p>' + participant.username + '</p>';
+		htmlString += '</li>';
+	});
+	htmlString += '</ul></li></ul></div>';
+
+	var $participantList = $('#participants-list');
+	$participantList.remove();
+	$('.participants-wrapper').append(htmlString);
+	$participantList.html(htmlString);
+
+	console.log('$participantList',$('#participants-list ul>li>ul'));
+	offset = 10;
+	$participantList.infiniteScroll({
+		bufferPx: 15,
+		scrollHorizontally: true,
+		offset: 10,
+		bindTo: $('#participants-list ul'),
+		onScrolledToBottom: function(e, $element) {
+			this.pause();
+			showMoreParticipants(sprintInstanceData, this);
+		}
+	});
+}
+
 function sprintShow(hash) {
 	queueJSON('Getting sprint details', '/api/sprint/' + hash + '?' + getCSRFPreventionURI('showsprintCSRF') + '&callback=?',
 			function(data) {
@@ -96,11 +130,13 @@ function sprintShow(hash) {
 				}
 				sprintInstance.entries = entries;
 				sprintInstance.participants = data.participants;
+				sprintInstance.description = _.linkify(sprintInstance.description);
 				sprintInstance.lines = sprintInstance.description ? sprintInstance.description.split("\n") : [];
 				var compiledHTML = compileTemplate("_showSprints", sprintInstance);
 				$('#feed').html(compiledHTML);
 
 				showDiscussionData(data.discussions, sprintInstance.hash);
+				offset = 10;
 				$('#participants-list ul>li>ul').infiniteScroll({
 					bufferPx: 15,
 					scrollHorizontally: true,
@@ -138,6 +174,10 @@ function startSprint(sprintHash) {
 			$('#join-sprint').hide();
 			$('#start-sprint').hide();
 			$('#stop-sprint').show();
+			if (getSprintElement(sprintHash).hasClass('not-following')) {
+				resetParticipantList({hash: sprintHash, totalParticipants: data.totalParticipants, participants: data.participants});
+				getSprintElement(sprintHash).addClass('following').removeClass('not-following');
+			}
 		} else {
 			showAlert(data.message);
 		}
@@ -183,6 +223,7 @@ function leaveSprint(sprintHash) {
 			$('#stop-sprint').hide();
 			$('#start-sprint').show();
 			getSprintElement(sprintHash).addClass('not-following').removeClass('following');
+			resetParticipantList({hash: sprintHash, totalParticipants: data.totalParticipants, participants: data.participants});
 		} else {
 			showAlert(data.message);
 		}
@@ -202,6 +243,7 @@ function joinSprint(sprintHash) {
 			$('#stop-sprint').hide();
 			$('#start-sprint').show();
 			getSprintElement(sprintHash).removeClass('not-following').addClass('following');
+			resetParticipantList({hash: sprintHash, totalParticipants: data.totalParticipants, participants: data.participants});
 		} else {
 			showAlert(data.message);
 		}

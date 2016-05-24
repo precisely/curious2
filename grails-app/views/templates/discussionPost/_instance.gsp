@@ -8,7 +8,6 @@
 		<span class="username">
 			{{- discussionPost.authorName || 'anonymous'}}
 		</span>
-
 		<span class="posting-time" data-time="{{- discussionPost.created }}"></span>
 		{{ if (discussionPost.created !== discussionPost.updated) { }}
 			<!--<span class="posting-time" title="{{- _.formatDate(discussionPost.created, 'M/dd/yy h:mm a') }}">
@@ -16,12 +15,14 @@
 			</span>-->
 		{{ } }}
 
-		{{ if (discussionPost.authorUserId == userId) { }}
+		{{ if (discussionPost.authorUserId == userId || discussionDetails.isAdmin) { }}
 			<span class="pull-right">
+			{{ if (discussionPost.authorUserId == userId) { }}
 				<a href="#" class="edit-post comment-buttons hide" data-post-id="{{- discussionPost.id}}"
 					data-discussion-hash="{{-discussionPost.hash}}" title="Edit comment">
 					<i class="fa fa-pencil fa-fw"></i>
 				</a>
+			{{ } }}
 				<a href="#" class="delete-post comment-buttons hide" data-post-id="{{- discussionPost.id}}"
 					data-discussion-hash="{{-discussionPost.hash}}" title="Delete comment">
 					<i class="fa fa-trash"></i>
@@ -29,7 +30,7 @@
 			</span>
 		{{ } }}
 		<div class="message">
-			{{= _.escape(discussionPost.message).newLineToBr() }}
+			{{= _.linkify(discussionPost.message.newLineToBr()) }}
 		</div>
 	</div>
 </div>

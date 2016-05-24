@@ -36,8 +36,6 @@ $(function() {
 				</div>');
 				return true;
 			});
-		
-			refreshPage();
 		});
 });
 </script>

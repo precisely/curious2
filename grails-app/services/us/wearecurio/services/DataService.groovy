@@ -66,10 +66,10 @@ abstract class DataService {
 			earlyStartDate = new Date(-5364658800L)
 		}
 	}
-	
+
 	static class DataRequestContext {
 		Set<String> alreadyUnset
-		
+
 		DataRequestContext() {
 			alreadyUnset = new HashSet<String>()
 		}

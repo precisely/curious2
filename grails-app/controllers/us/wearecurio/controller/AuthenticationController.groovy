@@ -1,5 +1,6 @@
 package us.wearecurio.controller
 
+import groovyx.net.http.URIBuilder
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
 import us.wearecurio.hashids.DefaultHashIDGenerator
@@ -7,6 +8,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.services.OuraDataService
+import us.wearecurio.security.NoAuth
 
 /**
  * A generic controller to handle all authentication made by oauth plugin.
@@ -89,6 +91,7 @@ class AuthenticationController extends SessionController {
 	/**
 	 * @see Declarative Error handling in http://grails.org/doc/latest/guide/theWebLayer.html#mappingToResponseCodes
 	 */
+	@NoAuth
 	def authenticateProvider() {
 		String provider = request.exception.cause.provider
 		String returnURI = request.forwardURI
@@ -108,6 +111,12 @@ class AuthenticationController extends SessionController {
 		Integer timeZoneId = TimeZoneId.look(userInfo.timezone).id
 
 		oauthAccountService.createOrUpdate(ThirdParty.FITBIT, userInfo.encodedId, tokenInstance, userId, timeZoneId)
+	}
+
+	def twitterAuth() {
+		URIBuilder builder = new URIBuilder("https://api.twitter.com?" + tokenInstance.getRawResponse())
+		String twitterId = builder.getQuery().user_id
+		oauthAccountService.createOrUpdate(ThirdParty.TWITTER, twitterId, tokenInstance, userId)
 	}
 
 	def humanAuth() {
@@ -203,10 +212,12 @@ class AuthenticationController extends SessionController {
 		oauthAccountService.createOrUpdate(ThirdParty.WITHINGS, session.withingsUserId, tokenInstance, userId, timeZoneId)
 	}
 
+	@NoAuth
 	def thirdPartySignUp() {
 		handleSignUpSignInAuth(SIGN_UP_AUTH)
 	}
 
+	@NoAuth
 	def thirdPartySignIn() {
 		handleSignUpSignInAuth(SIGN_IN_AUTH)
 	}

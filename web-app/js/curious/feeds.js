@@ -30,7 +30,7 @@ function getURLSocialAll(offset, max) {
 				max: max,
 				nextSuggestionOffset: nextSuggestionOffset  //global variable
 			}
-		)
+	)
 }
 
 function getURLSocialDiscussions(offset, max) {
@@ -40,7 +40,7 @@ function getURLSocialDiscussions(offset, max) {
 				offset: offset,
 				max: max
 			}
-		)
+	)
 }
 
 function getURLSocialNotifications(offset, max) {
@@ -70,7 +70,7 @@ function getURLSocialOwned(offset, max) {
 				offset: offset,
 				max: max
 			}
-		)
+	)
 }
 
 function getURLSprintsAll(offset, max) {
@@ -82,7 +82,7 @@ function getURLSprintsAll(offset, max) {
 				max: max,
 				nextSuggestionOffset: nextSuggestionOffset //global variable
 			}
-		)
+	)
 }
 
 function getURLSprintsOwned(offset, max) {
@@ -93,7 +93,7 @@ function getURLSprintsOwned(offset, max) {
 				offset: offset,
 				max: max
 			}
-		)
+	)
 }
 
 function getURLSprintsStarted(offset, max) {
@@ -114,7 +114,7 @@ function getURLSearchAll(offset, max) {
 				offset: offset,
 				max: max
 			}
-		)
+	)
 }
 
 function getURLSearchDiscussions(offset, max) {
@@ -124,7 +124,7 @@ function getURLSearchDiscussions(offset, max) {
 				offset: offset,
 				max: max
 			}
-		)
+	)
 }
 
 function getURLSearchSprints(offset, max) {
@@ -290,26 +290,26 @@ function displaySocialPage() {
 	setQueryHeader("Social Activity", false);
 
 	switch (hash) {
-	case "#all":
-		queueJSON("Getting feeds", getURLSocialAll(0, 5), processResults)
-		registerScroll(getURLSocialAll);
-		break;
-	case "#discussions":
-		queueJSON("Getting discussions", getURLSocialDiscussions(0, 5), processResults)
-		registerScroll(getURLSocialDiscussions);
-		break;
-	case "#people":
-		queueJSON("Getting people", getURLSocialPeople(0, 5), processResults)
-		registerScroll(getURLSocialPeople);
-		break;
-	case "#notifications":
-		queueJSON("Getting notifications", getURLSocialNotifications(0, 5), processResults)
-		registerScroll(getURLSocialNotifications);
-		break;
-	case "#owned":
-		queueJSON("Getting owned discussions", getURLSocialOwned(0, 5), processResults)
-		registerScroll(getURLSocialOwned);
-		break;
+		case "#all":
+			queueJSON("Getting feeds", getURLSocialAll(0, 5), processResults);
+			registerScroll(getURLSocialAll);
+			break;
+		case "#discussions":
+			queueJSON("Getting discussions", getURLSocialDiscussions(0, 5), processResults);
+			registerScroll(getURLSocialDiscussions);
+			break;
+		case "#people":
+			queueJSON("Getting people", getURLSocialPeople(0, 5), processResults);
+			registerScroll(getURLSocialPeople);
+			break;
+		case "#notifications":
+			queueJSON("Getting notifications", getURLSocialNotifications(0, 5), processResults);
+			registerScroll(getURLSocialNotifications);
+			break;
+		case "#owned":
+			queueJSON("Getting owned discussions", getURLSocialOwned(0, 5), processResults);
+			registerScroll(getURLSocialOwned);
+			break;
 	}
 }
 
@@ -324,18 +324,18 @@ function displaySprintPage() {
 	setQueryHeader("Trackathons", false);
 
 	switch (window.location.hash) {
-	case "#all":
-		queueJSON("Getting trackathons feed", getURLSprintsAll(0, 5), processResults)
-		registerScroll(getURLSprintsAll);
-		break;
-	case "#owned":
-		queueJSON("Getting owned trackathons", getURLSprintsOwned(0, 5), processResults)
-		registerScroll(getURLSprintsOwned);
-		break;
-	case "#started":
-		queueJSON("Getting started trackathons", getURLSprintsStarted(0, 5), processResults)
-		registerScroll(getURLSprintsStarted);
-		break;
+		case "#all":
+			queueJSON("Getting trackathons feed", getURLSprintsAll(0, 5), processResults);
+			registerScroll(getURLSprintsAll);
+			break;
+		case "#owned":
+			queueJSON("Getting owned trackathons", getURLSprintsOwned(0, 5), processResults);
+			registerScroll(getURLSprintsOwned);
+			break;
+		case "#started":
+			queueJSON("Getting started trackathons", getURLSprintsStarted(0, 5), processResults);
+			registerScroll(getURLSprintsStarted);
+			break;
 	}
 }
 
@@ -350,26 +350,26 @@ function displaySearchPage() {
 	setQueryHeader('Search Results: ' + $("#global-search input[name=q]").val(), false);
 
 	switch (window.location.hash) {
-	case "#all":
-		queueJSON("Getting search results", getURLSearchAll(0, 5), processResults)
-		registerScroll(getURLSearchAll)
-		break;
-	case "#discussions":
-		queueJSON("Getting search results", getURLSearchDiscussions(0, 5), processResults)
-		registerScroll(getURLSearchDiscussions)
-		break;
-	case "#sprints":
-		queueJSON("Getting search results", getURLSearchSprints(0, 5), processResults)
-		registerScroll(getURLSearchSprints)
-		break;
-	case "#people":
-		queueJSON("Getting search results", getURLSearchPeople(0, 5), processResults)
-		registerScroll(getURLSearchPeople)
-		break;
-	case "#owned":
-		queueJSON("Getting search results", getURLSearchOwned(0, 5), processResults)
-		registerScroll(getURLSearchOwned)
-		break;
+		case "#all":
+			queueJSON("Getting search results", getURLSearchAll(0, 5), processResults)
+			registerScroll(getURLSearchAll)
+			break;
+		case "#discussions":
+			queueJSON("Getting search results", getURLSearchDiscussions(0, 5), processResults)
+			registerScroll(getURLSearchDiscussions)
+			break;
+		case "#sprints":
+			queueJSON("Getting search results", getURLSearchSprints(0, 5), processResults)
+			registerScroll(getURLSearchSprints)
+			break;
+		case "#people":
+			queueJSON("Getting search results", getURLSearchPeople(0, 5), processResults)
+			registerScroll(getURLSearchPeople)
+			break;
+		case "#owned":
+			queueJSON("Getting search results", getURLSearchOwned(0, 5), processResults)
+			registerScroll(getURLSearchOwned)
+			break;
 	}
 }
 
@@ -421,17 +421,36 @@ function checkAndDisplayTabData() {
 	}
 
 	$(window).scrollTop(0);
+
+	// This block is used to alert the status of sharing to twitter, immediately after authorization.
+	var queryParams = getSearchParams();
+	if (queryParams.tweetStatus == 'true' && queryParams.duplicateTweet == 'false') {
+		showAlert('Successfully posted discussion to Twitter.', removeQueryString);
+	} else if (queryParams.tweetStatus == 'true' && queryParams.duplicateTweet == 'true') {
+		showAlert('You have already tweeted this discussion.', removeQueryString);
+	} else if (queryParams.tweetStatus == 'false') {
+		showAlert('Sorry but we could not tweet your discussion.', removeQueryString);
+	}
+	// Positioning the dialog to the approximate center of the screen.
+	$('.ui-dialog').css({"position": "absolute", "top": "40%"})
 }
 
 $(window).load(checkAndDisplayTabData).on('hashchange', checkAndDisplayTabData);
 
-$(document).ready(function() {
-	$('html').on('click', function(e) {
-		if (typeof $(e.target).data('original-title') == 'undefined' && !$(e.target).is('.share-button img')) {
-			$('[data-original-title]').popover('hide');
-		}
-	});
+function showDiscussionAffordance(type) {
+	var placeholder;
+	if (type === 'howto') {
+		placeholder  = 'Enter text of your how-to article';
+	} else if (type === 'support') {
+		placeholder = 'Ask a support question of the community?';
+	} else {
+		placeholder = 'New question or discussion topic?'
+	}
+	$('#create-discussion').show('fast').find('input').prop('placeholder', placeholder).data('type', type);
+	$('.discussion-topic-input').focus();
+}
 
+$(document).ready(function() {
 	$('#sprint-tags').keypress(function (e) {
 		var key = e.which;
 
@@ -470,7 +489,6 @@ $(document).ready(function() {
 			}
 		}, function(xhr) {
 		}, null, args);
-
 		return false;
 	});
 
@@ -524,6 +542,8 @@ $(document).ready(function() {
 			}
 
 			var data = extractDiscussionNameAndPost(value);
+			var questionType = $(this).data('type');
+			data.name = questionType ? (data.name + ' #' + questionType) : data.name;
 
 			// See base.js for implementation details of $.serializeObject()
 			var params = $('#create-discussion').serializeObject();
@@ -537,6 +557,7 @@ $(document).ready(function() {
 				if (data.success) {
 					var element = $(".discussions").length !== 0 ? ".discussions" : "#feed";
 					addAllFeedItems({listItems: [data.discussion]}, element, true);
+					$('#create-discussion').hide('fast');
 					var $discussionForm = $('#create-discussion')[0];
 					if ($discussionForm) {
 						$discussionForm.reset();
@@ -550,7 +571,6 @@ $(document).ready(function() {
 					showAlert(xhr.responseJSON.message);
 				}
 			});
-
 			return false;
 		}
 	});
@@ -561,11 +581,12 @@ $(document).ready(function() {
 		queuePostJSON('Canceling sprint edit', '/data/cancelSprintEdit', getCSRFPreventionObject('cancelSprintEditCSRF',
 				{username: userName, sprintHash: $('#sprintIdField').val()}),
 				function(data) {
-			if (!checkData(data))
+			if (!checkData(data)) {
 				return;
+			}
 
 			if (data.success) {
-				console.log('added persons: ', data);
+				console.log('added people: ', data);
 				$("#" + inputId).val('');
 				addParticipantsAndAdminsToList($("#" + inputId + "-list"), deleteButtonClass, userName);
 			} else {
@@ -608,11 +629,9 @@ function addAllFeedItems(data, elementId, prepend) {
 
 	elementId = elementId || '#feed';
 
-	$('#sprint-explanation-card').remove();
 	if ((location.pathname.indexOf('sprint') > -1) && isHash(["all", "owned", "started"])) {
 		if (!closedExplanationCardTrackathon) {
-			showExplanationCardTrackathon();
-		} else if ((!data.listItems || !data.listItems.length) && !currentSprintsOffset && !isHash(["started"])) {
+			$('#sprint-explanation-card').remove();
 			showExplanationCardTrackathon();
 		}
 	}
@@ -695,8 +714,9 @@ function createAutocomplete(inputId, autocompleteId) {
 		queueJSON('Getting autocomplete', '/data/getAutocompleteParticipantsData?' + getCSRFPreventionURI("getAutocompleteParticipantsDataCSRF") + "&callback=?",
 				{searchString: searchString, max: 10},
 				function(data) {
-			if (!checkData(data))
+			if (!checkData(data)) {
 				return;
+			}
 
 			if (data.success) {
 				$('#' + inputId).autocomplete('option', 'source', data.displayNames);
@@ -727,11 +747,12 @@ function addSprintMemberOrAdmin(inputId, userName) {
 	queuePostJSON('Adding members', '/api/sprint/action/' + actionName, getCSRFPreventionObject(actionName + 'CSRF',
 			{username: userName, sprintHash: $('#sprintIdField').val()}),
 			function(data) {
-		if (!checkData(data))
+		if (!checkData(data)) {
 			return;
+		}
 
 		if (data.success) {
-			console.log('added persons: ', data);
+			console.log('added people: ', data);
 			$("#" + inputId).val('');
 			addParticipantsAndAdminsToList($("#" + inputId + "-list"), deleteButtonClass, userName);
 		} else {
@@ -754,21 +775,21 @@ function deleteSimpleEntry(id, $element) {
 			+ "&timeZoneName=" + this.timeZoneName + "&displayDate=" + this.cachedDateUTC + "&"
 			+ getCSRFPreventionURI("deleteEntryDataCSRF") + "&callback=?",
 			function(entries) {
-		if (checkData(entries, 'success', "Error deleting entry")) {
-			$element.parents('li').remove();
-			if (entries[1] != null)
-				autocompleteWidget.update(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
-			if (entries[2] != null) {
-				autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
-			}
-		} else {
-			if ($element.parents('.modal-dialog').length > 0) {
-				showBootstrapAlert($('.modal-dialog .alert'), data.message);
-			} else {
-				showBootstrapAlert($('.alert'), data.message);
-			}
-		}
-	});
+				if (checkData(entries, 'success', "Error deleting entry")) {
+					$element.parents('li').remove();
+					if (entries[1] != null)
+						autocompleteWidget.update(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
+					if (entries[2] != null) {
+						autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
+					}
+				} else {
+					if ($element.parents('.modal-dialog').length > 0) {
+						showBootstrapAlert($('.modal-dialog .alert'), data.message);
+					} else {
+						showBootstrapAlert($('.alert'), data.message);
+					}
+				}
+			});
 }
 
 function deleteEntry($tagToDelete, entryId, allFuture) {
@@ -785,12 +806,12 @@ function deleteEntry($tagToDelete, entryId, allFuture) {
 			if (!checkData(response))
 				return;
 
-			if (typeof response == 'string') {
-				showAlert(response);
-			} else {
-				$tagToDelete.parents('li').remove();
+				if (typeof response == 'string') {
+					showAlert(response);
+				} else {
+					$tagToDelete.parents('li').remove();
+				}
 			}
-		}
 	);
 }
 
@@ -817,17 +838,18 @@ function addEntryToSprint(inputElement, suffix) {
 			+ "&timeZoneName=" + timeZoneName + "&defaultToNow=" + (true ? '1':'0') + "&repeatTypeId=" + repeatTypeId + "&"
 			+ getCSRFPreventionURI("addEntryCSRF") + "&callback=?",
 			function(entries) {
-		if (checkData(entries, 'success', "Error adding entry")) {
-			$inputElement.val('');
-			if (entries[1] != null) {
-				showAlert(entries[1]);
-			}
-			if (entries[2] != null)
-				autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
-			var addedEntry = entries[3];
-			addTagsToList(addedEntry);
-		}
-	});
+				if (checkData(entries, 'success', "Error adding entry")) {
+					$inputElement.val('');
+					if (entries[1] != null) {
+						showAlert(entries[1]);
+					}
+					if (entries[2] != null) {
+						autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
+					}
+					var addedEntry = entries[3];
+					addTagsToList(addedEntry);
+				}
+			});
 }
 
 function addTagsToList(addedEntry) {
@@ -838,7 +860,7 @@ function addTagsToList(addedEntry) {
 	} else if (RepeatType.isContinuous(addedEntry.repeatType)) {
 		addedEntry.comment = 'bookmark';
 	}
-	$('#sprint-tag-list').append('<li><div class="' + addedEntry.comment + 'DarkLabelImage"></div> ' + addedEntry.description + (addedEntry.comment ?
+	$('#sprint-tag-list').append('<li><div class="' + addedEntry.comment + 'DarkLabelImage"></div> ' + escapehtml(addedEntry.description )+ (addedEntry.comment ?
 			' (<i>' + _stripParens(addedEntry.comment.capitalizeFirstLetter()) + '</i>)' : '') + ' <button type="button" class="deleteSprintEntry" data-id="' +
 			addedEntry.id + '" data-repeat-type="' +
 			addedEntry.repeatType + '"><i class="fa fa-times-circle"></i></button></li>');
@@ -876,7 +898,7 @@ function createSprint() {
 
 function editSprint(sprintHash) {
 	queueJSON("Getting sprint data", '/api/sprint/' + sprintHash + '?' + getCSRFPreventionURI("fetchSprintDataCSRF") + "&callback=?",
-			null, function(data) {
+			null, function (data) {
 		if (!checkData(data))
 			return;
 
@@ -900,7 +922,6 @@ function editSprint(sprintHash) {
 			} else {
 				$('#open').prop('checked', true);
 			}
-
 			$.each(data.entries, function(index, value) {
 				addTagsToList(value);
 			});
@@ -924,24 +945,25 @@ function editSprint(sprintHash) {
 
 function deleteSprint(sprintHash) {
 	var httpArgs ={requestMethod:'delete'};
-	showYesNo('Delete this sprint?', function() {
+	showYesNo('Delete this trackathon?', function() {
 		queueJSONAll('Deleting sprint', '/api/sprint/' + sprintHash,
 				getCSRFPreventionObject('deleteSprintDataCSRF'),
-			function(data) {
-				if (!checkData(data))
-					return;
+				function(data) {
+			if (!checkData(data)) {
+				return;
+			}
 
-				console.log('data: ', data);
-				if (!data.success) {
-					showAlert('Unable to delete sprint!');
-				} else {
-					if (!window.history.back()) {
-						location.href = sprintListURL;
-					}
+			console.log('data: ', data);
+			if (!data.success) {
+				showAlert('Unable to delete trackathon!');
+			} else {
+				if (!window.history.back()) {
+					location.href = sprintListURL;
 				}
-			}, function(data) {
-				showAlert(data.message);
-			}, null, httpArgs);
+			}
+		}, function(data) {
+			showAlert(data.message);
+		}, null, httpArgs);
 	});
 }
 
@@ -993,10 +1015,9 @@ function getDiscussionElement(hash) {
 	return $('#discussion-' + hash);
 }
 
-
 function followDiscussion(args) {
 	var httpArgs = {requestMethod: 'GET'};
-	queueJSONAll('Following discussion', '/api/discussion/action/follow', getCSRFPreventionObject('followDiscussionCSRF', args),
+	queueJSONAll('Following discussion', '/api/discussion/action/follow?callback=?', getCSRFPreventionObject('followDiscussionCSRF', args),
 	function(data) {
 		if (checkData(data)) {
 			if (data.success) {

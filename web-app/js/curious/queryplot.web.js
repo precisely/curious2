@@ -101,23 +101,23 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 			renameField.on('mouseup', renameFunction);
 		}
 	}
-	
+
 	this.queueClearStartSlider = function() {
 		this.resetStartSlider = true;
 	};
-	
+
 	this.queueClearEndSlider = function() {
 		this.resetEndSlider = true;
 	};
-	
+
 	this.setupSlider = function() {
 		if (!this.interactive) return;
-		
+
 		var refresh = false;
 
 		var zoomDiv = this.properties.getZoomControl();
 		if (!zoomDiv) return;
-		
+
 		zoomDiv.addClass("queryplotzoom");
 
 		var leftSlider, rightSlider;
@@ -131,7 +131,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 
 			if (!startTime) startTime = this.minTime;
 			if (!endTime) endTime = this.maxTime;
-			
+
 			if (this.resetStartSlider) {
 				startTime = this.minTime;
 				this.resetStartSlider = false;
@@ -246,7 +246,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 
 	this.slideCallback = function(left, right) {
 		var lastRezeroWidth = this.rezeroWidth ? this.rezeroWidth : 0;
-		
+
 		if (this.cycleTagLine) {
 			this.leftCycleSlider = left;
 			this.rightCycleSlider = right;
@@ -261,7 +261,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 			else
 				this.maxCycleRange = Math.exp(4.362 * (right/5000.0))/77.416;
 			this.refreshLinearSliders();
-				
+
 			if (this.rezeroWidth != lastRezeroWidth)
 				this.refreshPlot();
 			else
@@ -289,7 +289,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 			if (right == 10000) this.rightLinearSlider = null;
 
 			this.refreshLinearSliders();
-			
+
 			if (this.rezeroWidth != lastRezeroWidth)
 				this.refreshPlot();
 			else
@@ -402,7 +402,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 		}
 
 		this.getGroupsToShare(function(data) {
-			var modalHTML = _.template($('#publish-to-groups').html(), {groups: data.groups});
+			var modalHTML = _.template($('#publish-to-groups').html(), {groups: data.groups, selectGroup: getSearchParams().group});
 			$('#publish-to-groups').html(modalHTML);
 			this.displayPublishModal();
 		}.bind(this));

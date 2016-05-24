@@ -9,10 +9,10 @@
 						<h2>
 							{{- name }}
 						</h2>
-						<p>{{ _.each(_.initial(lines), function(entry) { }}
-							{{- entry }}<br/>
+						<p style="word-wrap: break-word">{{ _.each(_.initial(lines), function(entry) { }}
+							{{= entry }}<br/>
 							{{ }) }}
-							{{- _.last(lines) }}
+							{{= _.last(lines) }}
 						</p>
 					</div>
 				</div>
@@ -72,21 +72,25 @@
 						<i class="nav fa fa-chevron-right fa-4x pull-right" onclick="showMoreParticipants('{{- hash }}')"></i>
 					</div>
 				</div>
-				{{ if (hasAdmin || !disableComments) { }}
+				{{ if (hasAdmin || (hasMember && !disableComments)) { }}
 					<div class="row">
 						<div class="right-content">
 							<div class="new-post">
-								<form id="create-discussion">
+								<div class="new-post-container">
+									<label>New post:&nbsp;</label>
+								</div>
+								<div class="new-post-container">
+									<button class="btn btn-discussion" onclick="location.href='/home/graph?group={{- virtualGroupName}}'">Chart of your data</button>
+									<button class="btn btn-discussion"
+										onclick="showDiscussionAffordance()">
+										Create a new trackathon discussion topic
+									</button>
+								</div>
+								<form id="create-discussion" class="hide">
 									<div class="input-affordance left-addon">
 										<i class="fa fa-pencil"></i>
-										<input class="full-width discussion-topic-input"
-												type="text" placeholder="New question or discussion topic?"
-												name="name" id="discussion-topic" required />
-										<input type="radio" class="radio-public" name="visibility" id="public" value="public" checked><label for="public" class="radio-public-label">Public</label>
-										<input type="radio" class="radio-private" name="visibility" id="private" value="private"><label for="private" class="radio-private-label">Private</label>
-										<hr class="hide">
-										<input type="text" id="discussion-description" class="full-width discussion-topic-description hide" placeholder="Enter comment/description"
-												name="discussionPost">
+										<input class="full-width discussion-topic-input" type="text"
+											   name="discussionTopic" id="discussion-topic" required />
 									</div>
 									<input type="hidden" name="group" value="{{- virtualGroupName }}" />
 								</form>
