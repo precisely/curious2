@@ -1,3 +1,4 @@
+
 import grails.converters.JSON
 import grails.util.Environment
 import org.springframework.web.context.support.WebApplicationContextUtils
@@ -61,10 +62,10 @@ class BootStrap {
 		springContext.getBean( "customObjectMarshallers" ).register()
 		BackgroundTask.launch {
 			migrationService.doBackgroundMigrations()
-			def userList = User.list()
+			/*def userList = User.list()
 			for (user in userList) {
 				DataService.pollAllForUserId(user.id)
-			}
+			}*/
 		}
 
 		TagStats.initializeSharedTags()

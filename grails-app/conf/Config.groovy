@@ -181,6 +181,7 @@ environments {
 		]
 		*/
 		elasticSearch.client.mode = 'local'
+		elasticSearch.index.store.type = 'simplefs'
 		api {
 			weatherunderground {
 				key = "0de9ca6314e3b2ee"

@@ -87,7 +87,7 @@ grails.project.dependency.resolution = {
 		compile ":oauth:2.6.1"
 		compile ":csv:0.3.1"
 		compile ":message-digest:1.1"
-		runtime ':elasticsearch:0.0.4.2'
+		runtime ':elasticsearch:0.0.4.5'
 		compile ":quartz:1.0.2"
 		compile "com.cc.plugins:file-uploader:2.4.2-RC1"
 		//compile ":spring-security-core:2.0-RC5"
