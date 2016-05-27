@@ -501,7 +501,7 @@ class WithingsDataService extends DataService {
 
 	@Transactional
 	void listSubscription(OAuthAccount account) {
-		Response response = oauthService.getWithingsResource(account.tokenInstance, "https://wbsapi.withings.net/notify?action=list&userid=$account.accountId")
+		Response response = oauthService.getWithingsResource(account.tokenInstance, BASE_URL + "/notify?action=list&userid=$account.accountId")
 		log.info "Subscription list response, code: [$response.code], body: [$response.body]"
 	}
 

@@ -512,7 +512,9 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		if (onlyPinned) {
 			// Reposition popover in case the bookmark container height increases.
 			var $popoverLauncher = $('.ui-selected').find('.track-input-dropdown');
-			repositionPopover($popoverLauncher, $('.popover'));
+			if ($popoverLauncher.length > 0) {
+				repositionPopover($popoverLauncher, $('.popover'));
+			}
 		}
 	};
 
