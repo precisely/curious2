@@ -119,12 +119,12 @@ class HumanDataService {
 	Entry create(EntryCreateMap creationMap, EntryStats stats, Long userId, Date date, Integer timeZoneIdNumber, String baseTagDescription, String suffix, BigDecimal amount, String units, String comment, String setName, Integer amountPrecision) {
 		Tag baseTag = Tag.look(baseTagDescription)
 		Tag tag
-		
+
 		if (suffix)
 			tag = Tag.look(baseTagDescription + ' ' + suffix)
 		else
 			tag = entryParserService.tagWithSuffixForUnits(baseTag, units, 0)
-		
+
 		def m = [
 			date: date,
 			timeZoneId: timeZoneIdNumber,
@@ -134,14 +134,14 @@ class HumanDataService {
 			setName: setName,
 			comment: comment,
 		]
-		
-		Entry e = Entry.createOrCompleteSingle(userId, m, creationMap.groupForDate(date), stats)
-		
+
+		Entry e = Entry.createOrCompleteSingle(userId, m, creationMap.groupForDate(date, baseTagDescription), stats)
+
 		creationMap.add(e)
-		
+
 		return e
 	}
-	
+
 	Map poll(OAuthAccount account) {
 		boolean success = true
 		int amountPrecision = 2
@@ -159,7 +159,7 @@ class HumanDataService {
 
 		DateFormat dateTimeParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
 		dateTimeParser.setTimeZone(TimeZone.getTimeZone("UTC"))
-		
+
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(curiousUserId)
 
@@ -330,7 +330,7 @@ class HumanDataService {
 
 			Entry entry = create(creationMap, stats, curiousUserId, entryDate, timeZoneIdNumber, description, null, value, units, comment, setName, amountPrecision)
 		}
-		
+
 		stats.finish()
 
 		account.markLastPolled(stats.lastDate)
