@@ -1,5 +1,6 @@
 package us.wearecurio.controller
 
+import us.wearecurio.parse.EntryCommaSegmenter
 import us.wearecurio.security.NoAuth
 import grails.converters.JSON
 import org.joda.time.DateTime
@@ -66,8 +67,10 @@ class DataController extends LoginController {
 		Date repeatEnd = parseDate(p.repeatEnd)
 		String timeZoneName = p.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(p.baseDate) : p.timeZoneName
 
-		debug("Current time " + currentTime + " baseDate " + baseDate);
-
+		debug("Current time " + currentTime + " baseDate " + baseDate)
+		
+		String text = p.text
+		
 		def parsedEntry = entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, defaultToNow, p.tutorial ? EntryParserService.UPDATEMODE_TUTORIAL : 0)
 		return parsedEntry
 	}
@@ -76,17 +79,38 @@ class DataController extends LoginController {
 		AuthenticationStatus authStatus = authFromUserIdStr(params.userId)
 
 		User user = authStatus.user
-		def parsedEntry = getParsedEntry(params, user)
-
-		if (parsedEntry == null)
-			return 'Syntax error trying to parse entry'
-
+		// preprocess text and split by commas
+		EntryCommaSegmenter segmenter = new EntryCommaSegmenter(params.text)
+		
+		String text
+		
 		EntryStats stats = new EntryStats(user.id)
-		def entry = Entry.create(user.id, parsedEntry, stats)
+		
+		Entry entry = null
+		
+		def status = null
+		
+		def entries = []
+		
+		while (text = segmenter.next()) {
+			params.text = text
+			def parsedEntry = getParsedEntry(params, user)
+			
+			if (parsedEntry == null)
+				return 'Syntax error trying to parse entry'
+				
+			status = parsedEntry.status
+	
+			entry = Entry.create(user.id, parsedEntry, stats)
+			
+			entries.add(entry)
+			debug("created " + entry)
+		}
 		ArrayList<TagStats> tagStats = stats.finish()
 
-		debug("created " + entry)
-
+		if (entry == null)
+			return 'No entry text provided'
+		
 		boolean showEntryBalloon
 		boolean showBookmarkBalloon
 		if (params.containsKey('mobileSessionId') && !params.isHelpEntry) {
@@ -113,7 +137,7 @@ class DataController extends LoginController {
 
 		authStatus.sprint?.reindex()
 
-		return [entry, parsedEntry['status'], tagStats?.get(0), showEntryBalloon, showBookmarkBalloon]
+		return [entry, status, tagStats?.get(0), showEntryBalloon, showBookmarkBalloon, entries]
 	}
 
 	protected def doUpdateEntry(Map parms) {

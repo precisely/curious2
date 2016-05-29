@@ -682,6 +682,11 @@ class EntryParserService {
 		commentScanPattern.followedBy([atEndScanPattern])
 	}
 	
+	def nextParseSegment(String text) {
+		Matcher matcher = text =~ /(,|\(|\))/
+		
+	}
+	
 	static final int UPDATEMODE_NONE = 0
 	static final int UPDATEMODE_UPDATE = 1
 	static final int UPDATEMODE_TUTORIAL = 2

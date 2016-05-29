@@ -67,6 +67,7 @@ class EntryParserServiceTests extends CuriousTestCase {
 	Date lateCurrentTime
 	Date microlateCurrentTime
 	Date veryLateBaseDate
+	
 	@Before
 	void setUp() {
 		super.setUp()
