@@ -29,8 +29,6 @@ import static us.wearecurio.model.Entry.MAXCOMMENTLENGTH
 import org.joda.time.DateTime
 import org.joda.time.DateTimeFieldType
 
-import com.google.javascript.jscomp.parsing.parser.trees.ThisExpressionTree;
-
 import us.wearecurio.parse.ParseUtils
 import us.wearecurio.parse.ScannerPattern
 import us.wearecurio.parse.PatternScanner
