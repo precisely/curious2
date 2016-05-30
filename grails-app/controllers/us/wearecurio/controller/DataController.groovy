@@ -92,8 +92,13 @@ class DataController extends LoginController {
 		
 		def entries = []
 		
+		debug("Original entry text: " + params.text)
+		
 		while (text = segmenter.next()) {
 			params.text = text
+			
+			debug("Next segment: " + text)
+			
 			def parsedEntry = getParsedEntry(params, user)
 			
 			if (parsedEntry == null)
