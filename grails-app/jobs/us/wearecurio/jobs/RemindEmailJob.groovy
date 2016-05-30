@@ -10,7 +10,7 @@ class RemindEmailJob extends us.wearecurio.utility.TimerJob {
 	GrailsApplication grailsApplication
 	
 	static triggers = {
-		simple startDelay: 1 * MINUTE, repeatInterval: 2 * MINUTE
+		simple startDelay: 4 * MINUTE, repeatInterval: 2 * MINUTE
 	}
 
 	def execute() {
