@@ -12,7 +12,7 @@ class AnalyticsJob extends us.wearecurio.utility.TimerJob {
 	private static def log = LogFactory.getLog(this)
 	
 	static triggers = {
-		cron name:'analyticsTrigger', startDelay: 1 * MINUTE, cronExpression: '0 30 2 * * ? *' // 2:30 a.m.
+		cron name:'analyticsTrigger', startDelay: 5 * MINUTE, cronExpression: '0 30 2 * * ? *' // 2:30 a.m.
 	}
 	
 	def execute() {

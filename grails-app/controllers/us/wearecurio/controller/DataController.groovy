@@ -784,6 +784,10 @@ class DataController extends LoginController {
 		def currentTime = params.currentTime == null ? new Date() : parseDate(params.currentTime)
 		def baseDate = params.baseDate == null? null : parseDate(params.baseDate)
 		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
+		if (userId == null) {
+			renderStringGet('Entry already deleted.')
+			return
+		}
 		User entryOwner = User.get(userId);
 		User currentUser = sessionUser()
 
