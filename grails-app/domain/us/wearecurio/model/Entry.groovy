@@ -616,6 +616,29 @@ class Entry implements Comparable {
 		return e
 	}
 
+	public static Entry createBookmark(Long userId, String bookmarkText) {
+		return createBookmark(userId, bookmarkText, new Date())
+	}
+	
+	public static Entry createBookmark(Long userId, String bookmarkText, Date baseDate) {
+		return createBookmark(userId, bookmarkText, baseDate, new EntryStats())
+	}
+	
+	public static Entry createBookmark(Long userId, String bookmarkText, Date baseDate, EntryStats stats, EntryParserService entryParserService=null) {
+		return Entry.create( 
+							userId,
+							(entryParserService==null?
+							EntryParserService.get():
+							entryParserService).parse(
+													baseDate, 
+													"Etc/UTC", 
+													bookmarkText,
+													RepeatType.CONTINUOUSGHOST.id,
+													null,
+													baseDate),
+							stats)
+	}
+
 	protected EntryGroup createOrFetchGroup() {
 		if (group != null) return group
 

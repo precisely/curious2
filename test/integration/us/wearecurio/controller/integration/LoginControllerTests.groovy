@@ -341,7 +341,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		
 		def rU = controller.response.redirectedUrl
 		
-		assert rU.endsWith('/home/index')
+		assert rU.contains('/home/index?')
 	}
 
 	@Test
