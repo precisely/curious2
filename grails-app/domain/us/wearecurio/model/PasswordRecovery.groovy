@@ -2,10 +2,7 @@ package us.wearecurio.model
 
 import org.apache.commons.logging.LogFactory
 
-import java.sql.ResultSet
-import java.util.TreeSet
 import us.wearecurio.utility.Utils
-import java.util.Random
 
 class PasswordRecovery {
 
@@ -72,6 +69,10 @@ class PasswordRecovery {
 		Date now = new Date()
 		
 		PasswordRecovery retVal = PasswordRecovery.findByCodeAndType(code, type)
+		
+		if (retVal == null && code.endsWith(",")) {
+			retVal = PasswordRecovery.findByCodeAndType(code.substring(0, code.length() - 1), type)			
+		}
 		
 		if (retVal == null || retVal.getStart().getTime() < getStaleAgoTicks()) {
 			return null
