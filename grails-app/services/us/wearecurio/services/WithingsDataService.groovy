@@ -1,7 +1,6 @@
 package us.wearecurio.services
 
 import grails.converters.JSON
-
 import org.springframework.transaction.annotation.Transactional
 
 import java.text.SimpleDateFormat
@@ -12,7 +11,7 @@ import org.scribe.model.Response
 import org.scribe.model.Token
 
 import us.wearecurio.model.*
-import us.wearecurio.services.DataService.DataRequestContext;
+import us.wearecurio.services.DataService.DataRequestContext
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
@@ -27,7 +26,7 @@ import java.util.concurrent.PriorityBlockingQueue
 class WithingsDataService extends DataService {
 
 	static transactional = false
-	static final String BASE_URL = "https://wbsapi.withings.net"
+	static final String BASE_URL = "https://wbsapi.withings.net/v2"
 	static final String COMMENT = "(Withings)"
 	static final String SET_NAME = "WI"
 	static final String SOURCE_NAME = "Withings Data"
@@ -98,13 +97,15 @@ class WithingsDataService extends DataService {
 			if (offset > 0)
 				queryParameters.put("offset", offset.toString())
 
-			Long lastPolled = startDate.time / 1000L
+			Long lastPolled = startDate.getTime() / 1000L
 			if (!refreshAll) {
+				endDate = endDate ?: new Date()
+				Long endDateParameter = endDate.getTime() / 1000L
 				queryParameters.put("startdate", lastPolled)
-				queryParameters.put("enddate", endDate ? endDate.time / 1000L : new Date().time / 1000L)
+				queryParameters.put("enddate", endDateParameter)
 			}
 
-			String subscriptionURL = urlService.makeQueryString(BASE_URL + "/measure", queryParameters)
+			String subscriptionURL = urlService.makeQueryString("https://wbsapi.withings.net/measure", queryParameters)
 
 			JSONObject data = getResponse(account.tokenInstance, subscriptionURL)
 
@@ -202,7 +203,7 @@ class WithingsDataService extends DataService {
 
 		Map queryParameters = getActivityDataParameters(account.accountId, startDate, endDate, false)
 
-		JSONObject data = getResponse(account.tokenInstance, BASE_URL + "/v2/measure", "get", queryParameters)
+		JSONObject data = getResponse(account.tokenInstance, BASE_URL + "/measure", "get", queryParameters)
 
 		if (data.status != 0) {
 			log.error "Error status [$data.status] returned while getting withings activity data. [$data]"
@@ -491,7 +492,7 @@ class WithingsDataService extends DataService {
 
 		Map queryParameters = getActivityDataParameters(accountId, startDate, endDate, intraDay)
 
-		getResponse(tokenInstance, BASE_URL + "/v2/measure", "get", queryParameters)
+		getResponse(tokenInstance, BASE_URL + "/measure", "get", queryParameters)
 	}
 
 	@Transactional
@@ -501,7 +502,7 @@ class WithingsDataService extends DataService {
 
 	@Transactional
 	void listSubscription(OAuthAccount account) {
-		Response response = oauthService.getWithingsResource(account.tokenInstance, BASE_URL + "/notify?action=list&userid=$account.accountId")
+		Response response = oauthService.getWithingsResource(account.tokenInstance, "https://wbsapi.withings.net/notify?action=list&userid=$account.accountId")
 		log.info "Subscription list response, code: [$response.code], body: [$response.body]"
 	}
 
@@ -544,7 +545,7 @@ class WithingsDataService extends DataService {
 	Map subscribe(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		checkNotNull(account)
 		Long userId = account.userId
-		Map response = super.subscribe(userId, BASE_URL + "/notify", "get", getSubscriptionParameters(account, true))
+		Map response = super.subscribe(userId, "https://wbsapi.withings.net/notify", "get", getSubscriptionParameters(account, true))
 
 		int withingsResponseStatus = response["body"].status
 
@@ -579,7 +580,7 @@ class WithingsDataService extends DataService {
 		OAuthAccount account = getOAuthAccountInstance(userId)
 		checkNotNull(account)
 
-		Map result = super.unsubscribe(userId, BASE_URL + "/notify", "get", getSubscriptionParameters(account, false))
+		Map result = super.unsubscribe(userId, "https://wbsapi.withings.net/notify", "get", getSubscriptionParameters(account, false))
 
 		int withingsResponseCode = result["body"].status
 
