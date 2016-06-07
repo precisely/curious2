@@ -710,7 +710,7 @@ class UnitGroupMap {
 	static UnitGroupMap theMap
 	
 	static UnitGroupMap fetchTheMap() {
-		if (theMap) return theMap
+		if (theMap != null) return theMap
 		theMap = new UnitGroupMap()
 	}
 	

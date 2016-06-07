@@ -133,6 +133,29 @@ class EntryParserServiceTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testAmountBeforeTag() {
+		// make sure pinned durations do not complete each other
+		println("== Test creation of start entry ==")
+		
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "2 bananas", null, null, baseDate, true), new EntryStats())
+
+		assert entry.amount == 2.0d
+		assert entry.units == ""
+		assert entry.description == "bananas"
+	}
+
+	@Test
+	void testTimeAppliedToCommaList() {
+		// make sure pinned durations do not complete each other
+		println("== Test creation of multiple entries")
+		
+		def (status, entries) = Entry.parseAndCreate(userId, new EntryStats(), currentTime, timeZone, "coffee, bananas 2pm, running 5pm", null, null, baseDate, true, 0)
+
+		assert entries[0].date == entries[1].date
+		assert entries[2].date != entries[0].date
+	}
+
+/*	@Test
 	void testNumberField() {
 		// make sure pinned durations do not complete each other
 		println("== Test creation of start entry ==")

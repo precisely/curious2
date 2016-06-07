@@ -71,8 +71,26 @@ class DataController extends LoginController {
 		
 		String text = p.text
 		
-		def parsedEntry = entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, defaultToNow, p.tutorial ? EntryParserService.UPDATEMODE_TUTORIAL : 0)
-		return parsedEntry
+		return entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, defaultToNow, p.tutorial ? EntryParserService.UPDATEMODE_TUTORIAL : 0)
+	}
+
+	private def createEntries(Map params, User user, EntryStats stats) {
+		def p = [defaultToNow:'1']
+		p.putAll(params)
+
+		boolean defaultToNow = (p.defaultToNow == '1')
+
+		debug "DataController.createEntries() params:" + p
+
+		Date currentTime = parseDate(p.currentTime)
+		Date baseDate = parseDate(p.baseDate)
+		Long repeatTypeId = parseLong(p.repeatTypeId)
+		Date repeatEnd = parseDate(p.repeatEnd)
+		String timeZoneName = p.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(p.baseDate) : p.timeZoneName
+
+		debug("Current time " + currentTime + " baseDate " + baseDate)
+		
+		return Entry.parseAndCreate(user.id, stats, currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, defaultToNow, p.tutorial ? EntryParserService.UPDATEMODE_TUTORIAL : 0)
 	}
 
 	protected def doAddEntry(Map params) {
@@ -80,39 +98,19 @@ class DataController extends LoginController {
 
 		User user = authStatus.user
 		// preprocess text and split by commas
-		EntryCommaSegmenter segmenter = new EntryCommaSegmenter(params.text)
 		
 		String text
 		
 		EntryStats stats = new EntryStats(user.id)
 		
-		Entry entry = null
-		
-		def status = null
-		
-		def entries = []
-		
 		debug("Original entry text: " + params.text)
 		
-		while (text = segmenter.next()) {
-			params.text = text
+		def (status, entries) = createEntries(params, user, stats)
 			
-			debug("Next segment: " + text)
-			
-			def parsedEntry = getParsedEntry(params, user)
-			
-			if (parsedEntry == null)
-				return 'Syntax error trying to parse entry'
-				
-			status = parsedEntry.status
-	
-			entry = Entry.create(user.id, parsedEntry, stats)
-			
-			entries.add(entry)
-			debug("created " + entry)
-		}
 		ArrayList<TagStats> tagStats = stats.finish()
 
+		Entry entry = entries.last()
+		
 		if (entry == null)
 			return 'No entry text provided'
 		

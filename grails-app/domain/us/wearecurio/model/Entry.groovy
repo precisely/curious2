@@ -5,6 +5,7 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDate
 import org.joda.time.LocalTime
+
 import us.wearecurio.collection.SingleCollection
 import us.wearecurio.data.DataRetriever
 import us.wearecurio.data.DecoratedUnitRatio
@@ -13,6 +14,7 @@ import us.wearecurio.data.RepeatType
 import us.wearecurio.data.TagUnitStatsInterface
 import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.datetime.IncrementingDateTime
+import us.wearecurio.parse.EntryCommaSegmenter
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.EntryParserService.ParseAmount
@@ -20,9 +22,12 @@ import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.TagUnitMap
 import us.wearecurio.utility.Utils
+import us.wearecurio.services.EntryParserService
+import us.wearecurio.services.EntryParserService.ParseAmount
 
 import java.math.MathContext
 import java.text.DateFormat
+import java.util.Date;
 
 class Entry implements Comparable {
 
@@ -549,6 +554,46 @@ class Entry implements Comparable {
 		}
 	}
 
+	/**
+	 * Create Entry from parse parameters, entryStr may be comma-separated list of entries
+	 * 
+	 * returns [status, entries array]
+	 */
+	static def parseAndCreate(Long userId, EntryStats stats, Date currentTime, String timeZoneName, String entryStr, Long repeatTypeId, Date repeatEnd, Date baseDate, boolean defaultToNow = true, int updateMode) {
+		EntryCommaSegmenter segmenter = new EntryCommaSegmenter(entryStr)
+		
+		def entries = []
+		def parsedList = []
+		def previousParsedList = []
+		def status
+		def parsed
+		
+		String text
+		
+		Date dateSpecified = null
+		
+		while (text = segmenter.next()) {	
+			parsed = EntryParserService.get().parse(currentTime, timeZoneName, text, repeatTypeId, repeatEnd, baseDate, defaultToNow, updateMode)
+		
+			status = parsed.status
+			
+			if (parsed.foundTime) {
+				for (previousParsed in previousParsedList) {
+					previousParsed.date = parsed.date
+				}
+				previousParsedList = []
+			} else
+				previousParsedList.add(parsed)
+			
+			parsedList.add(parsed)
+		}
+
+		for (parsed2 in parsedList) {
+			entries.add(Entry.create(userId, parsed2, stats))
+		}
+		
+		return [status, entries]
+	}
 	/**
 	 * Create Entry
 	 *

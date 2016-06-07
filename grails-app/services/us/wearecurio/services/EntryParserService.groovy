@@ -786,6 +786,7 @@ class EntryParserService {
 				comment = context.repeatSuffix
 		
 		if (!context.foundTime) {
+			context.retVal['foundTime'] = false
 			if (date != null) {
 				date = time;
 				if (!(defaultToNow && today && (!forUpdate))) { // only default to now if entry is for today and not editing
@@ -799,6 +800,7 @@ class EntryParserService {
 			}
 		} else if (date != null) {
 			if (context.hours == null && date != null) {
+				context.retVal['foundTime'] = false
 				date = time;
 				if ((!defaultToNow) || forUpdate) {
 					date = new Date(date.getTime() + 12 * 3600000L);
@@ -807,6 +809,7 @@ class EntryParserService {
 					context.retVal['status'] = "Entering event for today, not displayed";
 				}
 			} else {
+				context.retVal['foundTime'] = true
 				long ts = date.getTime();
 				if (context.hours >= 0 && context.hours < 24) {
 					ts += context.hours * 3600000L;
@@ -901,7 +904,17 @@ class EntryParserService {
 				context.retVal['repeatType'] = ((RepeatType)context.retVal['repeatType']).makeGhost()
 		}
 
-		if (!description) description = "cannot understand what you typed"
+		if (!description) {
+			if (context.amounts.size() > 0) {
+				ParseAmount amount = context.amounts[0]
+				if (amount?.units) {
+					description = amount.units
+					amount.units = null
+				}
+			}
+			if (!description)
+				description = "cannot understand what you typed"
+		}
 		Tag baseTag = Tag.look(description)
 		if (!baseTag) baseTag = Tag.look("cannot understand what you typed")
 		context.retVal['baseTag'] = baseTag
