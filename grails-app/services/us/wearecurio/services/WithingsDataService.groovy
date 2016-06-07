@@ -548,6 +548,7 @@ class WithingsDataService extends DataService {
 		Map response = super.subscribe(userId, "https://wbsapi.withings.net/notify", "get", getSubscriptionParameters(account, true))
 
 		int withingsResponseStatus = response["body"].status
+		String error = response["body"].error
 
 		return DatabaseService.retry(account) {
 			if (withingsResponseStatus == 0) {
@@ -557,12 +558,13 @@ class WithingsDataService extends DataService {
 				return [success: true, account: account]
 			}
 			log.warn "Subscription failed for account: $account with status: " + withingsResponseStatus
-			Map result = [success: false, status: withingsResponseStatus, account: account]
+			Map result = [success: false, status: withingsResponseStatus, account: account, error: error]
 
 			switch (withingsResponseStatus) {
 				case 293:	// Notification URL is not responding.
 				case 2555:	// Notification URL not found.
 					result.message = "Please try again after some time"
+					Utils.reportError("Withings error for account " + account.id, "Error: " + error)
 					break
 				case 342:
 					account.clearAccessToken()
