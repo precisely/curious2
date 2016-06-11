@@ -502,7 +502,7 @@ class WithingsDataService extends DataService {
 
 	@Transactional
 	void listSubscription(OAuthAccount account) {
-		Response response = oauthService.getWithingsResource(account.tokenInstance, "https://wbsapi.withings.net/notify?action=list&userid=$account.accountId")
+		Response response = oauthService.getWithingsResource(account.tokenInstance, "http://wbsapi.withings.net/notify?action=list&userid=$account.accountId")
 		log.info "Subscription list response, code: [$response.code], body: [$response.body]"
 	}
 
@@ -545,7 +545,7 @@ class WithingsDataService extends DataService {
 	Map subscribe(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		checkNotNull(account)
 		Long userId = account.userId
-		Map response = super.subscribe(userId, "https://wbsapi.withings.net/notify", "get", getSubscriptionParameters(account, true))
+		Map response = super.subscribe(userId, "http://wbsapi.withings.net/notify", "get", getSubscriptionParameters(account, true))
 
 		int withingsResponseStatus = response["body"].status
 		String error = response["body"].error
@@ -582,7 +582,7 @@ class WithingsDataService extends DataService {
 		OAuthAccount account = getOAuthAccountInstance(userId)
 		checkNotNull(account)
 
-		Map result = super.unsubscribe(userId, "https://wbsapi.withings.net/notify", "get", getSubscriptionParameters(account, false))
+		Map result = super.unsubscribe(userId, "http://wbsapi.withings.net/notify", "get", getSubscriptionParameters(account, false))
 
 		int withingsResponseCode = result["body"].status
 
