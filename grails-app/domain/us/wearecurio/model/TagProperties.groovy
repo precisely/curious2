@@ -70,6 +70,8 @@ class TagProperties {
 	static TagProperties createOrLookup(long userId, long tagId) {
 		TagProperties props
 		
+		userId = userId // seems to be needed to avoid strange Groovy compilation error?
+		
 		TagProperties.withTransaction {
 			props = TagProperties.findByTagIdAndUserId(tagId, userId)
 	

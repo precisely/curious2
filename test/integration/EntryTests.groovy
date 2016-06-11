@@ -177,7 +177,7 @@ class EntryTests extends CuriousTestCase {
 		activated2 = activated2
 	}
 	
-/*	@Test
+	@Test
 	void testRemind() {
 		EntryStats stats = new EntryStats()
 		
