@@ -742,7 +742,7 @@ class Entry implements Comparable {
 		}
 		DateTime repeatEndLimitDateTime = new DateTime(repeatEndLimit, dateTimeZone)
 		this.repeatTypeId = newRepeatType.id
-		this.repeatEnd = IncrementingDateTime.lastRepeatBeforeDateTime(fetchDateTime(), repeatEndLimitDateTime, newRepeatType.intervalCode())?.toDate()
+		this.repeatEnd = IncrementingDateTime.lastRepeatBeforeOrEqualToDateTime(fetchDateTime(), repeatEndLimitDateTime, newRepeatType.intervalCode())?.toDate()
 	}
 
 	/*

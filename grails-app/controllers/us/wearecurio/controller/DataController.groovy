@@ -193,6 +193,9 @@ class DataController extends LoginController {
 		}
 
 		boolean wasContinuous = entry.getRepeatType()?.isContinuous()
+		
+		if (repeatEnd == null && entry.repeatEnd != null)
+			repeatEnd = entry.repeatEnd
 
 		def m = entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, false, 1)
 

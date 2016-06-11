@@ -149,6 +149,35 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testRemindActivateTwice() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread remind", null, null, earlyBaseDate, true), new EntryStats())
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:remind, repeatType:517, repeatEnd:null)")
+		
+		assert testEntries(user, timeZone, baseDate, currentTime) {
+			assert it.id == entry.getId()
+		} == 1
+	
+		EntryStats stats = new EntryStats(userId)
+		
+		Entry activated = entry.update(null, stats, baseDate, false)
+		String v = activated.valueString()
+		assert activated.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:remind, repeatType:5, repeatEnd:2010-07-01T19:00:00)")
+		assert activated.repeatEnd != null
+		
+		assert testEntries(user, timeZone, veryLateBaseDate, lateCurrentTime) {
+		} == 1
+	
+		Date baseDateYesterday = baseDate - 1
+
+		Entry activated2 = entry.update(null, stats, baseDateYesterday, false)
+
+		assert testEntries(user, timeZone, veryLateBaseDate, lateCurrentTime) {
+		} == 1
+	
+		activated2 = activated2
+	}
+	
+/*	@Test
 	void testRemind() {
 		EntryStats stats = new EntryStats()
 		
@@ -181,7 +210,7 @@ class EntryTests extends CuriousTestCase {
 		}
 	}
 
-/*	@Test
+	@Test
 	void testNormalizedDataContinuous() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "weight 122lbs 2000 feet 2pm", null, null, baseDate, true), new EntryStats())	
 		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "weight 110lbs 3pm", null, null, baseDate, true), new EntryStats())
