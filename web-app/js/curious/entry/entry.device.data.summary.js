@@ -53,11 +53,15 @@ function EntryDeviceDataSummary(deviceTagEntries) {
 			if (!normalizedAmounts) {
 				return;
 			}
+			var units = [];
+			var currentUnit;
 
 			for (var i in normalizedAmounts) {
-				var currentGroup = groupedData[normalizedAmounts[i].units] =
-						groupedData[normalizedAmounts[i].units] || [];
+				currentUnit = units.indexOf(normalizedAmounts[i].units) > -1 ? normalizedAmounts[i].units + i : normalizedAmounts[i].units;
+				var currentGroup = groupedData[currentUnit] =
+						groupedData[currentUnit] || [];
 				currentGroup.push(normalizedAmounts[i]);
+				units.push(normalizedAmounts[i].units);
 			}
 		}.bind(this));
 
