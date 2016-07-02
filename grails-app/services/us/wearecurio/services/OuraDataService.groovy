@@ -4,6 +4,8 @@ import grails.converters.JSON
 import groovy.time.TimeCategory
 import groovyx.net.http.URIBuilder
 
+import java.text.SimpleDateFormat
+
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.joda.time.DateTime
@@ -16,7 +18,7 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
-import us.wearecurio.services.DataService.DataRequestContext;
+import us.wearecurio.services.DataService.DataRequestContext
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
@@ -25,8 +27,6 @@ import us.wearecurio.thirdparty.TagUnitMap
 import us.wearecurio.thirdparty.oura.OuraApi
 import us.wearecurio.thirdparty.oura.OuraTagUnitMap
 import us.wearecurio.utility.Utils
-
-import java.text.SimpleDateFormat
 
 class OuraDataService extends DataService {
 
@@ -144,7 +144,7 @@ class OuraDataService extends DataService {
 
 			["bedtime_m", "sleep_score", "awake_m", "rem_m", "light_m", "deep_m"].each { key ->
 				if (sleepEntryData[key]) {
-					tagUnitMap.buildEntry(creationMap, stats, key, Long.parseLong(sleepEntryData[key].toString()),
+					tagUnitMap.buildEntry(creationMap, stats, key, new BigDecimal(sleepEntryData[key].toString()),
 							userId, timeZoneIdNumber, sleepEnd, COMMENT, setName)
 				}
 			}
