@@ -113,7 +113,8 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 3,
 				type: "sleep", eventTime: 1434440700, data: {bedtime_m: 510, sleep_score: 86, awake_m: 52, rem_m: 78, light_m: 220, deep_m: 160}},
 				{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 3,
-				type: "sleep", eventTime: 1424440700, data: {bedtime_m: 430, sleep_score: 76, awake_m: 42, rem_m: 68, light_m: 320, deep_m: 260}}]}"""
+				type: "sleep", eventTime: 1424440700, data: {bedtime_m: 430, sleep_score: 76, awake_m: 42, rem_m: 68,
+				 light_m: 320, deep_m: 2.60}}]}"""
 		ouraDataService.oauthService = [
 				getOuraResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection(mockedResponseData))

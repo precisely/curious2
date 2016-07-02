@@ -59,7 +59,7 @@ class OuraDataService extends DataService {
 		getDataSleep(account, startDate, endDate, false, context)
 		// Uncomment these below 2 lines when Oura starts sending the activity & exercise data
 		//getDataExercise(account, startDate, endDate, false, context)
-		//getDataActivity(account, startDate, endDate, false, context)
+		getDataActivity(account, startDate, endDate, false, context)
 
 		Utils.save(account, true)
 		[success: true]
@@ -144,7 +144,7 @@ class OuraDataService extends DataService {
 
 			["bedtime_m", "sleep_score", "awake_m", "rem_m", "light_m", "deep_m"].each { key ->
 				if (sleepEntryData[key]) {
-					tagUnitMap.buildEntry(creationMap, stats, key, Long.parseLong(sleepEntryData[key].toString()),
+					tagUnitMap.buildEntry(creationMap, stats, key, Double.parseDouble(sleepEntryData[key].toString()),
 							userId, timeZoneIdNumber, sleepEnd, COMMENT, setName)
 				}
 			}
