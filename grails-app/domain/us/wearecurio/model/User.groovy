@@ -617,13 +617,20 @@ class User {
 
 	static def getTagData(def userId) {
 		return User.withTransaction {
-			DatabaseService.get().sqlRows("""SELECT t.id AS id, t.description AS description,
-					IF(prop.data_type_manual IS NULL OR prop.data_type_manual = 0, IF(prop.data_type_computed IS NULL OR prop.data_type_computed = 2, 0, 1), prop.data_type_manual = 1) AS iscontinuous,
+			def rows = DatabaseService.get().sqlRows("""SELECT t.id AS id, t.description AS description,
+					IF(prop.data_type_manual IS NULL OR prop.data_type_manual = 0, IF(prop.data_type_computed IS NULL, 2, IF(prop.data_type_computed = 2, 0, 1)), prop.data_type_manual = 1) AS iscontinuous,
 					prop.show_points AS showpoints, stat.count_last_three_months as lastThreeMonthsCount FROM entry e INNER JOIN tag t ON e.tag_id = t.id
 					LEFT JOIN tag_properties prop ON prop.user_id = e.user_id AND prop.tag_id = t.id
 					LEFT JOIN tag_stats stat on stat.user_id=e.user_id and stat.tag_id=t.id
 					WHERE e.user_id = :userId AND e.date IS NOT NULL GROUP BY t.id ORDER BY t.description""",
 							[userId:userId.toLong()])
+			
+			for (row in rows) {
+				if (row.iscontinuous == 2) {
+					row.iscontinuous = TagProperties.createOrLookup(userId, Tag.findByDescription(row.description).id).dataTypeComputed == TagProperties.DataType.CONTINUOUS ? 1 : 0
+				}
+			}
+			return rows
 		}
 	}
 

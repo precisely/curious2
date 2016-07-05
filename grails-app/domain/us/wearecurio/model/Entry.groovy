@@ -2063,7 +2063,7 @@ class Entry implements Comparable {
 		Map normalizedAmounts = [:]
 
 		for (Entry e : fetchGroupEntries()) {
-			UnitGroupMap.theMap.getJSONAmounts(userId, tag.id, amounts, normalizedAmounts, e.getAmount(), e.fetchAmountPrecision(), e.getUnits())
+			UnitGroupMap.theMap.getJSONAmounts(userId, e.tag.id, amounts, normalizedAmounts, e.getAmount(), e.fetchAmountPrecision(), e.getUnits())
 		}
 
 		retVal['amounts'] = amounts
@@ -2093,7 +2093,7 @@ class Entry implements Comparable {
 		Map normalizedAmounts = [:]
 
 		for (Entry e : fetchGroupEntries()) {
-			UnitGroupMap.theMap.getJSONAmounts(userId, tag.id, amounts, normalizedAmounts, e.getAmount(), e.fetchAmountPrecision(), e.getUnits())
+			UnitGroupMap.theMap.getJSONAmounts(userId, e.tag.id, amounts, normalizedAmounts, e.getAmount(), e.fetchAmountPrecision(), e.getUnits())
 		}
 
 		retVal['amounts'] = amounts

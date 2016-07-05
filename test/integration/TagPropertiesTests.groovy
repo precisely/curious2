@@ -51,6 +51,9 @@ class TagPropertiesTests extends CuriousUserTestCase {
 		assert TagProperties.isContinuousWord("cholesterol") == true
 		assert TagProperties.isContinuousWord("thighs [distance]") == true
 		assert TagProperties.isContinuousWord("thigh circumference [distance]") == true
+		assert TagProperties.isContinuousWord("blood pressure") == true
+		assert TagProperties.isContinuousWord("blood pressure [systolic]") == true
+		assert TagProperties.isContinuousWord("blood pressure [diastolic]") == true
 	}
 
 /*	@Test

@@ -82,11 +82,11 @@ abstract class TagUnitMap {
 			activitySteps: [tag: "$ACTIVITY", unit: "steps"],
 			activityDuration: [tag: "$ACTIVITY", unit: "min", convert: true, from:"seconds"],
 
-			bpDiastolic: [tag: "blood pressure", suffix: "diastolic", unit: "mmHg"],
-			bpSystolic: [tag: "blood pressure", suffix: "systolic", unit: "mmHg"],
-			fatFreeMass: [tag: "fat", unit: "lbs free", amountPrecision: 2, convert: true, from:"kg"],
-			fatRatio: [tag: "fat", unit: "% ratio"],
-			fatMassWeight: [tag: "fat", unit: "lbs mass", amountPrecision: 2, convert: true, from: "kg"],
+			bpDiastolic: [tag: "blood pressure", suffix: "[diastolic]", unit: "mmHg"],
+			bpSystolic: [tag: "blood pressure", suffix: "[systolic]", unit: "mmHg"],
+			fatFreeMass: [tag: "weight", unit: "lbs fat-free", amountPrecision: 2, convert: true, from:"kg"],
+			fatRatio: [tag: "fat ratio", unit: "%"],
+			fatMassWeight: [tag: "fat mass", unit: "lbs", amountPrecision: 2, convert: true, from: "kg"],
 			heartRate: [tag: "heart rate", unit: "bpm"],
 			height: [tag: "height", unit: "feet", amountPrecision: 5, convert: true, from: "meters"],
 			steps: [tag: "$ACTIVITY", unit: "steps"],	// @Deprecated. Use `activitySteps` instead.

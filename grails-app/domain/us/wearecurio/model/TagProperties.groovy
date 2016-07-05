@@ -56,7 +56,7 @@ class TagProperties {
 
 	static CONTINUOUS_PATTERNS = ["weight", "rate", "pulse", "cholesterol", "temp", "temperature", "pressure", "air quality", "mood", "density", "glucose", "blood", "cholesterol",
 			"hdl", "ldl", "thyroid", "compounded", "cortisol", "serum", "creatinine", "/bacteria\\b/", "ratio", "bmi", "body mass index", "heart rate", "hr", "hrv",
-			"heart rate variability", "co2", "platelet count", "body fat", "/\\bhips\\b.*\\[distance\\]/", "/\\bwaist\\b.*\\[distance\\]/", "/\\bchest\\b.*\\[distance\\]/",
+			"heart rate variability", "co2", "platelet count", "fat", "body fat", "/\\bhips\\b.*\\[distance\\]/", "/\\bwaist\\b.*\\[distance\\]/", "/\\bchest\\b.*\\[distance\\]/",
 			"/\\bbiceps\\b.*\\[distance\\]/", "/\\bbicep\\b.*\\[distance\\]/", "/\\bthighs\\b.*\\[distance\\]/", "/\\bthigh\\b.*\\[distance\\]/", "/\\bcalves\\b.*\\[distance\\]/", "bdt", "respiration", "hrv", "heart-rate", "bp", "cbc",
 			"blood sugar", "glucose", "fbs", "fbg", "pulse"]
 	static CONTINUOUS_EXCLUSION_PATTERNS = ["weight watchers", "blood orange"]
