@@ -89,7 +89,7 @@ class OauthAccountService {
 	}
 
 	/**
-	 * Refresh all tokens which will expire before two days from now
+	 * Refresh all tokens which will expire before five days from now
 	 */
 	void refreshAll() {
 		OAuthAccount.withCriteria {

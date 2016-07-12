@@ -56,10 +56,9 @@ class OuraDataService extends DataService {
 		}
 		endDate = endDate ?: new Date()
 
-		getDataSleep(account, startDate, endDate, false, context)
-		// Uncomment these below 2 lines when Oura starts sending the activity & exercise data
-		//getDataExercise(account, startDate, endDate, false, context)
-		getDataActivity(account, startDate, endDate, false, context)
+		getDataSleep(account, startDate, endDate, false)
+		getDataExercise(account, startDate, endDate, false)
+		getDataActivity(account, startDate, endDate, false)
 
 		Utils.save(account, true)
 		[success: true]
