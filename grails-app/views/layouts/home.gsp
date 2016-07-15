@@ -97,9 +97,9 @@
 							<a href="http://bit.ly/curious-app-store" class="ios-app-link">
 								<img width="80" src="/images/appstore.png">
 							</a>
-							<a href='http://bit.ly/29NhEUm'>
-								<img alt='Get it on Google Play' height="35"
-									 src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png'/>
+							<a href='http://bit.ly/curious-play-store'>
+								<img alt='Get it on Google Play' height="23"
+									 src='/images/google-play-badge.png'/>
 							</a>
 							<a href="https://twitter.com/wearecurious">
 								<i class="fa fa-twitter" style="color: white; font-size: 30px; margin-right: 15px"></i>

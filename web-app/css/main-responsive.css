@@ -19,6 +19,14 @@
 	.get-started-buttons .ios-app-link img {
 		height: 28px;
 	}
+
+	.get-started-buttons .android-app-link img {
+		height: 28px;
+	}
+	.home-logo-wrapper a {
+		margin-right: 0px;
+	}
+
 }
 
 /*
