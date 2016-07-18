@@ -44,6 +44,7 @@ class WithingsDataService extends DataService {
 	@Override
 	@Transactional
 	List<ThirdPartyNotification> notificationHandler(String notificationData) {
+		log.debug "WithingsDataService.notificationHandler() Notification data: $notificationData"
 		JSONObject notification = JSON.parse(notificationData)
 		if (!notification.userid) {	// At time of subscription
 			return
@@ -55,6 +56,7 @@ class WithingsDataService extends DataService {
 
 	@Transactional
 	ThirdPartyNotification saveNotification(Date notificationDate, String accountId) {
+		log.debug "WithingsDataService.saveNotification() Notification date: $notificationDate, accountId: $accountId"
 		ThirdPartyNotification notification = new ThirdPartyNotification([collectionType: "default", date:
 				notificationDate, ownerId: accountId, subscriptionId: "", ownerType: "user", typeId: typeId])
 
