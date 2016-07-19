@@ -85,28 +85,31 @@ class RemindEmailService {
 		int numReminders = 0
 		
 		for (def user in remindUsers) {
-			def c = Entry.createCriteria()
-			def userId = user[0]
-			def email = user[1]
-			def u = User.get(userId)
-			def devices = PushNotificationDevice.findAllByUserId(userId)
-			def url = "https://dev.wearecurio.us/home/index"
-			
-			if (userId == 1L)
-				userId = userId
-
-			def remindEvents = Entry.fetchReminders(u, oldDate, (long)((now.getTime() - oldDate.getTime()) / 1000L))
-			
-			if (remindEvents?.size()) {
-				log.debug "Reminder for user " + userId + " " + u?.username
-				log.debug "User devices registered for notification " + devices.size()
-				log.debug "Number of remind events found "+remindEvents.size()
+			try {
+				def c = Entry.createCriteria()
+				def userId = user[0]
+				def email = user[1]
+				def u = User.get(userId)
+				def devices = PushNotificationDevice.findAllByUserId(userId)
+				def url = "https://dev.wearecurio.us/home/index"
+				
+				if (userId == 1L)
+					userId = userId
+	
+				def remindEvents = Entry.fetchReminders(u, oldDate, (long)((now.getTime() - oldDate.getTime()) / 1000L))
+				
+				if (remindEvents?.size()) {
+					log.debug "Reminder for user " + userId + " " + u?.username
+					log.debug "User devices registered for notification " + devices.size()
+					log.debug "Number of remind events found "+remindEvents.size()
+				}
+				for (AlertNotification alert in remindEvents) {
+					if (sendReminderForEvent(userId, email, alert, devices))
+						++numReminders
+				}
+			} catch (Throwable t) {
+				Utils.reportError("Error while sending reminders", t)
 			}
-			for (AlertNotification alert in remindEvents) {
-				if (sendReminderForEvent(userId, email, alert, devices))
-					++numReminders
-			}
-			
 		}
 		
 		rec.setDate(now)

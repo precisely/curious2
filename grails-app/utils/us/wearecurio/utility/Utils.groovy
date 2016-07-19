@@ -54,21 +54,26 @@ class Utils {
 	}
 	
 	static reportError(String title, Throwable e) {
-		ByteArrayOutputStream os = new ByteArrayOutputStream()
-		e.printStackTrace(new PrintStream(os))
-		e.printStackTrace()
-		String output = os.toString("UTF8")
-		
-		log.error "Reporting exception during operation " + title + ": " + e
-		
-		String messageBody = "Error:\n" + output
-		String messageSubject = title + ": " + GrailsUtil.environment
+		try {
+			ByteArrayOutputStream os = new ByteArrayOutputStream()
+			e.printStackTrace(new PrintStream(os))
+			e.printStackTrace()
+			String output = os.toString("UTF8")
+			
+			log.error "Reporting exception during operation " + title + ": " + e
+			
+			String messageBody = "Error:\n" + output
+			String messageSubject = title + ": " + GrailsUtil.environment
 
-		EmailService.get().sendMail {
-			to "server@wearecurio.us"
-			from "server@wearecurio.us"
-			subject messageSubject
-			body messageBody
+			EmailService.get().sendMail {
+				to "server@wearecurio.us"
+				from "server@wearecurio.us"
+				subject messageSubject
+				body messageBody
+			}
+		} catch (Throwable t) {
+			log.error "Error while attempting to send email error report: " + t
+			t.printStackTrace()
 		}
 	}
 
