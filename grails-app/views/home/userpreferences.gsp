@@ -289,9 +289,6 @@ function editUserDetails() {
 										<g:if test="${it}">
 											<g:link action="unregisterJawboneUp">Unlink JawboneUp Account</g:link>
 										</g:if>
-										<!-- g:elseif test="${it && !it.accessToken }">
-											<g:link action="registerJawboneUp" class="text-danger">Re-link JawboneUp Account</g:link>
-										</g:elseif -->
 										<g:else>
 											<g:link action="registerJawboneUp">Link JawboneUp Account</g:link>
 										</g:else>
