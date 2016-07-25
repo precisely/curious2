@@ -265,9 +265,6 @@ function editUserDetails() {
 										<g:if test="${it}">
 											<g:link action="unregisterOura">Unlink Oura Account</g:link><br>
 										</g:if>
-										<!-- g:elseif test="${it && !it.accessToken }">
-											<g:link action="registerOura" class="text-danger">Re-link Oura Account</g:link><br>
-										</g:elseif -->
 										<g:else>
 											<g:link action="registerOura">Link Oura Account</g:link><br>
 										</g:else>
@@ -276,9 +273,6 @@ function editUserDetails() {
 										<g:if test="${it}">
 											<g:link action="unregisterwithings">Unlink Withings Account</g:link><br>
 										</g:if>
-										<!-- g:elseif test="${it && !it.accessToken }">
-											<g:link action="registerwithings" class="text-danger">Re-link Withings Account</g:link><br>
-										</g:elseif -->
 										<g:else>
 											<g:link action="registerwithings">Link Withings Account</g:link><br>
 										</g:else>
@@ -287,9 +281,6 @@ function editUserDetails() {
 										<g:if test="${it}">
 											<g:link action="unregistermoves">Unlink Moves Account</g:link><br>
 										</g:if>
-										<!--  g:elseif test="${it && !it.accessToken }">
-											<g:link action="registermoves" class="text-danger">Re-link Moves Account</g:link><br>
-										</g:elseif -->
 										<g:else>
 											<g:link action="registermoves">Link Moves Account</g:link><br>
 										</g:else>
