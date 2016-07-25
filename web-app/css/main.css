@@ -470,6 +470,10 @@ div.graphData.has-plot-data #height-balancer {
 
 }
 
+.home-logo-wrapper a {
+	margin-right: 10px;
+}
+
 .home-logo-wrapper .get-started-buttons {
 	margin-top: 44px;
 	margin-bottom: 20px;
@@ -477,11 +481,14 @@ div.graphData.has-plot-data #height-balancer {
 
 .get-started-buttons .ios-app-link img {
 	height: 46px;
-	margin-right: 15px;
 }
 
 .social-icons {
 	padding-top: 10px;
+}
+
+.social-icons img {
+	margin-right: 15px;
 }
 
 .social-icons a {

@@ -46,6 +46,10 @@
 					<a href="http://bit.ly/curious-app-store" class="ios-app-link">
 						<img src="/images/appstore.png">
 					</a>
+					<a href='http://bit.ly/curious-play-store' class="android-app-link">
+						<img alt='Get it on Google Play' height="46"
+							 	src='/images/google-play-badge.png'/>
+					</a>
 					<g:link action="register" params="${['precontroller':precontroller,'preaction':preaction]}"
 						class="btn btn-red btn-lg btn-flat">
 						Get Started
