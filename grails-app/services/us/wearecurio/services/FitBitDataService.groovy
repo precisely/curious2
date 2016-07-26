@@ -152,7 +152,7 @@ class FitBitDataService extends DataService {
 	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
 			InvalidAccessTokenException {
 		log.debug("FitBitDataService.getDataDefault() account " + account.getId() + " startDate: " + startDate + " refreshAll: " + refreshAll)
-		startDate = startDate ?: account.fetchLastData() ?: earlyStartDate
+		startDate = startDate ?: account.fetchLastDataDate() ?: earlyStartDate
 
 		getDataActivities(account, startDate, false, context)
 		getDataBody(account, startDate, false, context)

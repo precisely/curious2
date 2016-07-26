@@ -2,6 +2,7 @@ package us.wearecurio.services
 
 import grails.converters.JSON
 import grails.util.Environment
+import us.wearecurio.datetime.DateUtils
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
 
@@ -98,7 +99,7 @@ abstract class DataService {
 			throw new MissingOAuthAccountException(provider)
 		}
 
-		if ((instance instanceof Token) && !instance.token) {
+		if (((instance instanceof Token) && !instance.token) || ((instance instanceof OAuthAccount) && !instance.accessToken)) {
 			log.debug "Authentication required. Either null or blank token received."
 			throw new InvalidAccessTokenException()
 		}
@@ -444,24 +445,31 @@ abstract class DataService {
 
 		Long nowTime = new Date().getTime()
 
-		Long lastPoll = lastPollTimestamps.get(accountId)
-		
-		if (notificationDate != null && lastPoll != null && notificationDate < lastPoll) {
-			lastPoll = notificationDate
-			lastPollTimestamps.put(accountId, lastPoll)
-		} else if ((lastPoll != null) && (nowTime - lastPoll < 60000)) { // don't allow polling faster than once every minute
+		Long lastPollDOS = lastPollTimestamps.get(accountId)
+
+		Date dateToPollFrom = account.fetchLastDataDate() - 1
+		Date pollEndDate = null;
+
+		if ((lastPollDOS) && (nowTime - lastPollDOS < 60000)) { // don't allow polling faster than once every minute
 			log.warn "Polling faster than 1 minute for $provider with accountId: [$accountId]"
 			return false
 		}
 
+		if (notificationDate && dateToPollFrom && notificationDate < dateToPollFrom) {
+			dateToPollFrom = notificationDate
+			pollEndDate = DateUtils.getEndOfTheDay(notificationDate)
+		}
+
 		try {
-			getDataDefault(account, account.fetchLastData() - 1, null, false, new DataRequestContext())
+			getDataDefault(account, dateToPollFrom, pollEndDate, false, new DataRequestContext())
 		} catch (InvalidAccessTokenException e) {
 			log.warn "Token expired while polling for $account"
 			account.setAccountFailure()
 		} catch (Throwable t) {
 			Utils.reportError("Error while polling account " + account, t)
 		}
+		lastPollTimestamps[accountId] = account.lastPolled.getTime()
+		return true
 	}
 
 	/**

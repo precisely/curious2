@@ -22,6 +22,12 @@ function EntryData(entries) {
 	function collectDeviceEntries() {
 		deviceEntries = {};
 		normalEntries = [];
+		// If a key "disableDeviceDataGrouping" in localStorage is set
+		if (window.store && window.store.get("disableDeviceDataGrouping")) {
+			// Then don't group entries. Might be used for debugging
+			normalEntries = entries;
+			return;
+		}
 
 		jQuery.each(entries, function(index, entry) {
 			var source = entry["sourceName"];
