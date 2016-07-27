@@ -262,33 +262,45 @@ function editUserDetails() {
 								<div class="form-group">
 									<label class="control-label">External Accounts</label><br>
 									<oauth:checkSubscription userId="${user.id}" typeId="OURA">
-										<g:if test="${it}">
-											<g:link action="unregisterOura">Unlink Oura Account</g:link><br>
+										<g:if test="${it && !it.accessToken}">
+											<g:link action="registerOura">re-link Oura Account</g:link><br>
 										</g:if>
-										<g:else>
+										<g:elseif test="${!it}">
 											<g:link action="registerOura">Link Oura Account</g:link><br>
-										</g:else>
+										</g:elseif>
+										<g:elseif test="${it}">
+											<g:link action="unregisterOura">Unlink Oura Account</g:link><br>
+										</g:elseif>
 									</oauth:checkSubscription>
 									<oauth:checkSubscription userId="${user.id}" typeId="WITHINGS">
-										<g:if test="${it}">
-											<g:link action="unregisterwithings">Unlink Withings Account</g:link><br>
+										<g:if test="${it && !it.accessToken}">
+											<g:link action="registerwithings">re-link Withings Account</g:link><br>
 										</g:if>
+										<g:elseif test="${it}">
+											<g:link action="unregisterwithings">Unlink Withings Account</g:link><br>
+										</g:elseif>
 										<g:else>
 											<g:link action="registerwithings">Link Withings Account</g:link><br>
 										</g:else>
 									</oauth:checkSubscription>
 									<oauth:checkSubscription userId="${user.id}" typeId="MOVES">
-										<g:if test="${it}">
-											<g:link action="unregistermoves">Unlink Moves Account</g:link><br>
+										<g:if test="${it && !it.accessToken}">
+											<g:link action="registermoves">re-link Moves Account</g:link><br>
 										</g:if>
+										<g:elseif test="${it}">
+											<g:link action="unregistermoves">Unlink Moves Account</g:link><br>
+										</g:elseif>
 										<g:else>
 											<g:link action="registermoves">Link Moves Account</g:link><br>
 										</g:else>
 									</oauth:checkSubscription>
 									<oauth:checkSubscription userId="${user.id}" typeId="JAWBONE">
-										<g:if test="${it}">
-											<g:link action="unregisterJawboneUp">Unlink JawboneUp Account</g:link>
+										<g:if test="${it && !it.accessToken}">
+											<g:link action="registerJawboneUp">re-link JawboneUp Account</g:link><br>
 										</g:if>
+										<g:elseif test="${it}">
+											<g:link action="unregisterJawboneUp">Unlink JawboneUp Account</g:link>
+										</g:elseif>
 										<g:else>
 											<g:link action="registerJawboneUp">Link JawboneUp Account</g:link>
 										</g:else>

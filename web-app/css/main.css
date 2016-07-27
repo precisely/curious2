@@ -474,6 +474,10 @@ div.graphData.has-plot-data #height-balancer {
 	margin-right: 10px;
 }
 
+.home-logo-wrapper .ios-app-link, .home-logo-wrapper .android-app-link {
+	display: inline-block;
+}
+
 .home-logo-wrapper .get-started-buttons {
 	margin-top: 44px;
 	margin-bottom: 20px;

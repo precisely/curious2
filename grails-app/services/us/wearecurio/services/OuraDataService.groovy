@@ -56,9 +56,9 @@ class OuraDataService extends DataService {
 		}
 		endDate = endDate ?: new Date()
 
-		getDataSleep(account, startDate, endDate, false)
-		getDataExercise(account, startDate, endDate, false)
-		getDataActivity(account, startDate, endDate, false)
+		getDataSleep(account, startDate, endDate, false, context)
+		getDataExercise(account, startDate, endDate, false, context)
+		getDataActivity(account, startDate, endDate, false, context)
 
 		Utils.save(account, true)
 		[success: true]
@@ -97,7 +97,7 @@ class OuraDataService extends DataService {
 		log.debug "Get sleep data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
 		endDate = endDate ?: new Date()
-		
+
 		if (refreshAll) {
 			// Unsetting all historical data. Starting with the device set name prefix
 			unsetAllOldEntries(account.userId, SET_NAME)
@@ -169,7 +169,7 @@ class OuraDataService extends DataService {
 		log.debug "Get exercise data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
 		endDate = endDate ?: new Date()
-		
+
 		if (refreshAll) {
 			// Unsetting all historical data. Starting with the device set name prefix
 			unsetAllOldEntries(account.userId, SET_NAME)
@@ -276,9 +276,9 @@ class OuraDataService extends DataService {
 	void getDataActivity(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
 			InvalidAccessTokenException {
 		log.debug "Get activity data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
-		
+
 		endDate = endDate ?: new Date()
-		
+
 		if (refreshAll) {
 			// Unsetting all historical data. Starting with the device set name prefix
 			unsetAllOldEntries(account.userId, SET_NAME)
@@ -370,7 +370,7 @@ class OuraDataService extends DataService {
 	 */
 	List<String> getOldSetNames(String type, Date startDate, Date endDate) {
 		List setNames = []
-		
+
 		for (Date date = startDate; date <= endDate; date = date + 1) {
 			setNames << getOldSetName(type, date)
 		}
@@ -427,6 +427,7 @@ enum OuraDataType {
 	EXERCISE("e")
 
 	final oldSetName
+
 	OuraDataType(String oldSetName) {
 		this.oldSetName = oldSetName
 	}
