@@ -483,6 +483,10 @@ div.graphData.has-plot-data #height-balancer {
 	height: 46px;
 }
 
+.home-logo-wrapper .ios-app-link, .home-logo-wrapper .android-app-link {
+	display: inline-block;
+}
+
 .social-icons {
 	padding-top: 10px;
 }

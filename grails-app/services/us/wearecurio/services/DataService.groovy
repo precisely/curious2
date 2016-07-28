@@ -98,7 +98,7 @@ abstract class DataService {
 			throw new MissingOAuthAccountException(provider)
 		}
 
-		if ((instance instanceof Token) && !instance.token) {
+		if ((instance instanceof Token) && !instance.token || ((instance instanceof OAuthAccount) && !instance.accessToken)) {
 			log.debug "Authentication required. Either null or blank token received."
 			throw new InvalidAccessTokenException()
 		}
