@@ -2,10 +2,7 @@ package us.wearecurio.services.integration
 
 import spock.lang.Unroll
 import us.wearecurio.datetime.DateUtils
-import us.wearecurio.model.OAuthAccount
 import grails.converters.JSON
-import grails.test.mixin.*
-
 import org.junit.*
 import org.scribe.model.Response
 
@@ -13,7 +10,6 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
-import us.wearecurio.model.User
 import us.wearecurio.services.DataService
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.OuraDataService
@@ -31,7 +27,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 
 	WithingsDataService withingsDataService
 	FitBitDataService fitBitDataService
-	OuraDataService OuraDataService
+	OuraDataService ouraDataService
 	OAuthAccount account
 	OAuthAccount account2
 
@@ -54,7 +50,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 		account2.delete()
 	}
 
-	@Unroll("When notification Date is: #notificationDate then startDate should be: #rStartDate and endDate should be #rEndDate")
+	@Unroll("When notification Date is: #notificationDate then startDate should be: #responseStartDate and endDate should be #responseEndDate")
 	@Test
 	void testPoll() {
 		given: "Mocked service method and OAuthAccount instance"
@@ -74,7 +70,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 					List timeStamps = m.findAll()
 
 					Calendar calendar = Calendar.getInstance();
-					calendar.setTime(rStartDate);
+					calendar.setTime(responseStartDate);
 					calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar
 							.DATE), 0, 0 ,0)
 					calendar.set(Calendar.MILLISECOND, 0);
@@ -87,9 +83,10 @@ class DataServiceTests extends CuriousServiceTestCase {
 					calendar.set(Calendar.SECOND, 0)
 					Long endDateFromURL = calendar.getTimeInMillis()
 
-					calendar.setTime(rEndDate)
+					calendar.setTime(responseEndDate)
 					calendar.set(Calendar.MILLISECOND, 0)
 					calendar.set(Calendar.SECOND, 0)
+
 					Long rEndDate = calendar.getTimeInMillis()
 
 					assert rEndDate == endDateFromURL
@@ -104,12 +101,12 @@ class DataServiceTests extends CuriousServiceTestCase {
 		when: "Notification date is passed in arguments result should be as expected"
 		Boolean result = ouraDataService.poll(account, notificationDate)
 
-		then: "response should be equal to result"
-		//!result.startDate.compareTo(rStartDate)
+		then: "response should be true"
+		result
 
 		where:
-		notificationDate		||rStartDate		|rEndDate
-		new Date() - 65			||new Date() - 65	|DateUtils.getEndOfTheDay(new Date() - 65)
+		notificationDate		||responseStartDate		|responseEndDate
+		new Date() - 65			||new Date() - 65		|DateUtils.getEndOfTheDay(new Date() - 65)
 		/*
 		 * LastDataDate in OauthAccount instance is set to
 		 * new Date() - 61
