@@ -14,14 +14,10 @@ class WeatherServiceTests extends CuriousServiceTestCase {
 	
 	WeatherService weatherService
 	
-	@Before
-	void setUp() {
-		super.setUp()
+	void setup() {
 	}
 	
-	@After
-	void tearDown() {
-		super.tearDown()
+	void cleanup() {
 	}
 	
 	@Test

@@ -41,10 +41,8 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	
 	def grailsApplication
 	
-	@Before
-	void setUp() {
-		super.setUp()
-		
+	void setup() {
+
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hash: new DefaultHashIDGenerator().generate(12)])
 		assert Utils.save(user2, true)
@@ -73,9 +71,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		}
 	}
 	
-	@After
-	void tearDown() {
-		super.tearDown()
+	void cleanup() {
 	}
 	
 	@Test
@@ -167,7 +163,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		withingsDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
 		assert Entry.count() > 0
 	}
-	
+
 	@Test
 	void testGetDataActivityMetrics() {
 		Map result = withingsDataService.getDataActivityMetrics(account, null, null, new DataRequestContext())

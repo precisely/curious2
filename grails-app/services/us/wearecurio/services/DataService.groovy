@@ -447,15 +447,20 @@ abstract class DataService {
 
 		Long lastPollDOS = lastPollTimestamps.get(accountId)
 
-		Date dateToPollFrom = account.fetchLastDataDate() - 1
+		Date lastDataDate, dateToPollFrom;
+
+		// Ensuring that no data is missed/left unpolled if lastDataDate is going to be the start date for polling
+		lastDataDate = dateToPollFrom = account.fetchLastDataDate() - 1
 		Date pollEndDate = null;
 
-		if ((lastPollDOS) && (nowTime - lastPollDOS < 60000)) { // don't allow polling faster than once every minute
+		if ((lastPollDOS) && (nowTime - lastPollDOS < 60000) &&
+				Environment.current != Environment.TEST) {
+			// don't allow polling faster than once every minute
 			log.warn "Polling faster than 1 minute for $provider with accountId: [$accountId]"
 			return false
 		}
 
-		if (notificationDate && dateToPollFrom && notificationDate < dateToPollFrom) {
+		if (notificationDate && lastDataDate && notificationDate < lastDataDate) {
 			dateToPollFrom = notificationDate
 			pollEndDate = DateUtils.getEndOfTheDay(notificationDate)
 		}

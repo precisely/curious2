@@ -23,9 +23,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 
 	MovesDataService movesDataService
 
-	@Before
-	void setUp() {
-		super.setUp()
+	void setup() {
 
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hash: new DefaultHashIDGenerator().generate(12)])
@@ -36,9 +34,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		assert Utils.save(account, true)
 	}
 
-	@After
-	void tearDown() {
-		super.tearDown()
+	void cleanup() {
 	}
 
 	int testEntries(User user, String timeZoneName, Date baseDate, Date currentTime, Closure test) {

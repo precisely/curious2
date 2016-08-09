@@ -11,17 +11,13 @@ class AppleNotificationServiceTests extends CuriousServiceTestCase {
 	
 	List devices
 	
-	@Before
-	void setUp() {
-		super.setUp()
+	void setup() {
 		devices = [
 			"54f8158bbe5bd3fc0031c4fde5c6cfdc42e43b6a2fa67762c8d0bf1bd000e2fd"
 		]
 	}
 	
-	@After
-	void tearDown() {
-		super.tearDown()
+	void cleanup() {
 	}
 	
 	// Note: this test requires that the following file exists:

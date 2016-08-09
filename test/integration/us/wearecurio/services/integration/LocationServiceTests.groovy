@@ -16,14 +16,10 @@ class LocationServiceTests extends CuriousServiceTestCase {
 	
 	LocationService locationService
 
-	@Before
-	void setUp() {
-		super.setUp()
+	void setup() {
 	}
 
-	@After
-	void tearDown() {
-		super.tearDown()
+	void cleanup() {
 	}
 
 	@Test

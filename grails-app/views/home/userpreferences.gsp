@@ -263,7 +263,7 @@ function editUserDetails() {
 									<label class="control-label">External Accounts</label><br>
 									<oauth:checkSubscription userId="${user.id}" typeId="OURA">
 										<g:if test="${it && !it.accessToken}">
-											<g:link action="registerOura">re-link Oura Account</g:link><br>
+											<g:link action="registerOura">Re-link Oura Account</g:link><br>
 										</g:if>
 										<g:elseif test="${!it}">
 											<g:link action="registerOura">Link Oura Account</g:link><br>
@@ -274,7 +274,7 @@ function editUserDetails() {
 									</oauth:checkSubscription>
 									<oauth:checkSubscription userId="${user.id}" typeId="WITHINGS">
 										<g:if test="${it && !it.accessToken}">
-											<g:link action="registerwithings">re-link Withings Account</g:link><br>
+											<g:link action="registerwithings">Re-link Withings Account</g:link><br>
 										</g:if>
 										<g:elseif test="${it}">
 											<g:link action="unregisterwithings">Unlink Withings Account</g:link><br>
@@ -285,7 +285,7 @@ function editUserDetails() {
 									</oauth:checkSubscription>
 									<oauth:checkSubscription userId="${user.id}" typeId="MOVES">
 										<g:if test="${it && !it.accessToken}">
-											<g:link action="registermoves">re-link Moves Account</g:link><br>
+											<g:link action="registermoves">Re-link Moves Account</g:link><br>
 										</g:if>
 										<g:elseif test="${it}">
 											<g:link action="unregistermoves">Unlink Moves Account</g:link><br>
@@ -296,7 +296,7 @@ function editUserDetails() {
 									</oauth:checkSubscription>
 									<oauth:checkSubscription userId="${user.id}" typeId="JAWBONE">
 										<g:if test="${it && !it.accessToken}">
-											<g:link action="registerJawboneUp">re-link JawboneUp Account</g:link><br>
+											<g:link action="registerJawboneUp">Re-link JawboneUp Account</g:link><br>
 										</g:if>
 										<g:elseif test="${it}">
 											<g:link action="unregisterJawboneUp">Unlink JawboneUp Account</g:link>
