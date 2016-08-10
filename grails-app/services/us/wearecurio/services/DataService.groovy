@@ -172,7 +172,8 @@ abstract class DataService {
 			throws InvalidAccessTokenException {
 		long currentTime = System.currentTimeMillis()
 
-		log.debug "[$currentTime] Fetching data for [$provider] with request URL: [$requestURL] & method: $method"
+		log.debug "[$currentTime] About to request data for [$provider] with request URL: [$requestURL] & method: " +
+				"$method"
 
 		checkNotNull(tokenInstance)
 
@@ -188,7 +189,8 @@ abstract class DataService {
 			Utils.reportError("Error while getting reponse for data service", e)
 		}
 
-		log.debug "[$currentTime] Fetched data for [$provider] with response code: [$response.code] & body: [${response.body}]"
+		log.debug "[$currentTime] Recieved response for [$provider] with response code: [$response.code] & body: " +
+				"[${response.body}]"
 
 		if (response.code == 401) {
 			throw new InvalidAccessTokenException(provider)
