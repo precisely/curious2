@@ -2,6 +2,7 @@ package us.wearecurio.services
 
 import grails.converters.JSON
 import org.springframework.transaction.annotation.Transactional
+import us.wearecurio.datetime.DateUtils
 
 import java.text.SimpleDateFormat
 
@@ -101,7 +102,7 @@ class WithingsDataService extends DataService {
 
 			Long lastPolled = startDate.getTime() / 1000L
 			if (!refreshAll) {
-				endDate = endDate ?: new Date()
+				endDate = endDate ?: DateUtils.getEndOfTheDay()
 				Long endDateParameter = endDate.getTime() / 1000L
 				queryParameters.put("startdate", lastPolled)
 				queryParameters.put("enddate", endDateParameter)

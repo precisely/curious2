@@ -69,27 +69,8 @@ class DataServiceTests extends CuriousServiceTestCase {
 					Matcher m = pattern.matcher(stringWithTimeStamp)
 					List timeStamps = m.findAll()
 
-					Calendar calendar = Calendar.getInstance();
-					calendar.setTime(responseStartDate);
-					calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar
-							.DATE), 0, 0 ,0)
-					calendar.set(Calendar.MILLISECOND, 0);
-					Date d = calendar.getTime()
-					assert !new Date(Long.parseLong(timeStamps[0]) * 1000).compareTo(d)
-
-					// Setting seconds and milli seconds to  0 for comparison
-					calendar.setTimeInMillis(Long.parseLong(timeStamps[1]) * 1000);
-					calendar.set(Calendar.MILLISECOND, 0)
-					calendar.set(Calendar.SECOND, 0)
-					Long endDateFromURL = calendar.getTimeInMillis()
-
-					calendar.setTime(responseEndDate)
-					calendar.set(Calendar.MILLISECOND, 0)
-					calendar.set(Calendar.SECOND, 0)
-
-					Long rEndDate = calendar.getTimeInMillis()
-
-					assert rEndDate == endDateFromURL
+					assert !timeStamps[0].compareTo(responseStartDate)
+					assert !timeStamps[1].compareTo(responseEndDate)
 					if (url.contains("sleep")) {
 						return new Response(new MockedHttpURLConnection(mockedResponseData))
 					} else {
@@ -105,14 +86,10 @@ class DataServiceTests extends CuriousServiceTestCase {
 		result
 
 		where:
-		notificationDate		||responseStartDate		|responseEndDate
-		new Date() - 65			||new Date() - 65		|DateUtils.getEndOfTheDay(new Date() - 65)
-		/*
-		 * LastDataDate in OauthAccount instance is set to
-		 * new Date() - 61
-		 */
-		new Date() - 15			||new Date() - 62	|new Date()
-		new Date() - 5			||new Date() - 62	|new Date()
+		notificationDate			||responseStartDate						|responseEndDate
+		DateUtils.getStartOfTheDay() - 65	||"${(long)((DateUtils.getStartOfTheDay() - 65).getTime() / 1000)}"|"${(long)(DateUtils.getEndOfTheDay(new Date() - 65).getTime() / 1000)}"
+		DateUtils.getStartOfTheDay() - 15	||"${(long)((DateUtils.getStartOfTheDay() - 62).getTime() / 1000)}"|"${(long)(DateUtils.getEndOfTheDay().getTime() / 1000)}"
+		DateUtils.getStartOfTheDay() - 5	||"${(long)((DateUtils.getStartOfTheDay() - 62).getTime() / 1000)}"|"${(long)(DateUtils.getEndOfTheDay().getTime() / 1000)}"
 	}
 
 	@Test

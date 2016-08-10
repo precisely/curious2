@@ -77,7 +77,7 @@ class JawboneUpDataService extends DataService {
 		}
 
 		startDate = startDate ?: account.fetchLastDataDate()
-		endDate = endDate ?: new Date()
+		endDate = endDate ?: DateUtils.getEndOfTheDay()
 
 		getDataBody(account, startDate, endDate, refreshAll, context)
 		getDataMove(account, startDate, endDate, refreshAll, context)

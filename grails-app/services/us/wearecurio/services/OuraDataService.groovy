@@ -54,7 +54,7 @@ class OuraDataService extends DataService {
 			startDate = localTime.toDate().clearTime()
 			log.debug "Start date $startDate"
 		}
-		endDate = endDate ?: new Date()
+		endDate = endDate ?: DateUtils.getEndOfTheDay()
 
 		getDataSleep(account, startDate, endDate, false, context)
 		getDataExercise(account, startDate, endDate, false, context)
@@ -96,7 +96,7 @@ class OuraDataService extends DataService {
 			InvalidAccessTokenException {
 		log.debug "Get sleep data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
-		endDate = endDate ?: new Date()
+		endDate = endDate ?: DateUtils.getEndOfTheDay()
 
 		if (refreshAll) {
 			// Unsetting all historical data. Starting with the device set name prefix
@@ -168,7 +168,7 @@ class OuraDataService extends DataService {
 			InvalidAccessTokenException {
 		log.debug "Get exercise data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
-		endDate = endDate ?: new Date()
+		endDate = endDate ?: DateUtils.getEndOfTheDay()
 
 		if (refreshAll) {
 			// Unsetting all historical data. Starting with the device set name prefix
@@ -277,7 +277,7 @@ class OuraDataService extends DataService {
 			InvalidAccessTokenException {
 		log.debug "Get activity data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
-		endDate = endDate ?: new Date()
+		endDate = endDate ?: DateUtils.getEndOfTheDay()
 
 		if (refreshAll) {
 			// Unsetting all historical data. Starting with the device set name prefix
