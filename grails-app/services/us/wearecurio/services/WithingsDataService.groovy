@@ -565,6 +565,9 @@ class WithingsDataService extends DataService {
 
 			switch (withingsResponseStatus) {
 				case 293:	// Notification URL is not responding.
+					result.message = "Please try again after some time"
+					Utils.reportError("Withings error for account " + account.id, "Error: " + error)
+					break
 				case 2555:	// Asking the user to relink if an unknown error occurs during subscription
 				case 342:
 					account.clearAccessToken()
