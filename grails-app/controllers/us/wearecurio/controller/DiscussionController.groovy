@@ -248,7 +248,7 @@ class DiscussionController extends LoginController {
 
 		// This is to handle the case when the tweet is being made immediately after authorization.
 		if (session["tweetMessage"]) {
-			String redirectLocation = session["requestOrigin"] ?: "home/social#all"
+			String redirectLocation = session["requestOrigin"] ?: "all"
 			session["tweetMessage"] = null
 			session["messageLength"] = null
 			session["requestOrigin"] = null

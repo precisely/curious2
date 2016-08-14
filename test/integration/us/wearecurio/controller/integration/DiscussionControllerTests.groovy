@@ -24,6 +24,8 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 	UserGroup testGroup
 	UserGroup readOnlyTestGroup
 	def params = [:]
+	def grailsApplication
+
     @Before
     void setUp() {
         // Setup logic here
@@ -66,7 +68,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		mockPostStatus()
 		params.message = "This is a discussion"
 		params.messageLength = params.message.length().toString()
-		params.requestOrigin = "home/social#all"
+		params.requestOrigin = "all"
 		controller.params.putAll(params)
 		controller.session.userId = userId
 		controller.request.method = "POST"
@@ -94,7 +96,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 	void "Test tweet with no authorized user"() {
 		params.message = "This is a discussion"
 		params.messageLength = params.message.length().toString()
-		params.requestOrigin = "home/social#all"
+		params.requestOrigin = "all"
 		controller.params.putAll(params)
 		controller.session.userId = user2.id
 		controller.request.method = "POST"
@@ -110,7 +112,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 	void "Test tweet with message length exceeded"() {
 		params.message = """This is a long discussion.This is a long discussion. This is a long discussion. This is a long discussion.
 				This is a long discussion. This is a long discussion. This is a long discussion. This is a long discussion. """
-		params.requestOrigin = "home/social#all"
+		params.requestOrigin = "all"
 		params.messageLength = params.message.length().toString()
 		controller.params.putAll(params)
 		controller.session.userId = userId
@@ -127,7 +129,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 	void "Test tweet with empty message"() {
 		params.message = ""
 		params.messageLength = "0"
-		params.requestOrigin = "home/social#all"
+		params.requestOrigin = "all"
 		controller.params.putAll(params)
 		controller.session.userId = userId
 		controller.request.method = "POST"
@@ -154,10 +156,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.session.tweetMessage = "This is a discussion"
 		controller.tweetDiscussion()
 
-		assert controller.response.json.success == true
-		assert controller.response.json.authenticated == true
-		assert controller.response.json.message == messageSource.getMessage("twitter.tweet.success", ["Discussion"] as Object[], null)
-		assert controller.response.redirectedUrl == "http://localhost:8204/home/social?tweetStatus=true&duplicateTweet=false#home/social#all"
+		assert controller.response.redirectedUrl == "${grailsApplication.config.grails.serverURL}home/social?tweetStatus=true&duplicateTweet=false#all"
 		assert controller.session.tweetMessage == null
 		assert controller.session.requestOrigin == null
 	}
