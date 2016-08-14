@@ -4,6 +4,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.scribe.model.Response
+import spock.lang.Unroll
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
@@ -31,9 +32,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	User user2
 	TimeZone serverTimezone
 
-	@Before
-	void setUp() {
-		super.setUp()
+	void setup() {
 		serverTimezone = TimeZone.getDefault()
 
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
@@ -46,9 +45,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		Utils.save(account, true)
 	}
 
-	@After
-	void tearDown() {
-		super.tearDown()
+	void cleanup() {
 		TimeZone.setDefault(serverTimezone)
 	}
 

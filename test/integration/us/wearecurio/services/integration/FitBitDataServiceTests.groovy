@@ -35,9 +35,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 	TimeZone serverTimezone
 	TimeZone defaultTimezone
 	
-	@Before
-	void setUp() {
-		super.setUp()
+	void setup() {
 		serverTimezone = TimeZone.getDefault()
 		
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
@@ -50,9 +48,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		Utils.save(account, true)
 	}
 
-	@After
-	void tearDown() {
-		super.tearDown()
+	void cleanup() {
 		TimeZone.setDefault(serverTimezone)
 	}
 

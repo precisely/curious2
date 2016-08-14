@@ -123,11 +123,11 @@ abstract class TagUnitMap {
 		Map currentMapping = tagUnitMappings[tagName]
 
 		if (!currentMapping) {
-			log.warn "No mapping found for tag name: [$tagName]"
+			log.warn "TagUnitMap.buildEntry() No mapping found for tag name: [$tagName]"
 			return null
 		}
 
-		log.debug "The tag map is: $currentMapping"
+		log.debug "TagUnitMap.buildEntry() The tag map is: $currentMapping"
 
 		if (currentMapping.convert) {
 			amount = convert(amount, currentMapping.ratio)

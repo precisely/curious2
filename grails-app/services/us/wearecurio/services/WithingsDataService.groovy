@@ -2,6 +2,7 @@ package us.wearecurio.services
 
 import grails.converters.JSON
 import org.springframework.transaction.annotation.Transactional
+import us.wearecurio.datetime.DateUtils
 
 import java.text.SimpleDateFormat
 
@@ -101,7 +102,7 @@ class WithingsDataService extends DataService {
 
 			Long lastPolled = startDate.getTime() / 1000L
 			if (!refreshAll) {
-				endDate = endDate ?: new Date()
+				endDate = endDate ?: DateUtils.getEndOfTheDay()
 				Long endDateParameter = endDate.getTime() / 1000L
 				queryParameters.put("startdate", lastPolled)
 				queryParameters.put("enddate", endDateParameter)
@@ -554,7 +555,7 @@ class WithingsDataService extends DataService {
 
 		return DatabaseService.retry(account) {
 			if (withingsResponseStatus == 0) {
-				log.debug "Subscription successful for account: $account"
+				log.debug "WithingsService.subscribe() Subscription successful for account: $account"
 				account.lastSubscribed = new Date()
 				Utils.save(account, true)
 				return [success: true, account: account]
@@ -564,10 +565,10 @@ class WithingsDataService extends DataService {
 
 			switch (withingsResponseStatus) {
 				case 293:	// Notification URL is not responding.
-				case 2555:	// Notification URL not found.
 					result.message = "Please try again after some time"
 					Utils.reportError("Withings error for account " + account.id, "Error: " + error)
 					break
+				case 2555:	// Asking the user to relink if an unknown error occurs during subscription
 				case 342:
 					account.clearAccessToken()
 					throw new InvalidAccessTokenException("withings", account)

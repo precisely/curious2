@@ -3,18 +3,13 @@ package us.wearecurio.services
 import grails.converters.JSON
 import grails.util.Environment
 
-import org.springframework.transaction.annotation.Transactional
-
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.Date
-import uk.co.desirableobjects.oauth.scribe.OauthService
+
 import us.wearecurio.data.UnitGroupMap
 
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
-import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
 import org.scribe.model.Response
 import org.scribe.model.Token
 
@@ -59,47 +54,47 @@ class HumanDataService {
 
 	JSONArray getDataForActivities(OAuthAccount account) {
 		String url = String.format(BASE_URL, "activities")
-		doWithURL(account.tokenInstance, url, "Activity", [createdSince: account.fetchLastData()])
+		doWithURL(account.tokenInstance, url, "Activity", [createdSince: account.fetchLastDataDate()])
 	}
 
 	JSONArray getDataForBloodGlucode(OAuthAccount account) {
 		String url = String.format(BASE_URL, "blood_glucose/readings")
-		doWithURL(account.tokenInstance, url, "Blood Glucose", [createdSince: account.fetchLastData()])
+		doWithURL(account.tokenInstance, url, "Blood Glucose", [createdSince: account.fetchLastDataDate()])
 	}
 
 	JSONArray getDataForBloodPressure(OAuthAccount account) {
 		String url = String.format(BASE_URL, "blood_pressure/readings")
-		doWithURL(account.tokenInstance, url, "Blood Pressure", [createdSince: account.fetchLastData()])
+		doWithURL(account.tokenInstance, url, "Blood Pressure", [createdSince: account.fetchLastDataDate()])
 	}
 
 	JSONArray getDataForBodyFat(OAuthAccount account) {
 		String url = String.format(BASE_URL, "body_fat/readings")
-		doWithURL(account.tokenInstance, url, "Body Fat", [createdSince: account.fetchLastData()])
+		doWithURL(account.tokenInstance, url, "Body Fat", [createdSince: account.fetchLastDataDate()])
 	}
 
 	JSONArray getDataForBodyMassIndex(OAuthAccount account) {
 		String url = String.format(BASE_URL, "bmi/readings")
-		doWithURL(account.tokenInstance, url, "Body Mass Index", [createdSince: account.fetchLastData()])
+		doWithURL(account.tokenInstance, url, "Body Mass Index", [createdSince: account.fetchLastDataDate()])
 	}
 
 	JSONArray getDataForHeartRate(OAuthAccount account) {
 		String url = String.format(BASE_URL, "heart_rate/readings")
-		doWithURL(account.tokenInstance, url, "Heart Rate", [createdSince: account.fetchLastData()])
+		doWithURL(account.tokenInstance, url, "Heart Rate", [createdSince: account.fetchLastDataDate()])
 	}
 
 	JSONArray getDataForHeight(OAuthAccount account) {
 		String url = String.format(BASE_URL, "height/readings")
-		doWithURL(account.tokenInstance, url, "Height", [createdSince: account.fetchLastData()])
+		doWithURL(account.tokenInstance, url, "Height", [createdSince: account.fetchLastDataDate()])
 	}
 
 	JSONArray getDataForSleeps(OAuthAccount account) {
 		String url = String.format(BASE_URL, "sleeps")
-		doWithURL(account.tokenInstance, url, "Sleeps", [createdSince: account.fetchLastData()])
+		doWithURL(account.tokenInstance, url, "Sleeps", [createdSince: account.fetchLastDataDate()])
 	}
 
 	JSONArray getDataForWeight(OAuthAccount account) {
 		String url = String.format(BASE_URL, "weight/readings")
-		doWithURL(account.tokenInstance, url, "Weight", [createdSince: account.fetchLastData()])
+		doWithURL(account.tokenInstance, url, "Weight", [createdSince: account.fetchLastDataDate()])
 	}
 
 	JSONObject getUserProfile(OAuthAccount account) {

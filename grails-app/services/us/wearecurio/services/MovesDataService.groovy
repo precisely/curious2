@@ -3,7 +3,7 @@ package us.wearecurio.services
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
 import org.springframework.transaction.annotation.Transactional
-
+import us.wearecurio.datetime.DateUtils
 import us.wearecurio.model.DurationType
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
@@ -49,7 +49,7 @@ class MovesDataService extends DataService {
 		Long userId = account.userId
 
 		startDate = startDate ?: earlyStartDate
-		endDate = endDate ?: new Date()
+		endDate = endDate ?: DateUtils.getEndOfTheDay()
 
 		Integer timeZoneId = getTimeZoneId(account)
 

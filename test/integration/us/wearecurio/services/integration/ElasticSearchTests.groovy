@@ -80,8 +80,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	ElasticSearchAdminService elasticSearchAdminService
 	def elasticSearchHelper
 	
-	@Before
-	void setUp() {
+	void setup() {
 		//NOTE: Cannot use elasticSearchAdminService.deleteIndex() as that removes index entirely and an IndexMissingException is thrown
 		//the next time an ES search is attempted. Instead, do a "delete by  query" to remove all data in all indexes, while keeping the
 		//indexes themselves.  Could have used, elasticSearchAdminService to do the refresh, but since have client anyhow, chose to do use
@@ -112,9 +111,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		testGroup.addWriter(user)
 	}
 	
-	@After
-	void tearDown() {
-		super.tearDown()
+	void cleanup() {
         for (GroupMemberReader o in GroupMemberReader.list()) {
             o.delete(flush:true)
         }

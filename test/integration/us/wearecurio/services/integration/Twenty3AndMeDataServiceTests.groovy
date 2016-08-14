@@ -30,9 +30,7 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 
 	User user2
 
-	@Before
-	void setUp() {
-		super.setUp()
+	void setup() {
 
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hash: new DefaultHashIDGenerator().generate(12)])
@@ -44,10 +42,7 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 		assert Utils.save(account, true)
 	}
 
-	@After
-	void tearDown() {
-		super.tearDown()
-		
+	void cleanup() {
 		twenty3AndMeDataService.oauthService = oauthService
 	}
 

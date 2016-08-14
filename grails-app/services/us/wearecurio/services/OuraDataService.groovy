@@ -54,11 +54,10 @@ class OuraDataService extends DataService {
 			startDate = localTime.toDate().clearTime()
 			log.debug "Start date $startDate"
 		}
-		endDate = endDate ?: new Date()
+		endDate = endDate ?: DateUtils.getEndOfTheDay()
 
 		getDataSleep(account, startDate, endDate, false, context)
-		// Uncomment these below 2 lines when Oura starts sending the activity & exercise data
-		//getDataExercise(account, startDate, endDate, false, context)
+		getDataExercise(account, startDate, endDate, false, context)
 		getDataActivity(account, startDate, endDate, false, context)
 
 		Utils.save(account, true)
@@ -97,8 +96,8 @@ class OuraDataService extends DataService {
 			InvalidAccessTokenException {
 		log.debug "Get sleep data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
-		endDate = endDate ?: new Date()
-		
+		endDate = endDate ?: DateUtils.getEndOfTheDay()
+
 		if (refreshAll) {
 			// Unsetting all historical data. Starting with the device set name prefix
 			unsetAllOldEntries(account.userId, SET_NAME)
@@ -169,8 +168,8 @@ class OuraDataService extends DataService {
 			InvalidAccessTokenException {
 		log.debug "Get exercise data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
-		endDate = endDate ?: new Date()
-		
+		endDate = endDate ?: DateUtils.getEndOfTheDay()
+
 		if (refreshAll) {
 			// Unsetting all historical data. Starting with the device set name prefix
 			unsetAllOldEntries(account.userId, SET_NAME)
@@ -277,9 +276,9 @@ class OuraDataService extends DataService {
 	void getDataActivity(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
 			InvalidAccessTokenException {
 		log.debug "Get activity data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
-		
-		endDate = endDate ?: new Date()
-		
+
+		endDate = endDate ?: DateUtils.getEndOfTheDay()
+
 		if (refreshAll) {
 			// Unsetting all historical data. Starting with the device set name prefix
 			unsetAllOldEntries(account.userId, SET_NAME)
@@ -371,7 +370,7 @@ class OuraDataService extends DataService {
 	 */
 	List<String> getOldSetNames(String type, Date startDate, Date endDate) {
 		List setNames = []
-		
+
 		for (Date date = startDate; date <= endDate; date = date + 1) {
 			setNames << getOldSetName(type, date)
 		}
@@ -428,6 +427,7 @@ enum OuraDataType {
 	EXERCISE("e")
 
 	final oldSetName
+
 	OuraDataType(String oldSetName) {
 		this.oldSetName = oldSetName
 	}

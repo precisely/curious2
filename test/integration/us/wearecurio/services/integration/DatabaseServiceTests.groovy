@@ -64,14 +64,10 @@ class DatabaseServiceTests extends CuriousServiceTestCase {
 		}
 	}
 
-	@Before
-	void setUp() {
-		super.setUp()
+	void setup() {
 	}
 
-	@After
-	void tearDown() {
-		super.tearDown()
+	void cleanup() {
 	}
 	
 	@Test

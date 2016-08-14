@@ -1,9 +1,8 @@
 package us.wearecurio.services.integration
 
-import us.wearecurio.model.OAuthAccount
+import spock.lang.Unroll
+import us.wearecurio.datetime.DateUtils
 import grails.converters.JSON
-import grails.test.mixin.*
-
 import org.junit.*
 import org.scribe.model.Response
 
@@ -11,7 +10,6 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
-import us.wearecurio.model.User
 import us.wearecurio.services.DataService
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.OuraDataService
@@ -19,6 +17,10 @@ import us.wearecurio.services.WithingsDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.utility.Utils
+
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+
 
 class DataServiceTests extends CuriousServiceTestCase {
 	static transactional = true
@@ -31,10 +33,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 
 	def grailsApplication
 
-	@Before
-	void setUp() {
-		super.setUp()
-
+	void setup() {
 		account = new OAuthAccount([typeId: ThirdParty.WITHINGS, userId: userId, accessToken: "Dummy-token",
 			accessSecret: "Dummy-secret", accountId: "dummy-id", timeZoneId: TimeZoneId.look("America/New_York").id])
 
@@ -46,12 +45,51 @@ class DataServiceTests extends CuriousServiceTestCase {
 		Utils.save(account2, true)
 	}
 
-	@After
-	void tearDown() {
-		super.tearDown()
-		
+	void cleanup() {
 		account.delete()
 		account2.delete()
+	}
+
+	@Unroll("When notification Date is: #notificationDate then startDate should be: #responseStartDate and endDate should be #responseEndDate")
+	@Test
+	void testPoll() {
+		given: "Mocked service method and OAuthAccount instance"
+
+		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 3,
+				type: "sleep", eventTime: 1434440700, data: {bedtime_m: 510, sleep_score: 86,
+				awake_m: 52, rem_m: 78, light_m: 220, deep_m: 160}},
+				{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 3,
+				type: "sleep", eventTime: 1424440700, data: {bedtime_m: 430, sleep_score: 76, awake_m: 42,
+				 rem_m: 68, light_m: 320, deep_m: 2.60}}]}"""
+
+		ouraDataService.oauthService = [
+				getOuraResource: { token, url, p, header ->
+					String stringWithTimeStamp = url.split("startTimestamp=")[1];
+					Pattern pattern = Pattern.compile("\\d+");
+					Matcher m = pattern.matcher(stringWithTimeStamp)
+					List timeStamps = m.findAll()
+
+					assert !timeStamps[0].compareTo(responseStartDate)
+					assert !timeStamps[1].compareTo(responseEndDate)
+					if (url.contains("sleep")) {
+						return new Response(new MockedHttpURLConnection(mockedResponseData))
+					} else {
+						return new Response(new MockedHttpURLConnection("{data: []}"))
+					}
+				}
+		]
+
+		when: "Notification date is passed in arguments result should be as expected"
+		Boolean result = ouraDataService.poll(account, notificationDate)
+
+		then: "response should be true"
+		result
+
+		where:
+		notificationDate			||responseStartDate						|responseEndDate
+		DateUtils.getStartOfTheDay() - 65	||"${(long)((DateUtils.getStartOfTheDay() - 65).getTime() / 1000)}"|"${(long)(DateUtils.getEndOfTheDay(new Date() - 65).getTime() / 1000)}"
+		DateUtils.getStartOfTheDay() - 15	||"${(long)((DateUtils.getStartOfTheDay() - 62).getTime() / 1000)}"|"${(long)(DateUtils.getEndOfTheDay().getTime() / 1000)}"
+		DateUtils.getStartOfTheDay() - 5	||"${(long)((DateUtils.getStartOfTheDay() - 62).getTime() / 1000)}"|"${(long)(DateUtils.getEndOfTheDay().getTime() / 1000)}"
 	}
 
 	@Test

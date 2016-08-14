@@ -216,7 +216,7 @@ environments {
 				}
 				oura {
 					key = "curious-dev"
-					secret = "\$2a\$10\$T5yNKIVCsgODHh9XCSi63OaJNbMKofxdDKdyF0n5.QzcJScbUSQOq​"
+					secret = "\$2a\$10\$8IkT2RjJR0WXGnZWYZEHxe2HwcbhLEIxjfcDEqliG/2CKBxI8sso.​"
 				}
 				/**withings {
 					key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"

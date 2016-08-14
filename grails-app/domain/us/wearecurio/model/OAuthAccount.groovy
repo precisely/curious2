@@ -95,9 +95,10 @@ class OAuthAccount {
 		Utils.save(merged, true)
 	}
 	
-	Date fetchLastData() {
-		if (lastData == null)
-			return new Date() - 61
+	Date fetchLastDataDate() {
+		Date twoMonthsAgo = new Date() - 61
+		if (!lastData || lastData < twoMonthsAgo)
+			return twoMonthsAgo
 		return lastData
 	}
 	

@@ -17,13 +17,14 @@ import us.wearecurio.model.TagStats
 import us.wearecurio.model.TagUnitStats
 import us.wearecurio.model.UserGroup
 import us.wearecurio.model.GroupMemberReader
+import spock.lang.Specification
 
 /**
  * Superclass for service tests
  * 
  * @author mitsu
  */
-abstract class CuriousServiceTestCase {
+abstract class CuriousServiceTestCase extends Specification {
 
 	protected static def log = LogFactory.getLog(this)
 
@@ -57,8 +58,7 @@ abstract class CuriousServiceTestCase {
 		return th.message
 	}
 	
-	@Before
-	void setUp() {
+	void setup() {
 		Locale.setDefault(Locale.US)	// For to run test case in any country.
 		Utils.resetForTesting()
 		
@@ -97,8 +97,7 @@ abstract class CuriousServiceTestCase {
 		userId2 = user2.getId()
 	}
 	
-	@After
-	void tearDown() {
+	void cleanup() {
 		User.executeUpdate("delete User u")	// Deleting existing records temporary to create default user.
 		Entry.executeUpdate("delete Entry e")
 	}
