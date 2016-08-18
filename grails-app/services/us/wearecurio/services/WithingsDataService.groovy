@@ -87,6 +87,7 @@ class WithingsDataService extends DataService {
 		if (refreshAll) {
 			unsetAllOldEntries(userId, SET_NAME)
 		}
+		context.initEntrylist()
 
 		Integer timeZoneId = getTimeZoneId(account)
 
@@ -129,7 +130,6 @@ class WithingsDataService extends DataService {
 				Date date = new Date(group.date * 1000L)
 				setName = SET_NAME + "m" + date
 				JSONArray measures = group.measures
-				unsetOldEntries(userId, setName, context.alreadyUnset)
 
 				for (measure in measures) {
 					BigDecimal value = new BigDecimal(measure.value, -measure.unit)
@@ -169,7 +169,8 @@ class WithingsDataService extends DataService {
 							tagKey = "heartRate"
 							break
 					}
-					tagUnitMap.buildEntry(creationMap, stats, tagKey, value, userId, timeZoneId, date, COMMENT, setName)
+					tagUnitMap.buildEntry(creationMap, stats, tagKey, value, userId, timeZoneId, date, COMMENT,
+							setName, context)
 				}
 			}
 		}
@@ -205,7 +206,7 @@ class WithingsDataService extends DataService {
 		}
 
 		Map queryParameters = getActivityDataParameters(account.accountId, startDate, endDate, false)
-
+		context.initEntrylist()
 		JSONObject data = getResponse(account.tokenInstance, BASE_URL + "/measure", "get", queryParameters)
 
 		if (data.status != 0) {
@@ -243,25 +244,24 @@ class WithingsDataService extends DataService {
 			}
 			entryDate = new Date(entryDate.getTime() + 12 * 60 * 60000L) // move activity time 12 hours later to make data appear at noon
 			setName = SET_NAME + "a" + entryDate.getTime()/1000
-			unsetOldEntries(userId, setName, context.alreadyUnset)
 
 			Map args = [isSummary: true] // Indicating that these entries are summary entries
 
 			if (activity["steps"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "activitySteps", activity["steps"], userId,
-					timeZoneIdNumber, entryDate, COMMENT, setName, args)
+					timeZoneIdNumber, entryDate, COMMENT, setName, args, context)
 			}
 			if (activity["distance"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "activityDistance", activity["distance"], userId,
-					timeZoneIdNumber, entryDate, COMMENT, setName, args)
+					timeZoneIdNumber, entryDate, COMMENT, setName, args, context)
 			}
 			if (activity["calories"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "activityCalorie", activity["calories"], userId,
-					timeZoneIdNumber, entryDate, COMMENT, setName, args)
+					timeZoneIdNumber, entryDate, COMMENT, setName, args, context)
 			}
 			if (activity["elevation"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "activityElevation", activity["elevation"], userId,
-					timeZoneIdNumber, entryDate, COMMENT, setName, args)
+					timeZoneIdNumber, entryDate, COMMENT, setName, args, context)
 			}
 		}
 
@@ -295,6 +295,7 @@ class WithingsDataService extends DataService {
 			return [success: false]
 		}
 
+		context.initEntrylist()
 		def intraDayResponse = fetchActivityData(account, account.accountId, startDate, endDate, true)
 		def userId = account.userId
 

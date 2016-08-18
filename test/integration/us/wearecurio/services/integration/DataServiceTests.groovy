@@ -93,6 +93,50 @@ class DataServiceTests extends CuriousServiceTestCase {
 	}
 
 	@Test
+	void "Test DataRequest implementation"() {
+		given: "Mocked Sleep response data"
+		Date tenDaysAgo = new Date() - 10
+		Long eventTime = tenDaysAgo.getTime() / 1000
+
+		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 3,
+				type: "sleep", eventTime: $eventTime, data: {bedtime_m: 430, sleep_score: 76, awake_m: 42, rem_m: 68,
+				 light_m: 320, deep_m: 2.60}}]}"""
+		ouraDataService.oauthService = [
+				getOuraResource: { token, url, p, header ->
+					if (url.contains("sleep")) {
+						return new Response(new MockedHttpURLConnection(mockedResponseData))
+					} else {
+						return new Response(new MockedHttpURLConnection("{data: []}"))
+					}
+				}]
+
+		when: "Poll is called entries should be created"
+		account.lastData = account.lastPolled = new Date() - 17
+		Utils.save(account, true)
+		Boolean result = ouraDataService.poll(account, new Date() - 15)
+
+		then: "response should be true"
+		Entry awakeEntry = Entry.findByUnits("hours awake")
+		assert awakeEntry.amount == 0.700000000
+		result
+
+		when: "Mocked data has different amount for sleep awake entry"
+		mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 3,
+				type: "sleep", eventTime: $eventTime, data: {bedtime_m: 430, sleep_score: 76, awake_m: 40, rem_m: 68,
+				 light_m: 320, deep_m: 2.60}}]}"""
+		account.lastData = account.lastPolled = new Date() - 17
+		Utils.save(account, true)
+		result = ouraDataService.poll(account, new Date() - 15)
+
+		int totalSleepAwakeEntries = Entry.countByUnits("hours awake")
+		awakeEntry = Entry.findByUnits("hours awake")
+
+		then: "Entry for sleep awake gets modified"
+		totalSleepAwakeEntries == 1
+		assert awakeEntry.amount == 0.666666667
+	}
+
+	@Test
 	void testNotifications() {
 		given:
 		String mockNotificationData = [type: "sleep",
