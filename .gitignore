@@ -38,3 +38,4 @@ grails-console
 .idea
 *.iml
 /temp/
+classes/

@@ -94,17 +94,21 @@ class DataServiceTests extends CuriousServiceTestCase {
 
 	@Test
 	void testNotifications() {
+		given:
 		String mockNotificationData = [type: "sleep",
 			date: "2016-01-01", userId: userId] as JSON
 
 		ouraDataService.notificationHandler(mockNotificationData)
 		ouraDataService.notificationProcessor()
-		
+
+		expect:
+		assert true
 		// TODO: Finish this up
 	}
 
 	@Test
 	void testExpiredToken() {
+		given:
 		// Testing expired token for fitbit.
 		fitBitDataService.oauthService = [
 			getFitBitResource: { token, url, p, header ->
@@ -112,6 +116,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 			}
 		]
 
+		expect:
 		try {
 			fitBitDataService.getUserProfile(account)
 		} catch(e) {
@@ -122,6 +127,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 
 	@Test
 	void testExpiredTokenWithAPI() {
+		given:
 		try {
 			// Testing directly with API.
 			fitBitDataService.getUserProfile(account)
@@ -133,6 +139,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 		account.accessSecret = ""
 		Utils.save(account, true)	// Will mimic new Token("", "")
 
+		expect:
 		try {
 			// Testing directly with API with no token.
 			fitBitDataService.getUserProfile(account)
@@ -143,6 +150,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 
 	@Test
 	void testPollForUser() {
+		given:
 		boolean polledFitBit = false
 
 		String mockedResponseData = """{"someKey": "someValue"}"""
@@ -165,7 +173,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 				String mockedActivityResponse = """{"status":0,"body":{"activities":[]}}"""
 				log.debug("xxxxxx " + body.dump())
 				if (body['action']?.contains("getintradayactivity"))
-					mockedActivityResponse = """{"status":0,"body":{"series":{"1368141046":{"calories":0,"duration":120},"1368141657":{"calories":0.87,"duration":60,"steps":18,"elevation":0.03,"distance":3218.69},"1368141717":{"calories":1.2,"duration":60,"steps":56,"elevation":2.4,"distance":1000}}}}"""	
+					mockedActivityResponse = """{"status":0,"body":{"series":{"1368141046":{"calories":0,"duration":120},"1368141657":{"calories":0.87,"duration":60,"steps":18,"elevation":0.03,"distance":3218.69},"1368141717":{"calories":1.2,"duration":60,"steps":56,"elevation":2.4,"distance":1000}}}}"""
 
 				return new Response(new MockedHttpURLConnection(mockedActivityResponse))
 			}
@@ -173,6 +181,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 
 		DataService.pollAllForUserId(userId)
 
+		expect:
 		assert Entry.count() > 0
 		assert polledFitBit && polledWithings
 	}

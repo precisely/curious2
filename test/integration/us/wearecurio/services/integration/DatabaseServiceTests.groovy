@@ -1,14 +1,5 @@
 package us.wearecurio.services.integration
 
-import us.wearecurio.model.OAuthAccount
-import grails.test.mixin.*
-
-import org.junit.*
-import org.scribe.model.Response
-
-import us.wearecurio.model.Entry
-import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.utility.Utils
@@ -70,8 +61,8 @@ class DatabaseServiceTests extends CuriousServiceTestCase {
 	void cleanup() {
 	}
 	
-	@Test
 	void testOptimisticLocking() {
+		expect:
 		assert true
 		
 		// we've disabled optimistic locking for now so this test should fail

@@ -5,19 +5,14 @@ import junit.framework.AssertionFailedError
 import org.apache.commons.logging.LogFactory
 
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
-import org.junit.After
-import org.junit.Before
-
-import us.wearecurio.model.User
-import us.wearecurio.utility.Utils
-import us.wearecurio.model.Entry
+import spock.lang.Specification
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.DiscussionPost
+import us.wearecurio.model.Entry
 import us.wearecurio.model.TagStats
 import us.wearecurio.model.TagUnitStats
-import us.wearecurio.model.UserGroup
-import us.wearecurio.model.GroupMemberReader
-import spock.lang.Specification
+import us.wearecurio.model.User
+import us.wearecurio.utility.Utils
 
 /**
  * Superclass for service tests
@@ -57,8 +52,8 @@ abstract class CuriousServiceTestCase extends Specification {
 		
 		return th.message
 	}
-	
-	void setup() {
+
+	void setupTestData() {
 		Locale.setDefault(Locale.US)	// For to run test case in any country.
 		Utils.resetForTesting()
 		
@@ -82,10 +77,10 @@ abstract class CuriousServiceTestCase extends Specification {
 			password:'y', action:'doregister', \
 			controller:'home']
 
-        def params2 = [username:'z', sex:'M', \
-            name:'z z', email:'z@z.com', birthdate:'01/01/2005', \
-            password:'z', action:'doregister', \
-            controller:'home']
+		def params2 = [username:'z', sex:'M', \
+		name:'z z', email:'z@z.com', birthdate:'01/01/2005', \
+		password:'z', action:'doregister', \
+		controller:'home']
 
 		user = User.create(params)
 		user2 = User.create(params2)
@@ -96,7 +91,11 @@ abstract class CuriousServiceTestCase extends Specification {
 		userId = user.getId()
 		userId2 = user2.getId()
 	}
-	
+
+	void setup() {
+		setupTestData()
+	}
+
 	void cleanup() {
 		User.executeUpdate("delete User u")	// Deleting existing records temporary to create default user.
 		Entry.executeUpdate("delete Entry e")

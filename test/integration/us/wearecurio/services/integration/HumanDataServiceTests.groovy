@@ -1,22 +1,15 @@
 package us.wearecurio.services.integration
 
-import static org.junit.Assert.*
-import static us.wearecurio.model.OAuthAccount.*
-import static us.wearecurio.model.ThirdParty.*
-
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
 import org.scribe.model.Response
-
 import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.User
-import us.wearecurio.utility.Utils
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.services.HumanDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
+import us.wearecurio.utility.Utils
+
+import static us.wearecurio.model.ThirdParty.HUMAN
 
 class HumanDataServiceTests extends CuriousServiceTestCase {
 	static transactional = true
@@ -39,8 +32,8 @@ class HumanDataServiceTests extends CuriousServiceTestCase {
 	void cleanup() {
 	}
 
-	@Test
 	void testPollForActivity() {
+		given:
 		humanDataService.oauthService = [getHumanResource: {token, url ->
 				String data = "[]"
 				if(url.contains("activities")) {
@@ -48,13 +41,16 @@ class HumanDataServiceTests extends CuriousServiceTestCase {
 				}
 				return new Response(new MockedHttpURLConnection(data))
 			}]
+
+		when:
 		humanDataService.poll(account1)
 
+		then:
 		assert Entry.count() > 0
 	}
 
-	@Test
 	void testPollForBloodGlucose() {
+		given:
 		humanDataService.oauthService = [getHumanResource: {token, url ->
 				String data = "[]"
 				if(url.contains("blood_glucose")) {
@@ -62,13 +58,16 @@ class HumanDataServiceTests extends CuriousServiceTestCase {
 				}
 				return new Response(new MockedHttpURLConnection(data))
 			}]
+
+		when:
 		humanDataService.poll(account1)
 
+		then:
 		assert Entry.count() == 2
 	}
 
-	@Test
 	void testPollForBodyFat() {
+		given:
 		humanDataService.oauthService = [getHumanResource: {token, url ->
 				String data = "[]"
 				if(url.contains("body_fat")) {
@@ -76,13 +75,16 @@ class HumanDataServiceTests extends CuriousServiceTestCase {
 				}
 				return new Response(new MockedHttpURLConnection(data))
 			}]
+
+		when:
 		humanDataService.poll(account1)
 
+		then:
 		assert Entry.count() == 2
 	}
 
-	@Test
 	void testPollForSleeps() {
+		given:
 		humanDataService.oauthService = [getHumanResource: {token, url ->
 				String data = "[]"
 				if(url.contains("sleeps")) {
@@ -90,18 +92,21 @@ class HumanDataServiceTests extends CuriousServiceTestCase {
 				}
 				return new Response(new MockedHttpURLConnection(data))
 			}]
+
+		when:
 		humanDataService.poll(account1)
 
+		then:
 		assert Entry.count() == 4
 	}
 
-	@Test
 	void testPollWithAPIData() {
-		return
+		when:
 		humanDataService.poll(account1)
 
+		then:
 		assert Entry.count() != 0
-		assertNotNull account1.lastPolled
+		assert account1.lastPolled
 	}
 
 }
