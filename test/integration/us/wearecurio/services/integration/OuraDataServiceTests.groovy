@@ -181,6 +181,15 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert Entry.countByUserId(account.userId) == 4
 
 		List<Entry> newEntryList = Entry.getAll()
+		
+		/*
+		 * TODO Need to investigate sessions managed by Spock during the integration tests for HQL and SQL queries. 
+		 * The refresh call was needed to update the instances fetched from the above getAll query as the HQL query did
+		 * successfully update the entries but it was not getting reflected in here. Possible reason may be Spock, 
+		 * as this was working correctly with JUnit.
+		 */
+		newEntryList*.refresh()
+		
 		newEntryList[0].userId == account.userId
 		// User id in 3 older entries will be unset
 		newEntryList[1].id == entryList[1].id
@@ -237,6 +246,8 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert Entry.countByUserId(account.userId) == 4
 
 		List<Entry> newEntryList = Entry.getAll()
+		newEntryList*.refresh()
+		
 		newEntryList[0].userId == account.userId
 		// User id in 3 older entries will be unset
 		newEntryList[1].id == entryList[1].id
@@ -302,6 +313,8 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert Entry.countByUserId(account.userId) == 4
 
 		List<Entry> newEntryList = Entry.getAll()
+		newEntryList*.refresh()
+		
 		newEntryList[0].userId == account.userId
 		// User id in 3 older entries will be unset
 		newEntryList[1].id == entryList[1].id

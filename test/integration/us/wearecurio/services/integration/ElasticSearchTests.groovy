@@ -200,6 +200,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		DiscussionPost postB1 = discussionB.createPost(user2, "postB1", currentTime + 2)
 		DiscussionPost postB2 = discussionB.createPost(user2, "postB2", currentTime + 3)
 		
+		when:
 		elasticSearchService.index()
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 
@@ -222,7 +223,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		assert discussionResults.searchResults.size() == 1
 		assert discussionResults.searchResults[0].name == discussionA.name
 
-		then:
+		when:
 		SearchResponse sr
 		elasticSearchHelper.withElasticSearch{ client ->
 			sr = client
@@ -683,7 +684,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		assert !dbGroupIds.contains(groupB.id)
 		
 		def discussionResults = Discussion.search(searchType:'query_and_fetch') {
-			query_string(query:  "groupIds:" + dbGroupIds[0].toString())
+			query_string(query: "groupIds:" + dbGroupIds[0].toString())
 		}
 		assert discussionResults
 		assert discussionResults.searchResults.size() == 1

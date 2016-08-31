@@ -48,7 +48,9 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 		twenty3AndMeDataService.getUserProfile(tokenInstance)
 
 		then:
-		thrown(InvalidAccessTokenException)
+		Exception exception = thrown(Exception)
+		exception.cause.toString() == "us.wearecurio.thirdparty.InvalidAccessTokenException: Missing a valid access " +
+				"token for [Twenty3AndMe]."
 	}
 
 	void testStoreGenomesDataWithNoToken() {

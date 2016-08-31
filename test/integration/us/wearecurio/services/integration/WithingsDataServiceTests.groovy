@@ -60,7 +60,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	}
 	
 	private void setWithingsResourceRepsoneWithQS(MockedHttpURLConnection mockedConnection) {
-		withingsDataService.oauthService['getWithingsResourceWithQuerystringParams'] =  { token, url, body, header ->
+		withingsDataService.oauthService['getWithingsResourceWithQuerystringParams'] = { token, url, body, header ->
 			mockedGeneratedURL = url
 			return new Response(mockedConnection)
 		}
@@ -133,17 +133,18 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		when:
 		// When withings returns a non-zero status code
 		setWithingsResourceRepsone(new MockedHttpURLConnection("""{"status": 2555}"""))
-		Map result = withingsDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
+		withingsDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
 
 		then:
 		assert Entry.count() == 0
 
 		when:
-		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection("""{"status": 342}"""))
+		setWithingsResourceRepsone(new MockedHttpURLConnection("""{"status": 342}"""))
 		withingsDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
 
 		then:
-		thrown(InvalidAccessTokenException)
+		Exception exception = thrown(InvalidAccessTokenException)
+		exception.message == "Missing a valid access token for [Withings]."
 	}
 
 	void testGetDataDefaultWithUnparsableResponse() {
