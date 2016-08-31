@@ -77,12 +77,12 @@ class OuraDataService extends DataService {
 		List thirdPartyNotificationList = []
 
 		if (!(notifications instanceof JSONArray)) {
-			thirdPartyNotificationList.add(saveThirdPartyNotification(notifications))
-		} else {
-			ThirdPartyNotification.withNewSession {
-				notifications.each { notification ->
-					thirdPartyNotificationList.add(saveThirdPartyNotification(notification))
-				}
+			notifications = [notifications]
+		}
+		
+		ThirdPartyNotification.withNewSession {
+			notifications.each { notification ->
+				thirdPartyNotificationList.add(saveThirdPartyNotification(notification))
 			}
 		}
 
