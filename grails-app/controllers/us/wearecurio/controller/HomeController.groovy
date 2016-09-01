@@ -362,8 +362,8 @@ class HomeController extends DataController {
 	 */
 	@NoAuth
 	def notifyOura() {
-		String notificationData = request.JSON.toString()
-		debug "HomeController.notifyOura() from IP: [$request.remoteAddr] with params: $params data: $notificationData"
+		Object notificationData = request.JSON
+		debug "HomeController.notifyOura() from IP: [$request.remoteAddr] with params: $params"
 
 		if (ouraDataService.notificationHandler(notificationData)) {
 			render status: 204

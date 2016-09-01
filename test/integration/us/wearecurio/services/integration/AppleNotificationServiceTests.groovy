@@ -1,7 +1,5 @@
 package us.wearecurio.services.integration
 
-import org.junit.*
-
 import us.wearecurio.services.AppleNotificationService
 
 class AppleNotificationServiceTests extends CuriousServiceTestCase {
@@ -28,16 +26,20 @@ class AppleNotificationServiceTests extends CuriousServiceTestCase {
 	// for example, on a mac, ${userHome} would be, /Users/myUserName
 	//
 	// The file can be found in the grails project at /ios-cert/dev/iphone_dev.p12
-	@Test
 	void testValidSendMessage() {
+		given:
 		def messageTxt = "Testing APNS"
+		
+		expect:
 		assert appleNotificationService.sendMessage(messageTxt, devices) == true
 	}
 	
-	@Test
 	void testForNoDeviceIDs() {
+		given:
 		def messageTxt = "Testing APNS"
 		devices = []
+		
+		expect:
 		assert appleNotificationService.sendMessage(messageTxt, devices) == false
 	}
 }

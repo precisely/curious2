@@ -1,19 +1,19 @@
 package us.wearecurio.services.integration
 
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
+import java.math.RoundingMode
 import org.scribe.model.Response
 import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.hashids.DefaultHashIDGenerator
-import us.wearecurio.model.*
-import us.wearecurio.services.MovesDataService
+import us.wearecurio.model.Entry
+import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.User
 import us.wearecurio.services.DataService.DataRequestContext
+import us.wearecurio.services.MovesDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.TagUnitMap
 import us.wearecurio.utility.Utils
-
-import java.math.RoundingMode
 
 class MovesDataServiceTests extends CuriousServiceTestCase {
 	static transactional = true
@@ -49,7 +49,6 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		return c
 	}
 
-	@Test
 	void testNormalizedData() {
 		/**
 		 * There are 5 activities in the mocked response, out of which four are valid & one is of type "trp" (invalid).
@@ -59,14 +58,20 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		 * @see this in http://jsoneditoronline.org/index.html
 		 */
 
+		given:
 		String parsedResponse = """[{"date":"20121212","segments":[{"type":"move","startTime":"20121212T071430-0800","endTime":"20121212T074617-0800","activities":[{"activity":"running","startTime":"20121212T071430-0800","endTime":"20121212T072732-0800","duration":782,"distance":1251,"steps":1353}]},{"type":"place","startTime":"20121212T074617-0800","endTime":"20121212T100051-0800","activities":[{"activity":"walking","startTime":"20121212T074804-0800","endTime":"20121212T075234-0800","duration":270,"distance":227,"steps":303,"calories":99}]},{"type":"move","startTime":"20121212T100051-0800","endTime":"20121212T100715-0800","activities":[{"activity":"walking","startTime":"20121212T100051-0800","endTime":"20121212T100715-0800","duration":384,"distance":421,"steps":488,"calories":99}]},{"type":"move","startTime":"20121212T153638-0800","endTime":"20121212T160744-0800","activities":[{"activity":"transport","startTime":"20121212T153638-0800","endTime":"20121212T155321-0800","duration":1003,"distance":8058},{"activity":"cycling","startTime":"20121212T155322-0800","endTime":"20121212T160744-0800","duration":862,"distance":1086,"steps":1257,"calories":99}]}]}]"""
 
 		movesDataService.oauthService = [getMovesResource: {token, url, param, header ->
 				return new Response(new MockedHttpURLConnection(parsedResponse))
 			}]
 
+		when:
 		Map response = movesDataService.getDataDefault(account, null, null, false, new DataRequestContext())
+
+		then:
 		assert response.success == true
+
+		when:
 		Collection entries = Entry.findAllByUserId(user.getId())
 		Date date = null
 		for (def entry in entries) {
@@ -76,10 +81,15 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 			if (date == null || entry.date < date)
 				date = entry.date
 		}
+
+		then:
 		assert Entry.count() == 15
 
+		when:
 		// Ensuring entries of the same day will be replaced with new entries.
 		response = movesDataService.getDataDefault(account, null, null, false, new DataRequestContext())
+
+		then:
 		assert response.success == true
 
 		testEntries(user, "America/Los_Angeles", date, date) {
@@ -89,8 +99,8 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		}
 	}
 
-	@Test
 	void testMergedData() {
+		given:
 		String parsedResponse = new File("./test/integration/test-files/moves/default-data-1.json").text
 
 		movesDataService.oauthService = [getMovesResource: {token, url, param, header ->
@@ -98,6 +108,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		}]
 
 		Map response = movesDataService.getDataDefault(account, null, null, false, new DataRequestContext())
+
 		assert response.success == true
 		List<Entry> entries = Entry.findAllByUserId(user.getId(), [sort: "id", order: "asc"])
 
@@ -155,19 +166,22 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		}
 	}
 
-	@Test
 	void "Test for records with start and end time format yyyyMMdd'T'HHmmss'Z'"() {
 		/**
 		 * All activities in the mocked response have end date and start date in the format yyyyMMdd'T'HHmmss'Z'
 		 */
 
+		given:
 		String parsedResponse = new File("./test/integration/test-files/moves/default-data-2.json").text
 
 		movesDataService.oauthService = [getMovesResource: {token, url, param, header ->
 				return new Response(new MockedHttpURLConnection(parsedResponse))
 			}]
 
+		when:
 		Map response = movesDataService.getDataDefault(account, null, null, false, new DataRequestContext())
+
+		then:
 		assert response.success == true
 		Collection entries = Entry.findAllByUserId(user.getId())
 		assert Entry.count() == 42

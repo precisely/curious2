@@ -1,9 +1,4 @@
 package us.wearecurio.services.integration
-
-import org.junit.*
-
-import us.wearecurio.services.GoogleMessageService;
-
 /**
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
@@ -20,16 +15,20 @@ class GoogleMessageServiceTests extends CuriousServiceTestCase {
 	void cleanup() {
 	}
 
-	@Test
     void testValidSendMessage() {
+		given:
 		def messageTxt = "Testing GCM"
-        assert googleMessageService.sendMessage(messageTxt, devices) == true
-    }
-	
-	@Test
+
+		expect:
+		assert googleMessageService.sendMessage(messageTxt, devices) == true
+	}
+
 	void testForNoDeviceIDs() {
+		given:
 		def messageTxt = "Testing GCM"
 		devices = []
+
+		expect:
 		assert googleMessageService.sendMessage(messageTxt, devices) == false
 	}
 }

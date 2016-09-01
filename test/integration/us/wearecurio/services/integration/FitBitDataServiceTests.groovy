@@ -1,11 +1,10 @@
 package us.wearecurio.services.integration
 
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDateTime
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
 import org.scribe.model.Response
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Entry
@@ -14,16 +13,13 @@ import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
+import us.wearecurio.services.DataService.DataRequestContext
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.UrlService
-import us.wearecurio.services.DataService.DataRequestContext
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.utility.Utils
-
-import java.text.DateFormat
-import java.text.SimpleDateFormat
 
 class FitBitDataServiceTests extends CuriousServiceTestCase {
 	static transactional = true
@@ -52,45 +48,51 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		TimeZone.setDefault(serverTimezone)
 	}
 
-	@Test
-	void testSubscribeIfSuccess() {
+	void "testSubscribeIfSuccess"() {
+		given:
 		fitBitDataService.oauthService = [
 			postFitBitResource: { token, url, p, header ->
 				return new Response(new MockedHttpURLConnection("{}"))
 			}
 		]
 		Map result = fitBitDataService.subscribe(userId)
+
+		expect:
 		assert result.success
 	}
 
-	@Test
-	void testSubscribeIfFail() {
+	void "testSubscribeIfFail"() {
+		given:
 		fitBitDataService.oauthService = [
 			postFitBitResource:{ token, url, p, header ->
 				return new Response(new MockedHttpURLConnection("{}", 202))
 			}
 		]
 		Map result = fitBitDataService.subscribe(userId)
+
+		expect:
 		assert !result.success
 		assert OAuthAccount.findByUserId(userId).accessToken == ""
 	}
 
-	@Test
-	void testSubscribeIfNoAuthAccount() {
-		shouldFail(MissingOAuthAccountException) {
-			fitBitDataService.subscribe(user2.id)
-		}
+	void "testSubscribeIfNoAuthAccount"() {
+		when:
+		fitBitDataService.subscribe(user2.id)
+
+		then:
+		thrown(MissingOAuthAccountException)
 	}
 
-	@Test
-	void testUnsubscribeIfNoOAuthAccount() {
-		shouldFail(MissingOAuthAccountException) {
-			fitBitDataService.unsubscribe(user2.id)
-		}
+	void "testUnsubscribeIfNoOAuthAccount"() {
+		when:
+		fitBitDataService.unsubscribe(user2.id)
+
+		then:
+		thrown(MissingOAuthAccountException)
 	}
 
-	@Test
-	void testUnsubscribeWithOAuthAccountExists() {
+	void "testUnsubscribeWithOAuthAccountExists"() {
+		given:
 		fitBitDataService.oauthService = [
 			deleteFitBitResource: { token, url, p, header ->
 				return new Response(new MockedHttpURLConnection("{}", 204))
@@ -98,35 +100,43 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		]
 
 		assert OAuthAccount.count() == 1
+
+		when:
 		fitBitDataService.unsubscribe(userId)
+
+		then:
 		assert OAuthAccount.count() == 0
 	}
 
-	@Test
-	void testNotificationHandler() {
+	void "testNotificationHandler"() {
+		given:
 		String notificationString = """[{"collectionType":"foods","date":"2010-03-01","ownerId":"228S74","ownerType":"user","subscriptionId":"1234"},{"collectionType":"foods","date":"2010-03-02","ownerId":"228S74","ownerType":"user","subscriptionId":"1234"},{"collectionType":"activities","date":"2010-03-01","ownerId":"184X36","ownerType":"user","subscriptionId":"2345"}]"""
+
+		when:
 		fitBitDataService.notificationHandler(notificationString)
+
+		then:
 		assert ThirdPartyNotification.count() == 3
 		assert ThirdPartyNotification.first().typeId == ThirdParty.FITBIT
 	}
 
-	@Test
-	void testGetDataDefaultWithFailureStatusCode() {
+	void "testGetDataDefaultWithFailureStatusCode"() {
+		given:
 		fitBitDataService.oauthService = [
 			getFitBitResource: { token, url, p, header ->
 				return new Response(new MockedHttpURLConnection(401))
 			}
 		]
 		// When fitbit returns a non-zero response code
-		try {
-			fitBitDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
-		} catch(e) {
-			assert e instanceof InvalidAccessTokenException
-		}
+		when:
+		fitBitDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
+
+		then:
+		thrown(InvalidAccessTokenException)
 	}
 
-	@Test
-	void testGetDataDefault() {
+	void "testGetDataDefault"() {
+		given:
 		String mockedResponseData = """{"someKey": "someValue"}"""
 		fitBitDataService.oauthService = [
 			getFitBitResource: { token, url, p, header ->
@@ -134,8 +144,10 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 			}
 		]
 
+		when:
 		Map result = fitBitDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
 
+		then:
 		assert result.success == true
 	}
 
@@ -177,18 +189,25 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 
 	}
 
-	@Test
-	void testGetDataSleepWithDifferentUserTimezone() {
+	void "testGetDataSleepWithDifferentUserTimezone"() {
+		given:
 		TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"))
+
+		when:
 		Map result = helperSleepData("2014-03-07T11:00:00.031")
-		assert result.success == true
-	}
-	
-	@Test
-	void testGetDataSleepWithSameUserTimezone() {
-		TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"))
-		Map result = helperSleepData("2014-03-07T11:00:00.031")
+
+		then:
 		assert result.success == true
 	}
 
+	void "testGetDataSleepWithSameUserTimezone"() {
+		given:
+		TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"))
+
+		when:
+		Map result = helperSleepData("2014-03-07T11:00:00.031")
+
+		then:
+		assert result.success == true
+	}
 }

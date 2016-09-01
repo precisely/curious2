@@ -3,16 +3,13 @@ package us.wearecurio.services
 import grails.converters.JSON
 import groovy.time.TimeCategory
 import groovyx.net.http.URIBuilder
-
 import java.text.SimpleDateFormat
-
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDateTime
 import org.springframework.transaction.annotation.Transactional
-
 import us.wearecurio.datetime.DateUtils
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
@@ -72,18 +69,39 @@ class OuraDataService extends DataService {
 	@Override
 	@Transactional
 	List<ThirdPartyNotification> notificationHandler(String notificationData) {
-		JSONObject notification = JSON.parse(notificationData)
+		notificationHandler(JSON.parse(notificationData))
+	}
+
+	@Transactional
+	List<ThirdPartyNotification> notificationHandler(Object notifications) {
+		List thirdPartyNotificationList = []
+
+		if (!(notifications instanceof JSONArray)) {
+			notifications = [notifications]
+		}
+		
+		ThirdPartyNotification.withNewSession {
+			notifications.each { notification ->
+				thirdPartyNotificationList.add(saveThirdPartyNotification(notification))
+			}
+		}
+
+		return thirdPartyNotificationList
+	}
+
+	ThirdPartyNotification saveThirdPartyNotification(Object notification) {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd")
 		Date notificationDate = simpleDateFormat.parse(notification.date)
 
 		ThirdPartyNotification thirdPartyNotification = new ThirdPartyNotification([collectionType: notification.type,
-				date: notificationDate, ownerId: notification.userId, subscriptionId: "",
+				date: notificationDate, ownerId: notification.userId, subscriptionId: notification.subscriptionId ?: "",
 				ownerType: "user", typeId: ThirdParty.OURA])
 
-		if (Utils.save(thirdPartyNotification)) {
-			return [thirdPartyNotification]
+		if (!Utils.save(thirdPartyNotification)) {
+			return
 		}
-		return []
+
+		thirdPartyNotification
 	}
 
 	void getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll, DataRequestContext context) throws InvalidAccessTokenException {

@@ -1,24 +1,18 @@
 package us.wearecurio.services.integration
 
-import static org.junit.Assert.*
-
-import org.junit.*
 import org.scribe.model.Response
 import org.scribe.model.Token
-
-import us.wearecurio.utility.Utils
-import us.wearecurio.hashids.DefaultHashIDGenerator
-
 import uk.co.desirableobjects.oauth.scribe.OauthService
+import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
-import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.Twenty3AndMeData
 import us.wearecurio.model.User
-import us.wearecurio.services.Twenty3AndMeDataService
 import us.wearecurio.services.DataService.DataRequestContext
+import us.wearecurio.services.Twenty3AndMeDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
+import us.wearecurio.utility.Utils
 
 class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 	static transactional = true
@@ -46,24 +40,27 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 		twenty3AndMeDataService.oauthService = oauthService
 	}
 
-	@Test
 	void testGetUserProfiles() {
+		given:
 		Token tokenInstance = account.tokenInstance
-		try {
-			twenty3AndMeDataService.getUserProfile(tokenInstance)
-		} catch (e) {
-			assert e.cause instanceof InvalidAccessTokenException
-		}
+
+		when:
+		twenty3AndMeDataService.getUserProfile(tokenInstance)
+
+		then:
+		Exception exception = thrown(Exception)
+		exception.cause.toString() == "us.wearecurio.thirdparty.InvalidAccessTokenException: Missing a valid access " +
+				"token for [Twenty3AndMe]."
 	}
 
-	@Test
 	void testStoreGenomesDataWithNoToken() {
-		shouldFail(InvalidAccessTokenException) {
-			twenty3AndMeDataService.storeGenomesData(userId)
-		}
+		when:
+		twenty3AndMeDataService.storeGenomesData(userId)
+
+		then:
+		thrown(InvalidAccessTokenException)
 	}
 
-	@Test
 	void testGetDataDefaultForValidData() {
 		/**
 		 * There are 5 activities in the mocked response, out of which four are valid & one is of type "trp" (invalid).
@@ -73,6 +70,7 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 		 * @see this in http://jsoneditoronline.org/index.html
 		 */
 
+		given:
 		String profileResponse = """[{"profiles":[{"id":1}]}]"""
 		byte[] bytes = new byte[1100 * 1024]
 		for (int i = 0; i < bytes.length; ++i) {
@@ -84,7 +82,10 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 				return new Response(new MockedHttpURLConnection(url.startsWith(Twenty3AndMeDataService.GENOME_URL) ? genomeResponse : profileResponse))
 			}]
 
+		when:
 		Map response = twenty3AndMeDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
+
+		then:
 		assert response.success == true
 		
 		assert Twenty3AndMeData.countByAccountAndProfileId(account, 1) == 2

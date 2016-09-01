@@ -1,10 +1,6 @@
 package us.wearecurio.services.integration
 
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
 import org.scribe.model.Response
-import spock.lang.Unroll
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
@@ -13,9 +9,9 @@ import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
+import us.wearecurio.services.DataService.DataRequestContext
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.OuraDataService
-import us.wearecurio.services.DataService.DataRequestContext
 import us.wearecurio.support.EntryStats
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
@@ -49,28 +45,32 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		TimeZone.setDefault(serverTimezone)
 	}
 
-	@Test
 	void "Test subscribe sucess"() {
+		when:
 		Map result = ouraDataService.subscribe(userId)
+
+		then:
 		assert result.success
 	}
 
-	@Test
 	void "Test subscribe if no OAuthAccount"() {
-		shouldFail(MissingOAuthAccountException) {
-			ouraDataService.subscribe(user2.id)
-		}
+		when:
+		ouraDataService.subscribe(user2.id)
+
+		then:
+		thrown(MissingOAuthAccountException)
 	}
 
-	@Test
 	void "Test unsubscribe if no OAuthAccount"() {
-		shouldFail(MissingOAuthAccountException) {
-			ouraDataService.unsubscribe(user2.id)
-		}
+		when:
+		ouraDataService.unsubscribe(user2.id)
+
+		then:
+		thrown(MissingOAuthAccountException)
 	}
 
-	@Test
 	void "Test unsubscribe with OAuthAccount exists"() {
+		given:
 		ouraDataService.oauthService = [
 				deleteFitBitResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection("{}", 204))
@@ -78,35 +78,44 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		]
 
 		assert OAuthAccount.count() == 1
+
+		when:
 		ouraDataService.unsubscribe(userId)
+
+		then:
 		assert OAuthAccount.count() == 0
 	}
 
-	@Test
 	void "Test ouraNotificationHandler success"() {
+		given:
 		String notificationString = """{type: exercise, date: "2015-09-12", userId: 3}"""
+
+		when:
 		ouraDataService.notificationHandler(notificationString)
+
+		then:
 		assert ThirdPartyNotification.count() == 1
 		assert ThirdPartyNotification.first().typeId == ThirdParty.OURA
 	}
 
-	@Test
 	void "Test GetDataSleep with failure status code"() {
+		given:
 		ouraDataService.oauthService = [
 				getOuraResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection("{}", 401))
 				}
 		]
+
+		when:
 		// When oura returns a non-zero response code
-		try {
-			ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
-		} catch(e) {
-			assert e instanceof InvalidAccessTokenException
-		}
+		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
+
+		then:
+		thrown(InvalidAccessTokenException)
 	}
 
-	@Test
 	void "Test getDataSleep success"() {
+		given:
 		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 3,
 				type: "sleep", eventTime: 1434440700, data: {bedtime_m: 510, sleep_score: 86, awake_m: 52, rem_m: 78, light_m: 220, deep_m: 160}},
 				{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 3,
@@ -118,9 +127,11 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				}
 		]
 
+		when:
 		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
-		assert Entry.getCount() == 12
 
+		then:
+		assert Entry.getCount() == 12
 		List<Entry> entryList = Entry.getAll()
 		assert entryList[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
 		assert entryList[0].description == "sleep [time: total]"
@@ -128,8 +139,8 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[6].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
 	}
 
-	@Test
 	void "test getDataSleep when same entries are imported from notifications due to new set name"() {
+		given:
 		String mockedResponseData = """{"data":[{"dateCreated":"2015-11-04T12:42:45.168Z","timeZone":"Europe/Stockholm",
 				"user":3,"type":"sleep","eventTime":1434440700,"data":{"bedtime_m":510,"sleep_score":86,"deep_m":160}}]}"""
 		ouraDataService.oauthService = [
@@ -142,9 +153,11 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		Entry.create(account.userId, entryParserService.parse(new Date(), "America/Los_Angeles",
 				"bread 2pm", null, null, new Date(), true), new EntryStats())
 
+		when:
 		// When first time entries are imported
 		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
 
+		then:
 		// Then 3 sleep entries should be created (and one simple entry)
 		assert Entry.getCount() == 4
 		assert Entry.countByUserId(account.userId) == 4
@@ -158,14 +171,25 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[1].setIdentifier.value.startsWith("OURA sleep ")
 		assert entryList[1].userId == account.userId
 
+		when:
 		// When same data is re-imported again
 		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
 
+		then:
 		// Then previously imported entries from Oura should be unset
 		assert Entry.getCount() == 7
 		assert Entry.countByUserId(account.userId) == 4
 
 		List<Entry> newEntryList = Entry.getAll()
+		
+		/*
+		 * TODO Need to investigate sessions managed by Spock during the integration tests for HQL and SQL queries. 
+		 * The refresh call was needed to update the instances fetched from the above getAll query as the HQL query did
+		 * successfully update the entries but it was not getting reflected in here. Possible reason may be Spock, 
+		 * as this was working correctly with JUnit.
+		 */
+		newEntryList*.refresh()
+		
 		newEntryList[0].userId == account.userId
 		// User id in 3 older entries will be unset
 		newEntryList[1].id == entryList[1].id
@@ -180,8 +204,8 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		newEntryList[6].userId == account.userId
 	}
 
-	@Test
 	void "test getDataSleep when same entries are imported from notifications due to new set name with null end date"() {
+		given:
 		String mockedResponseData = """{"data":[{"dateCreated":"2015-11-04T12:42:45.168Z","timeZone":"Europe/Stockholm",
 				"user":3,"type":"sleep","eventTime":1434440700,"data":{"bedtime_m":510,"sleep_score":86,"deep_m":160}}]}"""
 		ouraDataService.oauthService = [
@@ -194,9 +218,11 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		Entry.create(account.userId, entryParserService.parse(new Date(), "America/Los_Angeles",
 				"bread 2pm", null, null, new Date(), true), new EntryStats())
 
+		when:
 		// When first time entries are imported
 		ouraDataService.getDataSleep(account, new Date(), null, false, new DataRequestContext())
 
+		then:
 		// Then 3 sleep entries should be created (and one simple entry)
 		assert Entry.getCount() == 4
 		assert Entry.countByUserId(account.userId) == 4
@@ -210,14 +236,18 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[1].setIdentifier.value.startsWith("OURA sleep ")
 		assert entryList[1].userId == account.userId
 
+		when:
 		// When same data is re-imported again
 		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
 
+		then:
 		// Then previously imported entries from Oura should be unset
 		assert Entry.getCount() == 7
 		assert Entry.countByUserId(account.userId) == 4
 
 		List<Entry> newEntryList = Entry.getAll()
+		newEntryList*.refresh()
+		
 		newEntryList[0].userId == account.userId
 		// User id in 3 older entries will be unset
 		newEntryList[1].id == entryList[1].id
@@ -232,8 +262,8 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		newEntryList[6].userId == account.userId
 	}
 
-	@Test
 	void "test getDataSleep when same entries are imported from polling with old set name"() {
+		given:
 		String mockedResponseData = """{"data":[{"dateCreated":"2015-11-04T12:42:45.168Z","timeZone":"Europe/Stockholm",
 				"user":3,"type":"sleep","eventTime":1434440700,"data":{"bedtime_m":510,"sleep_score":86,"deep_m":160}}]}"""
 		ouraDataService.oauthService = [
@@ -246,21 +276,25 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		Entry.create(account.userId, entryParserService.parse(new Date(), "America/Los_Angeles",
 				"bread 2pm", null, null, new Date(), true), new EntryStats())
 
+		when:
 		// When first time entries are imported
 		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
 
+		then:
 		// Then 3 sleep entries should be created (and one simple entry)
 		assert Entry.getCount() == 4
 		assert Entry.countByUserId(account.userId) == 4
 
 		List<Entry> entryList = Entry.getAll()
 
+		when:
 		(1..3).each { index ->
 			// Update the set name to use old set names, so that we can simulate data for the test
 			entryList[index].setIdentifier = Identifier.look(ouraDataService.getOldSetName("s", new Date()))
 			Utils.save(entryList[index], true)
 		}
 
+		then:
 		assert entryList[0].description == "bread"
 		assert entryList[0].setIdentifier == null
 		assert entryList[0].userId == account.userId
@@ -269,14 +303,18 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[1].refresh().setIdentifier.value.startsWith("OURAs")
 		assert entryList[1].userId == account.userId
 
+		when:
 		// When same data is re-imported again with polling for 4 days of interval
 		ouraDataService.getDataSleep(account, new Date() - 2, new Date() + 2, false, new DataRequestContext())
 
+		then:
 		// Then previously imported entries (with old set name) from Oura should be unset
 		assert Entry.getCount() == 7
 		assert Entry.countByUserId(account.userId) == 4
 
 		List<Entry> newEntryList = Entry.getAll()
+		newEntryList*.refresh()
+		
 		newEntryList[0].userId == account.userId
 		// User id in 3 older entries will be unset
 		newEntryList[1].id == entryList[1].id
@@ -291,23 +329,24 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		newEntryList[6].userId == account.userId
 	}
 
-	@Test
 	void "Test getDataExercise with failure status code"() {
+		given:
 		ouraDataService.oauthService = [
 				getOuraResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection("{}", 401))
 				}
 		]
+
+		when:
 		// When oura returns a non-zero response code
-		try {
-			ouraDataService.getDataExercise(account, new Date(), false, new DataRequestContext())
-		} catch(e) {
-			assert e instanceof InvalidAccessTokenException
-		}
+		ouraDataService.getDataExercise(account, new Date(), false, new DataRequestContext())
+
+		then:
+		thrown(InvalidAccessTokenException)
 	}
 
-	@Test
 	void "Test getDataExercise with success as response and entries get created"() {
+		given:
 		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 1,
 				type: "exercise", eventTime: 1434440700, data: {duration_m: 10, classification: "sedentary"}},
 				{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 1,
@@ -318,7 +357,10 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				}
 		]
 
+		when:
 		ouraDataService.getDataExercise(account, new Date(), false, new DataRequestContext())
+
+		then:
 		assert Entry.getCount() == 2
 
 		List<Entry> entryList = Entry.getAll()
@@ -328,8 +370,8 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[1].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
 	}
 
-	@Test
 	void "Test getDataExercise with success as response and entries get merged if two contiguous same entries are encountered"() {
+		given:
 		String mockedResponseData = """{data: [
 					{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 1,
 						type: "exercise", eventTime: 1434440700, data: {duration_m: 15, classification: "sedentary"}},
@@ -345,7 +387,10 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				}
 		]
 
+		when:
 		ouraDataService.getDataExercise(account, new Date(), false, new DataRequestContext())
+
+		then:
 		assert Entry.getCount() == 2
 
 		List<Entry> entryList = Entry.getAll()
@@ -358,8 +403,8 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[1].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
 	}
 
-	@Test
 	void "Test getDataExercise when entries get merged due to contiguous entries (not at the starting)"() {
+		given:
 		String mockedResponseData = new File("./test/integration/test-files/oura/exercise-contiguous-1.json").text
 		ouraDataService.oauthService = [
 				getOuraResource: { token, url, p, header ->
@@ -367,8 +412,11 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				}
 		]
 
+		when:
 		ouraDataService.getDataExercise(account, new Date(), false, new DataRequestContext())
 		// 6 entries should be created as pair of 2-2 entries will be merged into 1
+
+		then:
 		assert Entry.getCount() == 6
 
 		List<Entry> entryList = Entry.getAll()
@@ -394,8 +442,8 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[0].setIdentifier.value.startsWith("OURA exercise ")
 	}
 
-	@Test
 	void "Test getDataExercise when contiguous entries do not get merged because of large gap between them"() {
+		given:
 		String mockedResponseData = """{data: [
 					{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 1,
 						type: "exercise", eventTime: 1434440700, data: {duration_m: 15, classification: "sedentary"}},
@@ -411,7 +459,10 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				}
 		]
 
+		when:
 		ouraDataService.getDataExercise(account, new Date(), false, new DataRequestContext())
+
+		then:
 		assert Entry.getCount() == 3
 
 		List<Entry> entryList = Entry.getAll()
@@ -432,8 +483,8 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[2].comment == "(Oura)"
 	}
 
-	@Test
 	void "Test getDataExercise when false entry is passed with timeZone and user missing"() {
+		given:
 		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", type: "activity",
 				eventTime: 1434440700, data: {non_wear_m: 481, steps: 9800, eq_meters: 1478, active_cal: 204, total_cal: 2162}}]}"""
 		ouraDataService.oauthService = [
@@ -442,30 +493,31 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 			}
 		]
 
-		try {
-			ouraDataService.getDataExercise(account, new Date(), false, new DataRequestContext())
-		} catch (e) {
-			assert e instanceof NumberFormatException
-		}
+		when:
+		ouraDataService.getDataExercise(account, new Date(), false, new DataRequestContext())
+
+		then:
+		thrown(NumberFormatException)
 	}
 
-	@Test
 	void "Test getDataActivity with failure status code"() {
+		given:
 		ouraDataService.oauthService = [
 				getOuraResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection("{}", 401))
 				}
 		]
+
+		when:
 		// When oura returns a non-zero response code
-		try {
-			ouraDataService.getDataActivity(account, new Date(), false, new DataRequestContext())
-		} catch(e) {
-			assert e instanceof InvalidAccessTokenException
-		}
+		ouraDataService.getDataActivity(account, new Date(), false, new DataRequestContext())
+
+		then:
+		thrown(InvalidAccessTokenException)
 	}
 
-	@Test
 	void "Test getDataActivity success with two entries being created"() {
+		given:
 		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 2,
 				type: "activity", eventTime: 1434440700, data: {non_wear_m: 481, steps: 9800, eq_meters: 1478, active_cal: 204, total_cal: 2162}},
 				{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 2,
@@ -477,7 +529,10 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				}
 		]
 
+		when:
 		ouraDataService.getDataActivity(account, new Date(), false, new DataRequestContext())
+
+		then:
 		assert Entry.getCount() == 10
 
 		Entry entry1 = Entry.first()
@@ -485,5 +540,41 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entry1.timeZoneId == TimeZoneId.look("Europe/Stockholm").id
 		assert entry2.timeZoneId == TimeZoneId.look("Asia/Kolkata").id
 		assert entry1.setIdentifier.value.startsWith("OURA activity ")
+	}
+
+	void "Test ouraNotificationHandler success when request body is passed as string"() {
+		given:
+		String notificationString = """{type: exercise, date: "2015-09-12", userId: 3, subscriptionId: "4"}"""
+
+		when:
+		ouraDataService.notificationHandler(notificationString)
+
+		then:
+		assert ThirdPartyNotification.count() == 1
+		assert ThirdPartyNotification.first().typeId == ThirdParty.OURA
+	}
+
+	void "Test ouraNotificationHandler success when request body is passed as Object Array"() {
+		given:
+		def notificationList = [[type: 'exercise', date: "2015-09-12", userId: 3, subscriptionId: "4"]]
+
+		when:
+		ouraDataService.notificationHandler(notificationList)
+
+		then:
+		assert ThirdPartyNotification.count() == 1
+		assert ThirdPartyNotification.first().typeId == ThirdParty.OURA
+	}
+
+	void "Test ouraNotificationHandler success when request body is passed as Object"() {
+		given:
+		Object notification = [type: 'exercise', date: "2015-09-12", userId: 3, subscriptionId: "4"]
+
+		when:
+		ouraDataService.notificationHandler(notification)
+
+		then:
+		assert ThirdPartyNotification.count() == 1
+		assert ThirdPartyNotification.first().typeId == ThirdParty.OURA
 	}
 }
