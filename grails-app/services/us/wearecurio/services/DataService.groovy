@@ -2,6 +2,7 @@ package us.wearecurio.services
 
 import grails.converters.JSON
 import grails.util.Environment
+import groovy.transform.Synchronized
 import us.wearecurio.datetime.DateUtils
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
@@ -441,6 +442,7 @@ abstract class DataService {
 	 * @param account
 	 * @return
 	 */
+	@Synchronized
 	@Transactional
 	boolean poll(OAuthAccount account, Date notificationDate = null) {
 		String accountId = account.accountId

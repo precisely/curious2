@@ -850,5 +850,9 @@ class MigrationService {
 		tryMigration("Refresh all oauth accounts again 3") {
 			oauthAccountService.refreshAll()
 		}
+
+		tryMigration("Remove notifications from Oura that have no Curious accounts") {
+			sql("delete from third_party_notification where status = 0 and type_id = 9 and owner_id not in (select account_id from oauth_account where type_id = 9)")
+		}
 	}
 }

@@ -30,13 +30,14 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 
 	void setup() {
 		serverTimezone = TimeZone.getDefault()
+		setupTestData()
 
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
 				password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hash: new DefaultHashIDGenerator().generate(12)])
 		assert Utils.save(user2, true)
 
 		account = new OAuthAccount([typeId: ThirdParty.OURA, userId: userId, accessToken: "Dummy-token",
-				accessSecret: "Dummy-secret", accountId: "dummy-id", timeZoneId: TimeZoneId.look("America/New_York").id])
+				accessSecret: "Dummy-secret", accountId: userId, timeZoneId: TimeZoneId.look("America/New_York").id])
 
 		Utils.save(account, true)
 	}
@@ -84,18 +85,6 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 
 		then:
 		assert OAuthAccount.count() == 0
-	}
-
-	void "Test ouraNotificationHandler success"() {
-		given:
-		String notificationString = """{type: exercise, date: "2015-09-12", userId: 3}"""
-
-		when:
-		ouraDataService.notificationHandler(notificationString)
-
-		then:
-		assert ThirdPartyNotification.count() == 1
-		assert ThirdPartyNotification.first().typeId == ThirdParty.OURA
 	}
 
 	void "Test GetDataSleep with failure status code"() {
@@ -544,7 +533,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 
 	void "Test ouraNotificationHandler success when request body is passed as string"() {
 		given:
-		String notificationString = """{type: exercise, date: "2015-09-12", userId: 3, subscriptionId: "4"}"""
+		String notificationString = """{type: exercise, date: "2015-09-12", userId: ${userId}, subscriptionId: "4"}"""
 
 		when:
 		ouraDataService.notificationHandler(notificationString)
@@ -556,7 +545,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 
 	void "Test ouraNotificationHandler success when request body is passed as Object Array"() {
 		given:
-		def notificationList = [[type: 'exercise', date: "2015-09-12", userId: 3, subscriptionId: "4"]]
+		def notificationList = [[type: 'exercise', date: "2015-09-12", userId: userId, subscriptionId: "4"]]
 
 		when:
 		ouraDataService.notificationHandler(notificationList)
@@ -566,9 +555,20 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert ThirdPartyNotification.first().typeId == ThirdParty.OURA
 	}
 
+	void "Test ouraNotificationHandler success when there are no oauth accounts found for the userId"() {
+		given: "Notification data with wrong userId"
+		def notificationList = [[type: 'exercise', date: "2015-09-12", userId: 5, subscriptionId: "4"]]
+
+		when: "The notification handler is called"
+		ouraDataService.notificationHandler(notificationList)
+
+		then: "The ThirdPartyNotification will be deleted after creation"
+		assert ThirdPartyNotification.count() == 0
+	}
+
 	void "Test ouraNotificationHandler success when request body is passed as Object"() {
 		given:
-		Object notification = [type: 'exercise', date: "2015-09-12", userId: 3, subscriptionId: "4"]
+		Object notification = [type: 'exercise', date: "2015-09-12", userId: userId, subscriptionId: "4"]
 
 		when:
 		ouraDataService.notificationHandler(notification)

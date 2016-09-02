@@ -21,6 +21,7 @@ class ThirdPartyNotification {
 		ownerType column:'owner_type'
 		subscriptionId column:'subscription_id', index:'subscription_id_index'
 		status column:'status', index:'status_index'
+		typeId column: 'type_id', index: 'type_id_index'
 	}
 
 	static enum Status {
