@@ -94,9 +94,9 @@ abstract class DataService {
 		}
 
 		Entry entryAlreadyExists(Map entryMap) {
-			log.debug "DataRequestContext.entryAlreadyExists()"
+			log.debug "DataRequestContext.entryAlreadyExists() $entriesInPollRange"
 			boolean entriesAvailableInPollRange = entriesInPollRange
-			Entry entry = null
+			Entry entry
 			if (!entriesInPollRange || entriesInPollRange.last().date.compareTo(entryMap.date) < 0) {
 				entriesAvailableInPollRange = getNextEntriesInPollRange()
 			}

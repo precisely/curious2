@@ -186,8 +186,7 @@ class MovesDataService extends DataService {
 
 	@Transactional
 	void processActivity(EntryCreateMap creationMap, EntryStats stats, JSONObject currentActivity, Long userId,
-				Integer timeZoneId, String activityType, DateFormat timeFormat, Map args,
-				 DataRequestContext context = new DataRequestContext()) {
+				Integer timeZoneId, String activityType, DateFormat timeFormat, Map args, DataRequestContext context = new DataRequestContext()) {
 		String baseType
 
 		Date startTime = timeFormat.parse(currentActivity.startTime)

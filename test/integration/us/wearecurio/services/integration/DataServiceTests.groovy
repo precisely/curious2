@@ -1,5 +1,6 @@
 package us.wearecurio.services.integration
 
+import spock.lang.IgnoreRest
 import spock.lang.Unroll
 import us.wearecurio.datetime.DateUtils
 import grails.converters.JSON
@@ -54,7 +55,6 @@ class DataServiceTests extends CuriousServiceTestCase {
 	@Test
 	void testPoll() {
 		given: "Mocked service method and OAuthAccount instance"
-
 		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 3,
 				type: "sleep", eventTime: 1434440700, data: {bedtime_m: 510, sleep_score: 86,
 				awake_m: 52, rem_m: 78, light_m: 220, deep_m: 160}},
@@ -117,7 +117,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 
 		then: "response should be true"
 		Entry awakeEntry = Entry.findByUnits("hours awake")
-		assert awakeEntry.amount == 0.700000000
+		awakeEntry.amount == 0.700000000
 		result
 
 		when: "Mocked data has different amount for sleep awake entry"

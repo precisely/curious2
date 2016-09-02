@@ -120,12 +120,12 @@ abstract class TagUnitMap {
 	}
 
 	Entry buildEntry(EntryCreateMap creationMap, EntryStats stats, String tagName, BigDecimal amount, Long userId,
-					 Integer timeZoneId, Date date, String comment, String setName, Map args = [:]) {
+			 Integer timeZoneId, Date date, String comment, String setName, Map args = [:]) {
 		buildEntry(creationMap, stats, tagName, amount, userId, timeZoneId, date, comment, setName, args, null)
 	}
 
 	Entry buildEntry(EntryCreateMap creationMap, EntryStats stats, String tagName, BigDecimal amount, Long userId,
-					 Integer timeZoneId, Date date, String comment, String setName, Map args = [:], DataService.DataRequestContext context) {
+			 Integer timeZoneId, Date date, String comment, String setName, Map args = [:], DataService.DataRequestContext context) {
 
 		Map currentMapping = tagUnitMappings[tagName]
 
@@ -177,7 +177,7 @@ abstract class TagUnitMap {
 
 		parsedEntry.putAll(args)
 
-		Entry e = context ? context.entryAlreadyExists(parsedEntry) : null
+		Entry e = context?.entryAlreadyExists(parsedEntry)
 
 		if (!e) {
 			e = Entry.updatePartialOrCreate(userId, parsedEntry, creationMap.groupForDate(date, baseTag?.description), stats)

@@ -121,6 +121,8 @@ class OuraDataService extends DataService {
 			unsetAllOldEntries(account.userId, SET_NAME)
 		}
 
+		// Backward support for old set name
+		unsetOldEntries(account.userId, getOldSetNames("s", startDate, endDate), context.alreadyUnset)
 
 		getDataSleep(account, getRequestURL("sleep", startDate, endDate), context)
 	}
@@ -191,6 +193,8 @@ class OuraDataService extends DataService {
 			unsetAllOldEntries(account.userId, SET_NAME)
 		}
 
+		// Backward support for old set name
+		unsetOldEntries(account.userId, getOldSetNames("e", startDate, endDate), context.alreadyUnset)
 
 		getDataExercise(account, getRequestURL("exercise", startDate, endDate), context)
 	}
@@ -298,6 +302,8 @@ class OuraDataService extends DataService {
 			unsetAllOldEntries(account.userId, SET_NAME)
 		}
 
+		// Backward support for old set name
+		unsetOldEntries(account.userId, getOldSetNames("ac", startDate, endDate), context.alreadyUnset)
 
 		getDataActivity(account, getRequestURL("activity", startDate, endDate), context)
 	}
