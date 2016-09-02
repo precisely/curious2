@@ -82,6 +82,7 @@ class OuraDataService extends DataService {
 		
 		ThirdPartyNotification.withNewSession {
 			notifications.each { notification ->
+
 				thirdPartyNotificationList.add(saveThirdPartyNotification(notification))
 			}
 		}
