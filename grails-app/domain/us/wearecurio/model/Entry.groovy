@@ -1,5 +1,6 @@
 package us.wearecurio.model
 
+import grails.orm.PagedResultList
 import org.apache.commons.logging.LogFactory
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -1513,6 +1514,34 @@ class Entry implements Comparable {
 		}
 	}
 
+	/**
+	* Fetches all entries for a given date range and source
+	* @param startDate
+	* @param endDate
+	* @param source
+	* @param userId
+	* @param max
+	* @param offset
+	* @return List of entries that match the given criteria
+	*
+	* @author Ujjawal Gayakwad
+	*/
+	static Map getImportedEntriesWithinRange(Date startDate, Date endDate, String source, Long userId,
+			 int max, int offset) {
+		log.debug "Entry.getImportedEntriesWithinRange() startDate: $startDate endDate: $endDate and source: $source"
+		if (!source) {
+			return [entries: [], totalEntries: 0]
+		}
+
+		def criteria = Entry.createCriteria()
+		PagedResultList entryList = criteria.list(max: max ?: 1000, offset: offset ?: 0) {
+			between("date", startDate, endDate)
+			eq("comment", source)
+			eq("userId", userId)
+		}
+		return [entries: entryList.resultList, totalEntries: entryList.totalCount]
+	}
+
 	protected Entry unGhost(EntryStats stats) {
 		if (this.repeatType?.isGhost()) {
 			this.repeatTypeId = this.repeatType.toggleGhost().id
@@ -2214,6 +2243,8 @@ class Entry implements Comparable {
 
 		if (user == null) {
 			result = [canDelete: false, messageCode: "auth.error.message"]
+		} else if (!entry.userId) {
+			result = [canDelete: false, messageCode: "entry.already.deleted"]
 		} else {
 			def userId = entry.getUserId();
 			if (userId != user.getId()) {

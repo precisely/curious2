@@ -1,6 +1,7 @@
 package us.wearecurio.services.integration
 
 import org.scribe.model.Response
+import spock.lang.IgnoreRest
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
@@ -130,8 +131,11 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 
 	void "test getDataSleep when same entries are imported from notifications due to new set name"() {
 		given:
+		Calendar calendar = Calendar.getInstance()
+		calendar.add(Calendar.SECOND, 3) // Setting entry data event time to 3 seconds from now
+		Long entryEventTime = calendar.getTimeInMillis() / 1000
 		String mockedResponseData = """{"data":[{"dateCreated":"2015-11-04T12:42:45.168Z","timeZone":"Europe/Stockholm",
-				"user":3,"type":"sleep","eventTime":1434440700,"data":{"bedtime_m":510,"sleep_score":86,"deep_m":160}}]}"""
+				"user":3,"type":"sleep","eventTime":$entryEventTime,"data":{"bedtime_m":510,"sleep_score":86,"deep_m":160}}]}"""
 		ouraDataService.oauthService = [
 				getOuraResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
@@ -142,12 +146,11 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		Entry.create(account.userId, entryParserService.parse(new Date(), "America/Los_Angeles",
 				"bread 2pm", null, null, new Date(), true), new EntryStats())
 
-		when:
-		// When first time entries are imported
-		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
+		when: "When first time entries are imported"
+		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext(new Date(), null, "(Oura)",
+				account.userId))
 
-		then:
-		// Then 3 sleep entries should be created (and one simple entry)
+		then: "Then 3 sleep entries should be created (and one simple entry)"
 		assert Entry.getCount() == 4
 		assert Entry.countByUserId(account.userId) == 4
 
@@ -160,95 +163,23 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[1].setIdentifier.value.startsWith("OURA sleep ")
 		assert entryList[1].userId == account.userId
 
-		when:
-		// When same data is re-imported again
-		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
+		when: "When same data is re-imported again"
+		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext(new Date(), null, "(Oura)",
+				account.userId))
 
-		then:
-		// Then previously imported entries from Oura should be unset
-		assert Entry.getCount() == 7
-		assert Entry.countByUserId(account.userId) == 4
-
-		List<Entry> newEntryList = Entry.getAll()
-		
-		/*
-		 * TODO Need to investigate sessions managed by Spock during the integration tests for HQL and SQL queries. 
-		 * The refresh call was needed to update the instances fetched from the above getAll query as the HQL query did
-		 * successfully update the entries but it was not getting reflected in here. Possible reason may be Spock, 
-		 * as this was working correctly with JUnit.
-		 */
-		newEntryList*.refresh()
-		
-		newEntryList[0].userId == account.userId
-		// User id in 3 older entries will be unset
-		newEntryList[1].id == entryList[1].id
-		newEntryList[1].userId == null
-		newEntryList[2].id == entryList[2].id
-		newEntryList[2].userId == null
-		newEntryList[3].id == entryList[3].id
-		newEntryList[3].userId == null
-		// And three new entries will be created
-		newEntryList[4].userId == account.userId
-		newEntryList[5].userId == account.userId
-		newEntryList[6].userId == account.userId
-	}
-
-	void "test getDataSleep when same entries are imported from notifications due to new set name with null end date"() {
-		given:
-		String mockedResponseData = """{"data":[{"dateCreated":"2015-11-04T12:42:45.168Z","timeZone":"Europe/Stockholm",
-				"user":3,"type":"sleep","eventTime":1434440700,"data":{"bedtime_m":510,"sleep_score":86,"deep_m":160}}]}"""
-		ouraDataService.oauthService = [
-				getOuraResource: { token, url, p, header ->
-					return new Response(new MockedHttpURLConnection(mockedResponseData))
-				}
-		]
-
-		// Given one simple entry
-		Entry.create(account.userId, entryParserService.parse(new Date(), "America/Los_Angeles",
-				"bread 2pm", null, null, new Date(), true), new EntryStats())
-
-		when:
-		// When first time entries are imported
-		ouraDataService.getDataSleep(account, new Date(), null, false, new DataRequestContext())
-
-		then:
-		// Then 3 sleep entries should be created (and one simple entry)
+		then: "Then previously imported entries from Oura should not be unset and no new entries should be created"
+		println "entries: ${Entry.findAll()}"
 		assert Entry.getCount() == 4
 		assert Entry.countByUserId(account.userId) == 4
 
-		List<Entry> entryList = Entry.getAll()
-		assert entryList[0].description == "bread"
-		assert entryList[0].setIdentifier == null
-		assert entryList[0].userId == account.userId
-
-		assert entryList[1].description == "sleep [time: total]"
-		assert entryList[1].setIdentifier.value.startsWith("OURA sleep ")
-		assert entryList[1].userId == account.userId
-
-		when:
-		// When same data is re-imported again
-		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
-
-		then:
-		// Then previously imported entries from Oura should be unset
-		assert Entry.getCount() == 7
-		assert Entry.countByUserId(account.userId) == 4
-
 		List<Entry> newEntryList = Entry.getAll()
-		newEntryList*.refresh()
-		
-		newEntryList[0].userId == account.userId
-		// User id in 3 older entries will be unset
-		newEntryList[1].id == entryList[1].id
-		newEntryList[1].userId == null
-		newEntryList[2].id == entryList[2].id
-		newEntryList[2].userId == null
-		newEntryList[3].id == entryList[3].id
-		newEntryList[3].userId == null
-		// And three new entries will be created
-		newEntryList[4].userId == account.userId
-		newEntryList[5].userId == account.userId
-		newEntryList[6].userId == account.userId
+		assert newEntryList[0].description == "bread"
+		assert newEntryList[0].setIdentifier == null
+		assert newEntryList[0].userId == account.userId
+
+		assert newEntryList[1].description == "sleep [time: total]"
+		assert newEntryList[1].setIdentifier.value.startsWith("OURA sleep ")
+		assert newEntryList[1].userId == account.userId
 	}
 
 	void "test getDataSleep when same entries are imported from polling with old set name"() {

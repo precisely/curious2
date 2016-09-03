@@ -118,6 +118,7 @@ class JawboneUpDataService extends DataService {
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
+		context.initEntrylist()
 
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
 
@@ -133,14 +134,12 @@ class JawboneUpDataService extends DataService {
 			Date entryDate = shortDateParser.parse(bodyEntry["date"].toString())
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
 
-			unsetOldEntries(userId, setName, context.alreadyUnset)
-
 			tagUnitMap.buildEntry(creationMap, stats, "weight", new BigDecimal((String)bodyEntry["weight"]), userId, timeZoneIdNumber,
-					entryDate, COMMENT, setName)
+					entryDate, COMMENT, setName, context)
 
 			if (bodyEntry["body_fat"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "fatRatio", bodyEntry["body_fat"], userId, timeZoneIdNumber,
-						entryDate, COMMENT, setName)
+						entryDate, COMMENT, setName, context)
 			}
 
 			return false	// continue looping
@@ -188,6 +187,7 @@ class JawboneUpDataService extends DataService {
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
+		context.initEntrylist()
 
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
 
@@ -212,21 +212,19 @@ class JawboneUpDataService extends DataService {
 			Date entryDate = dateOnlyFormatter.parse(rawDate)
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
 
-			unsetOldEntries(userId, setName, context.alreadyUnset)
-
 			if (movesDetails["distance"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "miles", movesDetails["distance"], userId,
-						timeZoneIdNumber, entryDate, COMMENT, setName)
+						timeZoneIdNumber, entryDate, COMMENT, setName, context)
 			}
 
 			if (movesDetails["active_time"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "minutes", movesDetails["active_time"], userId,
-						timeZoneIdNumber, entryDate, COMMENT, setName)
+						timeZoneIdNumber, entryDate, COMMENT, setName, context)
 			}
 
 			if (movesDetails["steps"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "steps", movesDetails["steps"], userId,
-						timeZoneIdNumber, entryDate, COMMENT, setName)
+						timeZoneIdNumber, entryDate, COMMENT, setName, context)
 			}
 
 			if (movesDetails["hourly_totals"]) {
@@ -407,6 +405,7 @@ class JawboneUpDataService extends DataService {
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
+		context.initEntrylist()
 
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
 
@@ -428,23 +427,21 @@ class JawboneUpDataService extends DataService {
 			Date entryDate = new Date(sleepDetails["asleep_time"].toLong() * 1000)
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
 
-			unsetOldEntries(userId, setName, context.alreadyUnset)
-
 			if (sleepDetails["duration"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "duration", sleepDetails["duration"], userId,
-						timeZoneIdNumber, entryDate, COMMENT, setName)
+						timeZoneIdNumber, entryDate, COMMENT, setName, context)
 			}
 			if (sleepDetails["awakenings"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "awakeningsCount", sleepDetails["awakenings"], userId,
-						timeZoneIdNumber, entryDate, COMMENT, setName)
+						timeZoneIdNumber, entryDate, COMMENT, setName, context)
 			}
 			if (sleepDetails["awake"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "awake", sleepDetails["awake"], userId,
-						timeZoneIdNumber, entryDate, COMMENT, setName)
+						timeZoneIdNumber, entryDate, COMMENT, setName, context)
 			}
 			if (sleepDetails["quality"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "quality", sleepDetails["quality"], userId,
-						timeZoneIdNumber, entryDate, COMMENT, setName)
+						timeZoneIdNumber, entryDate, COMMENT, setName, context)
 			}
 
 			return false	// continue looping

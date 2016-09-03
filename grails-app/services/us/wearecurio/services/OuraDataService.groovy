@@ -139,6 +139,7 @@ class OuraDataService extends DataService {
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
+		context.initEntrylist()
 
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
 		JSONArray sleepData = apiResponse["data"]
@@ -146,7 +147,6 @@ class OuraDataService extends DataService {
 		sleepData.each { sleepEntry ->
 			Date entryDate = convertTimeToDate(sleepEntry)
 			String setName = getSetName("sleep", entryDate)
-			unsetOldEntries(userId, setName, context.alreadyUnset)
 
 			Integer timeZoneIdNumber = getTimeZoneId(account, sleepEntry)
 			def sleepEntryData = sleepEntry["data"]
@@ -167,7 +167,7 @@ class OuraDataService extends DataService {
 			["bedtime_m", "sleep_score", "awake_m", "rem_m", "light_m", "deep_m"].each { key ->
 				if (sleepEntryData[key]) {
 					tagUnitMap.buildEntry(creationMap, stats, key, new BigDecimal(sleepEntryData[key].toString()),
-							userId, timeZoneIdNumber, sleepEnd, COMMENT, setName)
+							userId, timeZoneIdNumber, sleepEnd, COMMENT, setName, context)
 				}
 			}
 		}
@@ -210,6 +210,7 @@ class OuraDataService extends DataService {
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
+		context.initEntrylist()
 
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
 		JSONArray exerciseData = apiResponse["data"]
@@ -283,11 +284,10 @@ class OuraDataService extends DataService {
 		Integer timeZoneIdNumber = getTimeZoneId(account, exerciseEntry)
 
 		String setName = getSetName("exercise", entryDate)
-		unsetOldEntries(userId, setName, context.alreadyUnset)
 
 		Long amount = exerciseEntryData["duration_m"]
 		String tagName = "classification_" + exerciseEntryData["classification"]
-		tagUnitMap.buildEntry(creationMap, stats, tagName, amount, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
+		tagUnitMap.buildEntry(creationMap, stats, tagName, amount, userId, timeZoneIdNumber, entryDate, COMMENT, setName, context)
 	}
 
 	void getDataActivity(OAuthAccount account, Date forDay, boolean refreshAll, DataRequestContext context) throws InvalidAccessTokenException {
@@ -319,6 +319,7 @@ class OuraDataService extends DataService {
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
+		context.initEntrylist()
 
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
 		JSONArray activityData = apiResponse["data"]
@@ -326,7 +327,6 @@ class OuraDataService extends DataService {
 		activityData.each { activityEntry ->
 			Date entryDate = convertTimeToDate(activityEntry)
 			String setName = getSetName("activity", entryDate)
-			unsetOldEntries(userId, setName, context.alreadyUnset)
 			Integer timeZoneIdNumber = getTimeZoneId(account, activityEntry)
 
 			def exerciseEntryData = activityEntry["data"]
@@ -334,7 +334,7 @@ class OuraDataService extends DataService {
 				["non_wear_m", "steps", "eq_meters", "active_cal", "total_cal"].each { key ->
 					if (exerciseEntryData[key]) {
 						tagUnitMap.buildEntry(creationMap, stats, key, Long.parseLong(exerciseEntryData[key].toString()), userId, timeZoneIdNumber,
-								entryDate, COMMENT, setName)
+								entryDate, COMMENT, setName, context)
 					}
 				}
 			}
