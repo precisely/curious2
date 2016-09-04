@@ -87,11 +87,6 @@ class OuraDataService extends DataService {
 			}
 		}
 		
-		int noOfRows = databaseService.sql("delete from third_party_notification where status = 0 and type_id = 9 and" +
-				" owner_id not in (select account_id from oauth_account where type_id = 9)")
-		
-		log.debug "Deleted ${noOfRows} ThirdPartyNotifications for which the OAuth accounts were not found."
-
 		return thirdPartyNotificationList
 	}
 
