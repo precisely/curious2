@@ -21,6 +21,7 @@ import us.wearecurio.model.TagStats
 import us.wearecurio.model.TagUnitStats
 import us.wearecurio.model.TagValueStats
 import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
@@ -849,6 +850,15 @@ class MigrationService {
 		}
 		tryMigration("Refresh all oauth accounts again 3") {
 			oauthAccountService.refreshAll()
+		}
+
+		tryMigration("Remove all notifications from Oura test dgdfgdfr") {
+			int totalNotifications = ThirdPartyNotification.countByTypeId(ThirdParty.OURA)
+			while (totalNotifications > 0) {
+				Thread.sleep(1000)
+				sql("delete from third_party_notification where type_id = 9 limit 10000")
+				totalNotifications -= 10000
+			}
 		}
 	}
 }

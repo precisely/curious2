@@ -75,6 +75,7 @@ class MovesDataService extends DataService {
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
+		context.initEntrylist()
 
 		def parsedResponse = getResponse(tokenInstance, pollURL)
 
@@ -101,9 +102,6 @@ class MovesDataService extends DataService {
 			 */
 			Entry.executeUpdate("update Entry e set e.userId = 0L where e.userId = :userId and e.setIdentifier = :identifier and e.date >= :currentDateA and e.date < :currentDateB",
 					[userId:userId, identifier: oldSetIdentifier, currentDateA:currentDate, currentDateB: currentDate + 1])
-
-			// Using new set name
-			unsetOldEntries(userId, setName, context.alreadyUnset)
 
 			List<JSONObject> activities = []
 			List<String> allowedTypes = ["walking", "running", "cycling"]
@@ -153,14 +151,14 @@ class MovesDataService extends DataService {
 				}
 
 				processActivity(creationMap, stats, previousActivity, userId, timeZoneId,
-						previousActivity["endTime"].endsWith("Z") ? startEndTimeFormat : startEndTimeFormatWithTimezone, args)
+						previousActivity["endTime"].endsWith("Z") ? startEndTimeFormat : startEndTimeFormatWithTimezone, args, context)
 				previousActivity = currentActivity
 			}
 
 			// Make sure to process the last previous activity after the above loop finishes
 			if (previousActivity) {
 				processActivity(creationMap, stats, previousActivity, userId, timeZoneId,
-						previousActivity["endTime"].endsWith("Z") ? startEndTimeFormat : startEndTimeFormatWithTimezone, args)
+						previousActivity["endTime"].endsWith("Z") ? startEndTimeFormat : startEndTimeFormatWithTimezone, args, context)
 			}
 		}
 
@@ -182,13 +180,13 @@ class MovesDataService extends DataService {
 
 	@Transactional
 	void processActivity(EntryCreateMap creationMap, EntryStats stats, JSONObject activity, Long userId,
-				Integer timeZoneId, DateFormat timeFormat, Map args) {
-		processActivity(creationMap, stats, activity, userId, timeZoneId, activity["activity"].toString(), timeFormat, args)
+				Integer timeZoneId, DateFormat timeFormat, Map args, DataRequestContext context = new DataRequestContext()) {
+		processActivity(creationMap, stats, activity, userId, timeZoneId, activity["activity"].toString(), timeFormat, args, context)
 	}
 
 	@Transactional
 	void processActivity(EntryCreateMap creationMap, EntryStats stats, JSONObject currentActivity, Long userId,
-				Integer timeZoneId, String activityType, DateFormat timeFormat, Map args) {
+				Integer timeZoneId, String activityType, DateFormat timeFormat, Map args, DataRequestContext context = new DataRequestContext()) {
 		String baseType
 
 		Date startTime = timeFormat.parse(currentActivity.startTime)
@@ -216,22 +214,22 @@ class MovesDataService extends DataService {
 			String setName = args.setName
 			if (currentActivity.steps) {
 				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Step", currentActivity.steps, userId,
-						timeZoneId, startTime, comment, setName, args)
+						timeZoneId, startTime, comment, setName, args, context)
 			}
 			if (currentActivity.distance) {
 				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Distance", currentActivity.distance, userId,
-						timeZoneId, startTime, comment, setName, args)
+						timeZoneId, startTime, comment, setName, args, context)
 			}
 			if (currentActivity.calories) {
 				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Calories", currentActivity.calories, userId,
-						timeZoneId, startTime, comment, setName, args)
+						timeZoneId, startTime, comment, setName, args, context)
 			}
 
 			tagUnitMap.buildEntry(creationMap, stats, "${baseType}Start", 1, userId, timeZoneId, startTime,
-					comment, setName, args.plus([amountPrecision: -1, durationType: DurationType.START]))
+					comment, setName, args.plus([amountPrecision: -1, durationType: DurationType.START]), context)
 
 			tagUnitMap.buildEntry(creationMap, stats, "${baseType}End", 1, userId, timeZoneId, endTime,
-					comment, setName, args.plus([amountPrecision: -1, durationType: DurationType.END]))
+					comment, setName, args.plus([amountPrecision: -1, durationType: DurationType.END]), context)
 		}
 	}
 }
