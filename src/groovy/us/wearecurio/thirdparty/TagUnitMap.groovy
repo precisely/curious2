@@ -6,11 +6,13 @@ import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.model.DurationType
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
+import us.wearecurio.services.DataService
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.EntryParserService.ParseAmount
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
+import us.wearecurio.utility.Utils
 
 abstract class TagUnitMap {
 
@@ -118,7 +120,12 @@ abstract class TagUnitMap {
 	}
 
 	Entry buildEntry(EntryCreateMap creationMap, EntryStats stats, String tagName, BigDecimal amount, Long userId,
-			Integer timeZoneId, Date date, String comment, String setName, Map args = [:]) {
+			 Integer timeZoneId, Date date, String comment, String setName, Map args = [:]) {
+		buildEntry(creationMap, stats, tagName, amount, userId, timeZoneId, date, comment, setName, args, null)
+	}
+
+	Entry buildEntry(EntryCreateMap creationMap, EntryStats stats, String tagName, BigDecimal amount, Long userId,
+			 Integer timeZoneId, Date date, String comment, String setName, Map args = [:], DataService.DataRequestContext context) {
 
 		Map currentMapping = tagUnitMappings[tagName]
 
@@ -166,13 +173,19 @@ abstract class TagUnitMap {
 
 		ParseAmount parseAmount = new ParseAmount(tag, baseTag, amount, amountPrecision, units, currentMapping.unitRatio, durationType)
 
-		DecoratedUnitRatio unitRatio = currentMapping.unitRatio
-
 		Map parsedEntry = [userId: userId, date: date, description: description, amount: parseAmount, comment: comment, setName: setName, timeZoneId: timeZoneId, durationType:durationType]
 
 		parsedEntry.putAll(args)
 
-		Entry e = Entry.updatePartialOrCreate(userId, parsedEntry, creationMap.groupForDate(date, baseTag?.description), stats)
+		Entry e = context?.entryAlreadyExists(parsedEntry)
+
+		if (!e) {
+			e = Entry.updatePartialOrCreate(userId, parsedEntry, creationMap.groupForDate(date, baseTag?.description), stats)
+		} else if (e.amount != amount.setScale(9, BigDecimal.ROUND_HALF_EVEN)) {	// While storing amount in database we are setting decimal scale to 9
+			BigDecimal newAmount = parseAmount.amount
+			e.amount = newAmount
+			Utils.save(e, true)
+		}
 
 		creationMap.add(e)
 

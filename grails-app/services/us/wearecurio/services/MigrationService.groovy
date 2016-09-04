@@ -21,6 +21,7 @@ import us.wearecurio.model.TagStats
 import us.wearecurio.model.TagUnitStats
 import us.wearecurio.model.TagValueStats
 import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
@@ -851,8 +852,13 @@ class MigrationService {
 			oauthAccountService.refreshAll()
 		}
 
-		tryMigration("Remove notifications from Oura that have no Curious accounts") {
-			sql("delete from third_party_notification where status = 0 and type_id = 9 and owner_id not in (select account_id from oauth_account where type_id = 9)")
+		tryMigration("Remove all notifications from Oura test dgdfgdfr") {
+			int totalNotifications = ThirdPartyNotification.countByTypeId(ThirdParty.OURA)
+			while (totalNotifications > 0) {
+				Thread.sleep(1000)
+				sql("delete from third_party_notification where type_id = 9 limit 10000")
+				totalNotifications -= 10000
+			}
 		}
 	}
 }

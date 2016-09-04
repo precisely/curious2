@@ -56,6 +56,7 @@ class Twenty3AndMeDataService extends DataService {
 		Token tokenInstance = account.tokenInstance
 		JSONObject userInfo = getUserProfile(tokenInstance)
 		startDate = startDate ?: account.fetchLastDataDate() ?: earlyStartDate
+		context.initEntrylist()
 
 		userInfo["profiles"]?.each { profile ->
 			String profileId = profile.id

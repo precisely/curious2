@@ -2,6 +2,7 @@ package us.wearecurio.services
 
 import grails.converters.JSON
 import grails.util.Environment
+import groovy.transform.Synchronized
 import us.wearecurio.datetime.DateUtils
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
@@ -70,9 +71,55 @@ abstract class DataService {
 
 	static class DataRequestContext {
 		Set<String> alreadyUnset
+		List<Entry> entriesInPollRange = null
+		Integer totalEntries, currentOffset = 0, max = 1000
+		Date pollStartDate, pollEndDate
+		String sourceName
+		Long pollingUserId
 
 		DataRequestContext() {
 			alreadyUnset = new HashSet<String>()
+		}
+
+		DataRequestContext(Date startDate, Date endDate, String source, Long userId) {
+			alreadyUnset = new HashSet<String>()
+			pollStartDate = startDate
+			pollEndDate = endDate ?: DateUtils.getEndOfTheDay()
+			sourceName = source
+			pollingUserId = userId
+		}
+
+		void initEntrylist() {
+			entriesInPollRange = null
+			totalEntries = currentOffset = 0
+		}
+
+		Entry entryAlreadyExists(Map entryMap) {
+			log.debug "DataRequestContext.entryAlreadyExists() $entriesInPollRange"
+			boolean entriesAvailableInPollRange = entriesInPollRange
+			Entry entry
+			if (!entriesInPollRange || entriesInPollRange.last().date.compareTo(entryMap.date) < 0) {
+				entriesAvailableInPollRange = getNextEntriesInPollRange()
+			}
+			if (entriesAvailableInPollRange) {
+				entry = entriesInPollRange.find {
+					(it.units == entryMap.amount["units"] && !it.date.compareTo(entryMap.date) &&
+							it.setIdentifier.toString() == entryMap.setName)
+				}
+			}
+			return entry
+		}
+
+		boolean getNextEntriesInPollRange() {
+			if (entriesInPollRange && currentOffset >= totalEntries) {
+				return false
+			}
+			Map resultSet = Entry.getImportedEntriesWithinRange(pollStartDate, pollEndDate, sourceName, pollingUserId,
+					max, currentOffset)
+			entriesInPollRange = resultSet.entries
+			totalEntries = resultSet.totalEntries
+			currentOffset += max
+			return true
 		}
 	}
 
@@ -424,7 +471,9 @@ abstract class DataService {
 	 */
 	static boolean pollAllDataServices() {
 		log.debug "Polling all oauth accounts"
-		def accounts = OAuthAccount.findAll()
+		def accounts = OAuthAccount.withCriteria {
+			not {'in'("typeId", [ThirdParty.WITHINGS, ThirdParty.OURA])}
+		}
 
 		for (OAuthAccount account in accounts) {
 			DataService dataService = account.getDataService()
@@ -441,6 +490,7 @@ abstract class DataService {
 	 * @param account
 	 * @return
 	 */
+	@Synchronized
 	@Transactional
 	boolean poll(OAuthAccount account, Date notificationDate = null) {
 		String accountId = account.accountId
@@ -468,7 +518,8 @@ abstract class DataService {
 		}
 
 		try {
-			getDataDefault(account, dateToPollFrom, pollEndDate, false, new DataRequestContext())
+			getDataDefault(account, dateToPollFrom, pollEndDate, false,
+					new DataRequestContext(dateToPollFrom, pollEndDate, COMMENT, account.userId))
 		} catch (InvalidAccessTokenException e) {
 			log.warn "Token expired while polling for $account"
 			account.setAccountFailure()
@@ -589,7 +640,7 @@ abstract class DataService {
 	}
 
 	/**
-	 * Unset the userId from the older entries for the given setName to remove duplicacy from the data import
+	 * Unset the userId from the older entries for the given setName to remove duplicity from the data import
 	 * across the API.
 	 * @param userId Identifier of the user for which older entries need to be unset
 	 * @param setName Set name of the entries
@@ -604,7 +655,7 @@ abstract class DataService {
 	}
 
 	/**
-	 * Unset the userId from the older entries for the given setNames to remove duplicacy from the data import
+	 * Unset the userId from the older entries for the given setNames to remove duplicity from the data import
 	 * across the API.
 	 * @param userId Identifier of the user for which older entries need to be unset
 	 * @param setNames List of different set names of the entries

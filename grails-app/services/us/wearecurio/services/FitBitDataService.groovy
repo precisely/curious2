@@ -68,6 +68,7 @@ class FitBitDataService extends DataService {
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
+		context.initEntrylist()
 
 		JSONObject activityData = getResponse(account.tokenInstance, requestUrl)
 
@@ -78,35 +79,35 @@ class FitBitDataService extends DataService {
 		log.debug "Entry Date for Fitbit activity set to: [$forDay]"
 
 		if (activityData.summary) {
-			fitBitTagUnitMap.buildEntry(creationMap, stats, "steps", activityData.summary.steps, userId, timeZoneIdNumber, forDay, COMMENT, setName)
+			fitBitTagUnitMap.buildEntry(creationMap, stats, "steps", activityData.summary.steps, userId, timeZoneIdNumber, forDay, COMMENT, setName, context)
 		}
 
 		if (!activityData.summary || activityData.summary.fairlyActiveMinutes <= 0) {
 			fairlyActiveD = false
 		} else {
 			fitBitTagUnitMap.buildEntry(creationMap, stats, "fairlyActiveMinutes", activityData.summary.fairlyActiveMinutes, userId, timeZoneIdNumber,
-					forDay, COMMENT, setName)
+					forDay, COMMENT, setName, context)
 		}
 
 		if (!activityData.summary || activityData.summary.lightlyActiveMinutes <= 0) {
 			lightlyActiveD = false
 		} else {
 			fitBitTagUnitMap.buildEntry(creationMap, stats, "lightlyActiveMinutes", activityData.summary.lightlyActiveMinutes, userId, timeZoneIdNumber,
-					forDay, COMMENT, setName)
+					forDay, COMMENT, setName, context)
 		}
 
 		if (!activityData.summary || activityData.summary.sedentaryMinutes <= 0) {
 			sedentaryActiveD = false
 		} else {
 			fitBitTagUnitMap.buildEntry(creationMap, stats, "sedentaryMinutes", activityData.summary.sedentaryMinutes, userId, timeZoneIdNumber,
-					forDay, COMMENT, setName)
+					forDay, COMMENT, setName, context)
 		}
 
 		if (!activityData.summary || activityData.summary.veryActiveMinutes <= 0) {
 			veryActiveD = false
 		} else {
 			fitBitTagUnitMap.buildEntry(creationMap, stats, "veryActiveMinutes", activityData.summary.veryActiveMinutes, userId, timeZoneIdNumber,
-					forDay, COMMENT, setName)
+					forDay, COMMENT, setName, context)
 		}
 
 		activityData.summary?.distances.each { distance ->
@@ -119,7 +120,7 @@ class FitBitDataService extends DataService {
 				||(!sedentaryActiveD && distance.activity.equals("sedentaryActive"))) {
 					log.debug "Discarding activity with 0 time"
 				} else {
-					fitBitTagUnitMap.buildEntry(creationMap, stats, distance.activity, distance.distance, userId, timeZoneIdNumber, forDay, COMMENT, setName)
+					fitBitTagUnitMap.buildEntry(creationMap, stats, distance.activity, distance.distance, userId, timeZoneIdNumber, forDay, COMMENT, setName, context)
 				}
 			}
 		}
@@ -135,6 +136,7 @@ class FitBitDataService extends DataService {
 	Map getDataBody(OAuthAccount account, Date forDay, boolean refreshAll, DataRequestContext context) {
 		// Getting body measurements
 		//requestUrl = String.format(BASE_URL, "/${accountId}/body/date/${forDate}.json")
+		//context.initEntrylist()
 		//getResponse(account.tokenInstance, requestUrl)
 
 		// Getting body weight
@@ -192,6 +194,7 @@ class FitBitDataService extends DataService {
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
+		context.initEntrylist()
 
 		JSONObject sleepData = getResponse(account.tokenInstance, requestUrl)
 
@@ -210,11 +213,11 @@ class FitBitDataService extends DataService {
 			Entry.executeUpdate("update Entry e set e.userId = null where e.setIdentifier in :setIdentifiers and e.userId = :userId",
 					[setIdentifiers: [Identifier.look(setName), Identifier.look(oldSetName)], userId: account.userId])
 
-			fitBitTagUnitMap.buildEntry(creationMap, stats, "duration", logEntry.duration, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
-			fitBitTagUnitMap.buildEntry(creationMap, stats, "awakeningsCount", logEntry.awakeningsCount, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
+			fitBitTagUnitMap.buildEntry(creationMap, stats, "duration", logEntry.duration, userId, timeZoneIdNumber, entryDate, COMMENT, setName, context)
+			fitBitTagUnitMap.buildEntry(creationMap, stats, "awakeningsCount", logEntry.awakeningsCount, userId, timeZoneIdNumber, entryDate, COMMENT, setName, context)
 
 			if (logEntry.efficiency > 0 )
-				fitBitTagUnitMap.buildEntry(creationMap, stats, "efficiency", logEntry.efficiency, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
+				fitBitTagUnitMap.buildEntry(creationMap, stats, "efficiency", logEntry.efficiency, userId, timeZoneIdNumber, entryDate, COMMENT, setName, context)
 		}
 		
 		stats.finish()
