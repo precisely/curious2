@@ -488,17 +488,6 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert ThirdPartyNotification.first().typeId == ThirdParty.OURA
 	}
 
-	void "Test ouraNotificationHandler success when there are no oauth accounts found for the userId"() {
-		given: "Notification data with wrong userId"
-		def notificationList = [[type: 'exercise', date: "2015-09-12", userId: 5, subscriptionId: "4"]]
-
-		when: "The notification handler is called"
-		ouraDataService.notificationHandler(notificationList)
-
-		then: "The ThirdPartyNotification will be deleted after creation"
-		assert ThirdPartyNotification.count() == 0
-	}
-
 	void "Test ouraNotificationHandler success when request body is passed as Object"() {
 		given:
 		Object notification = [type: 'exercise', date: "2015-09-12", userId: userId, subscriptionId: "4"]
