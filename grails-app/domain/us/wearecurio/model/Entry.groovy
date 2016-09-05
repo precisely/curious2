@@ -1531,12 +1531,14 @@ class Entry implements Comparable {
 		log.debug "Entry.getImportedEntriesWithinRange() startDate: $startDate endDate: $endDate and source: $source"
 		if (!source) {
 			return [entries: [], totalEntries: 0]
+		} else if (source.contains("Human")) {
+			source = "(Human-%)"
 		}
 
 		def criteria = Entry.createCriteria()
 		PagedResultList entryList = criteria.list(max: max ?: 1000, offset: offset ?: 0) {
 			between("date", startDate, endDate)
-			eq("comment", source)
+			like("comment", source)
 			eq("userId", userId)
 		}
 		return [entries: entryList.resultList, totalEntries: entryList.totalCount]
