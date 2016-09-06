@@ -1,7 +1,8 @@
 package us.wearecurio.controller
 
-import com.lucastex.grails.fileuploader.FileUploaderService
-import com.lucastex.grails.fileuploader.UFile
+import com.causecode.fileuploader.FileUploaderService
+import com.causecode.fileuploader.UFile
+import com.causecode.fileuploader.UFileMoveHistory
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.User
@@ -102,15 +103,18 @@ class UserController extends LoginController {
 		}
 		User currentUserInstance = sessionUser()
 
-		try {
-			currentUserInstance.avatar?.delete()
-			currentUserInstance.avatar = avatar
-			Utils.save(currentUserInstance, true)
-			renderJSONPost([success: true, avatarURL: avatar.path])
-			currentUserInstance.reindexAssociations()
-		} catch (Exception e) {
-			Utils.reportError("Unable to change or add avatar for ${currentUserInstance}", e)
-			renderJSONPost([success: false], message: g.message(code: "default.not.updated.message", args: ["Avatar"]))
+		UFile.withTransaction {
+			try {
+				UFileMoveHistory.findByUfile(currentUserInstance.avatar)?.delete()
+				currentUserInstance.avatar?.delete()
+				currentUserInstance.avatar = avatar
+				Utils.save(currentUserInstance, true)
+				renderJSONPost([success: true, avatarURL: avatar.path])
+				currentUserInstance.reindexAssociations()
+			} catch (Exception e) {
+				Utils.reportError("Unable to change or add avatar for ${currentUserInstance}", e)
+				renderJSONPost([success: false], message: g.message(code: "default.not.updated.message", args: ["Avatar"]))
+			}
 		}
 	}
 
