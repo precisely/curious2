@@ -519,7 +519,7 @@ abstract class DataService {
 
 		try {
 			getDataDefault(account, dateToPollFrom, pollEndDate, false,
-					new DataRequestContext(dateToPollFrom, pollEndDate, "COMMENT", account.userId))
+					new DataRequestContext(dateToPollFrom, pollEndDate, COMMENT, account.userId))
 		} catch (InvalidAccessTokenException e) {
 			log.warn "Token expired while polling for $account"
 			account.setAccountFailure()
