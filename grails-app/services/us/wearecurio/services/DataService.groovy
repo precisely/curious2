@@ -519,7 +519,7 @@ abstract class DataService {
 
 		try {
 			getDataDefault(account, dateToPollFrom, pollEndDate, false,
-					new DataRequestContext(dateToPollFrom, pollEndDate, COMMENT, account.userId))
+					new DataRequestContext(dateToPollFrom, pollEndDate, "COMMENT", account.userId))
 		} catch (InvalidAccessTokenException e) {
 			log.warn "Token expired while polling for $account"
 			account.setAccountFailure()
@@ -544,7 +544,7 @@ abstract class DataService {
 	 * Used to subscribe to third party end points for notification based on configured URL.
 	 * @param userId User identity to process against.
 	 * @return Returns a map containing response code & parsed response data.
-	 * @throws AuthenticationRequiredException
+	 * throws AuthenticationRequiredException
 	 */
 	@Transactional
 	Map subscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
@@ -570,7 +570,7 @@ abstract class DataService {
 	 * @param method Resource HTTP method to call.
 	 * @param queryParams OPTIONAL query parameters to pass on.
 	 * @return Returns a map containing response code & parsed response data.
-	 * @throws AuthenticationRequiredException
+	 * throws AuthenticationRequiredException
 	 */
 	@Transactional
 	Map subscribe(Long userId, String url, String method, Map queryParams) throws MissingOAuthAccountException, InvalidAccessTokenException {
@@ -587,8 +587,8 @@ abstract class DataService {
 	 * Used to unsubscribe a user from third party end points for notification based on configured URL.
 	 * @param userId User identity to process against.
 	 * @return Returns a map containing response code & parsed response data.
-	 * @throws NotFoundException
-	 * @throws AuthenticationRequiredException
+	 * throws NotFoundException
+	 * throws AuthenticationRequiredException
 	 */
 	@Transactional
 	Map unsubscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
@@ -617,7 +617,7 @@ abstract class DataService {
 	 * @param queryParams OPTIONAL query string parameters.
 	 * @return
 	 * @throws MissingOAuthAccountException if instance of OAuthAccount not found.
-	 * @throws AuthenticationRequiredException if token expires during unsubsribe to api.
+	 * throws AuthenticationRequiredException if token expires during unsubsribe to api.
 	 */
 	@Transactional
 	Map unsubscribe(Long userId, String url, String method, Map queryParams) throws MissingOAuthAccountException, InvalidAccessTokenException {
