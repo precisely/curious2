@@ -645,7 +645,7 @@ fileuploader {
 		maxSize = 1024 * 1024 * 2 // 2MB
 		allowedExtensions = ["jpg", "jpeg", "gif", "png"]
 		storageTypes = "CDN"
-		container = "curious"
+		container = "curious-avatar"
 		provider = CDNProvider.GOOGLE
 		expirationPeriod = Time.DAY * 60 // 60 Day time in seconds. Note this time should be in seconds.
 	}

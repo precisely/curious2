@@ -687,6 +687,9 @@ class MigrationService {
 		tryMigration("Move avatar files to Google Cloud Storage") {
 			String containerName = grailsApplication?.config?.fileuploader?.avatar?.container
 			if (containerName) {
+				if (Environment.current == Environment.DEVELOPMENT) {
+					containerName = containerName + "-development"
+				}
 				log.debug "Move to container $containerName"
 				fileUploaderService.moveToNewCDN(CDNProvider.GOOGLE, containerName)
 			} else {
