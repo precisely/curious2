@@ -109,7 +109,7 @@ class DataController extends LoginController {
 			
 		ArrayList<TagStats> tagStats = stats.finish()
 
-		Entry entry = entries.last()
+		Entry entry = entries ? entries.last() : null
 		
 		if (entry == null)
 			return 'No entry text provided'
