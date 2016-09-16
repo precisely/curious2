@@ -24,8 +24,7 @@ class SecurityFilters {
 	TokenService tokenService
 	SecurityService securityService
 	GrailsApplication grailsApplication
-	static boolean isAndroidRequest
-	
+
 	// list of actions that do not need to be duplicate checked
 	static def idempotentActions = [
 		'getPeopleData',
@@ -49,7 +48,6 @@ class SecurityFilters {
 	def filters = {
 		preCheck(controller:'(home|tag|mobiledata|data|correlation|search)', action:'*') {
 			before = {
-				isAndroidRequest = request.getHeader("user-agent").contains("Android")
 				if (params.controller == null) {
 					flash.precontroller = 'home'
 					flash.preaction = 'index'
@@ -62,11 +60,7 @@ class SecurityFilters {
 				if (!securityService.isAuthorized(actionName, request, params, flash, session)) {
 					if (actionName.endsWith('Data') || actionName.endsWith('DataId')) {
 						log.debug "Unauthorized data action " + actionName
-						if (isAndroidRequest) {
-							render text: "${params.callback}('login')",  contentType: "application/javascript"
-						} else {
-							render "${params.callback}('login')"
-						}
+						render text: "${params.callback}('login')", contentType: "application/javascript"
 					} else {
 						def parm = params.clone()
 						parm.remove('action')
@@ -83,14 +77,9 @@ class SecurityFilters {
 		}
 		apiFilter(controller: '(sprint|user|discussion|discussionPost)', action: '*') {
 			before = {
-				isAndroidRequest = request.getHeader("user-agent").contains("Android")
 				if (!securityService.isAuthorized(actionName, request, params, flash, session)) {
 					log.debug "Unauthorized data action " + actionName
-					if (isAndroidRequest) {
-						render text: "${params.callback}('login')", contentType: "application/javascript"
-					} else {
-						render "${params.callback}('login')"
-					}
+					render text: "${params.callback}('login')", contentType: "application/javascript"
 					return false
 				}
 				return true
@@ -98,7 +87,6 @@ class SecurityFilters {
 		}
 		duplicateCheck(controller:'*', action:'*') {
 			before = {
-				isAndroidRequest = request.getHeader("user-agent").contains("Android")
 				if (actionName && (actionName.endsWith('Data') || actionName.endsWith('DataId') || request.forwardURI.contains('/api/')) && !idempotentActions.contains(actionName)) {
 					log.debug "duplicate filter: " + actionName
 
@@ -111,11 +99,7 @@ class SecurityFilters {
 		
 						if (!tokenService.acquire(session, token)) {
 							log.debug "token not acquired"
-							if (isAndroidRequest) {
-								render text: "${params.callback}('refresh')", contentType: "application/javascript"
-							} else {
-								render "${params.callback}('refresh')"
-							}
+							render text: "${params.callback}('refresh')", contentType: "application/javascript"
 							return false
 						} else {
 							log.debug "token acquired"
@@ -128,7 +112,6 @@ class SecurityFilters {
 		}
 		mobileCheck(controller:'mobile', action:'*') {
 			before = {
-				isAndroidRequest = request.getHeader("user-agent").contains("Android")
 				log.debug "mobile security filter: " + actionName
 				if (params.controller == null && (!params.action.equals('index'))) {
 					flash.precontroller = 'mobile'
@@ -142,7 +125,6 @@ class SecurityFilters {
 		}
 		adminPages(controller: "(admin|sharedTagGroup|userGroup|analyticsTask)", action:'*') {
 			before = {
-				isAndroidRequest = request.getHeader("user-agent").contains("Android")
 				def a = actionName
 				if (params.controller == null) {
 					flash.precontroller = 'home'
@@ -178,11 +160,7 @@ class SecurityFilters {
 						|| (!UserGroup.hasAdmin(UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME).id, session.userId))) {
 					log.debug "Unauthorized admin page data action " + actionName
 					if (actionName.endsWith('Data') || actionName.endsWith('DataId')) {
-						if (isAndroidRequest) {
-							render text: "${params.callback}('login')", contentType: "application/javascript"
-						} else {
-							render "${params.callback}('login')"
-						}
+						render text: "${params.callback}('login')", contentType: "application/javascript"
 					} else {
 						def parm = params.clone()
 						parm.remove('action')
