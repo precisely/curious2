@@ -1,16 +1,14 @@
+import com.causecode.fileuploader.CDNProvider
+import com.causecode.fileuploader.util.Time
+import org.scribe.builder.api.TwitterApi
 import org.scribe.model.SignatureType
-
-import com.lucastex.grails.fileuploader.CDNProvider
-
 import us.wearecurio.thirdparty.fitbit.FitBitApi
 import us.wearecurio.thirdparty.human.HumanApi
-import us.wearecurio.thirdparty.oura.OuraApi
 import us.wearecurio.thirdparty.jawbone.JawboneUpApi
 import us.wearecurio.thirdparty.moves.MovesApi
+import us.wearecurio.thirdparty.oura.OuraApi
 import us.wearecurio.thirdparty.ttandme.Twenty3AndMeApi
 import us.wearecurio.thirdparty.withings.WithingsApi
-import org.scribe.builder.api.TwitterApi
-
 // locations to search for config files that get merged into the main config;
 // config files can be ConfigSlurper scripts, Java properties files, or classes
 // in the classpath in ConfigSlurper format
@@ -530,6 +528,8 @@ log4j.main = {
 					'grails.app.conf',
 					'grails.app.controllers',
 					'grails.app.services.us.wearecurio',
+					'grails.app.services.com.causecode',
+					'grails.app.jobs.com.causecode',
 					'grails.app.jobs.us.wearecurio.jobs']
 				trace "org.scribe.model"
 			}
@@ -547,6 +547,8 @@ log4j.main = {
 		   'grails.app.conf',
 		   'grails.app.controllers',
 		   'grails.app.services.us.wearecurio',
+		   'grails.app.services.com.causecode',
+		   'grails.app.jobs.com.causecode',
 		   'grails.app.jobs.us.wearecurio.jobs',
 		   'SecurityFilters'
 	
@@ -639,12 +641,12 @@ oauth {
 }
 
 fileuploader {
-
-	provider = CDNProvider.RACKSPACE
 	avatar {
-		maxSize = 1024 * 1024 * 2 //256 kbytes
+		maxSize = 1024 * 1024 * 2 // 2MB
 		allowedExtensions = ["jpg", "jpeg", "gif", "png"]
 		storageTypes = "CDN"
-		container = "curious"
+		container = "curious-avatar"
+		provider = CDNProvider.GOOGLE
+		expirationPeriod = Time.DAY * 60 // 60 Day time in seconds. Note this time should be in seconds.
 	}
 }

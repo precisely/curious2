@@ -18,7 +18,7 @@ import us.wearecurio.services.EntryParserService
 import us.wearecurio.utility.Utils
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Model.Visibility
-import com.lucastex.grails.fileuploader.UFile
+import com.causecode.fileuploader.UFile
 
 class User {
 

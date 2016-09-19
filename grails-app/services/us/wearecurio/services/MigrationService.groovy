@@ -1,5 +1,7 @@
 package us.wearecurio.services
 
+import com.causecode.fileuploader.CDNProvider
+import com.causecode.fileuploader.FileUploaderService
 import grails.util.Environment
 import grails.util.Holders
 import org.apache.commons.logging.LogFactory
@@ -82,6 +84,8 @@ class MigrationService {
 	UrlService urlService
 	EmailService emailService
 	OauthAccountService oauthAccountService
+	FileUploaderService fileUploaderService
+	def grailsApplication
 	
 	boolean skipMigrations = false
 	
@@ -676,6 +680,21 @@ class MigrationService {
 					continue
 				
 				sprint.reindex()
+			}
+		}
+		tryMigration("Change UFile path type to longText") {
+			sql("ALTER TABLE `ufile` MODIFY `path` TEXT NOT NULL")
+		}
+		tryMigration("Move avatar files to Google Cloud Storage") {
+			String containerName = grailsApplication?.config?.fileuploader?.avatar?.container
+			if (containerName) {
+				if (Environment.current == Environment.DEVELOPMENT) {
+					containerName = containerName + "-development"
+				}
+				log.debug "Move to container $containerName"
+				fileUploaderService.moveToNewCDN(CDNProvider.GOOGLE, containerName)
+			} else {
+				log.error "Container not defined. Please fix and rerun the migration."
 			}
 		}
 	}
