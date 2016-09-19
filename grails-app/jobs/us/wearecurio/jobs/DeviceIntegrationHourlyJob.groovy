@@ -1,19 +1,15 @@
 package us.wearecurio.jobs
 
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import grails.util.Environment
-
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDateTime
-
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.services.OuraDataService
-import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.utility.TimerJob
-import us.wearecurio.utility.Utils
-import org.codehaus.groovy.grails.commons.GrailsApplication
 
 class DeviceIntegrationHourlyJob extends TimerJob {
 	static transactional = false
@@ -43,6 +39,7 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 		}
 
 		movesDataService.pollAll()
+		ouraDataService.pollAll()
 
 		List<Integer> results = OAuthAccount.createCriteria().list {
 			projections {
@@ -60,17 +57,10 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 				log.debug "DeviceIntegrationHourlyJob.execute() Local Hour of the day: " + localTime.getHourOfDay()
 
 				if (localTime.getHourOfDay() % 3 == 0) { // change to polling every 3 hours
-					List<OAuthAccount> accounts = OAuthAccount.withCriteria {
-						eq("timeZoneId", timeZoneId)
-						'in' ("typeId", [ThirdParty.WITHINGS, ThirdParty.OURA])
-					}
-					accounts.each { account ->
+					List<OAuthAccount> withingsAccounts = OAuthAccount.findAllByTimeZoneIdAndTypeId(timeZoneId, ThirdParty.WITHINGS)
+					withingsAccounts.each { account ->
 						log.debug "DeviceIntegrationHourlyJob.execute() calling getDataForWithings " + account
-						if (account.typeId == ThirdParty.WITHINGS) {
-							withingsDataService.poll(account)
-						} else {
-							ouraDataService.poll(account)
-						}
+						withingsDataService.poll(account)
 					}
 				}
 			}

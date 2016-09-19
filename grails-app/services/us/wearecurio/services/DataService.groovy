@@ -535,6 +535,7 @@ abstract class DataService {
 	 * Must be called from API data services.
 	 */
 	void pollAll(Boolean refreshAll = false) {
+		log.debug "DataService.pollAll Running poll All for provider: $provider"
 		OAuthAccount.findAllByTypeId(typeId).each { OAuthAccount account ->
 			poll(account)
 		}
