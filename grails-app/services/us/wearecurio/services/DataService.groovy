@@ -472,7 +472,7 @@ abstract class DataService {
 	static boolean pollAllDataServices() {
 		log.debug "Polling all oauth accounts"
 		def accounts = OAuthAccount.withCriteria {
-			not {'in'("typeId", [ThirdParty.WITHINGS, ThirdParty.OURA])}
+			not {'in'("typeId", [ThirdParty.WITHINGS])}
 		}
 
 		for (OAuthAccount account in accounts) {
