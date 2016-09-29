@@ -691,4 +691,12 @@ abstract class DataService {
 				"(select i.id from Identifier i where value like :value)",
 				[value: "${setNamePrefix}%", userId: userId])
 	}
+
+	/**
+	 * This method checks whether there is continuous sync happening with the device by checking the lastData field
+	 * in the OAuth accounts to be greater than last 48 hours.
+	 */
+	void checkSyncHealth() {
+		return
+	}
 }

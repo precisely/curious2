@@ -36,6 +36,7 @@ class DeviceIntegrationDailyJob extends TimerJob {
 		oauthAccountService.refreshAll()
 		DataService.pollAllDataServices()
 		
+		ouraDataService.checkSyncHealth()
 		log.debug "Finished executing Daily basis job.."
 	}
 

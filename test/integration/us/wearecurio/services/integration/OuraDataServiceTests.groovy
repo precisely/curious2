@@ -11,6 +11,7 @@ import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.services.DataService.DataRequestContext
+import us.wearecurio.services.EmailService
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.OuraDataService
 import us.wearecurio.support.EntryStats
@@ -498,5 +499,41 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		then:
 		assert ThirdPartyNotification.count() == 1
 		assert ThirdPartyNotification.first().typeId == ThirdParty.OURA
+	}
+	
+	void '''Test checkSyncHealth method to send email if there were no OAuthAccounts for oura with lastData greater " +
+	"than 48 hours'''() {
+		given: 'An OAuthAccount instance for Oura with lastData greater within last 48 hours'
+		account.lastData = new Date() - 1 // 4 days old
+		account.save(flush: true)
+
+		and: "Mocked email service to verify emails and logger"
+		int mailCount = 0
+		String subject
+		String messageBody
+
+		ouraDataService.emailService = [send: { String toString, String subjectString, String bodyString ->
+			mailCount++
+			subject = subjectString
+			messageBody = bodyString
+		}] as EmailService
+
+		when: "OAuthAccount instance's lastData is within last 48 hours"
+		ouraDataService.checkSyncHealth()
+
+		then: "Emails will not be sent"
+		mailCount == 0
+		!messageBody
+		!subject
+
+		when: "OAuthAccount instance's lastData is greater than 48 hours"
+		account.lastData = new Date() - 4
+		account.save(flush: true)
+		ouraDataService.checkSyncHealth()
+
+		then: "Emails will be sent"
+		mailCount == 2
+		subject == 'Oura Sync Issue'
+		messageBody == 'Not a single sync happened in the last 48 hours.'
 	}
 }
