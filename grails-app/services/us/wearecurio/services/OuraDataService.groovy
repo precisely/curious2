@@ -441,7 +441,7 @@ class OuraDataService extends DataService {
 	void checkSyncHealth() {
 		int accountsCount = OAuthAccount.withCriteria {
 			eq('typeId', ThirdParty.OURA)
-			gt('lastData', new Date() - 2)
+			gt('lastData', new Date() - 1)
 
 			projections {
 				rowCount()
@@ -449,17 +449,17 @@ class OuraDataService extends DataService {
 		}[0]
 
 		if (accountsCount > 0) {
-			log.info "There were $accountsCount accounts that were synced in the last 48 hours."
+			log.info "There were $accountsCount accounts that were synced in the last 24 hours."
 
 			return
 		}
 
-		String warnMessage = 'Not a single sync happened in the last 48 hours.'
+		String warnMessage = 'Not a single sync happened in the last 24 hours.'
 
 		log.warn warnMessage
 
-		['vishesh@causecode.com', 'mitsu.hadeishi@gmail.com'].each { String toEmail ->
-			emailService.send(toEmail, 'Oura Sync Issue', warnMessage)
+		['vishesh@causecode.com', 'mitsu@wearecurio.us', 'developers@causecode.com'].each { String toEmail ->
+			emailService.send(toEmail, '[Curious] - Oura Sync Issue', warnMessage)
 		}
 	}
 }

@@ -501,13 +501,21 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert ThirdPartyNotification.first().typeId == ThirdParty.OURA
 	}
 	
-	void '''Test checkSyncHealth method to send email if there were no OAuthAccounts for oura with lastData greater " +
-	"than 48 hours'''() {
-		given: 'An OAuthAccount instance for Oura with lastData greater within last 48 hours'
-		account.lastData = new Date() - 1 // 4 days old
+	void '''Test checkSyncHealth method to send email if there are no OAuthAccounts for oura with lastData greater 
+			than 24 hours'''() {
+		given: 'An OAuthAccount instance for Oura with lastData within last 24 hours'
+		OAuthAccount.list()*.delete(flush: true)
+		assert OAuthAccount.count() == 0
+
+		account = new OAuthAccount([typeId: ThirdParty.OURA, userId: userId, accessToken: "Dummy-token",
+				accessSecret: "Dummy-secret", accountId: userId, timeZoneId: TimeZoneId.look("America/New_York").id])
+		account.lastData = new Date()
 		account.save(flush: true)
 
-		and: "Mocked email service to verify emails and logger"
+		assert account.id
+		assert OAuthAccount.count() == 1
+
+		and: "Mocked email service to verify emails"
 		int mailCount = 0
 		String subject
 		String messageBody
@@ -518,7 +526,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 			messageBody = bodyString
 		}] as EmailService
 
-		when: "OAuthAccount instance's lastData is within last 48 hours"
+		when: "OAuthAccount instance's lastData is within last 24 hours"
 		ouraDataService.checkSyncHealth()
 
 		then: "Emails will not be sent"
@@ -526,14 +534,14 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		!messageBody
 		!subject
 
-		when: "OAuthAccount instance's lastData is greater than 48 hours"
-		account.lastData = new Date() - 4
+		when: "OAuthAccount instance's lastData is older than 24 hours"
+		account.lastData = new Date() - 2
 		account.save(flush: true)
 		ouraDataService.checkSyncHealth()
 
 		then: "Emails will be sent"
-		mailCount == 2
-		subject == 'Oura Sync Issue'
-		messageBody == 'Not a single sync happened in the last 48 hours.'
+		mailCount == 3
+		subject == '[Curious] - Oura Sync Issue'
+		messageBody == 'Not a single sync happened in the last 24 hours.'
 	}
 }

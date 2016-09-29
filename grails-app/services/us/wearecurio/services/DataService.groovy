@@ -694,7 +694,7 @@ abstract class DataService {
 
 	/**
 	 * This method checks whether there is continuous sync happening with the device by checking the lastData field
-	 * in the OAuth accounts to be greater than last 48 hours.
+	 * in the OAuth accounts to be greater than last 24 hours.
 	 */
 	void checkSyncHealth() {
 		return
