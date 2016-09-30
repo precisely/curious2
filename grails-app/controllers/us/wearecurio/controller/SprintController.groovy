@@ -1,4 +1,5 @@
 package us.wearecurio.controller
+
 import grails.converters.JSON
 import us.wearecurio.model.Entry
 import us.wearecurio.model.GroupMemberAdmin
@@ -53,11 +54,12 @@ class SprintController extends LoginController {
 
 	def show() {
 		Sprint sprintInstance = Sprint.findByHash(params.id)
-
 		if (!sprintInstance) {
 			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
 			return
 		}
+
+		log.debug "Show sprint for id($sprintInstance.id)"
 
 		if (!sprintInstance.hasMember(sessionUser().id) && !sprintInstance.isPublic()) {
 			renderJSONGet([success: false, message: g.message(code: "edit.sprint.permission.denied")])
@@ -66,8 +68,7 @@ class SprintController extends LoginController {
 
 		List<Entry> entries = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
 		List<User> participants = sprintInstance.getParticipants(10, 0)
-		List memberAdmins = GroupMemberAdmin.findAllByGroupId(sprintInstance.virtualGroupId)
-		List<User> admins = memberAdmins.collect {User.get(it.memberId)}
+		List<User> admins = sprintInstance.getParticipants(10, 0, true)
 		Map sprintDiscussions = searchService.getSprintDiscussions(sprintInstance, sessionUser(), 0, 5)
 
 		Map sprintInstanceMap = sprintInstance.getJSONDesc()

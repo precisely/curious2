@@ -138,6 +138,15 @@ String.prototype.capitalizeFirstLetter = function() {
 	return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
+function escapeRegExp(str) {
+	return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+
+String.prototype.replaceAll = function(search, replacement) {
+	var target = this;
+	return target.replace(new RegExp(escapeRegExp(search), 'g'), replacement);
+};
+
 /*
  * Simple, clean Javascript inheritance scheme
  *

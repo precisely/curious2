@@ -1,7 +1,5 @@
 package us.wearecurio.controller
 
-import us.wearecurio.parse.EntryCommaSegmenter
-import us.wearecurio.security.NoAuth
 import grails.converters.JSON
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -13,22 +11,9 @@ import us.wearecurio.data.DecoratedUnitRatio
 import us.wearecurio.data.RepeatType
 import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.data.UserSettings
-import us.wearecurio.model.Discussion
-import us.wearecurio.model.DiscussionPost
-import us.wearecurio.model.DurationType
-import us.wearecurio.model.Entry
+import us.wearecurio.model.*
 import us.wearecurio.model.Model.Visibility
-import us.wearecurio.model.PlotData
-import us.wearecurio.model.Sprint
-import us.wearecurio.model.SurveyQuestion
-import us.wearecurio.model.Tag
-import us.wearecurio.model.TagProperties
-import us.wearecurio.model.TagStats
-import us.wearecurio.model.ThirdParty
-import us.wearecurio.model.TimeZoneId
-import us.wearecurio.model.User
-import us.wearecurio.model.UserGroup
-import us.wearecurio.model.UserSurveyAnswer
+import us.wearecurio.security.NoAuth
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.EntryParserService.ParseAmount
 import us.wearecurio.services.SearchService
@@ -1404,42 +1389,44 @@ class DataController extends LoginController {
 	}
 
 	def getAutocompleteParticipantsData() {
-		if (params.searchString) {
-			params.max = params.max ? Math.min(params.int('max'), 50) : 4
-			List searchResults = User.withCriteria {
-				projections {
-					property("username")
-					property("name")
-					property("id")
-					property("settings")
-				}
-				and {
-					or {
-						ilike("username", "%${params.searchString}%")
-						ilike("name", "%${params.searchString}%")
-					}
-					or {
-						eq("virtual", false)
-						isNull("virtual")
-					}
-				}
-				maxResults(params.max)
-			}
-
-			List displayNames = searchResults.collect {
-				// Sending the name in the form "John (johny)" if the name is public. Sending only the username otherwise.
-				if (it.getAt(3).isNamePublic()) {
-					[label: it.getAt(1) + "(" + it.getAt(0) + ")", value: it.getAt(0)]
-				} else {
-					[label: it.getAt(0), value: it.getAt(0)]
-				}
-			}
-
-			renderJSONGet([success: true, usernameList: searchResults.collect { it.getAt(0) },
-					userIdList: searchResults.collect { it.getAt(2) }, displayNames: displayNames])
-		} else {
+		String searchString = params.searchString
+		if (!searchString) {
 			renderJSONGet([success: false])
 		}
+		boolean absoluteUsername = searchString.contains(/"/)
+		String plainSearchString = searchString.replaceAll(/"/, "")
+		params.max = params.max ? Math.min(params.int('max'), 50) : 4
+
+		List searchResults
+		if (absoluteUsername) {
+			searchResults = User.findAllByUsernameAndVirtualInList(plainSearchString, [false, null])
+		} else {
+			searchResults = User.withCriteria {
+				or {
+					ilike("username", "%${searchString}%")
+					ilike("name", "%${params.searchString}%")
+				}
+
+				or {
+					eq("virtual", false)
+					isNull("virtual")
+				}
+
+				maxResults(params.max)
+			}
+		}
+
+		List displayNames = searchResults.collect {
+			// Sending the name in the form "John (johny)" if the name is public. Sending only the username otherwise.
+			if (it.settings.isNamePublic()) {
+				[label: it.name + "(" + it.username + ")", value: it.username]
+			} else {
+				[label: it.username, value: it.username]
+			}
+		}
+
+		renderJSONGet([success: true, usernameList: searchResults.collect { it.username },
+					   userIdList: searchResults.collect { it.id }, displayNames: displayNames])
 	}
 
 	def saveSurveyData() {
@@ -1486,6 +1473,17 @@ class DataController extends LoginController {
 		}
 
 		renderJSONGet([success: true, participants: sprint.getParticipants(max, offset)])
+	}
+
+	def getSprintAdminsData(int offset, int max) {
+		Sprint sprint = Sprint.findByHash(params.id)
+		if (!sprint) {
+			renderJSONGet([success: false, message: g.message(code: "default.not.found.message",
+					args: ["sprint", params.id])])
+			return
+		}
+
+		renderJSONGet([success: true, participants: sprint.getParticipants(max, offset, true)])
 	}
 
 	def saveDeviceEntriesStateData(Boolean isCollapsed, String device) {

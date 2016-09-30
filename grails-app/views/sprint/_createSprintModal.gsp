@@ -76,6 +76,7 @@
 						</div>
 					</div -->
 					<div class="row">
+						<p class="sprint-participants-help-text">Use "" to search for users by username. Ex: "kevin"</p>
 						<div class="col-md-6">
 							<label class="inline-labels" for="sprint-participants">PARTICIPANTS</label>
 							<div id="participantsAutocomplete"></div>

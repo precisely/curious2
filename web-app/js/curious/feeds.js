@@ -703,10 +703,17 @@ function deleteParticipantsOrAdmins($element, username, actionType) {
 }
 
 function createAutocomplete(inputId, autocompleteId) {
+	var autocompleteParticipantsList = [];
 	$('#' + inputId).autocomplete({
 		appendTo: '#' + autocompleteId,
 		minLength: 0,
-		source: []
+		source: function(request, response) {
+			if (response) {
+				response($.map(autocompleteParticipantsList, function(data) {
+					return {label: data.label, value: '"'+ data.value + '"' };
+				}));
+			}
+		}
 	});
 
 	$('#' + inputId).on('keyup', function() {
@@ -719,7 +726,8 @@ function createAutocomplete(inputId, autocompleteId) {
 			}
 
 			if (data.success) {
-				$('#' + inputId).autocomplete('option', 'source', data.displayNames);
+				autocompleteParticipantsList = data.displayNames;
+				$('#' + inputId).autocomplete('source');
 			}
 		}, function(xhr) {
 			console.log('error: ', xhr);
@@ -742,6 +750,7 @@ function createAutocomplete(inputId, autocompleteId) {
 }
 
 function addSprintMemberOrAdmin(inputId, userName) {
+	userName = userName.replaceAll('"', '');
 	var actionName = (inputId === 'sprint-participants') ? 'addMember' : 'addAdmin';
 	var deleteButtonClass = (inputId === 'sprint-participants') ? 'deleteParticipants' : 'deleteAdmins';
 	queuePostJSON('Adding members', '/api/sprint/action/' + actionName, getCSRFPreventionObject(actionName + 'CSRF',
@@ -761,6 +770,22 @@ function addSprintMemberOrAdmin(inputId, userName) {
 	}, function(xhr) {
 		console.log('error: ', xhr);
 	});
+}
+
+function addEditSprintParticipants(data, infiniteScroll) {
+	$.each(data.participants, function(index, participant) {
+		addParticipantsAndAdminsToList($("#sprint-participants-list"),
+			'deleteParticipants', participant.username);
+	});
+	editParticipantsOffset += 10;
+}
+
+function addEditSprintAdmins(data, infiniteScroll) {
+	$.each(data.participants, function(index, participant) {
+		addParticipantsAndAdminsToList($("#sprint-admins-list"),
+			'deleteAdmins', participant.username);
+	});
+	editAdminsOffset += 10;
 }
 
 function deleteSimpleEntry(id, $element) {
@@ -896,7 +921,12 @@ function createSprint() {
 	);
 }
 
+var editParticipantsOffset = 10;
+var editAdminsOffset = 10;
+
 function editSprint(sprintHash) {
+	editParticipantsOffset = 10;
+	editAdminsOffset = 10;
 	queueJSON("Getting sprint data", '/api/sprint/' + sprintHash + '?' + getCSRFPreventionURI("fetchSprintDataCSRF") + "&callback=?",
 			null, function (data) {
 		if (!checkData(data))
@@ -906,6 +936,7 @@ function editSprint(sprintHash) {
 			showAlert(data.message);
 		} else {
 			//Clearing data from last load
+			var sprintInstance = data.sprint;
 			clearSprintFormData();
 			$('#sprintIdField').val(data.sprint.hash);
 			$('#sprintVirtualUserId').val(data.sprint.virtualUserId);
@@ -935,6 +966,26 @@ function editSprint(sprintHash) {
 				if (!admin.virtual) {
 					addParticipantsAndAdminsToList($("#sprint-admins-list"),
 							'deleteAdmins', admin.username);
+				}
+			});
+			$('#sprint-participants-list').infiniteScroll({
+				bufferPx: 5,
+				scrollHorizontally: false,
+				offset: 10,
+				bindTo: $('#sprint-participants-list'),
+				onScrolledToBottom: function(e, $element) {
+					this.pause();
+					showMoreParticipants(sprintInstance, this, "editParticipants");
+				}
+			});
+			$('#sprint-admins-list').infiniteScroll({
+				bufferPx: 5,
+				scrollHorizontally: false,
+				offset: 10,
+				bindTo: $('#sprint-admins-list'),
+				onScrolledToBottom: function(e, $element) {
+					this.pause();
+					showMoreParticipants(sprintInstance, this, "editAdmins");
 				}
 			});
 			$('#createSprintOverlay').modal({show: true});

@@ -2314,6 +2314,12 @@ div.graph-header-container .red-header {
 	display: none;
 }
 
+.sprint-participants-help-text {
+	font-size: 11pt;
+	font-style: italic;
+	padding-left: 10px;
+}
+
 .discussions-wrapper {
 	max-height: 520px;
 	overflow: auto;
