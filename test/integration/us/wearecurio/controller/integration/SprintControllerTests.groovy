@@ -265,7 +265,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = 0
 		
 		controller.addMember()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == messageSource.getMessage("add.sprint.participant.failed", [] as Object[], null)
 		assert dummySprint.hasMember(dummyUser2.getId()) == false
 	}
@@ -276,7 +276,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = null
 		
 		controller.addMember()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == messageSource.getMessage("add.sprint.participant.failed", [] as Object[], null)
 		assert dummySprint.hasMember(dummyUser2.getId()) == false
 	}
@@ -286,7 +286,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.addMember()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == "No user with such username found."
 		assert dummySprint.hasMember(dummyUser2.getId()) == false
 	}
@@ -297,7 +297,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.addMember()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == "No user with such username found."
 		assert dummySprint.hasMember(dummyUser2.getId()) == false
 	}
@@ -309,7 +309,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.addMember()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == "You don't have permission to add members to this trackathon."
 		assert dummySprint.hasMember(dummyUser2.getId()) == false
 	}
@@ -331,7 +331,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = 0
 		
 		controller.addAdmin()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == messageSource.getMessage("add.sprint.admin.failed", [] as Object[], null)
 		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
 	}
@@ -342,7 +342,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = null
 		
 		controller.addAdmin()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == messageSource.getMessage("add.sprint.admin.failed", [] as Object[], null)
 		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
 	}
@@ -352,7 +352,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.addAdmin()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == "No user with such username found."
 		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
 	}
@@ -363,7 +363,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.addAdmin()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == "No user with such username found."
 		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
 	}
@@ -375,7 +375,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.addAdmin()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == "You don't have permission to add admins to this trackathon."
 		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
 	}
@@ -397,7 +397,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = 0
 		
 		controller.deleteMember()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == messageSource.getMessage("delete.sprint.participant.failed", [] as Object[], null)
 		assert dummySprint.hasMember(user.getId()) == true
 	}
@@ -408,7 +408,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = null
 		
 		controller.deleteMember()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == messageSource.getMessage("delete.sprint.participant.failed", [] as Object[], null)
 		assert dummySprint.hasMember(user.getId()) == true
 	}
@@ -418,7 +418,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.deleteMember()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == messageSource.getMessage("delete.sprint.participant.failed", [] as Object[], null)
 		assert dummySprint.hasMember(user.getId()) == true
 	}
@@ -429,7 +429,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.deleteMember()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == messageSource.getMessage("delete.sprint.participant.failed", [] as Object[], null)
 	}
 
@@ -440,7 +440,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.deleteMember()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == "You don't have permission to remove followers from this trackathon."
 		assert dummySprint.hasMember(user.getId()) == true
 	}
@@ -452,7 +452,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.deleteMember()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == "No such follower to delete from this trackathon."
 	}
 
@@ -473,7 +473,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintId"] = 0
 		
 		controller.deleteAdmin()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == messageSource.getMessage("delete.sprint.admin.failed", [] as Object[], null)
 		assert dummySprint.hasAdmin(user.getId()) == true
 	}
@@ -484,7 +484,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = null
 		
 		controller.deleteAdmin()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == messageSource.getMessage("delete.sprint.admin.failed", [] as Object[], null)
 		assert dummySprint.hasAdmin(user.getId()) == true
 	}
@@ -494,7 +494,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.deleteAdmin()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == messageSource.getMessage("delete.sprint.admin.failed", [] as Object[], null)
 		assert dummySprint.hasAdmin(user.getId()) == true
 	}
@@ -505,7 +505,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.deleteAdmin()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == messageSource.getMessage("delete.sprint.admin.failed", [] as Object[], null)
 		assert dummySprint.hasAdmin(user.getId()) == true
 	}
@@ -517,7 +517,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.deleteAdmin()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == "You don't have permission to delete admins of this trackathon."
 		assert dummySprint.hasAdmin(user.getId()) == true
 	}
@@ -529,7 +529,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.deleteAdmin()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.errorMessage == "No such admin to delete from this trackathon."
 	}
 

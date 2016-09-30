@@ -1392,19 +1392,20 @@ class DataController extends LoginController {
 		String searchString = params.searchString
 		if (!searchString) {
 			renderJSONGet([success: false])
+			return
 		}
-		boolean absoluteUsername = searchString.contains(/"/)
-		String plainSearchString = searchString.replaceAll(/"/, "")
+		boolean searchByUsername = searchString.contains(/"/)
+		String username = searchString.replaceAll(/"/, "")
 		params.max = params.max ? Math.min(params.int('max'), 50) : 4
 
 		List searchResults
-		if (absoluteUsername) {
-			searchResults = User.findAllByUsernameAndVirtualInList(plainSearchString, [false, null])
+		if (searchByUsername) {
+			searchResults = User.findAllByUsernameAndVirtualInList(username, [false, null])
 		} else {
 			searchResults = User.withCriteria {
 				or {
 					ilike("username", "%${searchString}%")
-					ilike("name", "%${params.searchString}%")
+					ilike("name", "%${searchString}%")
 				}
 
 				or {
@@ -1416,17 +1417,20 @@ class DataController extends LoginController {
 			}
 		}
 
-		List displayNames = searchResults.collect {
+		List usernameList = [], userIdList = [], displayNames = []
+		searchResults.each {
 			// Sending the name in the form "John (johny)" if the name is public. Sending only the username otherwise.
 			if (it.settings.isNamePublic()) {
-				[label: it.name + "(" + it.username + ")", value: it.username]
+				displayNames.add([label: it.name + "(" + it.username + ")", value: it.username])
 			} else {
-				[label: it.username, value: it.username]
+				displayNames.add([label: it.username, value: it.username])
 			}
+			usernameList.add(it.username)
+			userIdList.add(it.id)
 		}
 
-		renderJSONGet([success: true, usernameList: searchResults.collect { it.username },
-					   userIdList: searchResults.collect { it.id }, displayNames: displayNames])
+		renderJSONGet([success: true, usernameList: usernameList,
+					   userIdList: userIdList, displayNames: displayNames])
 	}
 
 	def saveSurveyData() {

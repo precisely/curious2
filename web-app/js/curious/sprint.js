@@ -79,7 +79,7 @@ function addSprintParticipants(data, infiniteScroll) {
 	offset += 10;
 	var leftPos = $('#participants-list ul').scrollLeft();
 
-	// Maximum four participants to be displayed at once, 180 is approx. with of div with two participants
+	// Maximum four participants to be displayed at once, 180 is approx. width of div with two participants
 	$("#participants-list ul").scrollLeft(leftPos + 250);
 }
 
