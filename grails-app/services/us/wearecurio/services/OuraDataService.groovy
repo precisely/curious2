@@ -33,6 +33,8 @@ class OuraDataService extends DataService {
 	static final String COMMENT = "(Oura)"
 	OuraTagUnitMap tagUnitMap = new OuraTagUnitMap()
 
+	EmailService emailService
+
 	OuraDataService() {
 		provider = "Oura"
 		typeId = ThirdParty.OURA
@@ -433,6 +435,32 @@ class OuraDataService extends DataService {
 	 */
 	Date convertTimeToDate(Map rawEntry) {
 		return new Date(new Long(rawEntry["eventTime"]) * 1000)
+	}
+
+	@Override
+	void checkSyncHealth() {
+		int accountsCount = OAuthAccount.withCriteria {
+			eq('typeId', ThirdParty.OURA)
+			gt('lastData', new Date() - 1)
+
+			projections {
+				rowCount()
+			}
+		}[0]
+
+		if (accountsCount > 0) {
+			log.info "There were $accountsCount accounts that were synced in the last 24 hours."
+
+			return
+		}
+
+		String warnMessage = 'Not a single sync happened in the last 24 hours.'
+
+		log.warn warnMessage
+
+		['vishesh@causecode.com', 'mitsu@wearecurio.us', 'developers@causecode.com'].each { String toEmail ->
+			emailService.send(toEmail, '[Curious] - Oura Sync Issue', warnMessage)
+		}
 	}
 }
 

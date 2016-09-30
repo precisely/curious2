@@ -472,7 +472,7 @@ abstract class DataService {
 	static boolean pollAllDataServices() {
 		log.debug "Polling all oauth accounts"
 		def accounts = OAuthAccount.withCriteria {
-			not {'in'("typeId", [ThirdParty.WITHINGS, ThirdParty.OURA])}
+			not {'in'("typeId", [ThirdParty.WITHINGS])}
 		}
 
 		for (OAuthAccount account in accounts) {
@@ -690,5 +690,13 @@ abstract class DataService {
 		Entry.executeUpdate("update Entry e set e.userId = null where e.userId = :userId and e.setIdentifier in " +
 				"(select i.id from Identifier i where value like :value)",
 				[value: "${setNamePrefix}%", userId: userId])
+	}
+
+	/**
+	 * This method checks whether there is continuous sync happening with the device by checking the lastData field
+	 * in the OAuth accounts to be greater than last 24 hours.
+	 */
+	void checkSyncHealth() {
+		return
 	}
 }

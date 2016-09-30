@@ -11,6 +11,7 @@ import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.services.DataService.DataRequestContext
+import us.wearecurio.services.EmailService
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.OuraDataService
 import us.wearecurio.support.EntryStats
@@ -498,5 +499,49 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		then:
 		assert ThirdPartyNotification.count() == 1
 		assert ThirdPartyNotification.first().typeId == ThirdParty.OURA
+	}
+	
+	void '''Test checkSyncHealth method to send email if there are no OAuthAccounts for oura with lastData greater 
+			than 24 hours'''() {
+		given: 'An OAuthAccount instance for Oura with lastData within last 24 hours'
+		OAuthAccount.list()*.delete(flush: true)
+		assert OAuthAccount.count() == 0
+
+		account = new OAuthAccount([typeId: ThirdParty.OURA, userId: userId, accessToken: "Dummy-token",
+				accessSecret: "Dummy-secret", accountId: userId, timeZoneId: TimeZoneId.look("America/New_York").id])
+		account.lastData = new Date()
+		account.save(flush: true)
+
+		assert account.id
+		assert OAuthAccount.count() == 1
+
+		and: "Mocked email service to verify emails"
+		int mailCount = 0
+		String subject
+		String messageBody
+
+		ouraDataService.emailService = [send: { String toString, String subjectString, String bodyString ->
+			mailCount++
+			subject = subjectString
+			messageBody = bodyString
+		}] as EmailService
+
+		when: "OAuthAccount instance's lastData is within last 24 hours"
+		ouraDataService.checkSyncHealth()
+
+		then: "Emails will not be sent"
+		mailCount == 0
+		!messageBody
+		!subject
+
+		when: "OAuthAccount instance's lastData is older than 24 hours"
+		account.lastData = new Date() - 2
+		account.save(flush: true)
+		ouraDataService.checkSyncHealth()
+
+		then: "Emails will be sent"
+		mailCount == 3
+		subject == '[Curious] - Oura Sync Issue'
+		messageBody == 'Not a single sync happened in the last 24 hours.'
 	}
 }
