@@ -22,11 +22,18 @@ function showPreviousParticipants() {
 	$("#participants-list ul").scrollLeft(leftPos - 250);
 }
 
-function showMoreParticipants(sprintInstance, infiniteScroll) {
+function showMoreParticipants(sprintInstance, infiniteScroll, editFormType) {
 	var participantsCount = sprintInstance.totalParticipants;
-	if ((participantsCount - offset) > 0) {
-		queueJSON("Getting more participants", "/data/getSprintParticipantsData?id=" + sprintInstance.hash
-				+ "&offset=" + offset + "&max=10&"
+	var currentOffset = offset, methodName = "Participants";
+	if (editFormType === 'editParticipants') {
+		currentOffset = editParticipantsOffset;
+	} else if (editFormType === 'editAdmins') {
+		currentOffset = editAdminsOffset;
+		methodName = "Admins";
+	}
+	if ((participantsCount - currentOffset) > 0) {
+		queueJSON("Getting more participants", "/data/getSprint" + methodName + "Data?id=" + sprintInstance.hash
+				+ "&offset=" + currentOffset + "&max=10&"
 				+ getCSRFPreventionURI("getSprintParticipantsDataCSRF") + "&callback=?",
 				function(data) {
 			if (!checkData(data))
@@ -34,16 +41,13 @@ function showMoreParticipants(sprintInstance, infiniteScroll) {
 
 			if (data.success) {
 				if (data.participants.length > 0) {
-					$.each(data.participants, function(index, participant) {
-						var avatarImage = participant.avatarURL ? '<img src="' + participant.avatarURL + '" alt="avatar" class="participantsAvatar">' :
-								'<img src="/images/track-avatar.png" alt="avatar" class="participantsAvatar">';
-						$('#participants-list ul li ul').append('<li>' + avatarImage + '<p>' + participant.username + '</p></li>');
-					})
-					offset += 10;
-					var leftPos = $('#participants-list ul').scrollLeft();
-
-					// Maximum four participants to be displayed at once, 180 is approx. with of div with two participants
-					$("#participants-list ul").scrollLeft(leftPos + 250);
+					if (editFormType === 'editParticipants') {
+						addEditSprintParticipants(data, infiniteScroll);
+					} else if (editFormType === 'editAdmins') {
+						addEditSprintAdmins(data, infiniteScroll);
+					} else {
+						addSprintParticipants(data, infiniteScroll);
+					}
 					if (infiniteScroll) {
 						infiniteScroll.resume();
 					}
@@ -56,10 +60,27 @@ function showMoreParticipants(sprintInstance, infiniteScroll) {
 				showBootstrapAlert($('.alert'), data.message);
 			}
 		});
-	} else {
+	} else if (!editFormType) {
 		var leftPos = $('#participants-list ul').scrollLeft();
 		$("#participants-list ul").scrollLeft(leftPos + 380);
+	} else {
+		if (infiniteScroll) {
+			infiniteScroll.stop();
+		}
 	}
+}
+
+function addSprintParticipants(data, infiniteScroll) {
+	$.each(data.participants, function(index, participant) {
+		var avatarImage = participant.avatarURL ? '<img src="' + participant.avatarURL + '" alt="avatar" class="participantsAvatar">' :
+			'<img src="/images/track-avatar.png" alt="avatar" class="participantsAvatar">';
+		$('#participants-list ul li ul').append('<li>' + avatarImage + '<p>' + participant.username + '</p></li>');
+	})
+	offset += 10;
+	var leftPos = $('#participants-list ul').scrollLeft();
+
+	// Maximum four participants to be displayed at once, 180 is approx. width of div with two participants
+	$("#participants-list ul").scrollLeft(leftPos + 250);
 }
 
 function showMoreDiscussions(sprintHash, infiniteScroll) {

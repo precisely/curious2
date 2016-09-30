@@ -1,4 +1,5 @@
 package us.wearecurio.controller
+
 import grails.converters.JSON
 import us.wearecurio.model.Entry
 import us.wearecurio.model.GroupMemberAdmin
@@ -53,11 +54,12 @@ class SprintController extends LoginController {
 
 	def show() {
 		Sprint sprintInstance = Sprint.findByHash(params.id)
-
 		if (!sprintInstance) {
 			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
 			return
 		}
+
+		log.debug "Show sprint for id($sprintInstance.id)"
 
 		if (!sprintInstance.hasMember(sessionUser().id) && !sprintInstance.isPublic()) {
 			renderJSONGet([success: false, message: g.message(code: "edit.sprint.permission.denied")])
@@ -66,8 +68,7 @@ class SprintController extends LoginController {
 
 		List<Entry> entries = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
 		List<User> participants = sprintInstance.getParticipants(10, 0)
-		List memberAdmins = GroupMemberAdmin.findAllByGroupId(sprintInstance.virtualGroupId)
-		List<User> admins = memberAdmins.collect {User.get(it.memberId)}
+		List<User> admins = sprintInstance.getParticipants(10, 0, true)
 		Map sprintDiscussions = searchService.getSprintDiscussions(sprintInstance, sessionUser(), 0, 5)
 
 		Map sprintInstanceMap = sprintInstance.getJSONDesc()
@@ -133,23 +134,23 @@ class SprintController extends LoginController {
 		log.debug "Trying to add member [${params.username}] to sprint [$params.sprintHash]"
 
 		if (!sprintInstance) {
-			renderJSONPost([error: true, errorMessage: g.message(code: "add.sprint.participant.failed")])
+			renderJSONPost([success: false, errorMessage: g.message(code: "add.sprint.participant.failed")])
 			return
 		}
 
 		User memberInstance = params.username ? User.findByUsername(params.username) : null
 		if (!memberInstance) {
-			renderJSONPost([error: true, errorMessage: g.message(code: "user.not.found")])
+			renderJSONPost([success: false, errorMessage: g.message(code: "user.not.found")])
 			return
 		}
 
 		if (!sprintInstance.hasAdmin(sessionUser().id)) {
-			renderJSONPost([error: true, errorMessage: g.message(code: "add.sprint.member.permission.denied")])
+			renderJSONPost([success: false, errorMessage: g.message(code: "add.sprint.member.permission.denied")])
 			return
 		}
 
-		if (sprintInstance.hasMember(memberInstance.id)) {
-			renderJSONPost([error: true, errorMessage: g.message(code: "sprint.member.already.added")])
+		if (sprintInstance.hasMember(memberInstance.id) || sprintInstance.hasInvited(memberInstance.id)) {
+			renderJSONPost([success: false, errorMessage: g.message(code: "sprint.member.already.added")])
 			return
 		}
 		sprintInstance.addInvited(memberInstance.id)
@@ -161,23 +162,23 @@ class SprintController extends LoginController {
 		log.debug "Trying to add admin [${params.username}] to sprint [$params.sprintHash]"
 
 		if (!sprintInstance) {
-			renderJSONPost([error: true, errorMessage: g.message(code: "add.sprint.admin.failed")])
+			renderJSONPost([success: false, errorMessage: g.message(code: "add.sprint.admin.failed")])
 			return
 		}
 
 		User adminInstance = params.username ? User.findByUsername(params.username) : null
 		if (!adminInstance) {
-			renderJSONPost([error: true, errorMessage: g.message(code: "user.not.found")])
+			renderJSONPost([success: false, errorMessage: g.message(code: "user.not.found")])
 			return
 		}
 
 		if (!sprintInstance.hasAdmin(sessionUser().id)) {
-			renderJSONPost([error: true, errorMessage: g.message(code: "add.sprint.admin.permission.denied")])
+			renderJSONPost([success: false, errorMessage: g.message(code: "add.sprint.admin.permission.denied")])
 			return
 		}
 
-		if (sprintInstance.hasAdmin(adminInstance.id)) {
-			renderJSONPost([error: true, errorMessage: g.message(code: "sprint.admin.already.added")])
+		if (sprintInstance.hasAdmin(adminInstance.id) || sprintInstance.hasInvitedAdmin(adminInstance.id)) {
+			renderJSONPost([success: false, errorMessage: g.message(code: "sprint.admin.already.added")])
 			return
 		}
 
@@ -193,12 +194,12 @@ class SprintController extends LoginController {
 		log.debug "$currentUser Trying to detele member [${params.username}] from sprint [$params.sprintHash]"
 
 		if (!sprintInstance || !memberInstance) {
-			renderJSONPost([error: true, errorMessage: g.message(code: "delete.sprint.participant.failed")])
+			renderJSONPost([success: false, errorMessage: g.message(code: "delete.sprint.participant.failed")])
 			return
 		}
 
 		if (!sprintInstance.hasAdmin(currentUser.id)) {
-			renderJSONPost([error: true, errorMessage: g.message(code: "delete.sprint.member.permission.denied")])
+			renderJSONPost([success: false, errorMessage: g.message(code: "delete.sprint.member.permission.denied")])
 			return
 		}
 
@@ -213,7 +214,7 @@ class SprintController extends LoginController {
 				return
 			}
 
-			renderJSONPost([error: true, errorMessage: g.message(code: "no.sprint.member.to.delete")])
+			renderJSONPost([success: false, errorMessage: g.message(code: "no.sprint.member.to.delete")])
 			return
 		}
 
@@ -234,12 +235,12 @@ class SprintController extends LoginController {
 		log.debug "$currentUser Trying to detele admin [${params.username}] from sprint [$params.sprintHash]"
 
 		if (!sprintInstance || !adminInstance) {
-			renderJSONPost([error: true, errorMessage:  g.message(code: "delete.sprint.admin.failed")])
+			renderJSONPost([success: false, errorMessage:  g.message(code: "delete.sprint.admin.failed")])
 			return
 		}
 
 		if (!sprintInstance.hasAdmin(currentUser.id)) {
-			renderJSONPost([error: true, errorMessage: g.message(code: "delete.sprint.admin.permission.denied")])
+			renderJSONPost([success: false, errorMessage: g.message(code: "delete.sprint.admin.permission.denied")])
 			return
 		}
 
@@ -251,9 +252,10 @@ class SprintController extends LoginController {
 			if (sprintInstance.hasInvitedAdmin(adminInstance.id)) {
 				sprintInstance.removeInvitedAdmin(adminInstance.id)
 				renderJSONPost([success: true])
+				return
 			}
 
-			renderJSONPost([error: true, errorMessage: g.message(code: "no.sprint.admin.to.delete")])
+			renderJSONPost([success: false, errorMessage: g.message(code: "no.sprint.admin.to.delete")])
 			return
 		}
 

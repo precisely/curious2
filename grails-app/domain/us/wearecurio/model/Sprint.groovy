@@ -1,31 +1,17 @@
 package us.wearecurio.model
 
-import java.util.Date
-import java.util.Locale
-import java.util.Map;
-
-import grails.converters.*
 import grails.gorm.DetachedCriteria
-
-import org.hibernate.criterion.CriteriaSpecification
 import org.apache.commons.logging.LogFactory
-
+import org.hibernate.criterion.CriteriaSpecification
 import us.wearecurio.hashids.DefaultHashIDGenerator
-import us.wearecurio.utility.Utils
-import us.wearecurio.data.RepeatType
-import us.wearecurio.model.DurationType
-import us.wearecurio.model.User
-import us.wearecurio.model.UserGroup
-import us.wearecurio.services.EmailService
+import us.wearecurio.model.Model.Visibility
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.SearchService
 import us.wearecurio.support.EntryStats
-import us.wearecurio.model.Model.Visibility
 import us.wearecurio.thirdparty.TagUnitMap
+import us.wearecurio.utility.Utils
 
 import java.text.DateFormat
-
-import org.joda.time.*
 
 class Sprint {
 	
@@ -736,7 +722,7 @@ class Sprint {
 		return sprintList*.getJSONDesc()
 	}
 
-	List<User> getParticipants(int max, int offset) {
+	List<User> getParticipants(int max, int offset, boolean getAdmins = false) {
 		if (!userId) {
 			return []
 		}
@@ -744,7 +730,7 @@ class Sprint {
 		max = Math.min(max ?: 10, 100)
 		offset = offset ?: 0
 
-		List<Long> participantIdsList = new DetachedCriteria(GroupMemberReader).build {
+		List<Long> participantIdsList = new DetachedCriteria(getAdmins ? GroupMemberAdmin : GroupMemberReader).build {
 			projections {
 				property "memberId"
 			}

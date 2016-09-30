@@ -597,18 +597,11 @@ ul.ui-autocomplete {
 /* The autocomplete must match the text input width */
 .ui-autocomplete {
 	padding-left: 0;
-	max-height: 200px;
 	overflow-y: auto;
 	/* prevent horizontal scrollbar */
 	overflow-x: hidden;
 	/* add padding to account for vertical scrollbar */
 	padding-right: 0;
-}
-/* IE 6 doesn't support max-height
- * we use height instead, but this forces the menu to always be this tall
- */
-* html .ui-autocomplete {
-	height: 200px;
 }
 #addData label {
 	font-size:.8em;
@@ -2312,6 +2305,12 @@ div.graph-header-container .red-header {
 
 .sprint.not-following.not-admin #create-discussion, .sprint.not-following.not-admin .add-comment {
 	display: none;
+}
+
+.sprint-participants-help-text {
+	font-size: 11pt;
+	font-style: italic;
+	padding-left: 10px;
 }
 
 .discussions-wrapper {
@@ -4193,7 +4192,7 @@ body .modal-header button {
 }
 
 #sprint-participants-list, #sprint-admins-list {
-	max-height: 70px;
+	max-height: 100px;
 	overflow-y: scroll;
 }
 
