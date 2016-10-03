@@ -528,6 +528,7 @@ log4j.main = {
 					'grails.app.conf',
 					'grails.app.controllers',
 					'grails.app.services.us.wearecurio',
+					'com.causecode', 
 					'grails.app.services.com.causecode',
 					'grails.app.jobs.com.causecode',
 					'grails.app.jobs.us.wearecurio.jobs']
@@ -549,6 +550,7 @@ log4j.main = {
 		   'grails.app.services.us.wearecurio',
 		   'grails.app.services.com.causecode',
 		   'grails.app.jobs.com.causecode',
+		   'com.causecode',
 		   'grails.app.jobs.us.wearecurio.jobs',
 		   'SecurityFilters'
 	

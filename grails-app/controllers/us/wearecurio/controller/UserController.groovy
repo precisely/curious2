@@ -1,8 +1,11 @@
 package us.wearecurio.controller
 
 import com.causecode.fileuploader.FileUploaderService
+import com.causecode.fileuploader.FileUploaderServiceException
 import com.causecode.fileuploader.UFile
+import com.causecode.fileuploader.ProviderNotFoundException
 import com.causecode.fileuploader.UFileMoveHistory
+import com.causecode.fileuploader.UploadFailureException
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.User
@@ -88,11 +91,32 @@ class UserController extends LoginController {
 	 */
 	def saveAvatar() {
 		debug ("UserController.saveAvatar() params:" + params)
+
+		boolean reportError = false
+		Throwable throwable
 		UFile avatar
 		try {
 			avatar = fileUploaderService.saveFile("avatar", params.avatar)
-		} catch (FileNotFoundException | IOException e) {		// https://docs.oracle.com/javase/tutorial/essential/exceptions/catch.html
-			Utils.reportError("Error while saving avatar", e)
+		} catch (UploadFailureException uploadFailureException) {
+			log.debug "Upload failed!", uploadFailureException
+			reportError = true
+			throwable = uploadFailureException
+		} catch (FileUploaderServiceException fileUploaderServiceException) {
+			log.debug "FileUploaderService exception", fileUploaderServiceException
+			reportError = true
+			throwable = fileUploaderServiceException
+		} catch (IOException ioException) { // https://docs.oracle.com/javase/tutorial/essential/exceptions/catch.html
+			log.debug "IO Exception", ioException
+			reportError = true
+			throwable = ioException
+		} catch (ProviderNotFoundException providerNotFoundException) {
+			log.debug "ProviderNotFound exception", providerNotFoundException
+			reportError = true
+			throwable = providerNotFoundException
+		}
+
+		if (reportError) {
+			Utils.reportError("Error while saving avatar", throwable)
 			renderJSONPost([success: false, message: g.message(code: "default.not.updated.message", args: ["Avatar"])])
 			return
 		}
@@ -101,6 +125,7 @@ class UserController extends LoginController {
 			renderJSONPost([success: false, message: g.message(code: "default.not.updated.message", args: ["Avatar"])])
 			return
 		}
+
 		User currentUserInstance = sessionUser()
 
 		UFile.withTransaction {
