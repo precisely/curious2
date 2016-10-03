@@ -66,17 +66,21 @@ class HomeController extends DataController {
 		debug "userId: $userId"
 
 		Map result = [:]
+		String message
 
 		try {
 			result = withingsDataService.subscribe(userId)
 		} catch (MissingOAuthAccountException e) {
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("withings")
 		} catch (InvalidAccessTokenException e) {
-			Utils.reportError("Error while registering withings", e)
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("withings")
+		} catch (Exception e) {
+			message = g.message(code: "thirdparty.subscribe.failure.message", args: ["Withings"])
+			Utils.reportError("Error while registering withings", e)
 		}
 
-		String message
 		if (result.success) {
 			OAuthAccount account = result.account
 			if (!account.lastPolled) {	// Check to see if first time subscription.
@@ -110,11 +114,13 @@ class HomeController extends DataController {
 		try {
 			result = withingsDataService.unsubscribe(userId)
 		} catch (InvalidAccessTokenException e) {
-			Utils.reportError("Error while unregistering withings", e)
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("withings")
 		} catch (MissingOAuthAccountException e) {
-			Utils.reportError("Error while registering withings", e)
 			result = [success: false, message: "No subscription found."]
+		} catch (Exception e) {
+			Utils.reportError("Error while unregistering withings", e)
+			result = [success: false, message: g.message(code: "thirdparty.unsubscribe.failure",  args: ["Withings"])]
 		}
 
 		thirdPartyLinkResultHandler(result, "unsubscribe", "Withings")
@@ -130,10 +136,15 @@ class HomeController extends DataController {
 		try {
 			result = twenty3AndMeDataService.storeGenomesData(userId)
 		} catch (MissingOAuthAccountException e) {
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("Twenty3AndMe")
 		} catch (InvalidAccessTokenException e) {
-			Utils.reportError("Error while registering 23andme", e)
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("Twenty3AndMe")
+		} catch (Exception e) {
+			result = [success: false, message: g.message(code: "thirdparty.subscribe.failure.message",  args:
+					["23andme"])]
+			Utils.reportError("Error while registering 23andme", e)
 		}
 
 		thirdPartyLinkResultHandler(result, "subscribe", "Twenty3AndMe")
@@ -158,10 +169,15 @@ class HomeController extends DataController {
 		try {
 			result = movesDataService.subscribe(userId)
 		} catch (InvalidAccessTokenException e) {
-			Utils.reportError("Error while registering Moves", e)
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("moves")
 		} catch (MissingOAuthAccountException e) {
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("moves")
+		} catch (Exception e) {
+			result = [success: false, message: g.message(code: "thirdparty.subscribe.failure.message",  args:
+					["Moves"])]
+			Utils.reportError("Error while registering Moves", e)
 		}
 
 		thirdPartyLinkResultHandler(result, "subscribe", "Moves")
@@ -176,11 +192,14 @@ class HomeController extends DataController {
 		try {
 			result = movesDataService.unsubscribe(userId)
 		} catch (InvalidAccessTokenException e) {
-			Utils.reportError("Error while unregistering Moves", e)
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("moves")
 		} catch (MissingOAuthAccountException e) {
-			Utils.reportError("Error while unregistering Moves", e)
 			result = [success: false, message: "No subscription found."]
+		} catch (Exception e) {
+			result = [success: false, message: g.message(code: "thirdparty.unsubscribe.failure",  args:
+					["Moves"])]
+			Utils.reportError("Error while unregistering Moves", e)
 		}
 
 		thirdPartyLinkResultHandler(result, "unsubscribe", "Moves")
@@ -196,10 +215,15 @@ class HomeController extends DataController {
 		try {
 			result = jawboneUpDataService.subscribe(userId)
 		} catch (InvalidAccessTokenException e) {
-			Utils.reportError("Error while registering Jawbone", e)
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("jawboneup")
 		} catch (MissingOAuthAccountException e) {
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("jawboneup")
+		} catch (Exception e) {
+			result = [success: false, message: g.message(code: "thirdparty.subscribe.failure.message",  args:
+					["Jawbone"])]
+			Utils.reportError("Error while registering Jawbone", e)
 		}
 
 		thirdPartyLinkResultHandler(result, "subscribe", "JawboneUp")
@@ -214,11 +238,14 @@ class HomeController extends DataController {
 		try {
 			result = jawboneUpDataService.unsubscribe(userId)
 		} catch (InvalidAccessTokenException e) {
-			Utils.reportError("Error while unregistering Jawbone", e)
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("jawboneup")
 		} catch (MissingOAuthAccountException e) {
-			Utils.reportError("Error while unregistering Jawbone", e)
 			result = [success: false, message: "No subscription found."]
+		} catch (Exception e) {
+			result = [success: false, message: g.message(code: "thirdparty.unsubscribe.failure",  args:
+					["Jawbone"])]
+			Utils.reportError("Error while unregistering Jawbone", e)
 		}
 
 		thirdPartyLinkResultHandler(result, "unsubscribe", "JawboneUp")
@@ -257,9 +284,14 @@ class HomeController extends DataController {
 			result = fitBitDataService.subscribe(userId)
 		} catch (MissingOAuthAccountException e) {
 			throw new AuthenticationRequiredException("fitbit")
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 		} catch (InvalidAccessTokenException e) {
-			Utils.reportError("Error while registering FitBit", e)
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("fitbit")
+		} catch (Exception e) {
+			result = [success: false, message: g.message(code: "thirdparty.subscribe.failure.message",  args:
+					["FitBit"])]
+			Utils.reportError("Error while registering FitBit", e)
 		}
 
 		thirdPartyLinkResultHandler(result, "subscribe", "Fitbit")
@@ -279,11 +311,14 @@ class HomeController extends DataController {
 		try {
 			result = fitBitDataService.unsubscribe(userId)
 		} catch (InvalidAccessTokenException e) {
-			Utils.reportError("Error while unregistering FitBit", e)
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("fitbit")
 		} catch (MissingOAuthAccountException e) {
-			Utils.reportError("Error while unregistering FitBit", e)
 			result = [success: false, message: "No subscription found."]
+		} catch (Exception e) {
+			result = [success: false, message: g.message(code: "thirdparty.unsubscribe.failure",  args:
+					["FitBit"])]
+			Utils.reportError("Error while unregistering FitBit", e)
 		}
 
 		thirdPartyLinkResultHandler(result, "unsubscribe", "Fitbit")
@@ -306,10 +341,15 @@ class HomeController extends DataController {
 		try {
 			result = ouraDataService.subscribe(userId)
 		} catch (MissingOAuthAccountException e) {
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("oura")
 		} catch (InvalidAccessTokenException e) {
-			Utils.reportError("Error while registering Oura", e)
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("oura")
+		} catch (Exception e) {
+			result = [success: false, message: g.message(code: "thirdparty.subscribe.failure.message",  args:
+					["Oura"])]
+			Utils.reportError("Error while registering Oura", e)
 		}
 
 		thirdPartyLinkResultHandler(result, "subscribe", "Oura")
@@ -329,11 +369,14 @@ class HomeController extends DataController {
 		try {
 			result = ouraDataService.unsubscribe(userId)
 		} catch (InvalidAccessTokenException e) {
-			Utils.reportError("Error while unregistering Oura", e)
+			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("oura")
 		} catch (MissingOAuthAccountException e) {
-			Utils.reportError("Error while unregistering Oura", e)
 			result = [success: false, message: "No subscription found."]
+		} catch (Exception e) {
+			result = [success: false, message: g.message(code: "thirdparty.unsubscribe.failure",  args:
+					["Oura"])]
+			Utils.reportError("Error while unregistering Oura", e)
 		}
 		thirdPartyLinkResultHandler(result, "unsubscribe", "Oura")
 	}
