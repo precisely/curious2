@@ -98,31 +98,29 @@ class UserController extends LoginController {
 		try {
 			avatar = fileUploaderService.saveFile("avatar", params.avatar)
 		} catch (UploadFailureException uploadFailureException) {
-			log.debug "Upload failed!", uploadFailureException
 			reportError = true
 			throwable = uploadFailureException
 		} catch (FileUploaderServiceException fileUploaderServiceException) {
-			log.debug "FileUploaderService exception", fileUploaderServiceException
 			reportError = true
 			throwable = fileUploaderServiceException
 		} catch (IOException ioException) { // https://docs.oracle.com/javase/tutorial/essential/exceptions/catch.html
-			log.debug "IO Exception", ioException
 			reportError = true
 			throwable = ioException
 		} catch (ProviderNotFoundException providerNotFoundException) {
-			log.debug "ProviderNotFound exception", providerNotFoundException
 			reportError = true
 			throwable = providerNotFoundException
 		}
 
 		if (reportError) {
 			Utils.reportError("Error while saving avatar", throwable)
-			renderJSONPost([success: false, message: g.message(code: "default.not.updated.message", args: ["Avatar"])])
+			renderJSONPost([success: false, message: g.message(code: "default.not.updated.message",
+					args: ["Profile", "image"])])
 			return
 		}
 
 		if (!avatar) {
-			renderJSONPost([success: false, message: g.message(code: "default.not.updated.message", args: ["Avatar"])])
+			renderJSONPost([success: false, message: g.message(code: "default.not.updated.message",
+					args: ["Profile", "image"])])
 			return
 		}
 
