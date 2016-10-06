@@ -120,7 +120,7 @@ class HomeController extends DataController {
 			result = [success: false, message: "No subscription found."]
 		} catch (Exception e) {
 			Utils.reportError("Error while unregistering withings", e)
-			result = [success: false, message: g.message(code: "thirdparty.unsubscribe.failure",  args: ["Withings"])]
+			result = [success: false, message: g.message(code: "thirdparty.unsubscribe.failure.notunlinked",  args: ["Withings"])]
 		}
 
 		thirdPartyLinkResultHandler(result, "unsubscribe", "Withings")
@@ -197,7 +197,7 @@ class HomeController extends DataController {
 		} catch (MissingOAuthAccountException e) {
 			result = [success: false, message: "No subscription found."]
 		} catch (Exception e) {
-			result = [success: false, message: g.message(code: "thirdparty.unsubscribe.failure",  args:
+			result = [success: false, message: g.message(code: "thirdparty.unsubscribe.failure.notunlinked",  args:
 					["Moves"])]
 			Utils.reportError("Error while unregistering Moves", e)
 		}
@@ -243,7 +243,7 @@ class HomeController extends DataController {
 		} catch (MissingOAuthAccountException e) {
 			result = [success: false, message: "No subscription found."]
 		} catch (Exception e) {
-			result = [success: false, message: g.message(code: "thirdparty.unsubscribe.failure",  args:
+			result = [success: false, message: g.message(code: "thirdparty.unsubscribe.failure.notunlinked",  args:
 					["Jawbone"])]
 			Utils.reportError("Error while unregistering Jawbone", e)
 		}
@@ -316,7 +316,7 @@ class HomeController extends DataController {
 		} catch (MissingOAuthAccountException e) {
 			result = [success: false, message: "No subscription found."]
 		} catch (Exception e) {
-			result = [success: false, message: g.message(code: "thirdparty.unsubscribe.failure",  args:
+			result = [success: false, message: g.message(code: "thirdparty.unsubscribe.failure.notunlinked",  args:
 					["FitBit"])]
 			Utils.reportError("Error while unregistering FitBit", e)
 		}
@@ -374,7 +374,7 @@ class HomeController extends DataController {
 		} catch (MissingOAuthAccountException e) {
 			result = [success: false, message: "No subscription found."]
 		} catch (Exception e) {
-			result = [success: false, message: g.message(code: "thirdparty.unsubscribe.failure",  args:
+			result = [success: false, message: g.message(code: "thirdparty.unsubscribe.failure.notunlinked",  args:
 					["Oura"])]
 			Utils.reportError("Error while unregistering Oura", e)
 		}
