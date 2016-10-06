@@ -1719,6 +1719,10 @@ body.tags-displayed .floating-column {
 	top: 10px;
 }
 
+.user-name-radio {
+	width: 200px;
+}
+
 .input-affordance .radio-private-label {
 	right: 46px;
 	top: 25px;

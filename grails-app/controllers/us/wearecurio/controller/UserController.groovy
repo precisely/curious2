@@ -1,11 +1,8 @@
 package us.wearecurio.controller
 
 import com.causecode.fileuploader.FileUploaderService
-import com.causecode.fileuploader.FileUploaderServiceException
 import com.causecode.fileuploader.UFile
-import com.causecode.fileuploader.ProviderNotFoundException
 import com.causecode.fileuploader.UFileMoveHistory
-import com.causecode.fileuploader.UploadFailureException
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.User
@@ -91,28 +88,11 @@ class UserController extends LoginController {
 	 */
 	def saveAvatar() {
 		debug ("UserController.saveAvatar() params:" + params)
-
-		boolean reportError = false
-		Throwable throwable
 		UFile avatar
 		try {
 			avatar = fileUploaderService.saveFile("avatar", params.avatar)
-		} catch (UploadFailureException uploadFailureException) {
-			reportError = true
-			throwable = uploadFailureException
-		} catch (FileUploaderServiceException fileUploaderServiceException) {
-			reportError = true
-			throwable = fileUploaderServiceException
-		} catch (IOException ioException) { // https://docs.oracle.com/javase/tutorial/essential/exceptions/catch.html
-			reportError = true
-			throwable = ioException
-		} catch (ProviderNotFoundException providerNotFoundException) {
-			reportError = true
-			throwable = providerNotFoundException
-		}
-
-		if (reportError) {
-			Utils.reportError("Error while saving avatar", throwable)
+		} catch (Exception e) {
+			Utils.reportError("Error while saving avatar", e)
 			renderJSONPost([success: false, message: g.message(code: "default.not.updated.message",
 					args: ["Profile", "image"])])
 			return
@@ -136,7 +116,8 @@ class UserController extends LoginController {
 				currentUserInstance.reindexAssociations()
 			} catch (Exception e) {
 				Utils.reportError("Unable to change or add avatar for ${currentUserInstance}", e)
-				renderJSONPost([success: false], message: g.message(code: "default.not.updated.message", args: ["Avatar"]))
+				renderJSONPost([success: false], message: g.message(code: "default.not.updated.message",
+						args: ["Profile", "image"]))
 			}
 		}
 	}
