@@ -91,16 +91,19 @@ class UserController extends LoginController {
 		UFile avatar
 		try {
 			avatar = fileUploaderService.saveFile("avatar", params.avatar)
-		} catch (FileNotFoundException | IOException e) {		// https://docs.oracle.com/javase/tutorial/essential/exceptions/catch.html
+		} catch (Exception e) {
 			Utils.reportError("Error while saving avatar", e)
-			renderJSONPost([success: false, message: g.message(code: "default.not.updated.message", args: ["Avatar"])])
+			renderJSONPost([success: false, message: g.message(code: "default.not.updated.message",
+					args: ["Profile", "image"])])
 			return
 		}
 
 		if (!avatar) {
-			renderJSONPost([success: false, message: g.message(code: "default.not.updated.message", args: ["Avatar"])])
+			renderJSONPost([success: false, message: g.message(code: "default.not.updated.message",
+					args: ["Profile", "image"])])
 			return
 		}
+
 		User currentUserInstance = sessionUser()
 
 		UFile.withTransaction {
@@ -113,7 +116,8 @@ class UserController extends LoginController {
 				currentUserInstance.reindexAssociations()
 			} catch (Exception e) {
 				Utils.reportError("Unable to change or add avatar for ${currentUserInstance}", e)
-				renderJSONPost([success: false], message: g.message(code: "default.not.updated.message", args: ["Avatar"]))
+				renderJSONPost([success: false], message: g.message(code: "default.not.updated.message",
+						args: ["Profile", "image"]))
 			}
 		}
 	}

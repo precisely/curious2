@@ -528,6 +528,7 @@ log4j.main = {
 					'grails.app.conf',
 					'grails.app.controllers',
 					'grails.app.services.us.wearecurio',
+					'com.causecode', 
 					'grails.app.services.com.causecode',
 					'grails.app.jobs.com.causecode',
 					'grails.app.jobs.us.wearecurio.jobs']
@@ -549,6 +550,7 @@ log4j.main = {
 		   'grails.app.services.us.wearecurio',
 		   'grails.app.services.com.causecode',
 		   'grails.app.jobs.com.causecode',
+		   'com.causecode',
 		   'grails.app.jobs.us.wearecurio.jobs',
 		   'SecurityFilters'
 	
@@ -641,12 +643,13 @@ oauth {
 }
 
 fileuploader {
+	provider = CDNProvider.GOOGLE
 	avatar {
-		maxSize = 1024 * 1024 * 2 // 2MB
-		allowedExtensions = ["jpg", "jpeg", "gif", "png"]
+		maxSize = 1024 * 1024 * 10 // 10MB
+		allowedExtensions = ["jpg", "jpeg", "gif", "png", "JPG", "JPEG", "GIF", "PNG"]
 		storageTypes = "CDN"
 		container = "curious-avatar"
 		provider = CDNProvider.GOOGLE
-		expirationPeriod = Time.DAY * 60 // 60 Day time in seconds. Note this time should be in seconds.
+		expirationPeriod = Time.DAY * 90 // 90 Day time in seconds. Note this time should be in seconds.
 	}
 }
