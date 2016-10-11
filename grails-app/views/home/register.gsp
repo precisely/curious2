@@ -121,7 +121,7 @@
 						<button type="button" class="close" data-dismiss="modal">
 							<i class="fa fa-times-circle-o"></i>
 						</button>
-						<h4 class="modal-title">Autism, ME/CFS, Or Sleep Tracking Projects</h4>
+						<h4 class="modal-title">Get Notified About Communities Coming Soon</h4>
 					</div>
 					<div class="alert alert-danger hide" role="alert">
 						Some error has occurred while processing the request.
