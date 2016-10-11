@@ -5102,8 +5102,7 @@ input.cropit-image-zoom-input {
 	height: 100%;
 }
 
-.home-logo-wrapper .interested-in-link {
-	color: #f14a42;
-	text-decoration: underline;
-	margin-right: 0px;
+.interested-button {
+	margin-top: 10px;
+	margin-right: 2px;
 }

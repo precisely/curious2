@@ -11,17 +11,11 @@
 				<div class="text-right home-logo-wrapper">
 					<img class="home-logo" src="/images/home/home-logo-wide.jpg" width="583" height="88"/>
 					<p class="logo-text-1">
-						New User Signup.
+						<strong>New User Signup.</strong>
 					</p>
 					<p class="logo-text-1">
 						Sign up if you are part of our autism,<br> ME/CFS, or sleep tracking projects.
 					</p>
-					<p class="logo-text-1">
-						We'll be launching more communities soon.
-					</p>
-					<button class="btn btn-red btn-lg btn-flat" data-toggle="modal" data-target="#tracking-project-request-modal">
-						Interested?
-					</button>
 					<p/>&nbsp;
 					<p/>&nbsp;
 					<p/>&nbsp;
@@ -113,6 +107,17 @@
 				</div>
 			</div>
 			<br> <br> <br> <br> <br> <br> <br> <br> <br> <br>
+		</div>
+		<div class="row">
+			<div class="col-sm-11 col-sm-offset-1" style="margin-top: 50px;">
+				<p class="logo-text-1">
+					We'll be launching more communities soon.
+				</p>
+				<button class="btn btn-red btn-lg btn-flat interested-button" data-toggle="modal"
+						data-target="#tracking-project-request-modal">
+					Interested?
+				</button>
+			</div>
 		</div>
 		<div class="modal fade" id="tracking-project-request-modal">
 			<div class="modal-dialog">

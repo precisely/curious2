@@ -1547,7 +1547,7 @@ class DataController extends LoginController {
 
 		trackingProjectRequest.save(flush: true)
 		emailService.sendMail {
-			to "server@wearecurio.us"
+			to "support@wearecurio.us"
 			from "server@wearecurio.us"
 			subject "[Curious] New Request- Autism, ME/CFS, Or Sleep Tracking Projects"
 			body "Email: $requesterEmail\nTopic: $topic "
