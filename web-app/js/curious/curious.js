@@ -175,6 +175,34 @@ function setUserName(userName) {
 }
 
 $(document).ready(function() {
+	$('#tracking-project-request-form').submit(function(event) {
+		$('#tracking-project-request-modal .submit-request-button').hide();
+		$('#tracking-project-request-modal .wait-form-submit').show();
+		var params = $(this).serializeObject();
+		queuePostJSON('Tracking project request', '/data/requestTrackingProjectData',
+				getCSRFPreventionObject('requestTrackingProjectDataCSRF', params),
+			function(data) {
+				if (!checkData(data))
+					return;
+
+				if (data.success) {
+					$('#tracking-project-request-modal').modal('hide');
+					$('#tracking-project-request-form').trigger("reset");
+					showAlert('Request submitted successfully.');
+				} else {
+					showBootstrapAlert($('.alert-danger'), data.message, 5000);
+				}
+				$('#tracking-project-request-modal .wait-form-submit').hide();
+				$('#tracking-project-request-modal .submit-request-button').show();
+			}, function(xhr) {
+				console.log('xhr:', xhr);
+				showAlert('Internal server error occurred.');
+				$('#tracking-project-request-modal .wait-form-submit').hide();
+				$('#tracking-project-request-modal .submit-request-button').show();
+			});
+		return false;
+	});
+	
 	$('#navigate-left').prop('disabled', true).children('button').text('');
 	$('#survey-carousel-content').on('slid.bs.carousel', '', function() {
 		var $this = $(this);
