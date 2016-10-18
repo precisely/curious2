@@ -54,7 +54,6 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 				DateTimeZone timezone = TimeZoneId.fromId(timeZoneId).toDateTimeZone()
 				DateTime now = new DateTime().withZone(timezone)
 				LocalDateTime localTime = now.toLocalDateTime()
-				log.debug "DeviceIntegrationHourlyJob.execute() Local Hour of the day: " + localTime.getHourOfDay()
 
 				if (localTime.getHourOfDay() % 3 == 0) { // change to polling every 3 hours
 					List<OAuthAccount> withingsAccounts = OAuthAccount.findAllByTimeZoneIdAndTypeId(timeZoneId, ThirdParty.WITHINGS)

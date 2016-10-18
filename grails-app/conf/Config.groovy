@@ -643,13 +643,15 @@ oauth {
 }
 
 fileuploader {
-	provider = CDNProvider.GOOGLE
-	avatar {
-		maxSize = 1024 * 1024 * 10 // 10MB
-		allowedExtensions = ["jpg", "jpeg", "gif", "png", "JPG", "JPEG", "GIF", "PNG"]
-		storageTypes = "CDN"
-		container = "curious-avatar"
+	groups {
 		provider = CDNProvider.GOOGLE
-		expirationPeriod = Time.DAY * 90 // 90 Day time in seconds. Note this time should be in seconds.
+		avatar {
+			maxSize = 1024 * 1024 * 10 // 10MB
+			allowedExtensions = ["jpg", "jpeg", "gif", "png", "JPG", "JPEG", "GIF", "PNG"]
+			storageTypes = "CDN"
+			container = "curious-avatar"
+			provider = CDNProvider.GOOGLE
+			expirationPeriod = Time.DAY * 90 // 90 Day time in seconds. Note this time should be in seconds.
+		}
 	}
 }

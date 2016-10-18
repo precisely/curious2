@@ -95,7 +95,6 @@ abstract class DataService {
 		}
 
 		Entry entryAlreadyExists(Map entryMap) {
-			log.debug "DataRequestContext.entryAlreadyExists() $entriesInPollRange"
 			boolean entriesAvailableInPollRange = entriesInPollRange
 			Entry entry
 			if (!entriesInPollRange || entriesInPollRange.last().date.compareTo(entryMap.date) < 0) {
@@ -236,11 +235,13 @@ abstract class DataService {
 			Utils.reportError("Error while getting reponse for data service", e)
 		}
 
-		log.debug "[$currentTime] Recieved response for [$provider] with response code: [$response.code] & body: " +
-				"[${response.body}]"
+		log.debug "[$currentTime] Recieved response for [$provider] with response code: [$response.code]"
 
 		if (response.code == 401) {
 			throw new InvalidAccessTokenException(provider)
+		} else if ((response.code - 200) >= 100 || (response.code - 200) < 0) {
+			// Logging response body only if the response code is non 200
+			log.debug "Response body received: $responseBody"
 		}
 
 		JSONElement parsedResponse

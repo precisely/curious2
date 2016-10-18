@@ -685,8 +685,8 @@ class MigrationService {
 		tryMigration("Change UFile path type to longText") {
 			sql("ALTER TABLE `ufile` MODIFY `path` TEXT NOT NULL")
 		}
-		tryMigration("Move all avatar files to Google Cloud Storage") {
-			String containerName = grailsApplication?.config?.fileuploader?.avatar?.container
+		tryMigration("Move all avatar files from RackSpace to Google Cloud Storage") {
+			String containerName = grailsApplication?.config?.fileuploader?.groups?.avatar?.container
 			if (containerName) {
 				if (Environment.current == Environment.DEVELOPMENT) {
 					containerName = containerName + "-development"
