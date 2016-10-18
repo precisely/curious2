@@ -14,6 +14,7 @@ import us.wearecurio.data.UserSettings
 import us.wearecurio.model.*
 import us.wearecurio.model.Model.Visibility
 import us.wearecurio.security.NoAuth
+import us.wearecurio.services.EmailService
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.EntryParserService.ParseAmount
 import us.wearecurio.services.SearchService
@@ -28,6 +29,7 @@ class DataController extends LoginController {
 
 	EntryParserService entryParserService
 	SearchService searchService
+	EmailService emailService
 
 	static debug(str) {
 		log.debug(str)
@@ -1519,5 +1521,37 @@ class DataController extends LoginController {
 			Utils.reportError("Error while saving device entries state", e)
 			renderJSONPost([success: false, message: e.message])
 		}
+	}
+
+	@NoAuth
+	def requestTrackingProjectData(String requesterEmail, String topic) {
+		if (!requesterEmail) {
+			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Email"])])
+			return
+		}
+
+		if (!topic) {
+			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Health topic"])])
+			return
+		}
+
+		TrackingProjectRequest trackingProjectRequest = new TrackingProjectRequest(email: requesterEmail, topic: topic)
+
+		if (!trackingProjectRequest.validate()) {
+			// Avoiding encoding here because the special character `@` in email, which is being passed as argument
+			// to the message code, will be replaced after encoding
+			renderJSONPost([success: false, message: g.message(encodeAs: "none", code: "default.invalid.email.message",
+					args: [requesterEmail])])
+			return
+		}
+
+		trackingProjectRequest.save(flush: true)
+		emailService.sendMail {
+			to "support@wearecurio.us"
+			from "server@wearecurio.us"
+			subject "[Curious] New Request- Autism, ME/CFS, Or Sleep Tracking Projects"
+			body "Email: $requesterEmail\nTopic: $topic "
+		}
+		renderJSONPost([success: true])
 	}
 }

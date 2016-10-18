@@ -1177,5 +1177,60 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert controller.response.text.contains("<div class=\"item active\">")
 		assert !controller.response.text.contains("qcode3")
 	}
-	/**/
+
+	@Test
+	void "Test requestTrackingProjectData"() {
+		when: "email is blank in parameters"
+		controller.params["requesterEmail"] = ""
+		controller.params["topic"] = "Deep Sleep"
+		assert !TrackingProjectRequest.count()
+		controller.requestTrackingProjectData()
+
+		then: "error should be thrown with proper error message"
+		assert !controller.response.json.success
+		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Email"] as Object[],
+				null)
+		assert !TrackingProjectRequest.count()
+
+		controller.response.reset()
+
+		when: "topic is blank"
+		controller.params["requesterEmail"] = "selena@gomz.com"
+		controller.params["topic"] = ""
+		!TrackingProjectRequest.count()
+		controller.requestTrackingProjectData()
+
+		then: "error should be thrown with proper error message"
+		assert !controller.response.json.success
+		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Health topic"] as Object[],
+				null)
+		assert !TrackingProjectRequest.count()
+
+		controller.response.reset()
+
+		when: "email is not of valid email type"
+		controller.params["requesterEmail"] = "selena@"
+		controller.params["topic"] = "Blood pressure"
+		assert !TrackingProjectRequest.count()
+		controller.requestTrackingProjectData()
+
+		then: "error should be thrown with proper error message"
+		assert !controller.response.json.success
+		assert controller.response.json.message == messageSource.getMessage("default.invalid.email.message", ["selena@"] as
+				Object[], null)
+		assert !TrackingProjectRequest.count()
+
+		controller.response.reset()
+
+		when: "request parameters are fine"
+		controller.params["requesterEmail"] = "selena@gomz.com"
+		controller.params["topic"] = "Blood pressure"
+		assert !TrackingProjectRequest.count()
+		controller.requestTrackingProjectData()
+
+		then: "an instance of TrackingProjectRequest is created"
+		assert controller.response.json.success
+		assert TrackingProjectRequest.count() == 1
+		assert TrackingProjectRequest.first().email == "selena@gomz.com"
+	}
 }

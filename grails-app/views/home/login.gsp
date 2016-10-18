@@ -42,6 +42,9 @@
 				<p class="logo-text-2">
 					<strong>We’ve all got questions.</strong>
 				</p>
+				<p class="logo-text-1">
+					Join our autism, ME/CFS, or sleep tracking projects.
+				</p>
 				<div class="get-started-buttons">
 					<a href="http://bit.ly/curious-app-store" class="ios-app-link">
 						<img src="/images/appstore.png">
