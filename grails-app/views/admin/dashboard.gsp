@@ -24,6 +24,9 @@
 				<li>
 					<g:link controller="admin" action="listSurveyQuestions">Survey Questions</g:link>
 				</li>
+				<li>
+					<g:link controller="admin" action="exportStudy">Export Study</g:link>
+				</li>
 			</ul>
 </body>
 </html>

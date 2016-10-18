@@ -2,6 +2,7 @@ package us.wearecurio.server
 
 import org.apache.commons.logging.LogFactory
 import us.wearecurio.model.Model
+import us.wearecurio.utility.Utils
 
 class BackgroundTask implements Runnable {
 	Closure c

@@ -153,6 +153,7 @@ oauth {
 
 elasticSearch {
 	datastoreImpl = 'hibernateDatastore'
+	bulkIndexOnStartup = false
 }
 
 environments {
