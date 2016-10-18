@@ -88,7 +88,7 @@ grails.project.dependency.resolution = {
 		runtime ':elasticsearch:0.0.4.2'
 		compile ":quartz:1.0.2"
 		// File Uploader Plugin
-		compile "com.causecode.plugins:file-uploader:2.5.1"
+		compile "com.causecode.plugins:file-uploader:2.5.2"
 		//compile ":spring-security-core:2.0-RC5"
 		//compile ":searchable:0.6.9"
 		
