@@ -32,7 +32,7 @@ class HumanDataService {
 	static final BigDecimal KG_TO_POUNDS = new BigDecimal(220462, 5)
 	static final BigDecimal MM_TO_FEET = new BigDecimal(328084, 8)
 	static final String COMMENT = "(Human-%s)"
-	static final String SET_NAME = "human %s import"
+	static final String SET_NAME = "Human %s"
 
 	MovesDataService movesDataService
 	def oauthService

@@ -33,9 +33,9 @@ class FitBitDataService extends DataService {
 	static final String API_VERSION = "1"
 	static final String BASE_URL = "https://api.fitbit.com/$API_VERSION/user%s"
 	static final String COMMENT = "(FitBit)"
-	static final String SET_NAME = "fitbit import"
+	static final String SET_NAME = "FitBit"
 	static final String SOURCE_NAME = "FitBit Data"
-	
+
 	static transactional = true
 
 	FitBitTagUnitMap fitBitTagUnitMap = new FitBitTagUnitMap()
@@ -189,7 +189,7 @@ class FitBitDataService extends DataService {
 		
 		String accountId = account.accountId
 		String forDate = formatter.format(forDay)
-		String setName = SET_NAME + " " + forDate
+		String setName = SET_NAME
 		String requestUrl = String.format(BASE_URL, "/${accountId}/sleep/date/${forDate}.json")
 
 		EntryCreateMap creationMap = new EntryCreateMap()
@@ -210,8 +210,8 @@ class FitBitDataService extends DataService {
 
 			String oldSetName = logEntry.logId	// Backward support
 
-			Entry.executeUpdate("update Entry e set e.userId = null where e.setIdentifier in :setIdentifiers and e.userId = :userId",
-					[setIdentifiers: [Identifier.look(setName), Identifier.look(oldSetName)], userId: account.userId])
+			Entry.executeUpdate("update Entry e set e.userId = null where e.setIdentifier = :setIdentifier and e.userId = :userId",
+					[setIdentifier: Identifier.look(oldSetName), userId: account.userId])
 
 			fitBitTagUnitMap.buildEntry(creationMap, stats, "duration", logEntry.duration, userId, timeZoneIdNumber, entryDate, COMMENT, setName, context)
 			fitBitTagUnitMap.buildEntry(creationMap, stats, "awakeningsCount", logEntry.awakeningsCount, userId, timeZoneIdNumber, entryDate, COMMENT, setName, context)

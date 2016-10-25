@@ -20,11 +20,10 @@ class TagUnitMapIntegrationSpec extends IntegrationSpec {
 
     void "test setIdentifierToSource method"() {
         expect: "Following lines should be true"
-        TagUnitMap.setIdentifierToSource("moves import") == "Moves Data"
-        TagUnitMap.setIdentifierToSource("moves import 03-16-2016") == "Moves Data"
-        TagUnitMap.setIdentifierToSource("WIa1376820000") == "Withings Data"
-        TagUnitMap.setIdentifierToSource("OURAac2015-12-22 00:00:00.0-1") == "Oura Data"
-        TagUnitMap.setIdentifierToSource("fitbit import 2015-08-20") == "FitBit Data"
-        TagUnitMap.setIdentifierToSource("JUP 2015-08-20") == "Jawbone Up Data"
+        TagUnitMap.setIdentifierToSource("Moves") == "Moves Data"
+        TagUnitMap.setIdentifierToSource("Withings") == "Withings Data"
+        TagUnitMap.setIdentifierToSource("Oura") == "Oura Data"
+        TagUnitMap.setIdentifierToSource("FitBit") == "FitBit Data"
+        TagUnitMap.setIdentifierToSource("Jawbone Up") == "Jawbone Up Data"
     }
 }

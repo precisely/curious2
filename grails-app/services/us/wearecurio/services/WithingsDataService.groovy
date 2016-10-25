@@ -29,7 +29,7 @@ class WithingsDataService extends DataService {
 	static transactional = false
 	static final String BASE_URL = "https://wbsapi.withings.net/v2"
 	static final String COMMENT = "(Withings)"
-	static final String SET_NAME = "WI"
+	static final String SET_NAME = "Withings"
 	static final String SOURCE_NAME = "Withings Data"
 
 	static PriorityBlockingQueue<IntraDayQueueItem> intraDayQueue = new PriorityBlockingQueue<IntraDayQueueItem>(600)
@@ -84,9 +84,6 @@ class WithingsDataService extends DataService {
 		startDate = startDate ?: earlyStartDate
 		log.debug "WithingsDataService.getData() start date:" + startDate
 
-		if (refreshAll) {
-			unsetAllOldEntries(userId, SET_NAME)
-		}
 		context.initEntrylist()
 
 		Integer timeZoneId = getTimeZoneId(account)
@@ -128,7 +125,7 @@ class WithingsDataService extends DataService {
 
 			for (group in groups) {
 				Date date = new Date(group.date * 1000L)
-				setName = SET_NAME + "m" + date
+				setName = SET_NAME
 				JSONArray measures = group.measures
 
 				for (measure in measures) {
@@ -243,7 +240,7 @@ class WithingsDataService extends DataService {
 				datesWithSummaryData.push(entryDate)
 			}
 			entryDate = new Date(entryDate.getTime() + 12 * 60 * 60000L) // move activity time 12 hours later to make data appear at noon
-			setName = SET_NAME + "a" + entryDate.getTime()/1000
+			setName = SET_NAME
 
 			Map args = [isSummary: true] // Indicating that these entries are summary entries
 
@@ -321,16 +318,7 @@ class WithingsDataService extends DataService {
 			log.debug("WithingsDataService.getDataIntraDayActivity: " + timestamp)
 			def entryTimestamp = Long.parseLong(timestamp)
 			entryDate = new Date(entryTimestamp * 1000L)
-			setName = SET_NAME + "i" + timestamp
-			try {
-				DatabaseService.retry(account) {
-					unsetOldEntries(userId, setName, context.alreadyUnset)
-				}
-			} catch (org.springframework.dao.CannotAcquireLockException le) {
-				log.debug("WithingsDataService.getDataIntraDayActivity: CannotAcquireLockException")
-				Utils.reportError("WithingsDataService error", le)
-				le.printStackTrace()
-			}
+			setName = SET_NAME
 			log.debug("WithingsDataService.getDataIntraDayActivity: Starting to aggregate data")
 
 			if (data.size() > 1) {

@@ -127,12 +127,12 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		userEntries[0].baseTag.description == "measurement"
 		userEntries[0].tag.description == "measurement [amount]"
 		userEntries[0].amount.setScale(2, BigDecimal.ROUND_HALF_UP) == 124.0g
-		userEntries[0].setIdentifier.toString() == "JUP body 20140820"
+		userEntries[0].setIdentifier.toString() == "Jawbone Up"
 
 		userEntries[1].baseTag.description == "measurement"
 		userEntries[1].tag.description == "measurement [amount]"
 		userEntries[1].amount.setScale(2, BigDecimal.ROUND_HALF_UP) == 124.0g
-		userEntries[1].setIdentifier.toString() == "JUP body 20140815"
+		userEntries[1].setIdentifier.toString() == "Jawbone Up"
 	}
 
 	void "test get data body if response is not success"() {

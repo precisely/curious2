@@ -74,18 +74,18 @@ abstract class DataService {
 		List<Entry> entriesInPollRange = null
 		Integer totalEntries, currentOffset = 0, max = 1000
 		Date pollStartDate, pollEndDate
-		String sourceName
+		List<Identifier> setIdentifiers
 		Long pollingUserId
 
 		DataRequestContext() {
 			alreadyUnset = new HashSet<String>()
 		}
 
-		DataRequestContext(Date startDate, Date endDate, String source, Long userId) {
+		DataRequestContext(Date startDate, Date endDate, List<Identifier> setIdentifiers, Long userId) {
 			alreadyUnset = new HashSet<String>()
 			pollStartDate = startDate
 			pollEndDate = endDate ?: DateUtils.getEndOfTheDay()
-			sourceName = source
+			this.setIdentifiers = setIdentifiers
 			pollingUserId = userId
 		}
 
@@ -113,7 +113,7 @@ abstract class DataService {
 			if (entriesInPollRange && currentOffset >= totalEntries) {
 				return false
 			}
-			Map resultSet = Entry.getImportedEntriesWithinRange(pollStartDate, pollEndDate, sourceName, pollingUserId,
+			Map resultSet = Entry.getImportedEntriesWithinRange(pollStartDate, pollEndDate, setIdentifiers, pollingUserId,
 					max, currentOffset)
 			entriesInPollRange = resultSet.entries
 			totalEntries = resultSet.totalEntries
@@ -520,7 +520,8 @@ abstract class DataService {
 
 		try {
 			getDataDefault(account, dateToPollFrom, pollEndDate, false,
-					new DataRequestContext(dateToPollFrom, pollEndDate, COMMENT, account.userId))
+					new DataRequestContext(dateToPollFrom, pollEndDate, COMMENT.contains("Human") ? Identifier.findAllByValueLike("Human %") :
+					[Identifier.findByValue(SET_NAME)], account.userId))
 		} catch (InvalidAccessTokenException e) {
 			log.warn "Token expired while polling for $account"
 			account.setAccountFailure()

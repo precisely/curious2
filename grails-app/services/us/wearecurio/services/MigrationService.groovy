@@ -154,6 +154,32 @@ class MigrationService {
 		return false
 	}
 
+	public void updateThirdPartyEntryIdentifiers(String thirdParty) {
+		log.debug "Update all entries to set new Identifier for: $thirdParty"
+		sql("DELETE FROM identifier WHERE value='$thirdParty'")
+		sql("INSERT INTO identifier (value) values ('$thirdParty')")
+
+		int totalEntries = Entry.countByComment("($thirdParty)")
+		Long identifierId = Identifier.findByValue("$thirdParty").id
+		while (totalEntries > 0) {
+			Thread.sleep(3000)
+			sql("UPDATE entry SET set_identifier=${identifierId}, set_name='$thirdParty' WHERE comment='" +
+					"($thirdParty)' AND (set_identifier!=${identifierId} OR set_identifier IS NULL) ORDER BY date " +
+					"DESC LIMIT 20000")
+			totalEntries -= 20000
+		}
+	}
+
+	public void deleteThirdPartyEntryIdentifiers(String identifierValue) {
+		log.debug "Delete all Identifiers with value like: $identifierValue"
+		int totalIdentifiers = Identifier.countByValueLike("$identifierValue")
+		while (totalIdentifiers > 0) {
+			Thread.sleep(3000)
+			sql("DELETE FROM identifier WHERE value LIKE BINARY '$identifierValue' LIMIT 20000")
+			totalIdentifiers -= 20000
+		}
+	}
+
 	def doMigrations() {
 		if (Environment.getCurrent().equals(Environment.TEST))
 			return; // don't run in test environment
@@ -871,7 +897,7 @@ class MigrationService {
 			oauthAccountService.refreshAll()
 		}
 
-		tryMigration("Remove all notifications from Oura test dgdfgdfr") {
+		tryMigration("Remove all notifications from Oura test") {
 			int totalNotifications = ThirdPartyNotification.countByTypeId(ThirdParty.OURA)
 			while (totalNotifications > 0) {
 				Thread.sleep(1000)
@@ -879,5 +905,30 @@ class MigrationService {
 				totalNotifications -= 10000
 			}
 		}
+		tryMigration("Remove all Withings Identifiers and update associated entries") {
+			updateThirdPartyEntryIdentifiers('Withings')
+			deleteThirdPartyEntryIdentifiers('WI%')
+		}
+
+		tryMigration("Remove all Oura Identifiers and update associated entries") {
+			updateThirdPartyEntryIdentifiers('Oura')
+			deleteThirdPartyEntryIdentifiers('OURA%')
+		}
+
+		tryMigration("Remove all Fitbit Identifiers and dfgdf update associated entries") {
+			updateThirdPartyEntryIdentifiers('FitBit')
+			deleteThirdPartyEntryIdentifiers('fitbit%')
+		}
+
+		tryMigration("Remove all Jawbone Up Identifiers and update associated entries") {
+			updateThirdPartyEntryIdentifiers('Jawbone Up')
+			deleteThirdPartyEntryIdentifiers('JUP%')
+		}
+
+		tryMigration("Remove all Moves Identifiers and update associated entries") {
+			updateThirdPartyEntryIdentifiers('Moves')
+			deleteThirdPartyEntryIdentifiers('moves%')
+		}
+
 	}
 }

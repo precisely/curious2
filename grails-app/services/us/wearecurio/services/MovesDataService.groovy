@@ -28,9 +28,8 @@ class MovesDataService extends DataService {
 
 	static final String BASE_URL = "https://api.moves-app.com/api/1.1%s"
 	static final String COMMENT = "(Moves)"
-	static final String SET_NAME = "moves import"
+	static final String SET_NAME = "Moves"
 	static final String SOURCE_NAME = "Moves Data"
-
 	MovesTagUnitMap tagUnitMap = new MovesTagUnitMap()
 
 	MovesDataService() {
@@ -65,7 +64,7 @@ class MovesDataService extends DataService {
 
 		log.info "Polling account with userId [$userId]"
 
-		String setName = SET_NAME + " " + startDate.format("MM-dd-yyyy")
+		String setName = SET_NAME
 		Map args = [setName: setName, comment: COMMENT]
 
 		Token tokenInstance = account.tokenInstance
@@ -84,8 +83,6 @@ class MovesDataService extends DataService {
 			return [success: false]
 		}
 
-		Identifier oldSetIdentifier = Identifier.look(SET_NAME)
-
 		parsedResponse.each { daySummary ->
 			Date currentDate = format.parse(daySummary.date)
 			log.debug "Processing moves api summary for userId [$account.userId] for date: $daySummary.date"
@@ -93,15 +90,6 @@ class MovesDataService extends DataService {
 			if (!daySummary["segments"]?.asBoolean()) {
 				return
 			}
-
-			/**
-			 * Checking date > start date-time (exa. 2013-12-13 00:00:00) and date < (start date-tim + 1)
-			 * instead of checking for date <= end data-time (exa. 2013-12-13 23:59:59)
-			 *
-			 * Using old set name for backward compatibility
-			 */
-			Entry.executeUpdate("update Entry e set e.userId = 0L where e.userId = :userId and e.setIdentifier = :identifier and e.date >= :currentDateA and e.date < :currentDateB",
-					[userId:userId, identifier: oldSetIdentifier, currentDateA:currentDate, currentDateB: currentDate + 1])
 
 			List<JSONObject> activities = []
 			List<String> allowedTypes = ["walking", "running", "cycling"]

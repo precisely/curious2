@@ -51,7 +51,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		TimeZone.setDefault(serverTimezone)
 	}
 
-	void "Test subscribe sucess"() {
+	void "Test subscribe success"() {
 		when:
 		Map result = ouraDataService.subscribe(userId)
 
@@ -129,7 +129,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		List<Entry> entryList = Entry.getAll()
 		assert entryList[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
 		assert entryList[0].description == "sleep [time: total]"
-		assert entryList[0].setIdentifier.value.startsWith("OURA sleep ")
+		assert entryList[0].setIdentifier.value == "Oura"
 		assert entryList[6].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
 	}
 
@@ -150,8 +150,8 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				"bread 2pm", null, null, new Date(), true), new EntryStats())
 
 		when: "When first time entries are imported"
-		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext(date, null, "(Oura)",
-				account.userId))
+		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext(date, null,
+				[Identifier.look("Oura")], account.userId))
 
 		then: "Then 3 sleep entries should be created (and one simple entry)"
 		assert Entry.getCount() == 4
@@ -163,12 +163,12 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[0].userId == account.userId
 
 		assert entryList[1].description == "sleep [time: total]"
-		assert entryList[1].setIdentifier.value.startsWith("OURA sleep ")
+		assert entryList[1].setIdentifier.value == "Oura"
 		assert entryList[1].userId == account.userId
 
 		when: "When same data is re-imported again"
-		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext(date, null, "(Oura)",
-				account.userId))
+		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext(date, null,
+				[Identifier.look("Oura")], account.userId))
 
 		then: "Then previously imported entries from Oura should not be unset and no new entries should be created"
 		println "entries: ${Entry.findAll()}"
@@ -181,75 +181,8 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert newEntryList[0].userId == account.userId
 
 		assert newEntryList[1].description == "sleep [time: total]"
-		assert newEntryList[1].setIdentifier.value.startsWith("OURA sleep ")
+		assert newEntryList[1].setIdentifier.value == "Oura"
 		assert newEntryList[1].userId == account.userId
-	}
-
-	void "test getDataSleep when same entries are imported from polling with old set name"() {
-		given:
-		String mockedResponseData = """{"data":[{"dateCreated":"2015-11-04T12:42:45.168Z","timeZone":"Europe/Stockholm",
-				"user":3,"type":"sleep","eventTime":1434440700,"data":{"bedtime_m":510,"sleep_score":86,"deep_m":160}}]}"""
-		ouraDataService.oauthService = [
-				getOuraResource: { token, url, p, header ->
-					return new Response(new MockedHttpURLConnection(mockedResponseData))
-				}
-		]
-
-		// Given one simple entry
-		Entry.create(account.userId, entryParserService.parse(new Date(), "America/Los_Angeles",
-				"bread 2pm", null, null, new Date(), true), new EntryStats())
-
-		when:
-		// When first time entries are imported
-		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
-
-		then:
-		// Then 3 sleep entries should be created (and one simple entry)
-		assert Entry.getCount() == 4
-		assert Entry.countByUserId(account.userId) == 4
-
-		List<Entry> entryList = Entry.getAll()
-
-		when:
-		(1..3).each { index ->
-			// Update the set name to use old set names, so that we can simulate data for the test
-			entryList[index].setIdentifier = Identifier.look(ouraDataService.getOldSetName("s", new Date()))
-			Utils.save(entryList[index], true)
-		}
-
-		then:
-		assert entryList[0].description == "bread"
-		assert entryList[0].setIdentifier == null
-		assert entryList[0].userId == account.userId
-
-		assert entryList[1].description == "sleep [time: total]"
-		assert entryList[1].refresh().setIdentifier.value.startsWith("OURAs")
-		assert entryList[1].userId == account.userId
-
-		when:
-		// When same data is re-imported again with polling for 4 days of interval
-		ouraDataService.getDataSleep(account, new Date() - 2, new Date() + 2, false, new DataRequestContext())
-
-		then:
-		// Then previously imported entries (with old set name) from Oura should be unset
-		assert Entry.getCount() == 7
-		assert Entry.countByUserId(account.userId) == 4
-
-		List<Entry> newEntryList = Entry.getAll()
-		newEntryList*.refresh()
-		
-		newEntryList[0].userId == account.userId
-		// User id in 3 older entries will be unset
-		newEntryList[1].id == entryList[1].id
-		newEntryList[1].userId == null
-		newEntryList[2].id == entryList[2].id
-		newEntryList[2].userId == null
-		newEntryList[3].id == entryList[3].id
-		newEntryList[3].userId == null
-		// And three new entries will be created
-		newEntryList[4].userId == account.userId
-		newEntryList[5].userId == account.userId
-		newEntryList[6].userId == account.userId
 	}
 
 	void "Test getDataExercise with failure status code"() {
@@ -346,7 +279,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[0].description == "sedentary exercise [time]"
 		assert entryList[0].amount == 0.333333333		// Minutes converted to hours
 		assert entryList[0].timeZoneId == TimeZoneId.look("America/New_York").id
-		assert entryList[0].setIdentifier.value.startsWith("OURA exercise ")
+		assert entryList[0].setIdentifier.value == "Oura"
 
 		assert entryList[1].amount == 0.166666667
 		assert entryList[1].description == "light exercise [time]"
@@ -362,7 +295,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 
 		assert entryList[5].amount == 0.083333333
 		assert entryList[5].description == "light exercise [time]"
-		assert entryList[0].setIdentifier.value.startsWith("OURA exercise ")
+		assert entryList[0].setIdentifier.value == "Oura"
 	}
 
 	void "Test getDataExercise when contiguous entries do not get merged because of large gap between them"() {
@@ -393,7 +326,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryList[0].amount == 0.250000000
 		assert entryList[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
 		assert entryList[0].comment == "(Oura)"
-		assert entryList[0].setIdentifier.value.startsWith("OURA exercise ")
+		assert entryList[0].setIdentifier.value == "Oura"
 
 		assert entryList[1].description == "sedentary exercise [time]"
 		assert entryList[1].amount == 0.166666667
@@ -462,7 +395,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		Entry entry2 = Entry.last()
 		assert entry1.timeZoneId == TimeZoneId.look("Europe/Stockholm").id
 		assert entry2.timeZoneId == TimeZoneId.look("Asia/Kolkata").id
-		assert entry1.setIdentifier.value.startsWith("OURA activity ")
+		assert entry1.setIdentifier.value == "Oura"
 	}
 
 	void "Test ouraNotificationHandler success when request body is passed as string"() {

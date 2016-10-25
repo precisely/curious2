@@ -15,6 +15,7 @@ import us.wearecurio.utility.Utils
 class Twenty3AndMeDataService extends DataService {
 
 	static final String COMMENT = "Twenty3AndMe"
+	static final String SET_NAME = "Twenty3AndMe"
 	Twenty3AndMeDataService() {
 		profileURL = "https://api.23andme.com/1/names/"
 		provider = "Twenty3AndMe"
