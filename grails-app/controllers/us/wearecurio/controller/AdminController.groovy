@@ -316,4 +316,10 @@ class AdminController extends LoginController {
 		}
 		renderJSONPost([success: true])
 	}
+
+	def listDumpFileDetails() {
+		List dumpFileInstances = ThirdPartyDataDump.findAll()
+		Map model = [dumpFileInstances: dumpFileInstances]
+		model
+	}
 }

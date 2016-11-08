@@ -654,5 +654,13 @@ fileuploader {
 			provider = CDNProvider.GOOGLE
 			expirationPeriod = Time.DAY * 90 // 90 Day time in seconds. Note this time should be in seconds.
 		}
+		dumpFile {
+			maxSize = 1024 * 1024 * 100 // 100MB
+			allowedExtensions = ["zip", "ZIP"]
+			storageTypes = "CDN"
+			container = "wac-datadump"
+			provider = CDNProvider.GOOGLE
+			expirationPeriod = Time.DAY * 90 // 90 Day time in seconds. Note this time should be in seconds.
+		}
 	}
 }

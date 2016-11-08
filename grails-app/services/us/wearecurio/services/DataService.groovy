@@ -6,6 +6,7 @@ import groovy.transform.Synchronized
 import us.wearecurio.datetime.DateUtils
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
+import us.wearecurio.model.ThirdPartyDataDump
 
 import javax.annotation.PostConstruct
 
@@ -25,6 +26,7 @@ import us.wearecurio.model.User
 import us.wearecurio.utility.Utils
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
+import java.util.zip.ZipFile
 
 abstract class DataService {
 
@@ -699,5 +701,57 @@ abstract class DataService {
 	 */
 	void checkSyncHealth() {
 		return
+	}
+
+	static void dumpFileProcessor() {
+		List<ThirdPartyDataDump> unProcessedDumps = ThirdPartyDataDump.withCriteria {
+			'in'("status", [Status.UNPROCESSED, Status.PARTIALLYPROCESSED])
+			lt("attemptCount", 4)
+		}
+
+		log.debug "DataService.dumpFileProcessor(): Found ${unProcessedDumps.size()} files to process"
+
+		unProcessedDumps.each { thirdPartyDataDump->
+			def thisUrl = new URL(thirdPartyDataDump.dumpFile.path);
+			OutputStream outputStream = null
+			InputStream inputStream = null
+			try {
+				URLConnection connection = thisUrl.openConnection();
+				inputStream = connection.inputStream
+				File dumpFile = new File("tempfile.zip")
+
+				outputStream = new FileOutputStream(dumpFile);
+
+				int read = 0;
+				byte[] bytes = new byte[1024];
+
+				while ((read = inputStream.read(bytes)) != -1) {
+					outputStream.write(bytes, 0, read);
+				}
+				def zipFile = new ZipFile(dumpFile)
+
+				getDataServiceForTypeId(thirdPartyDataDump.type).processDump(zipFile, thirdPartyDataDump)
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				if (inputStream != null) {
+					try {
+						inputStream.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				if (outputStream != null) {
+					try {
+						// outputStream.flush();
+						outputStream.close();
+					} catch (IOException e) {
+
+					}
+				}
+			}
+
+		}
+
 	}
 }

@@ -26,7 +26,7 @@ $(window).load(function() {
 	$('#image-cropper').cropit({ 
 		imageBackground: true,
 		smallImage: 'stretch',
-		maxZoom: 3,
+		maxZoom: 3
 	});
 
 	$( "#updateUserPreferences" ).keyup(function(e) {
@@ -42,8 +42,8 @@ $(window).load(function() {
 			showAlert('Please choose a file to upload.');
 			return;
 		}
-		$('#avatarModal .export').hide()
-		$('#avatarModal .wait-form-submit').show()
+		$('#avatarModal .export').hide();
+		$('#avatarModal .wait-form-submit').show();
 		var blob = dataURItoBlob(imageData);
 
 		var formData = new FormData();
@@ -60,11 +60,11 @@ $(window).load(function() {
 				showAlert(data.message);
 			}
 			$('#avatarModal').modal('hide');
-			$('#avatarModal .wait-form-submit').hide()
+			$('#avatarModal .wait-form-submit').hide();
 			$('#avatarModal .export').show()
 		}, function(data) {
 			showAlert('Internal server error occurred.');
-			$('#avatarModal .wait-form-submit').hide()
+			$('#avatarModal .wait-form-submit').hide();
 			$('#avatarModal .export').show()
 		}, 0, httpArgs);
 	});

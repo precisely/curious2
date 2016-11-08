@@ -19,6 +19,9 @@
 						<g:link controller="analyticsTask" action="index">Analytics Jobs</g:link>
 				</li>
 				<li>
+					<g:link controller="admin" action="listDumpFileDetails">Dump Files</g:link>
+				</li>
+				<li>
 					<g:link controller="admin" action="survey">Survey</g:link>
 				</li>
 				<li>

@@ -176,8 +176,7 @@ function setUserName(userName) {
 
 $(document).ready(function() {
 	$('#tracking-project-request-form').submit(function(event) {
-		$('#tracking-project-request-modal .submit-request-button').hide();
-		$('#tracking-project-request-modal .wait-form-submit').show();
+		showWaitingSpinner('tracking-project-request-modal');
 		var params = $(this).serializeObject();
 		queuePostJSON('Tracking project request', '/data/requestTrackingProjectData',
 				getCSRFPreventionObject('requestTrackingProjectDataCSRF', params),
@@ -192,15 +191,49 @@ $(document).ready(function() {
 				} else {
 					showBootstrapAlert($('.alert-danger'), data.message, 5000);
 				}
-				$('#tracking-project-request-modal .wait-form-submit').hide();
-				$('#tracking-project-request-modal .submit-request-button').show();
+				hideWaitingSpinner('tracking-project-request-modal');
 			}, function(xhr) {
 				console.log('xhr:', xhr);
 				showAlert('Internal server error occurred.');
-				$('#tracking-project-request-modal .wait-form-submit').hide();
-				$('#tracking-project-request-modal .submit-request-button').show();
+				hideWaitingSpinner('tracking-project-request-modal');
 			});
 		return false;
+	});
+
+	$('#upload-dump-form').submit(function(event) {
+		event.preventDefault();
+		showWaitingSpinner('upload-data-dump-modal');
+		var params = new FormData($('#upload-dump-form')[0]);
+
+		if (!params.get('dumpFile').name) {
+			hideWaitingSpinner('upload-data-dump-modal');
+			return
+		}
+		if (params.get('dumpFile').type != 'application/zip') {
+			showBootstrapAlert($('.alert-danger'), 'Uploaded file is not a zip file.', 5000);
+			hideWaitingSpinner('upload-data-dump-modal');
+			return
+		}
+
+		queuePostJSON('Dump file upload', '/user/uploadDataDump',
+			params,
+			function(data) {
+				if (!checkData(data))
+					return;
+
+				if (data.success) {
+					$('#upload-data-dump-modal').modal('hide');
+					$('#upload-data-dump-modal').trigger('reset');
+					showAlert('Successfully uploaded file to the server.');
+				} else {
+					showBootstrapAlert($('.alert-danger'), data.message, 5000);
+				}
+				hideWaitingSpinner('upload-data-dump-modal');
+			}, function(xhr) {
+				console.log('xhr:', xhr);
+				showAlert('Internal server error occurred.');
+				hideWaitingSpinner('upload-data-dump-modal');
+			}, null, {contentType: false, processData: false});
 	});
 	
 	$('#navigate-left').prop('disabled', true).children('button').text('');
@@ -331,6 +364,16 @@ $(document).ready(function() {
 	});
 
 });
+
+function showWaitingSpinner(parentContainerID) {
+	$('#' + parentContainerID + ' .submit-request-button').hide();
+	$('#' + parentContainerID + ' .wait-form-submit').show();
+}
+
+function hideWaitingSpinner(parentContainerID) {
+	$('#' + parentContainerID + ' .wait-form-submit').hide();
+	$('#' + parentContainerID + ' .submit-request-button').show();
+}
 
 function submitExerciseForm(callback) {
 	$('#helpWizardForm .next-question').hide();

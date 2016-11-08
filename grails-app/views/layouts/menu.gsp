@@ -14,7 +14,7 @@
 <script type="text/javascript" src="/js/curious/interestTagList.js?ver=22"></script>
 <script type="text/javascript" src="/js/jquery/jquery.infinite.scroll.js"></script>
 <c:jsCSRFToken keys="createHelpEntriesDataCSRF, saveSurveyDataCSRF, getPeopleDataCSRF, hideHelpDataCSRF, 
-		getGroupsList, getInterestTagsDataCSRF"/>
+		getGroupsList, getInterestTagsDataCSRF, uploadDataDumpCSRF"/>
 </head>
 <body class="${pageProperty(name: 'body.class') ?: '' }">
 <content tag="menu">
@@ -175,6 +175,7 @@
 	       	<ul>
 	<li> <span class="ul-head">Data</span><br></li>
 	<li ><g:link controller='home' action="upload">Import</g:link></li>
+	<li ><a href="#" data-toggle="modal" data-target="#upload-data-dump-modal">Upload Intel Basis Data</a></li>
 	<li ><g:link controller='home' action="download">Export</g:link></li>
 	<li ><g:link controller='home' action="polldevices">Poll Devices</g:link></li>
 	    	</ul>
@@ -193,7 +194,33 @@
 <link href='//fonts.googleapis.com/css?family=Open+Sans:300normal,300italic,400normal,400italic,600normal,600italic,700normal,700italic,800normal,800italic|Roboto:400normal|Oswald:400normal|Open+Sans+Condensed:300normal|Lato:400normal|Source+Sans+Pro:400normal|Lato:400normal|Gloria+Hallelujah:400normal|Pacifico:400normal|Raleway:400normal|Merriweather:400normal&subset=all' rel='stylesheet' type='text/css'>
 <!-- /FOOTER -->
 <div style="clear:both;"></div>
-
+<div class="modal fade" id="upload-data-dump-modal">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">
+					<i class="fa fa-times-circle-o"></i>
+				</button>
+				<h4 class="modal-title">Upload Intel Basis data archive</h4>
+			</div>
+			<div class="alert alert-danger hide" role="alert">
+				Some error has occurred while uploading the file.
+			</div>
+			<form id="upload-dump-form" enctype="multipart/form-data">
+				<div class="modal-body">
+					<div class="form-group">
+						<lable for="dumpFile">Upload File</lable>
+						<input type="file" name="dumpFile" id="dumpFile"/>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<div class="wait-form-submit waiting-icon" hidden="true"></div>
+					<button type="submit" class="submit-request-button">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
 </body>
 </html>
 </g:applyLayout>

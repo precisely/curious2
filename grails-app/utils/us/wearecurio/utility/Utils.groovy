@@ -10,6 +10,7 @@ import us.wearecurio.services.SearchService
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.util.concurrent.TimeUnit
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
@@ -303,5 +304,17 @@ class Utils {
 	static Date getStartOfDay(Date dateInstance) {
 		DateTime dt = new DateTime(dateInstance).withTimeAtStartOfDay();
 		return dt.toDate();
+	}
+
+	/**
+	 * Get a diff between two dates
+	 * @param date1 the oldest date
+	 * @param date2 the newest date
+	 * @param timeUnit the unit in which you want the diff
+	 * @return the diff value, in the provided unit
+	 */
+	public static long getDateDiff(Date date1, Date date2, TimeUnit timeUnit) {
+		long diffInMillies = date2.getTime() - date1.getTime();
+		return timeUnit.convert(diffInMillies,TimeUnit.MILLISECONDS);
 	}
 }

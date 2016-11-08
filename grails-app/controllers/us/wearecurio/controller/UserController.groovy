@@ -5,6 +5,7 @@ import com.causecode.fileuploader.UFile
 import com.causecode.fileuploader.UFileMoveHistory
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
+import us.wearecurio.model.ThirdPartyDataDump
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.SearchService
@@ -119,6 +120,37 @@ class UserController extends LoginController {
 				renderJSONPost([success: false], message: g.message(code: "default.not.updated.message",
 						args: ["Profile", "image"]))
 			}
+		}
+	}
+
+	def uploadDataDump() {
+		def reqParams = request.getFile('dumpFile')
+		debug ("UserController.uploadDataDump() params:" + params + ", and request body: ${reqParams.dump()}")
+		UFile dumpFile
+		try {
+			dumpFile = fileUploaderService.saveFile("dumpFile", reqParams)
+		} catch (Exception e) {
+			Utils.reportError("Error while uploading dumpFile", e)
+			renderJSONPost([success: false, message: g.message(code: "default.upload.failed",
+					args: ["Dump File"])])
+			return
+		}
+
+		if (!dumpFile) {
+			renderJSONPost([success: false, message: g.message(code: "default.upload.failed",
+					args: ["Dump File"])])
+			return
+		}
+
+		User currentUserInstance = sessionUser()
+
+		Map m = [userId: currentUserInstance.id, dumpFile: dumpFile, type: ThirdParty.BASIS]
+		ThirdPartyDataDump thirdPartyDataDump = new ThirdPartyDataDump(m)
+		if (Utils.save(thirdPartyDataDump, true)) {
+			renderJSONPost([success: true])
+		} else {
+			renderJSONPost([success: false], message: g.message(code: "default.upload.failed",
+					args: ["Dump File"]))
 		}
 	}
 

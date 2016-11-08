@@ -130,6 +130,9 @@ class UnitGroupMap {
 	
 	//Steps
 	static final BigDecimal STEPSUNIT = 1.0g
+
+	//Tosses
+	static final BigDecimal TOSSESUNIT = 1.0g
 	
 	//Percentage
 	static final BigDecimal PERCENTAGEUNIT = 1.0g
@@ -462,6 +465,7 @@ class UnitGroupMap {
 		QUANTITY(26, "quantity", 2, [
 			'quantity':[QUANTITYRATIO,0,10,'quantity',BOTH], 'qty':[QUANTITYRATIO,0,10,'quantity'],
 		]),
+		TOSS(27, "tosses", 2,["times": [TOSSESUNIT, 0, 10, 'times']])
 	
 		final int id
 		final String name

@@ -59,7 +59,9 @@ enum ThirdParty {
 	HUMAN(6, "human", TWO),
 	TWITTER(7, "twitter", ONE),
 	JAWBONE(8, "jawboneup", TWO),
-	OURA(9, "oura", TWO)
+	OURA(9, "oura", TWO),
+	BASIS(10, "basis", TWO)
+
 
 	final int id
 	final String providerName
@@ -119,7 +121,10 @@ enum ThirdParty {
 			return "Jawbone";
 			
 		case OURA:
-			return "Oura";			
+			return "Oura";
+
+		case BASIS:
+			return "Basis";
 		}
 	}
 

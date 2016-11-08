@@ -9,6 +9,7 @@ import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.DataService
 import us.wearecurio.services.FitBitDataService
+import us.wearecurio.services.IntelBasisDataService
 import us.wearecurio.services.JawboneService
 import us.wearecurio.services.MovesDataService
 import us.wearecurio.services.OuraDataService
@@ -33,6 +34,7 @@ class HomeController extends DataController {
 	JawboneService jawboneService
 	MovesDataService movesDataService
 	OuraDataService ouraDataService
+	IntelBasisDataService intelBasisDataService
 	def jawboneUpDataService
 
 	def oauthService
