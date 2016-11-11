@@ -5106,3 +5106,13 @@ input.cropit-image-zoom-input {
 	margin-top: 10px;
 	margin-right: 2px;
 }
+
+.main .step, .main .currentStep {
+	padding: 10px;
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.main .currentStep {
+	text-decoration: underline;
+}

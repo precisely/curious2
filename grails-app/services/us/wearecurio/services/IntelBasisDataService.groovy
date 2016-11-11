@@ -1,7 +1,12 @@
 package us.wearecurio.services
 
 import org.springframework.transaction.annotation.Transactional
-import us.wearecurio.model.*
+import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.Status
+import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.ThirdPartyDataDump
+import us.wearecurio.model.ThirdPartyNotification
+import us.wearecurio.model.User
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
@@ -44,13 +49,11 @@ class IntelBasisDataService extends DataService {
 
 	void processDump(ZipFile dumpFile, ThirdPartyDataDump thirdPartyDataDump) {
 		def zippedFiles = dumpFile.entries().findAll {
-			(!it.directory && (it.name.contains("sleep") || it.name.contains("bodystates")))
+			(!it.directory && (it.name.contains("sleep.csv") || it.name.contains("bodystates") || it.name.contains("sleep-stages")))
 		}
 
-		List unProcessedFiles = thirdPartyDataDump.unprocessedFiles ?: zippedFiles.collect{
-			if((it.name.contains("sleep.csv") || it.name.contains("bodystates") || it.name.contains("sleep-stages"))) {
-				it.name
-			}
+		List unProcessedFiles = thirdPartyDataDump.unprocessedFiles ?: zippedFiles.collect {
+			it.name
 		}
 
 		Long userId = thirdPartyDataDump.userId
@@ -62,7 +65,7 @@ class IntelBasisDataService extends DataService {
 
 					Integer timeZoneId = User.getTimeZoneId(userId)
 					SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-					Date startDateRange, endDateRange
+					
 
 					DataRequestContext context
 					EntryCreateMap creationMap = new EntryCreateMap()
@@ -70,49 +73,19 @@ class IntelBasisDataService extends DataService {
 					int row
 
 					if (it.name.contains("bodystates")) {
-						row = 0
-						reader.eachCsvLine { tokens ->
-							if (row == 1) {
-								startDateRange = formatter.parse(tokens[1])
-							} else if (row) {
-								endDateRange = formatter.parse(tokens[1])
-							}
-							row++
-						}
-
-						context = new DataRequestContext(startDateRange, endDateRange, COMMENT, userId)
+						context = getDataRequestContextInstance(reader, formatter, userId, 1)
 						// re opening the closed stream
 						csvIn = dumpFile.getInputStream(it)
 						reader = new InputStreamReader(csvIn)
 						processDataActivity(reader, timeZoneId, formatter, creationMap, stats, userId, context)
 					} else if (it.name.contains("sleep-stages")) {
-						row = 0
-						reader.eachCsvLine { tokens ->
-							if (row == 1) {
-								startDateRange = formatter.parse(tokens[4])
-							} else if (row) {
-								endDateRange = formatter.parse(tokens[4])
-							}
-							row++
-						}
-
-						context = new DataRequestContext(startDateRange, endDateRange, COMMENT, userId)
+						context = getDataRequestContextInstance(reader, formatter, userId, 4)
 						// re opening the closed stream
 						csvIn = dumpFile.getInputStream(it)
 						reader = new InputStreamReader(csvIn)
 						processDataSleepStages(reader, timeZoneId, formatter, creationMap, stats, userId, context)
 					} else if (it.name.contains("sleep.csv")) {
-						row = 0
-						reader.eachCsvLine { tokens ->
-							if (row == 1) {
-								startDateRange = formatter.parse(tokens[0])
-							} else if (row) {
-								endDateRange = formatter.parse(tokens[0])
-							}
-							row++
-						}
-
-						context = new DataRequestContext(startDateRange, endDateRange, COMMENT, userId)
+						context = getDataRequestContextInstance(reader, formatter, userId, 0)
 						// re opening the closed stream
 						csvIn = dumpFile.getInputStream(it)
 						reader = new InputStreamReader(csvIn)
@@ -138,6 +111,23 @@ class IntelBasisDataService extends DataService {
 		}
 	}
 
+	private DataRequestContext getDataRequestContextInstance(Reader reader, SimpleDateFormat formatter, long userId, 
+			 int dateFieldIndex) {
+		Date startDateRange, endDateRange
+		int row = 0
+		reader.eachCsvLine { tokens ->
+			// Reading start date for date range from file
+			if (row == 1) {
+				startDateRange = formatter.parse(tokens[dateFieldIndex])
+			} else if (row) { // Reading end date for date range from file
+				endDateRange = formatter.parse(tokens[dateFieldIndex])
+			}
+			row++
+		}
+
+		return new DataRequestContext(startDateRange, endDateRange, COMMENT, userId)
+	}
+	
 	@Transactional
 	void processDataSleepStages(Reader reader, Integer timeZoneId, SimpleDateFormat formatter, EntryCreateMap creationMap,
 			EntryStats stats, Long userId, DataRequestContext context) {

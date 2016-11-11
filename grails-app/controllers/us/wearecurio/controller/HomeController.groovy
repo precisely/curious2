@@ -1,5 +1,6 @@
 package us.wearecurio.controller
 
+import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.security.NoAuth
 import grails.gsp.PageRenderer
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -11,6 +12,7 @@ import us.wearecurio.services.DataService
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.IntelBasisDataService
 import us.wearecurio.services.JawboneService
+import us.wearecurio.services.JawboneUpDataService
 import us.wearecurio.services.MovesDataService
 import us.wearecurio.services.OuraDataService
 import us.wearecurio.services.Twenty3AndMeDataService
@@ -35,9 +37,9 @@ class HomeController extends DataController {
 	MovesDataService movesDataService
 	OuraDataService ouraDataService
 	IntelBasisDataService intelBasisDataService
-	def jawboneUpDataService
+	JawboneUpDataService jawboneUpDataService
 
-	def oauthService
+	OauthService oauthService
 	PageRenderer groovyPageRenderer
 	Twenty3AndMeDataService twenty3AndMeDataService
 

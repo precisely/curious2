@@ -3,8 +3,11 @@ package us.wearecurio.services.integration
 import com.causecode.fileuploader.CDNProvider
 import com.causecode.fileuploader.UFile
 import com.causecode.fileuploader.UFileType
-import grails.test.mixin.TestFor
-import us.wearecurio.model.*
+import us.wearecurio.model.Entry
+import us.wearecurio.model.Status
+import us.wearecurio.model.Tag
+import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.ThirdPartyDataDump
 import us.wearecurio.services.DataService
 import us.wearecurio.services.IntelBasisDataService
 import us.wearecurio.support.EntryCreateMap
@@ -13,12 +16,13 @@ import us.wearecurio.support.EntryStats
 import java.text.SimpleDateFormat
 import java.util.zip.ZipFile
 
-@TestFor(IntelBasisDataService)
 class IntelBasisDataServiceTests extends CuriousServiceTestCase {
 
 	UFile file
 	ZipFile dumpFile
 	ThirdPartyDataDump thirdPartyDataDump
+	IntelBasisDataService intelBasisDataService
+	
 	def setup() {
 		dumpFile = new ZipFile(new File("./test/integration/test-files/basis/intel-dump1.zip"))
 
@@ -31,16 +35,13 @@ class IntelBasisDataServiceTests extends CuriousServiceTestCase {
 		thirdPartyDataDump.save(flush: true)
 	}
 
-	def cleanup() {
-	}
-
 	void "test processDump when zip file has all the three files records"() {
 		given: "dump file and the ThirdPartyDataDump instance"
 		assert !Entry.count()
 		assert thirdPartyDataDump.status == Status.UNPROCESSED
 
 		when: "processDump method is called"
-		service.processDump(dumpFile, thirdPartyDataDump)
+		intelBasisDataService.processDump(dumpFile, thirdPartyDataDump)
 
 		then: "dump file instance is marked processed and entries are created"
 		Entry.count() == 10
@@ -50,16 +51,16 @@ class IntelBasisDataServiceTests extends CuriousServiceTestCase {
 		thirdPartyDataDump.status == Status.PROCESSED
 	}
 
-	void "test processDump when zip file has all the three file records but some exceptoin occures while creating entries"() {
+	void "test processDump when zip file has all the three file records but some exception occures while creating entries"() {
 		given: "dump file and the ThirdPartyDataDump instance and mocked method processDataActivity"
-		service.metaClass.processDataActivity = { Reader reader, Integer timeZoneId, SimpleDateFormat formatter,
+		intelBasisDataService.metaClass.processDataActivity = { Reader reader, Integer timeZoneId, SimpleDateFormat formatter,
 				EntryCreateMap creationMap, EntryStats stats, Long userId, DataService.DataRequestContext context ->
 			throw new NumberFormatException()
 		}
 		assert !Entry.count()
 
 		when: "processDump method is called"
-		service.processDump(dumpFile, thirdPartyDataDump)
+		intelBasisDataService.processDump(dumpFile, thirdPartyDataDump)
 
 		then: "dump file instance is marked unprocessed and no entries are created"
 		!Entry.count()
@@ -73,7 +74,7 @@ class IntelBasisDataServiceTests extends CuriousServiceTestCase {
 
 	void "test processDump when zip file processing fails more then 3 times"() {
 		given: "dump file and the ThirdPartyDataDump instance with attemp count 2 and mocked method processDataActivity"
-		service.metaClass.processDataActivity = { Reader reader, Integer timeZoneId, SimpleDateFormat formatter,
+		intelBasisDataService.metaClass.processDataActivity = { Reader reader, Integer timeZoneId, SimpleDateFormat formatter,
 				  EntryCreateMap creationMap, EntryStats stats, Long userId, DataService.DataRequestContext context ->
 			throw new NumberFormatException()
 		}
@@ -82,7 +83,7 @@ class IntelBasisDataServiceTests extends CuriousServiceTestCase {
 		assert !Entry.count()
 
 		when: "processDump method is called"
-		service.processDump(dumpFile, thirdPartyDataDump)
+		intelBasisDataService.processDump(dumpFile, thirdPartyDataDump)
 
 		then: "dump file instance is marked unprocessed and no entries are created"
 		!Entry.count()

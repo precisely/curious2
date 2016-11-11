@@ -1545,7 +1545,7 @@ class DataController extends LoginController {
 		}
 
 		trackingProjectRequest.save(flush: true)
-		EmailService.get().sendMail {
+		emailService.get().sendMail {
 			to "support@wearecurio.us"
 			from "server@wearecurio.us"
 			subject "[Curious] New Request- Autism, ME/CFS, Or Sleep Tracking Projects"

@@ -3,8 +3,10 @@ package us.wearecurio.controller
 import com.causecode.fileuploader.FileUploaderService
 import com.causecode.fileuploader.UFile
 import com.causecode.fileuploader.UFileMoveHistory
+import org.springframework.web.multipart.MultipartFile
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
+import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyDataDump
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
@@ -124,16 +126,29 @@ class UserController extends LoginController {
 	}
 
 	def uploadDataDump() {
-		def reqParams = request.getFile('dumpFile')
-		debug ("UserController.uploadDataDump() params:" + params + ", and request body: ${reqParams.dump()}")
-		UFile dumpFile
-		try {
-			dumpFile = fileUploaderService.saveFile("dumpFile", reqParams)
-		} catch (Exception e) {
-			Utils.reportError("Error while uploading dumpFile", e)
-			renderJSONPost([success: false, message: g.message(code: "default.upload.failed",
+		MultipartFile uploadedZipFile = request.getFile('dumpFile')
+		
+		if (!uploadedZipFile || uploadedZipFile.empty) {
+			renderJSONPost([success: false, message: g.message(code: "default.blank.message",
 					args: ["Dump File"])])
 			return
+		}
+		
+		// 104857600(10240 * 10240) Bytes = 100 MBs
+		if (uploadedZipFile.size > 10240 * 10240) {
+			renderJSONPost([success: false, message: g.message(code: "default.invalid.max.message",
+					args: ["File size", "100MBs"])])
+			return
+		}
+		
+		debug ("UserController.uploadDataDump() params:" + params)
+		
+		UFile dumpFile
+		try {
+			dumpFile = fileUploaderService.saveFile("dumpFile", uploadedZipFile)
+		} catch (Exception e) {
+			Utils.reportError("Error while uploading dumpFile", e)
+			dumpFile = null
 		}
 
 		if (!dumpFile) {
@@ -149,8 +164,8 @@ class UserController extends LoginController {
 		if (Utils.save(thirdPartyDataDump, true)) {
 			renderJSONPost([success: true])
 		} else {
-			renderJSONPost([success: false], message: g.message(code: "default.upload.failed",
-					args: ["Dump File"]))
+			renderJSONPost([success: false, message: g.message(code: "default.upload.failed",
+					args: ["Dump File"])])
 		}
 	}
 

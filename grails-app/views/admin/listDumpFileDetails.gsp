@@ -34,7 +34,7 @@
 			<tr>
 				<td>
 					<a href="${dumpFileInstance.dumpFile.path}">
-						<i class="fa fa-download" aria-hidden="true"></i> ${dumpFileInstances.dumpFile.name}
+						<i class="fa fa-download" aria-hidden="true"></i> ${dumpFileInstance.dumpFile.name}
 					</a>
 				</td>
 				<td>
@@ -53,6 +53,8 @@
 		</g:each>
 		</tbody>
 	</table>
+	<g:paginate next="Forward" prev="Back" controller="admin" action="listDumpFileDetails" 
+			total="${totalDumpFileInstances}"/>
 </div>
 </body>
 </html>

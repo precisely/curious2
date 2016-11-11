@@ -5,6 +5,7 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.SurveyAnswer
 import us.wearecurio.model.SurveyQuestion
+import us.wearecurio.model.ThirdPartyDataDump
 import us.wearecurio.model.User
 import us.wearecurio.utility.Utils
 
@@ -318,8 +319,11 @@ class AdminController extends LoginController {
 	}
 
 	def listDumpFileDetails() {
-		List dumpFileInstances = ThirdPartyDataDump.findAll()
-		Map model = [dumpFileInstances: dumpFileInstances]
-		model
+		params.max = params.max ? Integer.parseInt(params.max) : 10
+		params.max = Math.min(params.max, 100)
+		params.offset = params.offset ?: 0
+		params["order"] = "desc"
+		List dumpFileInstances = ThirdPartyDataDump.listOrderByTimeStamp(params)
+		return [dumpFileInstances: dumpFileInstances, totalDumpFileInstances: ThirdPartyDataDump.count()]
 	}
 }

@@ -21,6 +21,13 @@ class ThirdPartyDataDump {
 		unprocessedFiles nullable: true
 		userId nullable: false
 	}
+
+	static mappings = {
+		type index: true
+		userId index: true
+		status index: true
+		attemptCount index: true
+	}
 }
 
 enum Status {
@@ -33,5 +40,9 @@ enum Status {
 
 	Status(int id) {
 		this.id = id
+	}
+
+	public String toString() {
+		return name() + "(${this.id})"
 	}
 }

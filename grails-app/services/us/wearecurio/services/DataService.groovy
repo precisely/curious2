@@ -6,6 +6,7 @@ import groovy.transform.Synchronized
 import us.wearecurio.datetime.DateUtils
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
+import us.wearecurio.model.Status
 import us.wearecurio.model.ThirdPartyDataDump
 
 import javax.annotation.PostConstruct
@@ -712,11 +713,11 @@ abstract class DataService {
 		log.debug "DataService.dumpFileProcessor(): Found ${unProcessedDumps.size()} files to process"
 
 		unProcessedDumps.each { thirdPartyDataDump->
-			def thisUrl = new URL(thirdPartyDataDump.dumpFile.path);
+			def thisURL = new URL(thirdPartyDataDump.dumpFile.path);
 			OutputStream outputStream = null
 			InputStream inputStream = null
 			try {
-				URLConnection connection = thisUrl.openConnection();
+				URLConnection connection = thisURL.openConnection();
 				inputStream = connection.inputStream
 				File dumpFile = new File("tempfile.zip")
 
@@ -732,21 +733,22 @@ abstract class DataService {
 
 				getDataServiceForTypeId(thirdPartyDataDump.type).processDump(zipFile, thirdPartyDataDump)
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.debug "DataService.dumpFileProcessor(): Error while processing zip file" + e.printStackTrace();
 			} finally {
 				if (inputStream != null) {
 					try {
 						inputStream.close();
 					} catch (IOException e) {
-						e.printStackTrace();
+						log.debug "DataService.dumpFileProcessor(): Error while closing input stream for zip file" +
+								e.printStackTrace();
 					}
 				}
 				if (outputStream != null) {
 					try {
-						// outputStream.flush();
 						outputStream.close();
 					} catch (IOException e) {
-
+						log.debug "DataService.dumpFileProcessor(): Error while closing output stream for zip file" + 
+								e.printStackTrace();
 					}
 				}
 			}
