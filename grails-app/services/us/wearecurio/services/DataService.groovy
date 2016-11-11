@@ -705,39 +705,41 @@ abstract class DataService {
 		return
 	}
 
+	@Synchronized
 	static void dumpFileProcessor() {
 		List<ThirdPartyDataDump> unProcessedDumps = ThirdPartyDataDump.withCriteria {
-			'in'("status", [Status.UNPROCESSED, Status.PARTIALLYPROCESSED])
+			'in'("status", [Status.UNPROCESSED, Status.PARTIALLY_PROCESSED])
 			lt("attemptCount", 4)
 		}
 
 		log.debug "DataService.dumpFileProcessor(): Found ${unProcessedDumps.size()} files to process"
 
 		unProcessedDumps.each { thirdPartyDataDump->
-			def thisURL = new URL(thirdPartyDataDump.dumpFile.path);
+			def thisURL = new URL(thirdPartyDataDump.dumpFile.path)
 			OutputStream outputStream = null
 			InputStream inputStream = null
 			try {
-				URLConnection connection = thisURL.openConnection();
+				URLConnection connection = thisURL.openConnection()
 				inputStream = connection.inputStream
 				File dumpFile = new File("tempfile.zip")
 
-				outputStream = new FileOutputStream(dumpFile);
+				outputStream = new FileOutputStream(dumpFile)
 
-				int read = 0;
-				byte[] bytes = new byte[1024];
+				int read = 0
+				byte[] bytes = new byte[1024]
 
 				while ((read = inputStream.read(bytes)) != -1) {
-					outputStream.write(bytes, 0, read);
+					outputStream.write(bytes, 0, read)
 				}
 				def zipFile = new ZipFile(dumpFile)
 
 				getDataServiceForTypeId(thirdPartyDataDump.type).processDump(zipFile, thirdPartyDataDump)
 				User dumpOwner = User.get(thirdPartyDataDump.userId)
+				
 				EmailService.get().send(dumpOwner.email, "We Are Curious: Your Intel Basis " +
 						"Records Are Processed", "Hello ${dumpOwner.username},\n\nWe have processed your Intel Basis " +
-						"data records please login to https://www.wearecurio.us.\n\n"
-						+ "Happy tracking,\n\n"
+						"data records.\nplease login at https://www.wearecurio.us to see the results.\n\n"
+						+ "Happy tracking,\n"
 						+ "The Curious Team")
 			} catch (IOException e) {
 				log.debug "DataService.dumpFileProcessor(): Error while processing zip file" + e.printStackTrace();

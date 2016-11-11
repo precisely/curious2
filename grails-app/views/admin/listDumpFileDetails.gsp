@@ -24,8 +24,11 @@
 			<g:sortableColumn property="uploaded" title="uploaded" />
 
 			<g:sortableColumn property="status" title="Status" />
+			
+			<td>Unprocessed files</td>
 
 			<g:sortableColumn property="id" title="Owner" />
+			
 
 		</tr>
 		</thead>
@@ -45,6 +48,9 @@
 				</td>
 				<td>
 					${dumpFileInstance.status}
+				</td>
+				<td>
+					${dumpFileInstance.unprocessedFiles}
 				</td>
 				<td>
 					${us.wearecurio.model.User.get(dumpFileInstance.userId).username}

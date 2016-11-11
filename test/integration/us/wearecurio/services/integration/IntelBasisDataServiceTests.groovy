@@ -64,7 +64,7 @@ class IntelBasisDataServiceTests extends CuriousServiceTestCase {
 
 		then: "dump file instance is marked unprocessed and no entries are created"
 		!Entry.count()
-		thirdPartyDataDump.status == Status.PARTIALLYPROCESSED
+		thirdPartyDataDump.status == Status.PARTIALLY_PROCESSED
 		thirdPartyDataDump.attemptCount == 1
 		thirdPartyDataDump.unprocessedFiles.size() == 3
 		thirdPartyDataDump.unprocessedFiles.indexOf("sleep.csv") > -1

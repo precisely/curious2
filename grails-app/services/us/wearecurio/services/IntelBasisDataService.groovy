@@ -103,7 +103,7 @@ class IntelBasisDataService extends DataService {
 				thirdPartyDataDump.status = Status.FAILED
 				thirdPartyDataDump.attemptCount++
 			} else {
-				thirdPartyDataDump.status = Status.PARTIALLYPROCESSED
+				thirdPartyDataDump.status = Status.PARTIALLY_PROCESSED
 				thirdPartyDataDump.unprocessedFiles = unProcessedFiles
 				thirdPartyDataDump.attemptCount++
 			}
@@ -119,7 +119,7 @@ class IntelBasisDataService extends DataService {
 			// Reading start date for date range from file
 			if (row == 1) {
 				startDateRange = formatter.parse(tokens[dateFieldIndex])
-			} else if (row) { // Reading end date for date range from file
+			} else if (row > 1) { // Reading end date for date range from file
 				endDateRange = formatter.parse(tokens[dateFieldIndex])
 			}
 			row++

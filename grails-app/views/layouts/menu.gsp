@@ -215,7 +215,7 @@
 				</div>
 				<div class="modal-footer">
 					<div class="wait-form-submit waiting-icon" hidden="true"></div>
-					<button type="submit" class="submit-request-button">Submit</button>
+					<button type="submit" class="submit-request-button">Upload</button>
 				</div>
 			</form>
 		</div>
