@@ -465,7 +465,7 @@ class UnitGroupMap {
 		QUANTITY(26, "quantity", 2, [
 			'quantity':[QUANTITYRATIO,0,10,'quantity',BOTH], 'qty':[QUANTITYRATIO,0,10,'quantity'],
 		]),
-		TOSS(27, "tosses", 2,["times": [TOSSESUNIT, 0, 10, 'times']])
+		TOSS(27, "tosses", 2,["tosses": [TOSSESUNIT, 0, 10, 'tosses']])
 	
 		final int id
 		final String name

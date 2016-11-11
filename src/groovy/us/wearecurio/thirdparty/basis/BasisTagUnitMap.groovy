@@ -9,13 +9,13 @@ class BasisTagUnitMap  extends TagUnitMap {
 
 	static {
 		sleepUnitMap = [
-				light: [tag: SLEEP, unit: "hours total", convert: true, from: "mins"],
+				light: [tag: SLEEP, unit: "hours light", convert: true, from: "mins"],
 				unknown: [tag: SLEEP, unit: "hours unknown", convert: true, from: "mins"],
 				interruption: [tag: SLEEP, unit: "hours interrupted", convert: true, from: "mins"],
 				rem: [tag: SLEEP, unit: "hours rem", convert: true, from: "mins"],
 				deep: [tag: SLEEP, unit: "hours deep", convert: true, from: "mins"],
 				total: [tag: SLEEP, unit: "hours total", convert: true, from: "mins"],
-				tosses: [tag: SLEEP, unit: "times tossed"]
+				tosses: [tag: SLEEP, unit: "tosses turns"]
 		]
 
 		activityUnitMap = [

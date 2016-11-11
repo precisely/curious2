@@ -61,11 +61,11 @@ $(window).load(function() {
 			}
 			$('#avatarModal').modal('hide');
 			$('#avatarModal .wait-form-submit').hide();
-			$('#avatarModal .export').show()
+			$('#avatarModal .export').show();
 		}, function(data) {
 			showAlert('Internal server error occurred.');
 			$('#avatarModal .wait-form-submit').hide();
-			$('#avatarModal .export').show()
+			$('#avatarModal .export').show();
 		}, 0, httpArgs);
 	});
 });

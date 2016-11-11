@@ -224,7 +224,7 @@ $(document).ready(function() {
 				if (data.success) {
 					$('#upload-data-dump-modal').modal('hide');
 					$('#upload-data-dump-modal').trigger('reset');
-					showAlert('Successfully uploaded file to the server.');
+					showAlert('File successfully uploaded. We will get back to you once the data has been processed.');
 				} else {
 					showBootstrapAlert($('.alert-danger'), data.message, 5000);
 				}

@@ -3,6 +3,7 @@ package us.wearecurio.services
 import grails.converters.JSON
 import grails.util.Environment
 import groovy.transform.Synchronized
+import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.datetime.DateUtils
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
@@ -40,9 +41,9 @@ abstract class DataService {
 	}
 
 	def grailsApplication
-	def oauthService
+	OauthService oauthService
 	def urlService
-	def databaseService
+	DatabaseService databaseService
 
 	Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
 
@@ -732,6 +733,12 @@ abstract class DataService {
 				def zipFile = new ZipFile(dumpFile)
 
 				getDataServiceForTypeId(thirdPartyDataDump.type).processDump(zipFile, thirdPartyDataDump)
+				User dumpOwner = User.get(thirdPartyDataDump.userId)
+				EmailService.get().send(dumpOwner.email, "We Are Curious: Your Intel Basis " +
+						"Records Are Processed", "Hello ${dumpOwner.username},\n\nWe have processed your Intel Basis " +
+						"data records please login to https://www.wearecurio.us.\n\n"
+						+ "Happy tracking,\n\n"
+						+ "The Curious Team")
 			} catch (IOException e) {
 				log.debug "DataService.dumpFileProcessor(): Error while processing zip file" + e.printStackTrace();
 			} finally {
