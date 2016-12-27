@@ -897,7 +897,7 @@ class MigrationService {
 			oauthAccountService.refreshAll()
 		}
 
-		tryMigration("Remove all notifications from Oura test") {
+		tryMigration("Remove all notifications from Oura test dgdfgdfr") {
 			int totalNotifications = ThirdPartyNotification.countByTypeId(ThirdParty.OURA)
 			while (totalNotifications > 0) {
 				Thread.sleep(1000)
