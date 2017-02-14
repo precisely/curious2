@@ -1,6 +1,6 @@
 package us.wearecurio.controller.integration
 
-import us.wearecurio.services.OuraDataService
+import us.wearecurio.services.LegacyOuraDataService
 
 import static org.junit.Assert.*
 
@@ -28,7 +28,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	HomeController controller
 	FitBitDataService fitBitDataService
 	WithingsDataService withingsDataService
-	OuraDataService ouraDataService
+	LegacyOuraDataService legacyOuraDataService
 	UrlService urlService
 
 	User user2
@@ -494,7 +494,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test registerOura When token has expired"() {
 		controller.session.userId = userId
-		ouraDataService.oauthService = [
+		legacyOuraDataService.oauthService = [
 				postOuraResource: { token, url, p, h ->
 					return new Response(new MockedHttpURLConnection(401))
 				}
@@ -517,7 +517,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		Utils.save(account, true)
 		controller.session.userId = userId
 
-		ouraDataService.oauthService = [
+		legacyOuraDataService.oauthService = [
 				postOuraResource: { token, url, p, h ->
 					return new Response(new MockedHttpURLConnection("""{}"""))
 				}
@@ -530,9 +530,9 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void "Test unregisterOura success"() {
-		controller.ouraDataService = [
+		controller.legacyOuraDataService = [
 				unsubscribe: { Long userId -> return [success: true] }
-		] as OuraDataService
+		] as LegacyOuraDataService
 		controller.session.userId = userId
 
 		controller.unregisterOura()
@@ -543,9 +543,9 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void "Test unregisterOura failure condition"() {
-		controller.ouraDataService = [
+		controller.legacyOuraDataService = [
 				unsubscribe: { Long userId -> return [success: false] }
-		] as OuraDataService
+		] as LegacyOuraDataService
 		controller.session.userId = userId
 
 		controller.unregisterOura()

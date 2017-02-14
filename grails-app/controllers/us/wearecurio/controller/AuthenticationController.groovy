@@ -7,7 +7,7 @@ import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.ThirdParty
-import us.wearecurio.services.OuraDataService
+import us.wearecurio.services.LegacyOuraDataService
 import us.wearecurio.security.NoAuth
 
 /**
@@ -41,7 +41,7 @@ class AuthenticationController extends SessionController {
 	def oauthService	// From OAuth Plugin
 	def twenty3AndMeDataService
 	def withingsDataService
-	OuraDataService ouraDataService
+	LegacyOuraDataService legacyOuraDataService
 
 	User currentUser
 	Long userId
@@ -142,7 +142,7 @@ class AuthenticationController extends SessionController {
 	}
 
 	def ouraAuth() {
-		JSONObject userInfo = ouraDataService.getUserProfile(tokenInstance)
+		JSONObject userInfo = legacyOuraDataService.getUserProfile(tokenInstance)
 
 		// If authentication was for user signup/signin with Oura
 		if (session[AUTH_REASON_KEY] == SIGN_UP_AUTH || session[AUTH_REASON_KEY] == SIGN_IN_AUTH) {

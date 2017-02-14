@@ -2,7 +2,7 @@ package us.wearecurio.thirdparty.oura
 
 import us.wearecurio.thirdparty.TagUnitMap
 
-class OuraTagUnitMap extends TagUnitMap {
+class LegacyOuraTagUnitMap extends TagUnitMap {
 
 	private static Map sleepUnitMap, activityUnitMap, exerciseUnitMap, columnDetailMap = [:]
 
@@ -38,7 +38,7 @@ class OuraTagUnitMap extends TagUnitMap {
 		columnDetailMap.putAll(exerciseUnitMap)
 	}
 
-	OuraTagUnitMap() {
+	LegacyOuraTagUnitMap() {
 		super("Oura", true)
 		// First keeping commonTagMap so that unit map from here can override the common
 		tagUnitMappings = initializeTagUnitMappings(commonTagMap + columnDetailMap)

@@ -15,29 +15,28 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
-import us.wearecurio.services.DataService.DataRequestContext
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.TagUnitMap
 import us.wearecurio.thirdparty.oura.OuraApi
-import us.wearecurio.thirdparty.oura.OuraTagUnitMap
+import us.wearecurio.thirdparty.oura.LegacyOuraTagUnitMap
 import us.wearecurio.utility.Utils
 
-class OuraDataService extends DataService {
+class LegacyOuraDataService extends DataService {
 
 	static final String BASE_URL = OuraApi.BASE_URL
 	static final String SET_NAME = "OURA"
 	static final String SOURCE_NAME = "Oura Data"
 	static final String COMMENT = "(Oura)"
-	OuraTagUnitMap tagUnitMap = new OuraTagUnitMap()
+	LegacyOuraTagUnitMap tagUnitMap = new LegacyOuraTagUnitMap()
 
 	EmailService emailService
 
-	OuraDataService() {
+	LegacyOuraDataService() {
 		provider = "Oura"
-		typeId = ThirdParty.OURA
+		typeId = ThirdParty.OURA_LEGACY
 		profileURL = BASE_URL + "/api/userProfile/me"
 		TagUnitMap.addSourceSetIdentifier(SET_NAME, SOURCE_NAME)
 	}
@@ -98,7 +97,7 @@ class OuraDataService extends DataService {
 
 		ThirdPartyNotification thirdPartyNotification = new ThirdPartyNotification([collectionType: notification.type,
 				date: notificationDate, ownerId: notification.userId, subscriptionId: notification.subscriptionId ?: "",
-				ownerType: "user", typeId: ThirdParty.OURA])
+				ownerType: "user", typeId: ThirdParty.OURA_LEGACY])
 
 		if (!Utils.save(thirdPartyNotification)) {
 			return
@@ -440,7 +439,7 @@ class OuraDataService extends DataService {
 	@Override
 	void checkSyncHealth() {
 		int accountsCount = OAuthAccount.withCriteria {
-			eq('typeId', ThirdParty.OURA)
+			eq('typeId', ThirdParty.OURA_LEGACY)
 			gt('lastData', new Date() - 1)
 
 			projections {

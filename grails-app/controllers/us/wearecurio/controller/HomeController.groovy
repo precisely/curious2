@@ -11,7 +11,7 @@ import us.wearecurio.services.DataService
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.JawboneService
 import us.wearecurio.services.MovesDataService
-import us.wearecurio.services.OuraDataService
+import us.wearecurio.services.LegacyOuraDataService
 import us.wearecurio.services.Twenty3AndMeDataService
 import us.wearecurio.services.TwitterDataService
 import us.wearecurio.services.WithingsDataService
@@ -32,7 +32,7 @@ class HomeController extends DataController {
 	FitBitDataService fitBitDataService
 	JawboneService jawboneService
 	MovesDataService movesDataService
-	OuraDataService ouraDataService
+	LegacyOuraDataService legacyOuraDataService
 	def jawboneUpDataService
 
 	def oauthService
@@ -339,7 +339,7 @@ class HomeController extends DataController {
 		Map result = [:]
 
 		try {
-			result = ouraDataService.subscribe(userId)
+			result = legacyOuraDataService.subscribe(userId)
 		} catch (MissingOAuthAccountException e) {
 			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("oura")
@@ -367,7 +367,7 @@ class HomeController extends DataController {
 		Map result = [:]
 
 		try {
-			result = ouraDataService.unsubscribe(userId)
+			result = legacyOuraDataService.unsubscribe(userId)
 		} catch (InvalidAccessTokenException e) {
 			// AuthenticationRequiredException is being handled by grails url mapping to perform authentication
 			throw new AuthenticationRequiredException("oura")
@@ -408,7 +408,7 @@ class HomeController extends DataController {
 		Object notificationData = request.JSON
 		debug "HomeController.notifyOura() from IP: [$request.remoteAddr] with params: $params"
 
-		if (ouraDataService.notificationHandler(notificationData)) {
+		if (legacyOuraDataService.notificationHandler(notificationData)) {
 			render status: 204
 		} else {
 			render status: 500

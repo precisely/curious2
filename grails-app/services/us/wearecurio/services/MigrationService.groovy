@@ -80,7 +80,7 @@ class MigrationService {
 	ElasticSearchService elasticSearchService
 	EntryParserService entryParserService
 	def elasticSearchAdminService
-	OuraDataService ouraDataService
+	LegacyOuraDataService legacyOuraDataService
 	UrlService urlService
 	EmailService emailService
 	OauthAccountService oauthAccountService
@@ -865,7 +865,7 @@ class MigrationService {
 			}
 		}
 		tryMigration("Re-import Oura data") {
-			ouraDataService.pollAll()
+			legacyOuraDataService.pollAll()
 		}
 		tryMigration("Refresh all oauth accounts again 3") {
 			oauthAccountService.refreshAll()
