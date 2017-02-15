@@ -45,11 +45,6 @@ class DummyController {
 				[entryId: 593838, entryDate: dateTimeFormatter.print(new Date().getTime())])
 	}
 
-	def ouraProcessor() {
-		log.debug "Process Oura notifications"
-		ouraDataService.notificationProcessor()
-	}
-
 	def runMigrations() {
 		migrationService.doMigrations()
 	}

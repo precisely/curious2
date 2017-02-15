@@ -3,13 +3,12 @@ package us.wearecurio.services
 import grails.converters.JSON
 import groovy.time.TimeCategory
 import groovyx.net.http.URIBuilder
+import java.text.SimpleDateFormat
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDateTime
-import org.joda.time.format.DateTimeFormat
-import org.joda.time.format.DateTimeFormatter
 import org.springframework.transaction.annotation.Transactional
 import us.wearecurio.datetime.DateUtils
 import us.wearecurio.model.OAuthAccount
@@ -21,31 +20,29 @@ import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.TagUnitMap
-import us.wearecurio.thirdparty.oura.OuraApi
-import us.wearecurio.thirdparty.oura.OuraTagUnitMap
+import us.wearecurio.thirdparty.oura.LegacyOuraApi
+import us.wearecurio.thirdparty.oura.LegacyOuraTagUnitMap
 import us.wearecurio.utility.Utils
 
-import java.text.SimpleDateFormat
+class LegacyOuraDataService extends DataService {
 
-class OuraDataService extends DataService {
-
-	static final String BASE_URL = OuraApi.BASE_URL
-	static final String SET_NAME = "Oura"
+	static final String BASE_URL = LegacyOuraApi.BASE_URL
+	static final String SET_NAME = "OURA"
 	static final String SOURCE_NAME = "Oura Data"
 	static final String COMMENT = "(Oura)"
-	OuraTagUnitMap tagUnitMap = new OuraTagUnitMap()
+	LegacyOuraTagUnitMap tagUnitMap = new LegacyOuraTagUnitMap()
 
 	EmailService emailService
 
-	OuraDataService() {
-		provider = "Oura"
-		typeId = ThirdParty.OURA
-		profileURL = BASE_URL + "/v1/userinfo"
+	LegacyOuraDataService() {
+		provider = "LegacyOura"
+		typeId = ThirdParty.OURA_LEGACY
+		profileURL = BASE_URL + "/api/userProfile/me"
 		TagUnitMap.addSourceSetIdentifier(SET_NAME, SOURCE_NAME)
 	}
 
 	@Override
-	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataService.DataRequestContext context) throws InvalidAccessTokenException {
+	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug("getDataDefault $account.id startDate: $startDate endDate: $endDate refreshAll: $refreshAll")
 
 		if (!startDate) {
@@ -58,9 +55,8 @@ class OuraDataService extends DataService {
 		endDate = endDate ?: DateUtils.getEndOfTheDay()
 
 		getDataSleep(account, startDate, endDate, false, context)
-//		getDataExercise(account, startDate, endDate, false, context)
+		getDataExercise(account, startDate, endDate, false, context)
 		getDataActivity(account, startDate, endDate, false, context)
-		getDataReadiness(account, startDate, endDate, false, context)
 
 		Utils.save(account, true)
 		[success: true]
@@ -84,14 +80,14 @@ class OuraDataService extends DataService {
 		if (!(notifications instanceof JSONArray)) {
 			notifications = [notifications]
 		}
-
+		
 		ThirdPartyNotification.withNewSession {
 			notifications.each { notification ->
 
 				thirdPartyNotificationList.add(saveThirdPartyNotification(notification))
 			}
 		}
-
+		
 		return thirdPartyNotificationList
 	}
 
@@ -101,7 +97,7 @@ class OuraDataService extends DataService {
 
 		ThirdPartyNotification thirdPartyNotification = new ThirdPartyNotification([collectionType: notification.type,
 				date: notificationDate, ownerId: notification.userId, subscriptionId: notification.subscriptionId ?: "",
-				ownerType: "user", typeId: ThirdParty.OURA])
+				ownerType: "user", typeId: ThirdParty.OURA_LEGACY])
 
 		if (!Utils.save(thirdPartyNotification)) {
 			return
@@ -110,23 +106,31 @@ class OuraDataService extends DataService {
 		thirdPartyNotification
 	}
 
-	void getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll, DataService.DataRequestContext context) throws InvalidAccessTokenException {
+	void getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll, DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug "Get sleep data for account $account.id for $forDay"
 
 		getDataSleep(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll, context)
 	}
 
-	void getDataSleep(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataService.DataRequestContext context) throws
+	void getDataSleep(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
 			InvalidAccessTokenException {
 		log.debug "Get sleep data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
 		endDate = endDate ?: DateUtils.getEndOfTheDay()
 
+		if (refreshAll) {
+			// Unsetting all historical data. Starting with the device set name prefix
+			unsetAllOldEntries(account.userId, SET_NAME)
+		}
+
+		// Backward support for old set name
+		unsetOldEntries(account.userId, getOldSetNames("s", startDate, endDate), context.alreadyUnset)
+
 		getDataSleep(account, getRequestURL("sleep", startDate, endDate), context)
 	}
 
 	// Overloaded method to support pagination
-	void getDataSleep(OAuthAccount account, String requestURL, DataService.DataRequestContext context) throws InvalidAccessTokenException {
+	void getDataSleep(OAuthAccount account, String requestURL, DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug "Import sleep data for user id $account.userId"
 		Long userId = account.userId
 
@@ -135,40 +139,31 @@ class OuraDataService extends DataService {
 		context.initEntrylist()
 
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
-		JSONArray sleepData = apiResponse["sleep"]
+		JSONArray sleepData = apiResponse["data"]
 
-		sleepData.each { Map sleepEntry ->
-			String setName = SET_NAME
+		sleepData.each { sleepEntry ->
+			Date entryDate = convertTimeToDate(sleepEntry)
+			String setName = getSetName("sleep", entryDate)
 
 			Integer timeZoneIdNumber = getTimeZoneId(account, sleepEntry)
+			def sleepEntryData = sleepEntry["data"]
 
-			Date sleepEnd = convertTimeToDate(sleepEntry['bedtime_end'])
-
-			// Not creating entries if a valid date is missing.
-			if (!sleepEnd) {
-				Date sleepStart = convertTimeToDate(sleepEntry['bedtime_start'])
-
-				// In Minutes
-				Integer totalSlept = sleepEntry['duration']?.toInteger()
-
-				if (totalSlept && sleepStart) {
-					use(TimeCategory) {
-						sleepEnd = sleepStart + totalSlept.seconds
-					}
-				}
-
-				if (!sleepEnd) {
-					log.warn 'Response does not contain data to calculate entry date.'
-
-					return
-				}
+			if (!sleepEntryData) {
+				return
 			}
 
-			log.debug "Total bedtime ${sleepEntry['total']} seconds, Sleep end ${sleepEnd}, "
+			// In Minutes
+			Integer totalSlept = sleepEntryData["bedtime_m"].toInteger()
+			Date sleepEnd
+			use(TimeCategory) {
+				sleepEnd = entryDate + totalSlept.minutes
+			}
 
-			["total", "score", "awake", "rem", "light", "deep", 'hr_lowest'].each { key ->
-				if (sleepEntry[key]) {
-					tagUnitMap.buildEntry(creationMap, stats, key, new BigDecimal(sleepEntry[key].toString()),
+			log.debug "Sleep start $entryDate, total bedtime $totalSlept minutes, sleep end $sleepEnd"
+
+			["bedtime_m", "sleep_score", "awake_m", "rem_m", "light_m", "deep_m"].each { key ->
+				if (sleepEntryData[key]) {
+					tagUnitMap.buildEntry(creationMap, stats, key, new BigDecimal(sleepEntryData[key].toString()),
 							userId, timeZoneIdNumber, sleepEnd, COMMENT, setName, context)
 				}
 			}
@@ -183,22 +178,30 @@ class OuraDataService extends DataService {
 		}
 	}
 
-	void getDataExercise(OAuthAccount account, Date forDay, boolean refreshAll, DataService.DataRequestContext context) throws InvalidAccessTokenException {
+	void getDataExercise(OAuthAccount account, Date forDay, boolean refreshAll, DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug "Get exercise data for account $account.id for $forDay"
 
 		getDataExercise(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll, context)
 	}
 
-	void getDataExercise(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataService.DataRequestContext context) throws
+	void getDataExercise(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
 			InvalidAccessTokenException {
 		log.debug "Get exercise data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
 		endDate = endDate ?: DateUtils.getEndOfTheDay()
 
+		if (refreshAll) {
+			// Unsetting all historical data. Starting with the device set name prefix
+			unsetAllOldEntries(account.userId, SET_NAME)
+		}
+
+		// Backward support for old set name
+		unsetOldEntries(account.userId, getOldSetNames("e", startDate, endDate), context.alreadyUnset)
+
 		getDataExercise(account, getRequestURL("exercise", startDate, endDate), context)
 	}
 
-	Map getDataExercise(OAuthAccount account, String requestURL, DataService.DataRequestContext context) throws InvalidAccessTokenException {
+	Map getDataExercise(OAuthAccount account, String requestURL, DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug "Import extercise data for user id $account.userId"
 		Long userId = account.userId
 
@@ -272,34 +275,42 @@ class OuraDataService extends DataService {
 	}
 
 	private void buildExerciseEntry(EntryCreateMap creationMap, EntryStats stats, JSONObject exerciseEntry,
-			Long userId, OAuthAccount account, DataService.DataRequestContext context) {
+			Long userId, OAuthAccount account, DataRequestContext context) {
 		def exerciseEntryData = exerciseEntry["data"]
-		Date entryDate = convertTimeToDate(exerciseEntry['day_start'])
+		Date entryDate = convertTimeToDate(exerciseEntry)
 		Integer timeZoneIdNumber = getTimeZoneId(account, exerciseEntry)
 
-		String setName = SET_NAME
+		String setName = getSetName("exercise", entryDate)
 
 		Long amount = exerciseEntryData["duration_m"]
 		String tagName = "classification_" + exerciseEntryData["classification"]
 		tagUnitMap.buildEntry(creationMap, stats, tagName, amount, userId, timeZoneIdNumber, entryDate, COMMENT, setName, context)
 	}
 
-	void getDataActivity(OAuthAccount account, Date forDay, boolean refreshAll, DataService.DataRequestContext context) throws InvalidAccessTokenException {
+	void getDataActivity(OAuthAccount account, Date forDay, boolean refreshAll, DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug "Get activity data for account $account.id for $forDay"
 
 		getDataActivity(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll, context)
 	}
 
-	void getDataActivity(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataService.DataRequestContext context) throws
+	void getDataActivity(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
 			InvalidAccessTokenException {
 		log.debug "Get activity data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
 		endDate = endDate ?: DateUtils.getEndOfTheDay()
 
+		if (refreshAll) {
+			// Unsetting all historical data. Starting with the device set name prefix
+			unsetAllOldEntries(account.userId, SET_NAME)
+		}
+
+		// Backward support for old set name
+		unsetOldEntries(account.userId, getOldSetNames("ac", startDate, endDate), context.alreadyUnset)
+
 		getDataActivity(account, getRequestURL("activity", startDate, endDate), context)
 	}
 
-	void getDataActivity(OAuthAccount account, String requestURL, DataService.DataRequestContext context) throws InvalidAccessTokenException {
+	void getDataActivity(OAuthAccount account, String requestURL, DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug "Import activity data for user id $account.userId"
 		Long userId = account.userId
 
@@ -308,24 +319,20 @@ class OuraDataService extends DataService {
 		context.initEntrylist()
 
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
-		JSONArray activityData = apiResponse["activity"]
+		JSONArray activityData = apiResponse["data"]
 
-		activityData.each { Map activityEntry ->
-			Date entryDate = convertTimeToDate(activityEntry['day_start'])
-
-			if (!entryDate) {
-				log.warn 'Response does not contain data to calculate entry date.'
-
-				return
-			}
-
-			String setName = SET_NAME
+		activityData.each { activityEntry ->
+			Date entryDate = convertTimeToDate(activityEntry)
+			String setName = getSetName("activity", entryDate)
 			Integer timeZoneIdNumber = getTimeZoneId(account, activityEntry)
 
-			["non_wear", "steps", "daily_movement", "cal_active", "cal_total"].each { key ->
-				if (activityEntry[key]) {
-					tagUnitMap.buildEntry(creationMap, stats, key, Long.parseLong(activityEntry[key].toString()), userId,
-							timeZoneIdNumber, entryDate, COMMENT, setName, context)
+			def exerciseEntryData = activityEntry["data"]
+			if (exerciseEntryData) {
+				["non_wear_m", "steps", "eq_meters", "active_cal", "total_cal"].each { key ->
+					if (exerciseEntryData[key]) {
+						tagUnitMap.buildEntry(creationMap, stats, key, Long.parseLong(exerciseEntryData[key].toString()), userId, timeZoneIdNumber,
+								entryDate, COMMENT, setName, context)
+					}
 				}
 			}
 		}
@@ -339,68 +346,23 @@ class OuraDataService extends DataService {
 		}
 	}
 
-	void getDataReadiness(OAuthAccount account, Date forDay, boolean refreshAll, DataService.DataRequestContext
-			context) throws InvalidAccessTokenException {
-		log.debug "Get readiness data for account ${account.id} for ${forDay}"
-
-		getDataReadiness(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll, context)
-	}
-
-	void getDataReadiness(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataService
-			.DataRequestContext context) throws InvalidAccessTokenException {
-		log.debug "Get readiness data account: ${account} startDate: ${startDate} endDate: ${endDate} refreshAll: " +
-				"${refreshAll}"
-
-		endDate = endDate ?: DateUtils.getEndOfTheDay()
-
-		getDataReadiness(account, getRequestURL('readiness', startDate, endDate), context)
-	}
-
-	void getDataReadiness(OAuthAccount account, String requestURL, DataService.DataRequestContext context) throws
-			InvalidAccessTokenException {
-		Long userId = account.userId
-		log.debug "Import reasiness data for user id ${userId}"
-
-		EntryCreateMap creationMap = new EntryCreateMap()
-		EntryStats stats = new EntryStats(userId)
-		context.initEntrylist()
-
-		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
-		JSONArray readinessArray = apiResponse['readiness']
-
-		readinessArray.each { Map readinessEntry ->
-			// Summary Date received as String. Format - yyyy-MM-dd
-			SimpleDateFormat simpleDateFormat = new SimpleDateFormat('yyyy-MM-dd')
-			Date entryDate = simpleDateFormat.parse(readinessEntry['summary_date'])
-
-			if (!entryDate) {
-				log.warn 'Response does not contain data to calculate entry date.'
-
-				return
-			}
-
-			String setName = SET_NAME
-			Integer timeZoneIdNumber = getTimeZoneId(account, readinessEntry)
-
-			if (readinessEntry['score']) {
-				tagUnitMap.buildEntry(creationMap, stats, 'readiness_score',
-						new BigDecimal(readinessEntry['score'].toString()), userId, timeZoneIdNumber, entryDate,
-						COMMENT, setName, context)
-			}
-		}
-
-		account.markLastPolled(stats.lastDate)
-		stats.finish()
-
-		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
-			log.debug "Processing get readiness data for paginated URL"
-			getDataReadiness(account, apiResponse["links"]["nextPageURL"].toString(), context)
-		}
+	/**
+	 * Get set name which will be used while creating entries. This set name is constructed with the
+	 * device name prefix + the type of the data (like sleep, activity or exercise) + the event date of the summary
+	 * data received from the API.
+	 *
+	 * @param type Type of the data to use in the set name
+	 * @param summaryDate Event date of the summary data
+	 * @return The new set name as described above like "OURA activity 03/01/2016 00:00:00" for activity or
+	 * "OURA sleep 03/02/2016 00:00:00" for sleep data
+	 */
+	String getSetName(String type, Date summaryDate) {
+		return SET_NAME + " " + type + " " + summaryDate.format("MM/dd/yyyy HH:mm:ss")
 	}
 
 	/**
 	 * Get old set name which will is used for backward compatibility by removing old entries with this set name.
-	 * This set name is not used for creating new entries. Use SET_NAME instead.
+	 * This set name is not used for creating new entries. Use the method {@link "getSetName" getSetName} instead.
 	 *
 	 * @param type Type of the data to use in the set name (like "s", "ac", "e")
 	 * @return The old set name like "OURAac2016-03-01 00:00:00.0-1" for activity or "OURAs2016-03-02 00:00:00.0-1"
@@ -446,64 +408,38 @@ class OuraDataService extends DataService {
 			throw new IllegalArgumentException("Both start & end date are required")
 		}
 
-		String startTime = startDate.format('yyyy-MM-dd')
-		String endTime = endDate.format('yyyy-MM-dd')
+		Long startTime = startDate.getTime()
+		Long endTime = endDate.getTime()
 
-		URIBuilder builder = new URIBuilder("/v1/$dataType")
+		URIBuilder builder = new URIBuilder("/api/$dataType")
 		builder.addQueryParam("max", 1000)
 		builder.addQueryParam("offset", 0)
-		builder.addQueryParam("start", startTime)
-		builder.addQueryParam("end", endTime)
+		// Ouracloud API accepts the timestamp in EPOCH time (i.e. in seconds)
+		builder.addQueryParam("startTimestamp", Long.toString((long)(startTime / 1000)))
+		builder.addQueryParam("endTimestamp", Long.toString((long)(endTime / 1000)))
 
 		return builder.toString()
 	}
 
 	Integer getTimeZoneId(OAuthAccount account, Map rawEntry) {
-		// Timezone offset in minutes
-		String timezone = rawEntry['timezone']
-		Integer offsetInMilliSeconds
-
-		if (timezone) {
-			try {
-				offsetInMilliSeconds = (timezone.toInteger()) * 60 * 1000
-			} catch (NumberFormatException e) {
-				log.warn 'Could not parse timezone', e
-			}
-		}
-
-		String timezoneOffset
-
-		if (offsetInMilliSeconds) {
-			// Getting timezone offset in String format. Ex: 180 converted to +03:00, -420 converted to -07:00
-			timezoneOffset = DateTimeZone.forOffsetMillis(offsetInMilliSeconds)?.toString()
-		}
-
-		// Finally return the id of TimeZoneId instance found/created for this offset.
-		return timezoneOffset ? TimeZoneId.look(timezoneOffset).id : getTimeZoneId(account)
+		return rawEntry["timeZone"] ? TimeZoneId.look(rawEntry["timeZone"]).id : getTimeZoneId(account)
 	}
 
 	/**
-	 * For a specific record from Ouracloud, the time of that record/event is the Date time. This helper method
+	 * For a specific record from Ouracloud, the time of that record/event is the EPOCH time. This helper method
 	 * converts that time to a Date object. Keeping it as a method to keep it DRY and also prevent it from missing at
 	 * ony place.
 	 * @param rawEntry Raw event/entry data received from Ouracloud API.
 	 * @return Converted date object
 	 */
-	Date convertTimeToDate(String dateTimeString) {
-		if (!dateTimeString) {
-			return
-		}
-
-		String pattern = "yyyy-MM-dd'T'HH:mm:ssZ"
-		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(pattern)
-
-		return dateTimeFormatter.parseDateTime(dateTimeString).toDate()
+	Date convertTimeToDate(Map rawEntry) {
+		return new Date(new Long(rawEntry["eventTime"]) * 1000)
 	}
 
 	@Override
 	void checkSyncHealth() {
 		int accountsCount = OAuthAccount.withCriteria {
-			eq('typeId', ThirdParty.OURA)
+			eq('typeId', ThirdParty.OURA_LEGACY)
 			gt('lastData', new Date() - 1)
 
 			projections {
@@ -527,3 +463,18 @@ class OuraDataService extends DataService {
 	}
 }
 
+/**
+ * TODO Replace the use of String like "sleep", "s", "acitivity", "a" etc. with this enum to make the code more
+ * readable. This enum is not used anywhere currently.
+ */
+enum OuraDataType {
+	SLEEP("s"),
+	ACTIVITY("ac"),
+	EXERCISE("e")
+
+	final oldSetName
+
+	OuraDataType(String oldSetName) {
+		this.oldSetName = oldSetName
+	}
+}

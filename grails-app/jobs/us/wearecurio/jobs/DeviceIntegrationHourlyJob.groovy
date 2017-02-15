@@ -8,7 +8,7 @@ import org.joda.time.LocalDateTime
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
-import us.wearecurio.services.OuraDataService
+import us.wearecurio.services.LegacyOuraDataService
 import us.wearecurio.utility.TimerJob
 
 class DeviceIntegrationHourlyJob extends TimerJob {
@@ -16,7 +16,7 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 
 	def movesDataService
 	def withingsDataService
-	OuraDataService ouraDataService
+	LegacyOuraDataService legacyOuraDataService
 	def concurrent = false
 	GrailsApplication grailsApplication
 	
@@ -39,7 +39,7 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 		}
 
 		movesDataService.pollAll()
-		ouraDataService.pollAll()
+		legacyOuraDataService.pollAll()
 
 		List<Integer> results = OAuthAccount.createCriteria().list {
 			projections {

@@ -29,7 +29,6 @@ class DataController extends LoginController {
 
 	EntryParserService entryParserService
 	SearchService searchService
-	EmailService emailService
 
 	static debug(str) {
 		log.debug(str)
@@ -1546,7 +1545,7 @@ class DataController extends LoginController {
 		}
 
 		trackingProjectRequest.save(flush: true)
-		emailService.sendMail {
+		EmailService.get().sendMail {
 			to "support@wearecurio.us"
 			from "server@wearecurio.us"
 			subject "[Curious] New Request- Autism, ME/CFS, Or Sleep Tracking Projects"

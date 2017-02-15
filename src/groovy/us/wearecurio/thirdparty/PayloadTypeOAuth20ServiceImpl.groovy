@@ -12,7 +12,7 @@ import org.scribe.model.Response
 import org.scribe.model.Token
 import org.scribe.model.Verifier
 import org.scribe.oauth.OAuth20ServiceImpl
-import us.wearecurio.thirdparty.oura.OuraApi
+import us.wearecurio.thirdparty.oura.LegacyOuraApi
 import us.wearecurio.thirdparty.ttandme.Twenty3AndMeApi
 
 /**
@@ -49,7 +49,7 @@ class PayloadTypeOAuth20ServiceImpl extends OAuth20ServiceImpl {
 		}
 
 		// TODO: authentication is not working when client secret is passed for Oura. Need to fix that
-		if (!(api instanceof OuraApi)) {
+		if (!(api instanceof LegacyOuraApi)) {
 			queryParams.put(OAuthConstants.CLIENT_SECRET, config.getApiSecret())
 		}
 		queryParams.put(OAuthConstants.REDIRECT_URI, config.getCallback())

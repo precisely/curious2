@@ -39,6 +39,7 @@ class TwitterDataService extends DataService {
 	static String curiousDataToken = "297564720-I2lqE8a3zVVbQlnmAI7suLviyaVFuel9kiAyaOcZ"
 	static String curiousDataSecret = "pN2HFeBdTluBgJVDslWu7YBo2sUIxADcGFHyj9qUVo"
 	static String BASE_URL = "https://api.twitter.com/1.1"
+	static final String COMMENT = "(Twitter)"
 	TwitterData twitterData
 	EntryParserService entryParserService
 
