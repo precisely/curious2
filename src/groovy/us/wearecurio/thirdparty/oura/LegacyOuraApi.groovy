@@ -5,9 +5,9 @@ import org.scribe.model.OAuthConfig
 import org.scribe.model.Verb
 import us.wearecurio.thirdparty.PayloadTypeOAuth20ServiceImpl
 
-class OuraApi extends DefaultApi20 {
+class LegacyOuraApi extends DefaultApi20 {
 
-	static final String BASE_URL = "https://api.ouraring.com"
+	static final String BASE_URL = "https://cloud.ouraring.com"
 
 	private static final String AUTHORIZE_URL = "$BASE_URL/oauth/authorize?response_type=code&client_id=%s&scope=%s&redirect_uri=%s";
 

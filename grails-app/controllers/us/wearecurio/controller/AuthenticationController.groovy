@@ -4,11 +4,11 @@ import groovyx.net.http.URIBuilder
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
 import us.wearecurio.hashids.DefaultHashIDGenerator
+import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
-import us.wearecurio.model.ThirdParty
-import us.wearecurio.services.LegacyOuraDataService
 import us.wearecurio.security.NoAuth
+import us.wearecurio.services.OuraDataService
 
 /**
  * A generic controller to handle all authentication made by oauth plugin.
@@ -41,7 +41,7 @@ class AuthenticationController extends SessionController {
 	def oauthService	// From OAuth Plugin
 	def twenty3AndMeDataService
 	def withingsDataService
-	LegacyOuraDataService legacyOuraDataService
+	OuraDataService ouraDataService
 
 	User currentUser
 	Long userId
@@ -142,7 +142,7 @@ class AuthenticationController extends SessionController {
 	}
 
 	def ouraAuth() {
-		JSONObject userInfo = legacyOuraDataService.getUserProfile(tokenInstance)
+		JSONObject userInfo = ouraDataService.getUserProfile(tokenInstance)
 
 		// If authentication was for user signup/signin with Oura
 		if (session[AUTH_REASON_KEY] == SIGN_UP_AUTH || session[AUTH_REASON_KEY] == SIGN_IN_AUTH) {
@@ -188,7 +188,7 @@ class AuthenticationController extends SessionController {
 			userId = user.id
 		}
 
-		oauthAccountService.createOrUpdate(ThirdParty.OURA, userInfo.id.toString(), tokenInstance, userId)
+		oauthAccountService.createOrUpdate(ThirdParty.OURA, userInfo.email, tokenInstance, userId)
 	}
 
 	def twenty3andmeAuth() {
