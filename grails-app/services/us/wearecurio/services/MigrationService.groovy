@@ -154,6 +154,38 @@ class MigrationService {
 		return false
 	}
 
+	public void updateThirdPartyEntryIdentifiers(String thirdParty) {
+		int totalEntries = Entry.countByComment("($thirdParty)")
+		Identifier identifier = Identifier.look(thirdParty)
+		Long identifierId = identifier.id
+
+		log.debug "Updating ${totalEntries} entries for $thirdParty to setIdentifier ${identifierId}"
+
+		while (totalEntries > 0) {
+			Thread.sleep(3000)
+			sql("UPDATE entry SET set_identifier=${identifierId}, set_name='$thirdParty' WHERE comment='" +
+					"($thirdParty)' AND (set_identifier!=${identifierId} OR set_identifier IS NULL) ORDER BY date " +
+					"DESC LIMIT 20000")
+			totalEntries -= 20000
+		}
+
+		int totalUpdatedEntries = Entry.countBySetIdentifier(identifier)
+
+		log.debug "Updated ${totalUpdatedEntries} entries for $thirdParty"
+	}
+
+	public void deleteThirdPartyEntryIdentifiers(String identifierValue) {
+		int totalIdentifiers = Identifier.countByValueLike(identifierValue)
+
+		log.debug "Deleting ${totalIdentifiers} Identifiers with value like: $identifierValue"
+
+		while (totalIdentifiers > 0) {
+			Thread.sleep(3000)
+			sql("DELETE FROM identifier WHERE value LIKE BINARY '$identifierValue' LIMIT 20000")
+			totalIdentifiers -= 20000
+		}
+	}
+
 	def doMigrations() {
 		if (Environment.getCurrent().equals(Environment.TEST))
 			return; // don't run in test environment
@@ -721,7 +753,7 @@ class MigrationService {
 			} catch (Throwable t) {
 			}
 			sql('DELETE FROM tag_unit_stats') // clear current list of tag unit stats
-			
+
 			def users = User.list()
 			for (u in users) {
 				def c = Entry.createCriteria()
@@ -780,35 +812,35 @@ class MigrationService {
 		tryMigration("Recompute entry base tags") {
 			sql("update entry e set units = '' where e.units in ('at','am','pm','om','repeat','remind','midnight','noon','start','stop','end','undefined','round','with','while','-')")
 			sql("update entry e set units = 'mU/ul' where e.units in ('m/ul')")
-			
+
 			def rows = sqlRows("select entry.id from entry where entry.tag_id = entry.base_tag_id and entry.units is not null and length(entry.units) > 0")
 
 			for (row in rows) {
 				Entry entry = Entry.get(row['id'])
-				
+
 				String suffix = UnitGroupMap.theMap.suffixForUnits(entry.units)
-				
+
 				//if (suffix == entry.units) {
 				//	System.err.println("ANOMALY: " + suffix)
 				//}
-				
+
 				String description = entry.tag.description
-				
+
 				if (description.endsWith(' ' + suffix)) {
 					entry.baseTag = Tag.look(description.substring(0, description.length() - (suffix.length() + 1)))
 				} else {
 					entry.tag = entryParserService.tagWithSuffixForUnits(entry.baseTag, entry.units, 0)
 				}
-				
+
 				Utils.save(entry, true)
 			}
 		}
 		tryMigration("Recompute null base tags") {
 			def rows = sqlRows("select entry.id from entry where entry.base_tag_id is null")
-			
+
 			for (row in rows) {
 				Entry entry = Entry.get(row['id'])
-				
+
 				if (entry.units) {
 					Tag origTag = entry.tag
 					entry.tag = entryParserService.tagWithSuffixForUnits(entry.tag, entry.units, 0)
@@ -816,16 +848,16 @@ class MigrationService {
 				} else {
 					entry.baseTag = entry.tag
 				}
-				
+
 				Utils.save(entry, true)
 			}
 		}
 		tryMigration("Recompute all base tags with new suffix format again") {
 			def rows = sqlRows("select entry.id from entry where entry.user_id is not null")
-			
+
 			for (row in rows) {
 				Entry entry = Entry.get(row['id'])
-				
+
 				if (entry.units) {
 					def tags = entryParserService.baseTagAndTagWithSuffixForUnits(entry.tag, entry.units, 0)
 					entry.baseTag = tags[0]
@@ -834,16 +866,16 @@ class MigrationService {
 				} else if (entry.baseTag != entry.tag) {
 					entry.baseTag = entry.tag
 					Utils.save(entry, true)
-				}				
+				}
 			}
 		}
 		tryMigration("Clear and recompute tag values stats for everyone") {
 			sql("delete from tag_stats")
 			sql("delete from tag_unit_stats")
 			sql("delete from tag_value_stats")
-			
+
 			def users = User.list()
-			
+
 			for (u in users) {
 				log.debug("Recomputing value stats for user " + u.id)
 				TagStats.updateTagStats(u)
@@ -879,5 +911,30 @@ class MigrationService {
 				totalNotifications -= 10000
 			}
 		}
+		tryMigration("Remove all Withings Identifiers and update associated entries") {
+			updateThirdPartyEntryIdentifiers('Withings')
+			deleteThirdPartyEntryIdentifiers('WI%')
+		}
+
+		tryMigration("Remove all Oura Identifiers and update associated entries") {
+			updateThirdPartyEntryIdentifiers('Oura')
+			deleteThirdPartyEntryIdentifiers('OURA%')
+		}
+
+		tryMigration("Remove all Fitbit Identifiers and dfgdf update associated entries") {
+			updateThirdPartyEntryIdentifiers('FitBit')
+			deleteThirdPartyEntryIdentifiers('fitbit%')
+		}
+
+		tryMigration("Remove all Jawbone Up Identifiers and update associated entries") {
+			updateThirdPartyEntryIdentifiers('Jawbone Up')
+			deleteThirdPartyEntryIdentifiers('JUP%')
+		}
+
+		tryMigration("Remove all Moves Identifiers and update associated entries") {
+			updateThirdPartyEntryIdentifiers('Moves')
+			deleteThirdPartyEntryIdentifiers('moves%')
+		}
+
 	}
 }

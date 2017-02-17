@@ -32,7 +32,7 @@ class JawboneUpDataService extends DataService {
 	static final String BASE_URL = "https://jawbone.com"
 	static final String COMMON_BASE_URL = "/nudge/api/v.1.1%s"
 	static final String COMMENT = "(Jawbone Up)"
-	static final String SET_NAME = "JUP"
+	static final String SET_NAME = "Jawbone Up"
 	static final String SOURCE_NAME = "Jawbone Up Data"
 
 	/**
@@ -129,7 +129,7 @@ class JawboneUpDataService extends DataService {
 		JSONObject bodyData = apiResponse["data"]
 
 		bodyData["items"].find { bodyEntry ->
-			String setName = getSetName(JawboneUpDataType.BODY, bodyEntry)
+			String setName = SET_NAME
 
 			Date entryDate = shortDateParser.parse(bodyEntry["date"].toString())
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
@@ -207,7 +207,7 @@ class JawboneUpDataService extends DataService {
 			// Raw date received in yyyyMMdd format. Example: 20140910
 			String rawDate = movesEntry["date"].toString()
 
-			String setName = getSetName(JawboneUpDataType.MOVE, movesEntry)
+			String setName = SET_NAME
 
 			Date entryDate = dateOnlyFormatter.parse(rawDate)
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
@@ -422,7 +422,7 @@ class JawboneUpDataService extends DataService {
 				return false	// continue looping
 			}
 
-			String setName = getSetName(JawboneUpDataType.SLEEP, sleepEntry)
+			String setName = SET_NAME
 
 			Date entryDate = new Date(sleepDetails["asleep_time"].toLong() * 1000)
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
@@ -471,11 +471,6 @@ class JawboneUpDataService extends DataService {
 		if (!endDate) {
 			throw new IllegalArgumentException("End date is missing")
 		}
-
-		if (refreshAll) {
-			// Un-setting all historical data. Starting with the device set name prefix
-			unsetAllOldEntries(account.userId, SET_NAME)
-		}
 	}
 
 	/**
@@ -522,19 +517,6 @@ class JawboneUpDataService extends DataService {
 		builder.addQueryParam("updated_after", Long.toString((long)(startTime / 1000)))
 
 		return String.format(COMMON_BASE_URL, builder.toString())
-	}
-
-	/**
-	 * Get set name which will be used while creating entries. This set name is constructed with the
-	 * device name prefix + the type of the data (like sleep, move or body) + the event date of the summary
-	 * data received from the API.
-	 *
-	 * @param type Type of the data to use in the set name
-	 * @param summaryDate Event date of the summary data
-	 * @return The new set name as described above like "JUP sleep 20131121" for sleep
-	 */
-	String getSetName(JawboneUpDataType type, Map summaryData) {
-		return SET_NAME + " " + type.name().toLowerCase() + " " + summaryData["date"].toString()
 	}
 
 	// Overloaded method

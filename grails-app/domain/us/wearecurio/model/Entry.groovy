@@ -8,8 +8,7 @@ import org.joda.time.LocalDate
 import org.joda.time.LocalTime
 
 import us.wearecurio.collection.SingleCollection
-import us.wearecurio.data.DataRetriever
-import us.wearecurio.data.DecoratedUnitRatio
+import us.wearecurio.data.*
 import us.wearecurio.data.DecoratedUnitRatio.AmountUnits
 import us.wearecurio.data.RepeatType
 import us.wearecurio.data.TagUnitStatsInterface
@@ -1526,19 +1525,18 @@ class Entry implements Comparable {
 	*
 	* @author Ujjawal Gayakwad
 	*/
-	static Map getImportedEntriesWithinRange(Date startDate, Date endDate, String source, Long userId,
+	static Map getImportedEntriesWithinRange(Date startDate, Date endDate, List<Identifier> setIdentifiers, Long userId,
 			 int max, int offset) {
-		log.debug "Entry.getImportedEntriesWithinRange() startDate: $startDate endDate: $endDate and source: $source"
-		if (!source) {
+		log.debug "Entry.getImportedEntriesWithinRange() startDate: $startDate endDate: $endDate and setIdentifiers: " +
+				"$setIdentifiers"
+		if (!setIdentifiers) {
 			return [entries: [], totalEntries: 0]
-		} else if (source.contains("Human")) {
-			source = "(Human-%)"
 		}
 
 		def criteria = Entry.createCriteria()
 		PagedResultList entryList = criteria.list(max: max ?: 1000, offset: offset ?: 0) {
 			between("date", startDate, endDate)
-			like("comment", source)
+			'in'("setIdentifier", setIdentifiers)
 			eq("userId", userId)
 		}
 		return [entries: entryList.resultList, totalEntries: entryList.totalCount]
