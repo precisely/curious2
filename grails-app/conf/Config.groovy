@@ -6,6 +6,7 @@ import us.wearecurio.thirdparty.fitbit.FitBitApi
 import us.wearecurio.thirdparty.human.HumanApi
 import us.wearecurio.thirdparty.jawbone.JawboneUpApi
 import us.wearecurio.thirdparty.moves.MovesApi
+import us.wearecurio.thirdparty.oura.LegacyOuraApi
 import us.wearecurio.thirdparty.oura.OuraApi
 import us.wearecurio.thirdparty.ttandme.Twenty3AndMeApi
 import us.wearecurio.thirdparty.withings.WithingsApi
@@ -213,9 +214,13 @@ environments {
 					key = "74b17c41e567dc3451092829e04c342f5c68c04806980936e1ec9cfeb8f3"
 					secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
 				}
-				oura {
+				ouraLegacy {
 					key = "curious-dev"
 					secret = "\$2a\$10\$8IkT2RjJR0WXGnZWYZEHxe2HwcbhLEIxjfcDEqliG/2CKBxI8sso.​"
+				}
+				oura {
+					key = 'WSMOSZBZYDCCINZ2'
+					secret = '6K6E4XCJPFUFEIRMGVGSHQTCEWQ2AMDP'
 				}
 				/**withings {
 					key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
@@ -623,14 +628,21 @@ oauth {
 			failureUri = "authentication/withings/fail"
 			signatureType = SignatureType.QueryString
 		}
-		oura {
-			api = OuraApi
+		ouraLegacy {
+			api = LegacyOuraApi
 			key = "curious"
 			secret = "\$2a\$10\$eBxUN4gGeZV5V4lQdbeSEezI990aDJMEsqkW.4NLy2E6KKJtWyFHK"
 			callback = "${grails.serverURL}oauth/oura/callback"
+			successUri = "authentication/ouraLegacy/success"
+			failureUri = "authentication/ouraLegacy/fail"
+			scope = "read"
+		}
+		oura {
+			api = OuraApi
+			callback = "${grails.serverURL}oauth/oura/callback"
 			successUri = "authentication/oura/success"
 			failureUri = "authentication/oura/fail"
-			scope = "read"
+			scope = "daily+email+personal"
 		}
 		twitter {
 			callback = "${grails.serverURL}oauth/twitter/callback"

@@ -1,7 +1,6 @@
 package us.wearecurio.thirdparty
 
 import org.apache.commons.logging.LogFactory
-import us.wearecurio.data.DecoratedUnitRatio
 import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.model.DurationType
 import us.wearecurio.model.Entry
@@ -26,6 +25,7 @@ abstract class TagUnitMap {
 	final static String SLEEP = "sleep"
 	final static String MEASUREMENT = "measurement"
 	final static String EXERCISE = "exercise"
+	final static String READINESS = 'readiness'
 	// The above constants are used for common string across various tag maps.
 
 	final static int AVERAGE = 1
