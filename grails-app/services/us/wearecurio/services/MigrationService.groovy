@@ -3,25 +3,19 @@ package us.wearecurio.services
 import com.causecode.fileuploader.CDNProvider
 import com.causecode.fileuploader.FileUploaderService
 import grails.util.Environment
-import grails.util.Holders
 import org.apache.commons.logging.LogFactory
 import org.grails.plugins.elasticsearch.ElasticSearchService
 import org.springframework.transaction.annotation.Transactional
-import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.DurationType
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
-import us.wearecurio.model.Model
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.PlotData
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagProperties
-import us.wearecurio.model.TagStats
-import us.wearecurio.model.TagUnitStats
-import us.wearecurio.model.TagValueStats
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
@@ -162,11 +156,11 @@ class MigrationService {
 		log.debug "Updating ${totalEntries} entries for $thirdParty to setIdentifier ${identifierId}"
 
 		while (totalEntries > 0) {
-			Thread.sleep(3000)
+			Thread.sleep(1000)
 			sql("UPDATE entry SET set_identifier=${identifierId}, set_name='$thirdParty' WHERE comment='" +
-					"($thirdParty)' AND (set_identifier!=${identifierId} OR set_identifier IS NULL) ORDER BY date " +
-					"DESC LIMIT 20000")
-			totalEntries -= 20000
+					"($thirdParty)' AND (set_identifier!=${identifierId} OR set_identifier IS NULL) AND user_id is not null " +
+					"ORDER BY date DESC LIMIT 40000")
+			totalEntries -= 40000
 		}
 
 		int totalUpdatedEntries = Entry.countBySetIdentifier(identifier)
@@ -911,17 +905,18 @@ class MigrationService {
 				totalNotifications -= 10000
 			}
 		}
+
+		tryMigration("Remove all Oura Identifiers and update associated entries update - 1") {
+			updateThirdPartyEntryIdentifiers('Oura')
+			deleteThirdPartyEntryIdentifiers('OURA%')
+		}
+
 		tryMigration("Remove all Withings Identifiers and update associated entries") {
 			updateThirdPartyEntryIdentifiers('Withings')
 			deleteThirdPartyEntryIdentifiers('WI%')
 		}
 
-		tryMigration("Remove all Oura Identifiers and update associated entries") {
-			updateThirdPartyEntryIdentifiers('Oura')
-			deleteThirdPartyEntryIdentifiers('OURA%')
-		}
-
-		tryMigration("Remove all Fitbit Identifiers and dfgdf update associated entries") {
+		tryMigration("Remove all Fitbit Identifiers and update associated entries") {
 			updateThirdPartyEntryIdentifiers('FitBit')
 			deleteThirdPartyEntryIdentifiers('fitbit%')
 		}
