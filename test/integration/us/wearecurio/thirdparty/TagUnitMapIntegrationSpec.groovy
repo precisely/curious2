@@ -3,8 +3,9 @@ package us.wearecurio.thirdparty
 import grails.test.spock.IntegrationSpec
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.JawboneUpDataService
-import us.wearecurio.services.MovesDataService
 import us.wearecurio.services.LegacyOuraDataService
+import us.wearecurio.services.MovesDataService
+import us.wearecurio.services.OuraDataService
 import us.wearecurio.services.WithingsDataService
 
 class TagUnitMapIntegrationSpec extends IntegrationSpec {
@@ -15,6 +16,7 @@ class TagUnitMapIntegrationSpec extends IntegrationSpec {
         TagUnitMap.theSourceSetIdentifiers[FitBitDataService.SET_NAME] == FitBitDataService.SOURCE_NAME
         TagUnitMap.theSourceSetIdentifiers[MovesDataService.SET_NAME] == MovesDataService.SOURCE_NAME
         TagUnitMap.theSourceSetIdentifiers[JawboneUpDataService.SET_NAME] == JawboneUpDataService.SOURCE_NAME
+        TagUnitMap.theSourceSetIdentifiers[OuraDataService.SET_NAME] == OuraDataService.SOURCE_NAME
         TagUnitMap.theSourceSetIdentifiers[LegacyOuraDataService.SET_NAME] == LegacyOuraDataService.SOURCE_NAME
     }
 

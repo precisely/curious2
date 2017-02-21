@@ -94,7 +94,7 @@ class LegacyOuraDataServiceTests extends CuriousServiceTestCase {
 	void "Test GetDataSleep with failure status code"() {
 		given:
 		legacyOuraDataService.oauthService = [
-				getOuraResource: { token, url, p, header ->
+				getOuraLegacyResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection("{}", 401))
 				}
 		]
@@ -115,7 +115,7 @@ class LegacyOuraDataServiceTests extends CuriousServiceTestCase {
 				type: "sleep", eventTime: 1424440700, data: {bedtime_m: 430, sleep_score: 76, awake_m: 42, rem_m: 68,
 				 light_m: 320, deep_m: 2.60}}]}"""
 		legacyOuraDataService.oauthService = [
-				getOuraResource: { token, url, p, header ->
+				getOuraLegacyResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
 				}
 		]
@@ -139,7 +139,7 @@ class LegacyOuraDataServiceTests extends CuriousServiceTestCase {
 		String mockedResponseData = """{"data":[{"dateCreated":"2015-11-04T12:42:45.168Z","timeZone":"Europe/Stockholm",
 				"user":3,"type":"sleep","eventTime":1434440700,"data":{"bedtime_m":510,"sleep_score":86,"deep_m":160}}]}"""
 		legacyOuraDataService.oauthService = [
-				getOuraResource: { token, url, p, header ->
+				getOuraLegacyResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
 				}
 		]
@@ -184,77 +184,10 @@ class LegacyOuraDataServiceTests extends CuriousServiceTestCase {
 		assert newEntryList[1].userId == account.userId
 	}
 
-	void "test getDataSleep when same entries are imported from polling with old set name"() {
-		given:
-		String mockedResponseData = """{"data":[{"dateCreated":"2015-11-04T12:42:45.168Z","timeZone":"Europe/Stockholm",
-				"user":3,"type":"sleep","eventTime":1434440700,"data":{"bedtime_m":510,"sleep_score":86,"deep_m":160}}]}"""
-		legacyOuraDataService.oauthService = [
-				getOuraResource: { token, url, p, header ->
-					return new Response(new MockedHttpURLConnection(mockedResponseData))
-				}
-		]
-
-		// Given one simple entry
-		Entry.create(account.userId, entryParserService.parse(new Date(), "America/Los_Angeles",
-				"bread 2pm", null, null, new Date(), true), new EntryStats())
-
-		when:
-		// When first time entries are imported
-		legacyOuraDataService.getDataSleep(account, new Date(), false, new DataRequestContext())
-
-		then:
-		// Then 3 sleep entries should be created (and one simple entry)
-		assert Entry.getCount() == 4
-		assert Entry.countByUserId(account.userId) == 4
-
-		List<Entry> entryList = Entry.getAll()
-
-		when:
-		(1..3).each { index ->
-			// Update the set name to use old set names, so that we can simulate data for the test
-			entryList[index].setIdentifier = Identifier.look(legacyOuraDataService.getOldSetName("s", new Date()))
-			Utils.save(entryList[index], true)
-		}
-
-		then:
-		assert entryList[0].description == "bread"
-		assert entryList[0].setIdentifier == null
-		assert entryList[0].userId == account.userId
-
-		assert entryList[1].description == "sleep [time: total]"
-		assert entryList[1].refresh().setIdentifier.value.startsWith("OURAs")
-		assert entryList[1].userId == account.userId
-
-		when:
-		// When same data is re-imported again with polling for 4 days of interval
-		legacyOuraDataService.getDataSleep(account, new Date() - 2, new Date() + 2, false, new DataRequestContext())
-
-		then:
-		// Then previously imported entries (with old set name) from Oura should be unset
-		assert Entry.getCount() == 7
-		assert Entry.countByUserId(account.userId) == 4
-
-		List<Entry> newEntryList = Entry.getAll()
-		newEntryList*.refresh()
-		
-		newEntryList[0].userId == account.userId
-		// User id in 3 older entries will be unset
-		newEntryList[1].id == entryList[1].id
-		newEntryList[1].userId == null
-		newEntryList[2].id == entryList[2].id
-		newEntryList[2].userId == null
-		newEntryList[3].id == entryList[3].id
-		newEntryList[3].userId == null
-		// And three new entries will be created
-		newEntryList[4].userId == account.userId
-		newEntryList[5].userId == account.userId
-		newEntryList[6].userId == account.userId
-	}
-
 	void "Test getDataExercise with failure status code"() {
 		given:
 		legacyOuraDataService.oauthService = [
-				getOuraResource: { token, url, p, header ->
+				getOuraLegacyResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection("{}", 401))
 				}
 		]
@@ -274,7 +207,7 @@ class LegacyOuraDataServiceTests extends CuriousServiceTestCase {
 				{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 1,
 				type: "exercise", eventTime: 1424440700, data: {duration_m: 20, classification: "light"}}]}"""
 		legacyOuraDataService.oauthService = [
-				getOuraResource: { token, url, p, header ->
+				getOuraLegacyResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
 				}
 		]
@@ -303,7 +236,7 @@ class LegacyOuraDataServiceTests extends CuriousServiceTestCase {
 						type: "exercise", eventTime: 1434442200, data: {duration_m: 20, classification: "light"}}
 				]}"""
 		legacyOuraDataService.oauthService = [
-				getOuraResource: { token, url, p, header ->
+				getOuraLegacyResource: { token, url, p, header ->
 					// TODO Extend MockedHttpURLConnection to MockedHttpURLConnectionResponse to read directly from a file
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
 				}
@@ -329,7 +262,7 @@ class LegacyOuraDataServiceTests extends CuriousServiceTestCase {
 		given:
 		String mockedResponseData = new File("./test/integration/test-files/oura/exercise-contiguous-1.json").text
 		legacyOuraDataService.oauthService = [
-				getOuraResource: { token, url, p, header ->
+				getOuraLegacyResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
 				}
 		]
@@ -375,7 +308,7 @@ class LegacyOuraDataServiceTests extends CuriousServiceTestCase {
 						type: "exercise", eventTime: 1434470700, data: {duration_m: 20, classification: "light"}}
 				]}"""
 		legacyOuraDataService.oauthService = [
-				getOuraResource: { token, url, p, header ->
+				getOuraLegacyResource: { token, url, p, header ->
 					// TODO Extend MockedHttpURLConnection to MockedHttpURLConnectionResponse to read directly from a file
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
 				}
@@ -410,7 +343,7 @@ class LegacyOuraDataServiceTests extends CuriousServiceTestCase {
 		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", type: "activity",
 				eventTime: 1434440700, data: {non_wear_m: 481, steps: 9800, eq_meters: 1478, active_cal: 204, total_cal: 2162}}]}"""
 		legacyOuraDataService.oauthService = [
-			getOuraResource: { token, url, p, header ->
+			getOuraLegacyResource: { token, url, p, header ->
 				return new Response(new MockedHttpURLConnection(mockedResponseData))
 			}
 		]
@@ -425,7 +358,7 @@ class LegacyOuraDataServiceTests extends CuriousServiceTestCase {
 	void "Test getDataActivity with failure status code"() {
 		given:
 		legacyOuraDataService.oauthService = [
-				getOuraResource: { token, url, p, header ->
+				getOuraLegacyResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection("{}", 401))
 				}
 		]
@@ -446,7 +379,7 @@ class LegacyOuraDataServiceTests extends CuriousServiceTestCase {
 				type: "activity", eventTime: 1424440700, data: {non_wear_m: 441, steps: 10000, eq_meters: 1778, active_cal: 254, total_cal: 2262}}]}"""
 
 		legacyOuraDataService.oauthService = [
-				getOuraResource: { token, url, p, header ->
+				getOuraLegacyResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
 				}
 		]
@@ -499,8 +432,8 @@ class LegacyOuraDataServiceTests extends CuriousServiceTestCase {
 		assert ThirdPartyNotification.count() == 1
 		assert ThirdPartyNotification.first().typeId == ThirdParty.OURA_LEGACY
 	}
-	
-	void '''Test checkSyncHealth method to send email if there are no OAuthAccounts for oura with lastData greater 
+
+	void '''Test checkSyncHealth method to send email if there are no OAuthAccounts for oura with lastData greater
 			than 24 hours'''() {
 		given: 'An OAuthAccount instance for Oura with lastData within last 24 hours'
 		OAuthAccount.list()*.delete(flush: true)

@@ -7,6 +7,7 @@ import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
+import org.joda.time.IllegalInstantException
 import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
@@ -58,7 +59,7 @@ class OuraDataService extends DataService {
 		endDate = endDate ?: DateUtils.getEndOfTheDay()
 
 		getDataSleep(account, startDate, endDate, false, context)
-//		getDataExercise(account, startDate, endDate, false, context)
+		// getDataExercise(account, startDate, endDate, false, context)
 		getDataActivity(account, startDate, endDate, false, context)
 		getDataReadiness(account, startDate, endDate, false, context)
 
@@ -144,19 +145,23 @@ class OuraDataService extends DataService {
 
 			Date sleepEnd = convertTimeToDate(sleepEntry['bedtime_end'])
 
-			// Not creating entries if a valid date is missing.
+			// Trying to calculate sleepEnd using bedtime_start and duration parameters if bedtime_end is missing.
 			if (!sleepEnd) {
 				Date sleepStart = convertTimeToDate(sleepEntry['bedtime_start'])
 
-				// In Minutes
-				Integer totalSlept = sleepEntry['duration']?.toInteger()
+				/*
+				* Total duration of the sleep period (sleep.duration = sleep.bedtime_end - sleep.bedtime_start)
+				* in seconds.
+				*/
+				Integer sleepDuration = sleepEntry['duration']?.toInteger()
 
-				if (totalSlept && sleepStart) {
+				if (sleepDuration && sleepStart) {
 					use(TimeCategory) {
-						sleepEnd = sleepStart + totalSlept.seconds
+						sleepEnd = sleepStart + sleepDuration.seconds
 					}
 				}
 
+				// Not creating entry if sleepEnd could not be calculated.
 				if (!sleepEnd) {
 					log.warn 'Response does not contain data to calculate entry date.'
 
@@ -164,7 +169,7 @@ class OuraDataService extends DataService {
 				}
 			}
 
-			log.debug "Total bedtime ${sleepEntry['total']} seconds, Sleep end ${sleepEnd}, "
+			log.debug "Total bedtime ${sleepEntry['duration']} seconds, Sleep end ${sleepEnd}, "
 
 			["total", "score", "awake", "rem", "light", "deep", 'hr_lowest'].each { key ->
 				if (sleepEntry[key]) {
@@ -199,7 +204,7 @@ class OuraDataService extends DataService {
 	}
 
 	Map getDataExercise(OAuthAccount account, String requestURL, DataService.DataRequestContext context) throws InvalidAccessTokenException {
-		log.debug "Import extercise data for user id $account.userId"
+		log.debug "Import exercise data for user id $account.userId"
 		Long userId = account.userId
 
 		EntryCreateMap creationMap = new EntryCreateMap()
@@ -274,7 +279,7 @@ class OuraDataService extends DataService {
 	private void buildExerciseEntry(EntryCreateMap creationMap, EntryStats stats, JSONObject exerciseEntry,
 			Long userId, OAuthAccount account, DataService.DataRequestContext context) {
 		def exerciseEntryData = exerciseEntry["data"]
-		Date entryDate = convertTimeToDate(exerciseEntry['day_start'])
+		Date entryDate = convertTimeToDate(exerciseEntry)
 		Integer timeZoneIdNumber = getTimeZoneId(account, exerciseEntry)
 
 		String setName = SET_NAME
@@ -359,16 +364,16 @@ class OuraDataService extends DataService {
 	void getDataReadiness(OAuthAccount account, String requestURL, DataService.DataRequestContext context) throws
 			InvalidAccessTokenException {
 		Long userId = account.userId
-		log.debug "Import reasiness data for user id ${userId}"
+		log.debug "Import readiness data for user id ${userId}"
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
 		context.initEntrylist()
 
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
-		JSONArray readinessArray = apiResponse['readiness']
+		JSONArray readinessData = apiResponse['readiness']
 
-		readinessArray.each { Map readinessEntry ->
+		readinessData.each { Map readinessEntry ->
 			// Summary Date received as String. Format - yyyy-MM-dd
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat('yyyy-MM-dd')
 			Date entryDate = simpleDateFormat.parse(readinessEntry['summary_date'])
@@ -497,7 +502,14 @@ class OuraDataService extends DataService {
 		String pattern = "yyyy-MM-dd'T'HH:mm:ssZ"
 		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(pattern)
 
-		return dateTimeFormatter.parseDateTime(dateTimeString).toDate()
+		Date convertedDate
+		try {
+			convertedDate = dateTimeFormatter.parseDateTime(dateTimeString).toDate()
+		} catch (IllegalArgumentException | UnsupportedOperationException | IllegalInstantException e) {
+			log.warn "Could not parse date ${dateTimeString}"
+		}
+
+		return convertedDate
 	}
 
 	@Override
@@ -524,6 +536,22 @@ class OuraDataService extends DataService {
 		['vishesh@causecode.com', 'mitsu@wearecurio.us', 'developers@causecode.com'].each { String toEmail ->
 			emailService.send(toEmail, '[Curious] - Oura Sync Issue', warnMessage)
 		}
+	}
+}
+
+/**
+ * TODO Replace the use of String like "sleep", "s", "activity", "a" etc. with this enum to make the code more
+ * readable. This enum is not used anywhere currently.
+ */
+enum OuraDataType {
+	SLEEP("s"),
+	ACTIVITY("ac"),
+	EXERCISE("e")
+
+	final oldSetName
+
+	OuraDataType(String oldSetName) {
+		this.oldSetName = oldSetName
 	}
 }
 

@@ -317,6 +317,10 @@ environments {
 					key = "zNg9SWw1G74"
 					secret = "55de868ea52b843d07400c3dc79f5e533a478006"
 				}
+				oura {
+					key = 'WSMOSZBZYDCCINZ2'
+					secret = '6K6E4XCJPFUFEIRMGVGSHQTCEWQ2AMDP'
+				}
 			}
 		}
 		
@@ -508,6 +512,10 @@ environments {
 				twitter {
 					key = "gI2yYQiHUaCSaMemzkfXWPWSv"
 					secret = "9v5XAQ860KaYQuk1w0Ez2hjfJ3Dpl58Sg5s3tdhbWWY9WHOmQh"
+				}
+				oura {
+					key = 'WSMOSZBZYDCCINZ2'
+					secret = '6K6E4XCJPFUFEIRMGVGSHQTCEWQ2AMDP'
 				}
 			}
 		}

@@ -102,9 +102,9 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		thrown(InvalidAccessTokenException)
 
 		where:
-		methodName | _
-		'getDataSleep' | _
-		'getDataActivity' | _
+		methodName         | _
+		'getDataSleep'     | _
+		'getDataActivity'  | _
 		'getDataReadiness' | _
 	}
 
@@ -116,19 +116,19 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 				deep: 160, hr_low_duration: 1170, hypnogram_5min: '42441112424444422222211', rmssd: 54, score_total:
 				82, score_alignment: 38, score_efficiency: 98, got_up_count: 1, hr_10min: [255, 75, 54, 54, 56, 56,
 				57, 56, 55], "temperature_max_delta": 103, score_disturbances: 76, total: 23820, rmssd_5min:
-				[50, 62, 51, 55, 69, 68, 63, 53], bedtime_end: "2017-02-14T08:39:57+01:00", restless: 43,
-				duration: 25680, hr_5min: [60, 60, 55, 55, 53, 54, 54], awake: 1860, score_rem: 93, period_id: 0,
+				[50, 62, 51, 55, 69, 68, 63, 53], bedtime_end: "2016-09-04T08:39:57+01:00", restless: 43,
+				duration: 25680, hr_5min: [60, 60, 55, 55, 53, 54, 54], score_rem: 93, period_id: 0,
 				wake_up_count: 1, hr_average: 56.875, onset_latency: 630, hr_lowest: 52, is_longest: 1, rem_rmssd: 44,
 				nrem_rmssd: 56, midpoint_time: 7, score_deep: 49, score_latency: 93, efficiency: 93},
 
-				{summary_date: "2015-11-03", timezone: "330", bedtime_start: "2016-09-03T23:50:09+05:30", score: 80,
-				awake: 51, rem: 68, light: 220, deep: 160, hr_low_duration: 1170, hypnogram_5min:
+				{summary_date: "2015-11-03", timezone: "330", bedtime_start: "2016-09-02T23:50:09+05:30", score: 80,
+				awake: 51, rem: 68, light: 210, deep: 163, hr_low_duration: 1170, hypnogram_5min:
 				'42441112424444422222211', rmssd: 54, score_total: 82, score_alignment: 38, score_efficiency: 98,
 				got_up_count: 2, hr_10min: [255, 75, 54, 54, 56, 56, 57, 56, 55], "temperature_max_delta": 102,
 				score_disturbances: 76, total: 33823, rmssd_5min: [50, 62, 51, 55, 69, 68, 63, 53], bedtime_end:
-				"2017-02-14T08:39:57+01:00", restless: 43, duration: 25680, hr_5min: [60, 60, 55, 55, 53, 54, 54],
-				awake: 1860, score_rem: 95, period_id: 0, wake_up_count: 2, hr_average: 56.875, onset_latency: 630,
-				hr_lowest: 52, is_longest: 1, rem_rmssd: 44, nrem_rmssd: 56, midpoint_time: 7, score_deep: 49,
+				"2016-09-03T08:39:57+01:00", restless: 43, duration: 25680, hr_5min: [60, 60, 55, 55, 53, 54, 54],
+				score_rem: 95, period_id: 0, wake_up_count: 2, hr_average: 56.875, onset_latency: 630,
+				hr_lowest: 54, is_longest: 1, rem_rmssd: 44, nrem_rmssd: 56, midpoint_time: 7, score_deep: 49,
 				score_latency: 93, efficiency: 93}
 				]}"""
 
@@ -151,7 +151,7 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList[0].setIdentifier.value == "Oura"
 
 		entryList[13].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList[13].amount == 52
+		entryList[13].amount == 54
 		entryList[13].units == 'bpm lowest'
 		entryList[13].setIdentifier.value == "Oura"
 	}

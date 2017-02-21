@@ -27,7 +27,7 @@ import us.wearecurio.utility.Utils
 class LegacyOuraDataService extends DataService {
 
 	static final String BASE_URL = LegacyOuraApi.BASE_URL
-	static final String SET_NAME = "OURA"
+	static final String SET_NAME = "Oura"
 	static final String SOURCE_NAME = "Oura Data"
 	static final String COMMENT = "(Oura)"
 	LegacyOuraTagUnitMap tagUnitMap = new LegacyOuraTagUnitMap()
@@ -35,7 +35,7 @@ class LegacyOuraDataService extends DataService {
 	EmailService emailService
 
 	LegacyOuraDataService() {
-		provider = "LegacyOura"
+		provider = "OuraLegacy"
 		typeId = ThirdParty.OURA_LEGACY
 		profileURL = BASE_URL + "/api/userProfile/me"
 		TagUnitMap.addSourceSetIdentifier(SET_NAME, SOURCE_NAME)
@@ -80,14 +80,14 @@ class LegacyOuraDataService extends DataService {
 		if (!(notifications instanceof JSONArray)) {
 			notifications = [notifications]
 		}
-		
+
 		ThirdPartyNotification.withNewSession {
 			notifications.each { notification ->
 
 				thirdPartyNotificationList.add(saveThirdPartyNotification(notification))
 			}
 		}
-		
+
 		return thirdPartyNotificationList
 	}
 
@@ -118,14 +118,6 @@ class LegacyOuraDataService extends DataService {
 
 		endDate = endDate ?: DateUtils.getEndOfTheDay()
 
-		if (refreshAll) {
-			// Unsetting all historical data. Starting with the device set name prefix
-			unsetAllOldEntries(account.userId, SET_NAME)
-		}
-
-		// Backward support for old set name
-		unsetOldEntries(account.userId, getOldSetNames("s", startDate, endDate), context.alreadyUnset)
-
 		getDataSleep(account, getRequestURL("sleep", startDate, endDate), context)
 	}
 
@@ -143,7 +135,7 @@ class LegacyOuraDataService extends DataService {
 
 		sleepData.each { sleepEntry ->
 			Date entryDate = convertTimeToDate(sleepEntry)
-			String setName = getSetName("sleep", entryDate)
+			String setName = SET_NAME
 
 			Integer timeZoneIdNumber = getTimeZoneId(account, sleepEntry)
 			def sleepEntryData = sleepEntry["data"]
@@ -189,14 +181,6 @@ class LegacyOuraDataService extends DataService {
 		log.debug "Get exercise data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
 		endDate = endDate ?: DateUtils.getEndOfTheDay()
-
-		if (refreshAll) {
-			// Unsetting all historical data. Starting with the device set name prefix
-			unsetAllOldEntries(account.userId, SET_NAME)
-		}
-
-		// Backward support for old set name
-		unsetOldEntries(account.userId, getOldSetNames("e", startDate, endDate), context.alreadyUnset)
 
 		getDataExercise(account, getRequestURL("exercise", startDate, endDate), context)
 	}
@@ -280,7 +264,7 @@ class LegacyOuraDataService extends DataService {
 		Date entryDate = convertTimeToDate(exerciseEntry)
 		Integer timeZoneIdNumber = getTimeZoneId(account, exerciseEntry)
 
-		String setName = getSetName("exercise", entryDate)
+		String setName = SET_NAME
 
 		Long amount = exerciseEntryData["duration_m"]
 		String tagName = "classification_" + exerciseEntryData["classification"]
@@ -299,14 +283,6 @@ class LegacyOuraDataService extends DataService {
 
 		endDate = endDate ?: DateUtils.getEndOfTheDay()
 
-		if (refreshAll) {
-			// Unsetting all historical data. Starting with the device set name prefix
-			unsetAllOldEntries(account.userId, SET_NAME)
-		}
-
-		// Backward support for old set name
-		unsetOldEntries(account.userId, getOldSetNames("ac", startDate, endDate), context.alreadyUnset)
-
 		getDataActivity(account, getRequestURL("activity", startDate, endDate), context)
 	}
 
@@ -323,7 +299,7 @@ class LegacyOuraDataService extends DataService {
 
 		activityData.each { activityEntry ->
 			Date entryDate = convertTimeToDate(activityEntry)
-			String setName = getSetName("activity", entryDate)
+			String setName = SET_NAME
 			Integer timeZoneIdNumber = getTimeZoneId(account, activityEntry)
 
 			def exerciseEntryData = activityEntry["data"]
@@ -347,22 +323,8 @@ class LegacyOuraDataService extends DataService {
 	}
 
 	/**
-	 * Get set name which will be used while creating entries. This set name is constructed with the
-	 * device name prefix + the type of the data (like sleep, activity or exercise) + the event date of the summary
-	 * data received from the API.
-	 *
-	 * @param type Type of the data to use in the set name
-	 * @param summaryDate Event date of the summary data
-	 * @return The new set name as described above like "OURA activity 03/01/2016 00:00:00" for activity or
-	 * "OURA sleep 03/02/2016 00:00:00" for sleep data
-	 */
-	String getSetName(String type, Date summaryDate) {
-		return SET_NAME + " " + type + " " + summaryDate.format("MM/dd/yyyy HH:mm:ss")
-	}
-
-	/**
 	 * Get old set name which will is used for backward compatibility by removing old entries with this set name.
-	 * This set name is not used for creating new entries. Use the method {@link "getSetName" getSetName} instead.
+	 * This set name is not used for creating new entries. Use SET_NAME instead.
 	 *
 	 * @param type Type of the data to use in the set name (like "s", "ac", "e")
 	 * @return The old set name like "OURAac2016-03-01 00:00:00.0-1" for activity or "OURAs2016-03-02 00:00:00.0-1"
@@ -460,21 +422,5 @@ class LegacyOuraDataService extends DataService {
 		['vishesh@causecode.com', 'mitsu@wearecurio.us', 'developers@causecode.com'].each { String toEmail ->
 			emailService.send(toEmail, '[Curious] - Oura Sync Issue', warnMessage)
 		}
-	}
-}
-
-/**
- * TODO Replace the use of String like "sleep", "s", "acitivity", "a" etc. with this enum to make the code more
- * readable. This enum is not used anywhere currently.
- */
-enum OuraDataType {
-	SLEEP("s"),
-	ACTIVITY("ac"),
-	EXERCISE("e")
-
-	final oldSetName
-
-	OuraDataType(String oldSetName) {
-		this.oldSetName = oldSetName
 	}
 }

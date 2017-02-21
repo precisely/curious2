@@ -1,18 +1,17 @@
 package us.wearecurio.services.integration
 
+import grails.converters.JSON
+import org.junit.Test
+import org.scribe.model.Response
 import spock.lang.Unroll
 import us.wearecurio.datetime.DateUtils
-import grails.converters.JSON
-import org.junit.*
-import org.scribe.model.Response
-
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.services.DataService
 import us.wearecurio.services.FitBitDataService
-import us.wearecurio.services.LegacyOuraDataService
+import us.wearecurio.services.OuraDataService
 import us.wearecurio.services.WithingsDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
@@ -21,13 +20,12 @@ import us.wearecurio.utility.Utils
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-
 class DataServiceTests extends CuriousServiceTestCase {
 	static transactional = true
 
 	WithingsDataService withingsDataService
 	FitBitDataService fitBitDataService
-	LegacyOuraDataService legacyOuraDataService
+	OuraDataService ouraDataService
 	OAuthAccount account
 	OAuthAccount account2
 
@@ -61,7 +59,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 				type: "sleep", eventTime: 1424440700, data: {bedtime_m: 430, sleep_score: 76, awake_m: 42,
 				 rem_m: 68, light_m: 320, deep_m: 2.60}}]}"""
 
-		legacyOuraDataService.oauthService = [
+		ouraDataService.oauthService = [
 				getOuraResource: { token, url, p, header ->
 					String stringWithTimeStamp = url.split("startTimestamp=")[1];
 					Pattern pattern = Pattern.compile("\\d+");
@@ -79,7 +77,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 		]
 
 		when: "Notification date is passed in arguments result should be as expected"
-		Boolean result = legacyOuraDataService.poll(account, notificationDate)
+		Boolean result = ouraDataService.poll(account, notificationDate)
 
 		then: "response should be true"
 		result
@@ -100,7 +98,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 3,
 				type: "sleep", eventTime: $eventTime, data: {bedtime_m: 430, sleep_score: 76, awake_m: 42, rem_m: 68,
 				 light_m: 320, deep_m: 2.60}}]}"""
-		legacyOuraDataService.oauthService = [
+		ouraDataService.oauthService = [
 				getOuraResource: { token, url, p, header ->
 					if (url.contains("sleep")) {
 						return new Response(new MockedHttpURLConnection(mockedResponseData))
@@ -112,7 +110,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 		when: "Poll is called entries should be created"
 		account.lastData = account.lastPolled = new Date() - 17
 		Utils.save(account, true)
-		Boolean result = legacyOuraDataService.poll(account, new Date() - 15)
+		Boolean result = ouraDataService.poll(account, new Date() - 15)
 
 		then: "response should be true"
 		Entry awakeEntry = Entry.findByUnits("hours awake")
@@ -125,7 +123,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 				 light_m: 320, deep_m: 2.60}}]}"""
 		account.lastData = account.lastPolled = new Date() - 17
 		Utils.save(account, true)
-		result = legacyOuraDataService.poll(account, new Date() - 15)
+		result = ouraDataService.poll(account, new Date() - 15)
 
 		int totalSleepAwakeEntries = Entry.countByUnits("hours awake")
 		awakeEntry = Entry.findByUnits("hours awake")
@@ -141,8 +139,8 @@ class DataServiceTests extends CuriousServiceTestCase {
 		String mockNotificationData = [type: "sleep",
 			date: "2016-01-01", userId: userId] as JSON
 
-		legacyOuraDataService.notificationHandler(mockNotificationData)
-		legacyOuraDataService.notificationProcessor()
+		ouraDataService.notificationHandler(mockNotificationData)
+		ouraDataService.notificationProcessor()
 
 		expect:
 		assert true
