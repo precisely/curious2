@@ -10,6 +10,7 @@ import us.wearecurio.model.UserGroup
 import us.wearecurio.services.DataService
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.JawboneService
+import us.wearecurio.services.LegacyOuraDataService
 import us.wearecurio.services.MovesDataService
 import us.wearecurio.services.OuraDataService
 import us.wearecurio.services.Twenty3AndMeDataService
@@ -38,6 +39,9 @@ class HomeController extends DataController {
 	def oauthService
 	PageRenderer groovyPageRenderer
 	Twenty3AndMeDataService twenty3AndMeDataService
+
+	// TODO Remove this after the migration to new Oura API is completed.
+	LegacyOuraDataService legacyOuraDataService
 
 	static debug(str) {
 		log.debug(str)
