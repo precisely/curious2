@@ -3,19 +3,25 @@ package us.wearecurio.services
 import com.causecode.fileuploader.CDNProvider
 import com.causecode.fileuploader.FileUploaderService
 import grails.util.Environment
+import grails.util.Holders
 import org.apache.commons.logging.LogFactory
 import org.grails.plugins.elasticsearch.ElasticSearchService
 import org.springframework.transaction.annotation.Transactional
+import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.DurationType
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
+import us.wearecurio.model.Model
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.PlotData
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagProperties
+import us.wearecurio.model.TagStats
+import us.wearecurio.model.TagUnitStats
+import us.wearecurio.model.TagValueStats
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
@@ -148,24 +154,43 @@ class MigrationService {
 		return false
 	}
 
+	int getEntryCountWithCommentAndIdentifier(String thirdParty, Identifier identifier) {
+		int totalEntries = Entry.withCriteria {
+			// Comments are wrapped in parenthesis like (Oura).
+			eq('comment', "($thirdParty)")
+
+			or {
+				ne('setIdentifier', identifier)
+				isNull('setIdentifier')
+			}
+
+			isNotNull('userId')
+
+			projections {
+				rowCount()
+			}
+		} [0]
+
+		return totalEntries
+	}
+
 	public void updateThirdPartyEntryIdentifiers(String thirdParty) {
-		int totalEntries = Entry.countByComment("($thirdParty)")
 		Identifier identifier = Identifier.look(thirdParty)
 		Long identifierId = identifier.id
 
-		log.debug "Updating ${totalEntries} entries for $thirdParty to setIdentifier ${identifierId}"
+		int totalEntries = getEntryCountWithCommentAndIdentifier(thirdParty, identifier)
+
+		log.debug "Updating ${totalEntries} entries with valid user for $thirdParty to setIdentifier ${identifierId}"
 
 		while (totalEntries > 0) {
 			Thread.sleep(1000)
 			sql("UPDATE entry SET set_identifier=${identifierId}, set_name='$thirdParty' WHERE comment='" +
-					"($thirdParty)' AND (set_identifier!=${identifierId} OR set_identifier IS NULL) AND user_id is not null " +
-					"ORDER BY date DESC LIMIT 40000")
+					"($thirdParty)' AND (set_identifier!=${identifierId} OR set_identifier IS NULL) AND " +
+					"user_id is not null ORDER BY date DESC LIMIT 40000")
 			totalEntries -= 40000
 		}
 
-		int totalUpdatedEntries = Entry.countBySetIdentifier(identifier)
-
-		log.debug "Updated ${totalUpdatedEntries} entries for $thirdParty"
+		log.debug "Updated entries for $thirdParty"
 	}
 
 	public void deleteThirdPartyEntryIdentifiers(String identifierValue) {
@@ -175,9 +200,11 @@ class MigrationService {
 
 		while (totalIdentifiers > 0) {
 			Thread.sleep(3000)
-			sql("DELETE FROM identifier WHERE value LIKE BINARY '$identifierValue' LIMIT 20000")
-			totalIdentifiers -= 20000
+			sql("DELETE FROM identifier WHERE value LIKE BINARY '$identifierValue' LIMIT 40000")
+			totalIdentifiers -= 40000
 		}
+
+		log.debug "Deleted Identifiers with value like: $identifierValue"
 	}
 
 	def doMigrations() {
@@ -906,30 +933,109 @@ class MigrationService {
 			}
 		}
 
-		tryMigration("Remove all Oura Identifiers and update associated entries update - 1") {
+// - - - - - - - - - - - - - - - - Migrations for Improving Performance - - - - - - - - - - - - - - - - - - - - - - - -
+
+		/*
+		 * Cleaning up the database by removing entries with no user and date older than 30 days.
+		 * Each 40000 set of entries is taking more than 1 minute to complete, hence for a total of nearly
+		 * 8201338 entries without userId and date older than 30 days, migration will approximately take 4-6 hrs to
+		 * complete.
+		 */
+		tryMigration('Delete all entries with no user and date older than 30 days') {
+			log.debug "Total Entry count before deletion is ${Entry.count()}"
+
+			Date thirtyDayAgo = new Date() - 30
+			int totalEntries = Entry.countByDateLessThanAndUserIdIsNull(thirtyDayAgo)
+
+			log.debug "Deleting ${totalEntries} entries with no user and date less than ${thirtyDayAgo}"
+
+			while (totalEntries > 0) {
+				Thread.sleep(3000)
+				sql("DELETE FROM entry WHERE date < :date AND user_id IS NULL LIMIT " +
+						"40000", [date: thirtyDayAgo])
+				totalEntries -= 40000
+			}
+
+			log.debug "Total Entry count after deletion ${Entry.count()}"
+		}
+
+		/**
+		 * Update all device entries with new Identifier.
+		 */
+		tryMigration("Update entries for Oura with new Identifier") {
 			updateThirdPartyEntryIdentifiers('Oura')
+		}
+
+		tryMigration("Update entries for Withings with new Identifier") {
+			updateThirdPartyEntryIdentifiers('Withings')
+		}
+
+		tryMigration("Update entries for FitBit with new Identifier") {
+			updateThirdPartyEntryIdentifiers('FitBit')
+		}
+
+		tryMigration("Update entries for Jawbone Up with new Identifier") {
+			updateThirdPartyEntryIdentifiers('Jawbone Up')
+		}
+
+		tryMigration("Update entries for Moves with new Identifier") {
+			updateThirdPartyEntryIdentifiers('Moves')
+		}
+
+		/*
+		* Preventing the delete calls for Identifiers from DataIntegrationViolationException. Making sure that none of
+		* the Identifiers being deleted are referenced in any of the entries. The entries with userId has already
+		* been assigned new Identifiers, hence the entries left with no userId (if any after the above migration)
+		* should be having the new Identifier.
+		*/
+		tryMigration('Update entries with no user to new set_identifier') {
+			log.debug 'Updating set_identifiers for entries with no user so that old identifiers can be deleted.'
+
+			['Oura', 'Withings', 'Moves', 'FitBit', 'Jawbone Up'].each { String thirdParty ->
+				int totalEntries = Entry.countByCommentAndUserIdIsNull("($thirdParty)")
+
+				Identifier identifier = Identifier.look(thirdParty)
+				Long identifierId = identifier.id
+
+				log.debug "Updating ${totalEntries} entries with no user for $thirdParty to setIdentifier " +
+						"${identifierId} to prevent delete calls"
+
+				while (totalEntries > 0) {
+					Thread.sleep(3000)
+					sql("UPDATE entry SET set_identifier=${identifierId}, set_name='$thirdParty' WHERE comment='" +
+							"($thirdParty)' AND (set_identifier!=${identifierId} OR set_identifier IS NULL)" +
+							"AND user_id IS NULL ORDER BY date DESC LIMIT 40000")
+					totalEntries -= 40000
+				}
+
+				log.debug "Updated entries for $thirdParty to prevent delete calls"
+			}
+		}
+
+		/**
+		 * Removing all Junk identifiers after all entries have been assigned the new identifiers.
+		 */
+		tryMigration("Remove all Junk Oura Identifiers") {
 			deleteThirdPartyEntryIdentifiers('OURA%')
 		}
 
-		tryMigration("Remove all Withings Identifiers and update associated entries") {
-			updateThirdPartyEntryIdentifiers('Withings')
+		tryMigration("Remove all Junk Withings Identifiers") {
 			deleteThirdPartyEntryIdentifiers('WI%')
 		}
 
-		tryMigration("Remove all Fitbit Identifiers and update associated entries") {
-			updateThirdPartyEntryIdentifiers('FitBit')
+		tryMigration("Remove all Junk Fitbit Identifiers") {
 			deleteThirdPartyEntryIdentifiers('fitbit%')
 		}
 
-		tryMigration("Remove all Jawbone Up Identifiers and update associated entries") {
-			updateThirdPartyEntryIdentifiers('Jawbone Up')
+		tryMigration("Remove all Junk Jawbone Up Identifiers") {
 			deleteThirdPartyEntryIdentifiers('JUP%')
 		}
 
-		tryMigration("Remove all Moves Identifiers and update associated entries") {
-			updateThirdPartyEntryIdentifiers('Moves')
+		tryMigration("Remove all Junk Moves Identifiers") {
 			deleteThirdPartyEntryIdentifiers('moves%')
 		}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	}
 }
