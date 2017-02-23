@@ -97,18 +97,13 @@ class DatabaseService implements DatabaseServiceInterface {
 		sqlQuery(statement).executeUpdate()
 	}
 	
-	boolean sqlNoRollback(String statement, args = []) {
+	int sqlNoRollback(String statement, args = []) {
 		try {
-			int affectedRows = sqlQuery(statement, args).executeUpdate()
-
-			// Added a log to get the affected rows count for lower level migration queries.
-			log.debug "Total ${affectedRows} rows affected by query ${statement} with args ${args}"
+			return sqlQuery(statement, args).executeUpdate()
 		} catch (RuntimeException e) {
 			e.printStackTrace()
-			return false
+			return -1
 		}
-	
-		return true
 	}
 	
 	@Override

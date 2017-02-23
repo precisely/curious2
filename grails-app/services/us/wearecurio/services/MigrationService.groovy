@@ -182,15 +182,22 @@ class MigrationService {
 
 		log.debug "Updating ${totalEntries} entries with valid user for $thirdParty to setIdentifier ${identifierId}"
 
+		int totalUpdatedEntries = 0
 		while (totalEntries > 0) {
 			Thread.sleep(1000)
-			sql("UPDATE entry SET set_identifier=${identifierId}, set_name='$thirdParty' WHERE comment='" +
+
+			int rowsAffected = sql("UPDATE entry SET set_identifier=${identifierId} WHERE comment='" +
 					"($thirdParty)' AND (set_identifier!=${identifierId} OR set_identifier IS NULL) AND " +
 					"user_id is not null ORDER BY date DESC LIMIT 40000")
+
+			if (rowsAffected > 0) {
+				totalUpdatedEntries += rowsAffected
+			}
+
 			totalEntries -= 40000
 		}
 
-		log.debug "Updated entries for $thirdParty"
+		log.debug "Updated ${totalUpdatedEntries} entries for $thirdParty"
 	}
 
 	public void deleteThirdPartyEntryIdentifiers(String identifierValue) {
@@ -198,23 +205,15 @@ class MigrationService {
 
 		log.debug "Deleting ${totalIdentifiers} Identifiers with value like: $identifierValue"
 
-		while (totalIdentifiers > 0) {
-			Thread.sleep(3000)
-			sql("DELETE FROM identifier WHERE value LIKE BINARY '$identifierValue' LIMIT 40000")
-			totalIdentifiers -= 40000
-		}
+		int totalDeletedIdentifiers = sql("DELETE FROM identifier WHERE value LIKE BINARY '$identifierValue'")
 
-		log.debug "Deleted Identifiers with value like: $identifierValue"
+		log.debug "Deleted ${totalDeletedIdentifiers} Identifiers with value like: $identifierValue"
 	}
 
 	def doMigrations() {
 		if (Environment.getCurrent().equals(Environment.TEST))
 			return; // don't run in test environment
-		
-		try {
-			sql ("ALTER TABLE `migration` CHANGE COLUMN `code` code bigint(20) DEFAULT NULL")
-		} catch (Throwable t) {
-		}
+
 		tryMigration(SKIP_INITIAL_MIGRATIONS_ID) {
 			// if this is running on a brand new instance, skip initial migrations
 			skipMigrations = true
@@ -593,8 +592,8 @@ class MigrationService {
 			sql('alter table user_group drop index full_name')
 		}
 		tryMigration("Change repeat type column") {
-			if (sql('select * from entry where repeat_type is null limit 1')) {
-				if (!sql('alter table entry change repeat_type repeat_type_id int(11)')) {
+			if (sql('select * from entry where repeat_type is null limit 1') > 0) {
+				if (sql('alter table entry change repeat_type repeat_type_id int(11)') < 0) {
 					sql('alter table entry drop column repeat_type_id')
 					sql('alter table entry change repeat_type repeat_type_id int(11)')
 				}
@@ -933,13 +932,27 @@ class MigrationService {
 			}
 		}
 
+// - - - - - - - - - - - - - - - - - Re-run old failed migration- - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+		tryMigration("New string migration codes Updated") {
+			if (sql("ALTER TABLE migration MODIFY COLUMN tag varchar(255) DEFAULT NULL") >= 0) {
+
+				if (sql("UPDATE migration SET tag = CAST(code AS char) WHERE code IS NOT NULL AND" +
+						" (tag IS NULL OR tag = '')") > 0) {
+
+					sql("ALTER TABLE migration DROP COLUMN code")
+				}
+			}
+		}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 // - - - - - - - - - - - - - - - - Migrations for Improving Performance - - - - - - - - - - - - - - - - - - - - - - - -
 
 		/*
 		 * Cleaning up the database by removing entries with no user and date older than 30 days.
-		 * Each 40000 set of entries is taking more than 1 minute to complete, hence for a total of nearly
-		 * 8201338 entries without userId and date older than 30 days, migration will approximately take 4-6 hrs to
-		 * complete.
+		 * For a total of nearly 9800000+ entries without userId and date older than 30 days, migration will 
+		 * approximately take 2-3 hrs to complete.
 		 */
 		tryMigration('Delete all entries with no user and date older than 30 days') {
 			log.debug "Total Entry count before deletion is ${Entry.count()}"
@@ -949,12 +962,10 @@ class MigrationService {
 
 			log.debug "Deleting ${totalEntries} entries with no user and date less than ${thirtyDayAgo}"
 
-			while (totalEntries > 0) {
-				Thread.sleep(3000)
-				sql("DELETE FROM entry WHERE date < :date AND user_id IS NULL LIMIT " +
-						"40000", [date: thirtyDayAgo])
-				totalEntries -= 40000
-			}
+			int totalDeletedEntries = sql("DELETE FROM entry WHERE date < :date AND user_id IS NULL",
+					[date: thirtyDayAgo])
+
+			log.debug "Deleted total ${totalDeletedEntries} entries."
 
 			log.debug "Total Entry count after deletion ${Entry.count()}"
 		}
@@ -1000,15 +1011,22 @@ class MigrationService {
 				log.debug "Updating ${totalEntries} entries with no user for $thirdParty to setIdentifier " +
 						"${identifierId} to prevent delete calls"
 
+				int totalUpdatedEntries = 0
 				while (totalEntries > 0) {
 					Thread.sleep(3000)
-					sql("UPDATE entry SET set_identifier=${identifierId}, set_name='$thirdParty' WHERE comment='" +
+					
+					int rowsAffected = sql("UPDATE entry SET set_identifier=${identifierId} WHERE comment='" +
 							"($thirdParty)' AND (set_identifier!=${identifierId} OR set_identifier IS NULL)" +
 							"AND user_id IS NULL ORDER BY date DESC LIMIT 40000")
+
+					if (rowsAffected > 0) {
+						totalUpdatedEntries += rowsAffected
+					}
+
 					totalEntries -= 40000
 				}
 
-				log.debug "Updated entries for $thirdParty to prevent delete calls"
+				log.debug "Updated ${totalUpdatedEntries} entries for $thirdParty to prevent delete calls."
 			}
 		}
 

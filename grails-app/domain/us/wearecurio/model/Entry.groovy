@@ -237,7 +237,7 @@ class Entry implements Comparable {
 				and {
 					eq("userId", userId)
 					eq("tag", amount.tag)
-					eq("amount", amount.amount)
+					eq("amount", amount.amount.setScale(9, BigDecimal.ROUND_HALF_EVEN))
 					eq("amountPrecision", (Integer)amount.precision)
 					eq("units", amount.units)
 					eq("repeatTypeId", repeatType?.id)
@@ -256,7 +256,7 @@ class Entry implements Comparable {
 					eq("date", m.date)
 					eq("tag", amount.tag)
 					eq("datePrecisionSecs", m.datePrecisionSecs == null ? DEFAULT_DATEPRECISION_SECS : m.datePrecisionSecs)
-					eq("amount", amount.amount)
+					eq("amount", amount.amount.setScale(9, BigDecimal.ROUND_HALF_EVEN))
 					eq("amountPrecision", (Integer)amount.precision)
 					eq("units", amount.units)
 					eq("comment", m.comment)
