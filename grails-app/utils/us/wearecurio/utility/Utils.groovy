@@ -53,7 +53,7 @@ class Utils {
 		return uncompressedStr
 	}
 	
-	static reportError(String title, Throwable e) {
+	static void reportError(String title, Throwable e) {
 		try {
 			ByteArrayOutputStream os = new ByteArrayOutputStream()
 			e.printStackTrace(new PrintStream(os))

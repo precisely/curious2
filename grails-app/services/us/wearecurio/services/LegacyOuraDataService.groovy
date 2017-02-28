@@ -5,10 +5,12 @@ import groovy.time.TimeCategory
 import groovyx.net.http.URIBuilder
 import java.text.SimpleDateFormat
 import org.codehaus.groovy.grails.web.json.JSONArray
+import org.codehaus.groovy.grails.web.json.JSONElement
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDateTime
+import org.scribe.model.Response
 import org.springframework.transaction.annotation.Transactional
 import us.wearecurio.datetime.DateUtils
 import us.wearecurio.model.OAuthAccount
@@ -42,7 +44,7 @@ class LegacyOuraDataService extends DataService {
 	}
 
 	@Override
-	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws InvalidAccessTokenException {
+	Map getDataDefault(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataService.DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug("getDataDefault $account.id startDate: $startDate endDate: $endDate refreshAll: $refreshAll")
 
 		if (!startDate) {
@@ -106,13 +108,13 @@ class LegacyOuraDataService extends DataService {
 		thirdPartyNotification
 	}
 
-	void getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll, DataRequestContext context) throws InvalidAccessTokenException {
+	void getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll, DataService.DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug "Get sleep data for account $account.id for $forDay"
 
 		getDataSleep(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll, context)
 	}
 
-	void getDataSleep(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
+	void getDataSleep(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataService.DataRequestContext context) throws
 			InvalidAccessTokenException {
 		log.debug "Get sleep data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
@@ -122,7 +124,7 @@ class LegacyOuraDataService extends DataService {
 	}
 
 	// Overloaded method to support pagination
-	void getDataSleep(OAuthAccount account, String requestURL, DataRequestContext context) throws InvalidAccessTokenException {
+	void getDataSleep(OAuthAccount account, String requestURL, DataService.DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug "Import sleep data for user id $account.userId"
 		Long userId = account.userId
 
@@ -170,13 +172,13 @@ class LegacyOuraDataService extends DataService {
 		}
 	}
 
-	void getDataExercise(OAuthAccount account, Date forDay, boolean refreshAll, DataRequestContext context) throws InvalidAccessTokenException {
+	void getDataExercise(OAuthAccount account, Date forDay, boolean refreshAll, DataService.DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug "Get exercise data for account $account.id for $forDay"
 
 		getDataExercise(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll, context)
 	}
 
-	void getDataExercise(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
+	void getDataExercise(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataService.DataRequestContext context) throws
 			InvalidAccessTokenException {
 		log.debug "Get exercise data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
@@ -185,7 +187,7 @@ class LegacyOuraDataService extends DataService {
 		getDataExercise(account, getRequestURL("exercise", startDate, endDate), context)
 	}
 
-	Map getDataExercise(OAuthAccount account, String requestURL, DataRequestContext context) throws InvalidAccessTokenException {
+	Map getDataExercise(OAuthAccount account, String requestURL, DataService.DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug "Import extercise data for user id $account.userId"
 		Long userId = account.userId
 
@@ -259,7 +261,7 @@ class LegacyOuraDataService extends DataService {
 	}
 
 	private void buildExerciseEntry(EntryCreateMap creationMap, EntryStats stats, JSONObject exerciseEntry,
-			Long userId, OAuthAccount account, DataRequestContext context) {
+			Long userId, OAuthAccount account, DataService.DataRequestContext context) {
 		def exerciseEntryData = exerciseEntry["data"]
 		Date entryDate = convertTimeToDate(exerciseEntry)
 		Integer timeZoneIdNumber = getTimeZoneId(account, exerciseEntry)
@@ -271,13 +273,13 @@ class LegacyOuraDataService extends DataService {
 		tagUnitMap.buildEntry(creationMap, stats, tagName, amount, userId, timeZoneIdNumber, entryDate, COMMENT, setName, context)
 	}
 
-	void getDataActivity(OAuthAccount account, Date forDay, boolean refreshAll, DataRequestContext context) throws InvalidAccessTokenException {
+	void getDataActivity(OAuthAccount account, Date forDay, boolean refreshAll, DataService.DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug "Get activity data for account $account.id for $forDay"
 
 		getDataActivity(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll, context)
 	}
 
-	void getDataActivity(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataRequestContext context) throws
+	void getDataActivity(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataService.DataRequestContext context) throws
 			InvalidAccessTokenException {
 		log.debug "Get activity data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
 
@@ -286,7 +288,7 @@ class LegacyOuraDataService extends DataService {
 		getDataActivity(account, getRequestURL("activity", startDate, endDate), context)
 	}
 
-	void getDataActivity(OAuthAccount account, String requestURL, DataRequestContext context) throws InvalidAccessTokenException {
+	void getDataActivity(OAuthAccount account, String requestURL, DataService.DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug "Import activity data for user id $account.userId"
 		Long userId = account.userId
 
@@ -421,6 +423,71 @@ class LegacyOuraDataService extends DataService {
 
 		['vishesh@causecode.com', 'mitsu@wearecurio.us', 'developers@causecode.com'].each { String toEmail ->
 			emailService.send(toEmail, '[Curious] - Oura Sync Issue', warnMessage)
+		}
+	}
+
+	void renewRefreshTokens() {
+		log.debug "Polling refresh tokens from Legacy Oura Cloud"
+
+		int oAuthAccounts = OAuthAccount.countByTypeId(ThirdParty.OURA_LEGACY)
+
+		log.debug "Total ${oAuthAccounts} OAuthAccounts present for OURA"
+
+		// Polling using Linda's account.
+		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(ThirdParty.OURA_LEGACY, 15)
+
+		int offset = 0
+		int max = 1000
+
+		// The key will be for new Oura Api.
+		String clientId = grailsApplication.config.oauth.providers.oura.key
+
+		while (oAuthAccounts > 0) {
+			List<OAuthAccount> accounts = OAuthAccount.withCriteria {
+				eq('typeId', ThirdParty.OURA_LEGACY)
+
+				isNotNull('accountId')
+				ne('accountId', 'null')
+				ne('accountId', '')
+
+				maxResults(max)
+				firstResult(offset)
+			}
+
+			List accountIds = accounts*.accountId
+			int noOfAccounts = accountIds.size()
+
+			if (noOfAccounts) {
+				log.debug "Requesting RefreshTokens for ${noOfAccounts} OAuthAccounts"
+
+				Response response = oauthService."post${provider}Resource"(account.tokenInstance,
+						BASE_URL + '/api/refreshToken', [clientId: clientId, userIds: accountIds.toString()])
+
+				String responseBody
+				try {
+					responseBody = response.body
+
+					if (responseBody) {
+						log.debug "Response received from Oura ${response.body[0..100]}"
+
+						JSONElement parsedResponse = JSON.parse(responseBody)
+
+						parsedResponse.each { Map refreshTokenLegacy ->
+							OAuthAccount oAuthAccountToUpdate = accounts.find {
+								it.accountId == refreshTokenLegacy['userId']
+							}
+
+							oAuthAccountToUpdate.refreshToken = refreshTokenLegacy['refreshToken']
+							Utils.save(oAuthAccountToUpdate)
+						}
+					}
+				} catch (Exception e) {
+					Utils.reportError("Error while getting response for data service", e)
+				}
+			}
+
+			oAuthAccounts -= 1000
+			offset += 1000
 		}
 	}
 }
