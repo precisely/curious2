@@ -96,7 +96,8 @@ class DatabaseService implements DatabaseServiceInterface {
 	def sql(String statement) {
 		sqlQuery(statement).executeUpdate()
 	}
-	
+
+	// Returns the number of rows affected by the queries like select, update and delete.
 	int sqlNoRollback(String statement, args = []) {
 		try {
 			return sqlQuery(statement, args).executeUpdate()

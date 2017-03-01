@@ -1,3 +1,6 @@
+import us.wearecurio.model.Identifier
+import us.wearecurio.thirdparty.TagUnitMap
+
 import static org.junit.Assert.*
 
 import java.math.MathContext
@@ -23,6 +26,7 @@ import us.wearecurio.support.EntryStats
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.services.EntryParserService
+import us.wearecurio.services.EntryParserService.ParseAmount
 import groovy.transform.TypeChecked
 
 import org.joda.time.DateTimeZone
@@ -1893,4 +1897,48 @@ class EntryTests extends CuriousTestCase {
 		def repeatEnd = entry.getRepeatEnd()
 		assert repeatEnd.equals(entry2.fetchPreviousDate())
 	}*/
+
+	@Test
+	void 'Test hasDuplicate method for correctly matching the amounts'() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "run 5 miles", null, 
+				null, 
+				baseDate, true), new EntryStats())
+		entry.comment = '(Oura)'
+		entry.setIdentifier = Identifier.look('Oura')
+		entry.save(flush: true)
+
+		Map duplicateEntryMap = entryParserService.parse(currentTime, timeZone, "run 5 miles", null, null, 
+				baseDate, true)
+		duplicateEntryMap.putAll([comment: '(Oura)', setName: 'Oura', amount: duplicateEntryMap.amounts[0]])
+
+		assert Entry.hasDuplicate(userId, duplicateEntryMap) == true
+
+		duplicateEntryMap = entryParserService.parse(currentTime, timeZone, "run 5.000000000 miles", null, null,
+				baseDate, true)
+		duplicateEntryMap.putAll([comment: '(Oura)', setName: 'Oura', amount: duplicateEntryMap.amounts[0]])
+		
+		assert Entry.hasDuplicate(userId, duplicateEntryMap) == true
+
+		duplicateEntryMap = entryParserService.parse(currentTime, timeZone, "run 6 miles", null, null,
+				baseDate, true)
+		duplicateEntryMap.putAll([comment: '(Oura)', setName: 'Oura', amount: duplicateEntryMap.amounts[0]])
+
+		assert Entry.hasDuplicate(userId, duplicateEntryMap) == false
+
+		// For RepeatType
+		entry.repeatTypeId = new RepeatType(RepeatType.CONTINUOUS_BIT).id
+		entry.save(flush: true)
+
+		duplicateEntryMap = entryParserService.parse(currentTime, timeZone, "run 5 miles", entry.repeatTypeId, null,
+				baseDate, true)
+		duplicateEntryMap.putAll([comment: '(Oura)', setName: 'Oura', amount: duplicateEntryMap.amounts[0]])
+
+		assert Entry.hasDuplicate(userId, duplicateEntryMap) == true
+
+		duplicateEntryMap = entryParserService.parse(currentTime, timeZone, "run 6 miles", entry.repeatTypeId, null,
+				baseDate, true)
+		duplicateEntryMap.putAll([comment: '(Oura)', setName: 'Oura', amount: duplicateEntryMap.amounts[0]])
+
+		assert Entry.hasDuplicate(userId, duplicateEntryMap) == false
+	}
 }

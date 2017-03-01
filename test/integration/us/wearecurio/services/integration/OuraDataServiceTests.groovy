@@ -124,12 +124,12 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		 * Creating the date from entry's eventTime so that startDate and endDate range covers the created entries in 
 		 * DataRequestContext when re-importing the same entries.
 		 */
-		Date today = new Date(1434440700000).clearTime()
-		account.lastData = today - 2
+		Date mockDate = new Date(1434440700000).clearTime()
+		account.lastData = mockDate - 2
 		account.lastPolled = account.lastData
 		account.save(flush: true)
 
-		DataRequestContext dataRequestContext = new DataRequestContext(today, null, [Identifier.look("Oura")],
+		DataRequestContext dataRequestContext = new DataRequestContext(mockDate, null, [Identifier.look("Oura")],
 				account.userId)
 		/*
 		 * Setting the max size to 5, so that during re-import only 5 entries will be available for duplicate 
@@ -144,7 +144,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert Entry.count() == 0
 
 		when: 'The polling is done for the first time'
-		ouraDataService.getDataSleep(account, today, false, dataRequestContext)
+		ouraDataService.getDataSleep(account, mockDate, false, dataRequestContext)
 
 		then: '12 new entries should be created.'
 		assert Entry.getCount() == 12
@@ -157,12 +157,12 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 
 		when: 'The same data with same DataRequestContext is re-imported.'
 		// Reset the lastData and lastPolled to same state.
-		account.lastData = today - 2
+		account.lastData = mockDate - 2
 		account.lastPolled = account.lastData
 		account.save(flush: true)
 
 		// Note: The DataRequestContext is re-initialized in every call to getDataSleep.
-		ouraDataService.getDataSleep(account, today, false, dataRequestContext)
+		ouraDataService.getDataSleep(account, mockDate, false, dataRequestContext)
 
 		then: 'Entry count should be same'
 		assert Entry.getCount() == 12
@@ -174,7 +174,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert entryListNew[6].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
 
 		when: 'The same data with same DataRequestContext but updated lastData and lastPolled is re-imported.'
-		ouraDataService.getDataSleep(account, today, false, dataRequestContext)
+		ouraDataService.getDataSleep(account, mockDate, false, dataRequestContext)
 
 		then: 'Entry count should still be same as data is same'
 		assert Entry.getCount() == 12
@@ -187,12 +187,12 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 
 		when: 'The same data with new DataRequestContext is re-imported.'
 		// Reset the lastData and lastPolled to same state.
-		account.lastData = today - 2
+		account.lastData = mockDate - 2
 		account.lastPolled = account.lastData
 		account.save(flush: true)
 
 		// In this case all entries will be matched by the hasDuplicate() method call.
-		ouraDataService.getDataSleep(account, today, false, new DataRequestContext())
+		ouraDataService.getDataSleep(account, mockDate, false, new DataRequestContext())
 
 		then: 'Entry count should still remain the same'
 		assert Entry.getCount() == 12
