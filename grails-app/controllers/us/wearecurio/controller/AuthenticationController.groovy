@@ -188,7 +188,7 @@ class AuthenticationController extends SessionController {
 			userId = user.id
 		}
 
-		oauthAccountService.createOrUpdate(ThirdParty.OURA, userInfo.id.toString(), tokenInstance, userId)
+		oauthAccountService.createOrUpdate(ThirdParty.OURA, userInfo['user_id'], tokenInstance, userId)
 	}
 
 	def twenty3andmeAuth() {

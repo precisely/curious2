@@ -429,65 +429,55 @@ class LegacyOuraDataService extends DataService {
 	void renewRefreshTokens() {
 		log.debug "Polling refresh tokens from Legacy Oura Cloud"
 
-		int oAuthAccounts = OAuthAccount.countByTypeId(ThirdParty.OURA_LEGACY)
-
-		log.debug "Total ${oAuthAccounts} OAuthAccounts present for OURA"
-
-		// Polling using Linda's account.
-		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(ThirdParty.OURA_LEGACY, 15)
-
-		int offset = 0
-		int max = 1000
-
 		// The key will be for new Oura Api.
 		String clientId = grailsApplication.config.oauth.providers.oura.key
 
-		while (oAuthAccounts > 0) {
-			List<OAuthAccount> accounts = OAuthAccount.withCriteria {
-				eq('typeId', ThirdParty.OURA_LEGACY)
+		List<OAuthAccount> accounts = OAuthAccount.withCriteria {
+			eq('typeId', ThirdParty.OURA_LEGACY)
 
-				isNotNull('accountId')
-				ne('accountId', 'null')
-				ne('accountId', '')
+			isNotNull('accountId')
+			ne('accountId', 'null')
+			ne('accountId', '')
 
-				maxResults(max)
-				firstResult(offset)
-			}
+			isNotNull('accessToken')
+			ne('accessToken', 'null')
+			ne('accessToken', '')
 
-			List accountIds = accounts*.accountId
-			int noOfAccounts = accountIds.size()
+			maxResults(1000)
+		}
 
-			if (noOfAccounts) {
-				log.debug "Requesting RefreshTokens for ${noOfAccounts} OAuthAccounts"
+		List accountIds = accounts*.accountId
+		int noOfAccounts = accountIds.size()
 
-				Response response = oauthService."post${provider}Resource"(account.tokenInstance,
+		log.debug "Requesting RefreshTokens for ${noOfAccounts} OAuthAccounts"
+
+		if (noOfAccounts) {
+			try {
+				Response response = oauthService."post${provider}Resource"(accounts[0].tokenInstance,
 						BASE_URL + '/api/refreshToken', [clientId: clientId, userIds: accountIds.toString()])
 
-				String responseBody
-				try {
-					responseBody = response.body
+				String responseBody = response.body
 
-					if (responseBody) {
-						log.debug "Response received from Oura ${response.body[0..100]}"
+				if (responseBody && response.code == 200) {
+					log.debug "Response received from Oura ${response.body[0..200]}"
 
-						JSONElement parsedResponse = JSON.parse(responseBody)
+					JSONElement parsedResponse = JSON.parse(responseBody)
 
-						parsedResponse.each { Map refreshTokenLegacy ->
-							OAuthAccount oAuthAccountToUpdate = accounts.find {
-								it.accountId == refreshTokenLegacy['userId']
-							}
+					log.debug "Received total ${parsedResponse?.size()} refresh tokens."
 
-							oAuthAccountToUpdate.refreshToken = refreshTokenLegacy['refreshToken']
-							Utils.save(oAuthAccountToUpdate)
+					parsedResponse.each { Map refreshTokenLegacy ->
+						OAuthAccount oAuthAccountToUpdate = accounts.find {
+							it.accountId == refreshTokenLegacy['userId']
 						}
-					}
-				} catch (Exception e) {
-					Utils.reportError("Error while getting response for data service", e)
-				}
-			}
 
-			oAuthAccounts -= 1000
-			offset += 1000
+						oAuthAccountToUpdate.refreshToken = refreshTokenLegacy['refreshToken']
+						oAuthAccountToUpdate.typeId = ThirdParty.OURA
+						Utils.save(oAuthAccountToUpdate)
+					}
+				}
+			} catch (Exception e) {
+				Utils.reportError("Error while getting refresh tokens from Legacy Oura Server", e)
+			}
 		}
 	}
 }

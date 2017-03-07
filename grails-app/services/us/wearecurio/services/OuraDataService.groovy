@@ -37,6 +37,7 @@ class OuraDataService extends DataService {
 	OuraTagUnitMap tagUnitMap = new OuraTagUnitMap()
 
 	EmailService emailService
+	OauthAccountService oauthAccountService
 
 	OuraDataService() {
 		provider = "Oura"
@@ -59,7 +60,7 @@ class OuraDataService extends DataService {
 		endDate = endDate ?: DateUtils.getEndOfTheDay()
 
 		getDataSleep(account, startDate, endDate, false, context)
-		// getDataExercise(account, startDate, endDate, false, context)
+		// Now exercise data is also coming in the activity data.
 		getDataActivity(account, startDate, endDate, false, context)
 		getDataReadiness(account, startDate, endDate, false, context)
 
@@ -126,7 +127,7 @@ class OuraDataService extends DataService {
 		getDataSleep(account, getRequestURL("sleep", startDate, endDate), context)
 	}
 
-	// Overloaded method to support pagination
+	// Overloaded method to support pagination. TODO Add pagination support based on date range.
 	void getDataSleep(OAuthAccount account, String requestURL, DataService.DataRequestContext context) throws InvalidAccessTokenException {
 		log.debug "Import sleep data for user id $account.userId"
 		Long userId = account.userId
@@ -135,7 +136,18 @@ class OuraDataService extends DataService {
 		EntryStats stats = new EntryStats(userId)
 		context.initEntrylist()
 
-		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
+		JSONObject apiResponse
+
+		// Handling exceptions for very large data from Oura Server until we implement pagination.
+		try {
+			apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
+		} catch (InvalidAccessTokenException e) {
+			return
+		} catch (Exception e1) {
+			Utils.reportError("Could not get response from Oura Server", e1)
+			return
+		}
+
 		JSONArray sleepData = apiResponse["sleep"]
 
 		sleepData.each { Map sleepEntry ->
@@ -181,112 +193,6 @@ class OuraDataService extends DataService {
 
 		account.markLastPolled(stats.lastDate)
 		stats.finish()
-
-		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
-			log.debug "Processing get sleep data for paginated URL"
-			getDataSleep(account, apiResponse["links"]["nextPageURL"].toString(), context)
-		}
-	}
-
-	void getDataExercise(OAuthAccount account, Date forDay, boolean refreshAll, DataService.DataRequestContext context) throws InvalidAccessTokenException {
-		log.debug "Get exercise data for account $account.id for $forDay"
-
-		getDataExercise(account, forDay, DateUtils.getEndOfTheDay(forDay), refreshAll, context)
-	}
-
-	void getDataExercise(OAuthAccount account, Date startDate, Date endDate, boolean refreshAll, DataService.DataRequestContext context) throws
-			InvalidAccessTokenException {
-		log.debug "Get exercise data account $account.id startDate: $startDate endDate $endDate refreshAll $refreshAll"
-
-		endDate = endDate ?: DateUtils.getEndOfTheDay()
-
-		getDataExercise(account, getRequestURL("exercise", startDate, endDate), context)
-	}
-
-	Map getDataExercise(OAuthAccount account, String requestURL, DataService.DataRequestContext context) throws InvalidAccessTokenException {
-		log.debug "Import exercise data for user id $account.userId"
-		Long userId = account.userId
-
-		EntryCreateMap creationMap = new EntryCreateMap()
-		EntryStats stats = new EntryStats(userId)
-		context.initEntrylist()
-
-		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
-		JSONArray exerciseData = apiResponse["data"]
-
-		JSONObject previousEntry = null
-
-		int thresholdDuration = 15 * 60		// 15 minutes or 900 seconds
-
-		exerciseData.each { currentEntry ->
-			if (!currentEntry["data"]) {
-				log.debug "No data found in current entry"
-				return		// Continue looping
-			}
-
-			Long currentEntryDuration = Long.parseLong(currentEntry["data"]["duration_m"].toString())  // in minutes
-			currentEntry["data"]["duration_m"] = currentEntryDuration
-
-			if (!previousEntry) {
-				previousEntry = currentEntry
-				return		// Continue looping
-			}
-
-			// If type of previous entry is same as the current entry
-			if (previousEntry["data"]["classification"] == currentEntry["data"]["classification"]) {
-				// Then we have to merge the data of both the entries
-
-				// In seconds
-				long previousEntryStartTime = previousEntry["eventTime"]
-				// In seconds
-				long previousEntryEndTime = (previousEntryStartTime + (previousEntry["data"]["duration_m"] * 60))
-				// In seconds
-				long currentEntryStartTime = currentEntry["eventTime"]
-				// In seconds
-				long durationBeEntries = currentEntryStartTime - previousEntryEndTime
-
-				/*
-				 * There could be a situation that we receive two contiguous entries where previous entry
-				 * might be of morning and the current entry might be of evening. So adding a threshold value
-				 * of 15 minutes that the duration between end of the previous entry and start of current entry
-				 * should be between 15 minutes.
-				 */
-				if (durationBeEntries <= thresholdDuration) {
-					log.debug "Found two contiguous entries. Merging"
-					previousEntry["data"]["duration_m"] += currentEntryDuration
-					return		// Continue looping
-				}
-			}
-
-			buildExerciseEntry(creationMap, stats, previousEntry, userId, account, context)
-			previousEntry = currentEntry
-		}
-
-		if (previousEntry) {
-			buildExerciseEntry(creationMap, stats, previousEntry, userId, account, context)
-			previousEntry = null
-		}
-
-		account.markLastPolled(stats.lastDate)
-		stats.finish()
-
-		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
-			log.debug "Processing get exercise data for paginated URL"
-			getDataExercise(account, apiResponse["links"]["nextPageURL"].toString(), context)
-		}
-	}
-
-	private void buildExerciseEntry(EntryCreateMap creationMap, EntryStats stats, JSONObject exerciseEntry,
-			Long userId, OAuthAccount account, DataService.DataRequestContext context) {
-		def exerciseEntryData = exerciseEntry["data"]
-		Date entryDate = convertTimeToDate(exerciseEntry)
-		Integer timeZoneIdNumber = getTimeZoneId(account, exerciseEntry)
-
-		String setName = SET_NAME
-
-		Long amount = exerciseEntryData["duration_m"]
-		String tagName = "classification_" + exerciseEntryData["classification"]
-		tagUnitMap.buildEntry(creationMap, stats, tagName, amount, userId, timeZoneIdNumber, entryDate, COMMENT, setName, context)
 	}
 
 	void getDataActivity(OAuthAccount account, Date forDay, boolean refreshAll, DataService.DataRequestContext context) throws InvalidAccessTokenException {
@@ -312,7 +218,18 @@ class OuraDataService extends DataService {
 		EntryStats stats = new EntryStats(userId)
 		context.initEntrylist()
 
-		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
+		JSONObject apiResponse
+
+		// Handling exceptions for very large data from Oura Server until we implement pagination.
+		try {
+			apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
+		} catch (InvalidAccessTokenException e) {
+			return
+		} catch (Exception e1) {
+			Utils.reportError("Could not get response from Oura Server", e1)
+			return
+		}
+
 		JSONArray activityData = apiResponse["activity"]
 
 		activityData.each { Map activityEntry ->
@@ -337,11 +254,6 @@ class OuraDataService extends DataService {
 
 		account.markLastPolled(stats.lastDate)
 		stats.finish()
-
-		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
-			log.debug "Processing get activity data for paginated URL"
-			getDataActivity(account, apiResponse["links"]["nextPageURL"].toString(), context)
-		}
 	}
 
 	void getDataReadiness(OAuthAccount account, Date forDay, boolean refreshAll, DataService.DataRequestContext
@@ -370,11 +282,22 @@ class OuraDataService extends DataService {
 		EntryStats stats = new EntryStats(userId)
 		context.initEntrylist()
 
-		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
+		JSONObject apiResponse
+
+		// Handling exceptions for very large data from Oura Server until we implement pagination.
+		try {
+			apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
+		} catch (InvalidAccessTokenException e) {
+			return
+		} catch (Exception e1) {
+			Utils.reportError("Could not get response from Oura Server", e1)
+			return
+		}
+
 		JSONArray readinessData = apiResponse['readiness']
 
 		readinessData.each { Map readinessEntry ->
-			// Summary Date received as String. Format - yyyy-MM-dd
+			// Summary Date received in yyyy-MM-dd format.
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat('yyyy-MM-dd')
 			Date entryDate = simpleDateFormat.parse(readinessEntry['summary_date'])
 
@@ -396,48 +319,6 @@ class OuraDataService extends DataService {
 
 		account.markLastPolled(stats.lastDate)
 		stats.finish()
-
-		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
-			log.debug "Processing get readiness data for paginated URL"
-			getDataReadiness(account, apiResponse["links"]["nextPageURL"].toString(), context)
-		}
-	}
-
-	/**
-	 * Get old set name which will is used for backward compatibility by removing old entries with this set name.
-	 * This set name is not used for creating new entries. Use SET_NAME instead.
-	 *
-	 * @param type Type of the data to use in the set name (like "s", "ac", "e")
-	 * @return The old set name like "OURAac2016-03-01 00:00:00.0-1" for activity or "OURAs2016-03-02 00:00:00.0-1"
-	 * for sleep data.
-	 */
-	String getOldSetName(String type, Date forDay) {
-		/*
-		 * In old set name, we were appending the pagination number to the set name to prevent data from deleting
-		 * when we process the next page. We are hard coding pagination to just "1" here since all the previous
-		 * entries (with old set name) were imported in the first page only (as we are pulling 1000 records from Oura
-		 * at a time).
-		 */
-		return SET_NAME + type + forDay.clearTime().format("yyyy-MM-dd HH:mm:ss.S") + "-1"
-	}
-
-	/**
-	 * Get a list of old set names for the given date range. This method basically constructs the set name of each
-	 * individual date lies between the given range so that we can remove old entries when we pull data for a same
-	 * date again. This is to support backward compatibility.
-	 *
-	 * @param type Type of the data for old set like "s", "ac", "e"
-	 * @param startDate Start date to get list of set names from
-	 * @param endDate End date for the list of set names
-	 * @return The list of old set names as described above
-	 */
-	List<String> getOldSetNames(String type, Date startDate, Date endDate) {
-		List setNames = []
-
-		for (Date date = startDate; date <= endDate; date = date + 1) {
-			setNames << getOldSetName(type, date)
-		}
-		return setNames
 	}
 
 	/**
@@ -535,6 +416,24 @@ class OuraDataService extends DataService {
 
 		['vishesh@causecode.com', 'mitsu@wearecurio.us', 'developers@causecode.com'].each { String toEmail ->
 			emailService.send(toEmail, '[Curious] - Oura Sync Issue', warnMessage)
+		}
+	}
+
+	void refreshAllOAuthAccounts() {
+		OAuthAccount.withCriteria {
+			eq('typeId', ThirdParty.OURA)
+
+			isNotNull('refreshToken')
+			ne('refreshToken', 'null')
+			ne('refreshToken', '')
+		}.each { account ->
+			try {
+				oauthAccountService.refreshToken(account)
+			} catch (Throwable t) {
+				log.error("Error while refreshing token for account " + account)
+				t.printStackTrace()
+				account.setAccountFailure()
+			}
 		}
 	}
 }

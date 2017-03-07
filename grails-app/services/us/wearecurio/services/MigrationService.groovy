@@ -86,6 +86,7 @@ class MigrationService {
 	OauthAccountService oauthAccountService
 	FileUploaderService fileUploaderService
 	def grailsApplication
+	LegacyOuraDataService legacyOuraDataService
 	
 	boolean skipMigrations = false
 	
@@ -728,6 +729,25 @@ class MigrationService {
 			} else {
 				log.error "Container not defined. Please fix and rerun the migration."
 			}
+		}
+
+		// This migration will also update the typeId to new Oura typeId i.e 10.
+		tryMigration('Get refresh tokens from Legacy Oura Cloud') {
+			legacyOuraDataService.renewRefreshTokens()
+		}
+
+		// This migration will update the access tokens using the refresh tokens obtained in previous migration.
+		tryMigration('Refresh all OURA OAuthAccounts access tokens') {
+			ouraDataService.refreshAllOAuthAccounts()
+		}
+
+		/*
+		 * This migration will update the typeId to new Oura typeId i.e 10 for OAuthAccounts whose refresh tokens are
+		 * not present in the Legacy Oura Server.
+		 */
+		tryMigration('Update remaining OAuthAccounts to new typeId') {
+			sql('UPDATE oauth_account SET type_id = :newTypeId where type_id = :oldTypeId',
+					[newTypeId: 10, oldTypeId: 9])
 		}
 	}
 	

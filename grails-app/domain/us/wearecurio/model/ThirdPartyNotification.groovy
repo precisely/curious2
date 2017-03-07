@@ -59,7 +59,7 @@ enum ThirdParty {
 	HUMAN(6, "human", TWO),
 	TWITTER(7, "twitter", ONE),
 	JAWBONE(8, "jawboneup", TWO),
-	OURA_LEGACY(9, "oura_legacy", TWO),
+	OURA_LEGACY(9, "ouraLegacy", TWO),
 	OURA(10, "oura", TWO)
 
 	final int id

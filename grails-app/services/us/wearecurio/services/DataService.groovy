@@ -232,7 +232,7 @@ abstract class DataService {
 			responseBody = response.body
 		} catch (IllegalArgumentException e) {
 			// Okay. Nothing to do. Thrown when response code are like 204, means there are no response body.
-			Utils.reportError("Error while getting reponse for data service", e)
+			Utils.reportError("Error while getting response for data service", e)
 		}
 
 		log.debug "[$currentTime] Recieved response for [$provider] with response code: [$response.code]"
