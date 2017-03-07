@@ -141,10 +141,8 @@ class OuraDataService extends DataService {
 		// Handling exceptions for very large data from Oura Server until we implement pagination.
 		try {
 			apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
-		} catch (InvalidAccessTokenException e) {
-			return
-		} catch (Exception e1) {
-			Utils.reportError("Could not get response from Oura Server", e1)
+		} catch (OutOfMemoryError | SocketTimeoutException e) {
+			Utils.reportError("Could not get response from Oura Server", e)
 			return
 		}
 
@@ -223,10 +221,8 @@ class OuraDataService extends DataService {
 		// Handling exceptions for very large data from Oura Server until we implement pagination.
 		try {
 			apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
-		} catch (InvalidAccessTokenException e) {
-			return
-		} catch (Exception e1) {
-			Utils.reportError("Could not get response from Oura Server", e1)
+		} catch (OutOfMemoryError | SocketTimeoutException e) {
+			Utils.reportError("Could not get response from Oura Server", e)
 			return
 		}
 
@@ -287,10 +283,8 @@ class OuraDataService extends DataService {
 		// Handling exceptions for very large data from Oura Server until we implement pagination.
 		try {
 			apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
-		} catch (InvalidAccessTokenException e) {
-			return
-		} catch (Exception e1) {
-			Utils.reportError("Could not get response from Oura Server", e1)
+		} catch (OutOfMemoryError | SocketTimeoutException e) {
+			Utils.reportError("Could not get response from Oura Server", e)
 			return
 		}
 

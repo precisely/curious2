@@ -2,9 +2,8 @@ package us.wearecurio.jobs
 
 import us.wearecurio.services.JawboneUpDataService
 import us.wearecurio.services.OauthAccountService
-import us.wearecurio.services.OuraDataService
 import us.wearecurio.services.WithingsDataService
-import us.wearecurio.services.LegacyOuraDataService
+import us.wearecurio.services.OuraDataService
 import us.wearecurio.services.DataService
 import us.wearecurio.utility.TimerJob
 import grails.util.Environment
@@ -15,10 +14,9 @@ class DeviceIntegrationDailyJob extends TimerJob {
 
 	OauthAccountService oauthAccountService
 	WithingsDataService withingsDataService
-	LegacyOuraDataService legacyOuraDataService
+	OuraDataService ouraDataService
 	JawboneUpDataService jawboneUpDataService
 	GrailsApplication grailsApplication
-	OuraDataService ouraDataService
 
 	static triggers = {
 		cron name:'deviceIntegrationTrigger', startDelay: HOUR, cronExpression: '0 30 2,12 * * ? *' //2:30 AM, 12:30 PM
@@ -37,9 +35,8 @@ class DeviceIntegrationDailyJob extends TimerJob {
 		}
 		oauthAccountService.refreshAll()
 		DataService.pollAllDataServices()
-
+		
 		ouraDataService.checkSyncHealth()
-		legacyOuraDataService.checkSyncHealth()
 		log.debug "Finished executing Daily basis job.."
 	}
 

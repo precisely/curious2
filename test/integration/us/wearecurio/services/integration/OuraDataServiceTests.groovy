@@ -108,154 +108,6 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		thrown(InvalidAccessTokenException)
 	}
 
-	void "Test getDataSleep success"() {
-		given:
-		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 3,
-				type: "sleep", eventTime: 1434440700, data: {bedtime_m: 510, sleep_score: 86, awake_m: 52, rem_m: 78, light_m: 220, deep_m: 160}},
-				{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 3,
-				type: "sleep", eventTime: 1424440900, data: {bedtime_m: 430, sleep_score: 76, awake_m: 42, rem_m: 68,
-				 light_m: 320, deep_m: 2.60}}]}"""
-		ouraDataService.oauthService = [
-				getOuraResource: { token, url, p, header ->
-					return new Response(new MockedHttpURLConnection(mockedResponseData))
-				}
-		]
-
-		/*
-		 * Creating the date from entry's eventTime so that startDate and endDate range covers the created entries in 
-		 * DataRequestContext when re-importing the same entries.
-		 */
-		Date mockDate = new Date(1434440700000).clearTime()
-		account.lastData = mockDate - 2
-		account.lastPolled = account.lastData
-		account.save(flush: true)
-
-		DataRequestContext dataRequestContext = new DataRequestContext(mockDate, null, [Identifier.look("Oura")],
-				account.userId)
-		/*
-		 * Setting the max size to 5, so that during re-import only 5 entries will be available for duplicate 
-		 * matching in the DataRequestContext, rest 7 entries will be matched by the hasDuplicate() method call in 
-		 * Entry.groovy. Thus DataRequestContext and hasDuplicate() both will be tested for preventing 
-		 * duplicate entry creation during re-import.
-		 */
-		dataRequestContext.max = 5
-
-		// Keeping the Entry count zero before first poll.
-		Entry.list()*.delete(flush: true)
-		assert Entry.count() == 0
-
-		when: 'The polling is done for the first time'
-		ouraDataService.getDataSleep(account, mockDate, false, dataRequestContext)
-
-		then: '12 new entries should be created.'
-		assert Entry.getCount() == 12
-
-		List<Entry> entryList = Entry.getAll()
-		assert entryList[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
-		assert entryList[0].description == "sleep [time: total]"
-		assert entryList[0].setIdentifier.value == "Oura"
-		assert entryList[6].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
-
-		when: 'The same data with same DataRequestContext is re-imported.'
-		// Reset the lastData and lastPolled to same state.
-		account.lastData = mockDate - 2
-		account.lastPolled = account.lastData
-		account.save(flush: true)
-
-		// Note: The DataRequestContext is re-initialized in every call to getDataSleep.
-		ouraDataService.getDataSleep(account, mockDate, false, dataRequestContext)
-
-		then: 'Entry count should be same'
-		assert Entry.getCount() == 12
-
-		List<Entry> entryListNew = Entry.getAll()
-		assert entryListNew[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
-		assert entryListNew[0].description == "sleep [time: total]"
-		assert entryListNew[0].setIdentifier.value == "Oura"
-		assert entryListNew[6].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
-
-		when: 'The same data with same DataRequestContext but updated lastData and lastPolled is re-imported.'
-		ouraDataService.getDataSleep(account, mockDate, false, dataRequestContext)
-
-		then: 'Entry count should still be same as data is same'
-		assert Entry.getCount() == 12
-
-		List<Entry> entryListUpdated = Entry.getAll()
-		assert entryListUpdated[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
-		assert entryListUpdated[0].description == "sleep [time: total]"
-		assert entryListUpdated[0].setIdentifier.value == "Oura"
-		assert entryListUpdated[6].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
-
-		when: 'The same data with new DataRequestContext is re-imported.'
-		// Reset the lastData and lastPolled to same state.
-		account.lastData = mockDate - 2
-		account.lastPolled = account.lastData
-		account.save(flush: true)
-
-		// In this case all entries will be matched by the hasDuplicate() method call.
-		ouraDataService.getDataSleep(account, mockDate, false, new DataRequestContext())
-
-		then: 'Entry count should still remain the same'
-		assert Entry.getCount() == 12
-		List<Entry> entryListFinal = Entry.getAll()
-		assert entryListFinal[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
-		assert entryListFinal[0].description == "sleep [time: total]"
-		assert entryListFinal[0].setIdentifier.value == "Oura"
-		assert entryListFinal[6].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
-	}
-
-	void "test getDataSleep when same entries are imported from notifications due to new set name"() {
-		given:
-		DateFormat format = new SimpleDateFormat("EEEE, MMM dd, yyyy HH:mm:ss a", Locale.ENGLISH);
-		Date date = format.parse("Tuesday, Jun 16, 2015 10:15:00 AM");
-		String mockedResponseData = """{"data":[{"dateCreated":"2015-11-04T12:42:45.168Z","timeZone":"Europe/Stockholm",
-				"user":3,"type":"sleep","eventTime":1434440700,"data":{"bedtime_m":510,"sleep_score":86,"deep_m":160}}]}"""
-		ouraDataService.oauthService = [
-				getOuraResource: { token, url, p, header ->
-					return new Response(new MockedHttpURLConnection(mockedResponseData))
-				}
-		]
-
-		// Given one simple entry
-		Entry.create(account.userId, entryParserService.parse(new Date(), "America/Los_Angeles",
-				"bread 2pm", null, null, new Date(), true), new EntryStats())
-
-		when: "When first time entries are imported"
-		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext(date, null,
-				[Identifier.look("Oura")], account.userId))
-
-		then: "Then 3 sleep entries should be created (and one simple entry)"
-		assert Entry.getCount() == 4
-		assert Entry.countByUserId(account.userId) == 4
-
-		List<Entry> entryList = Entry.getAll()
-		assert entryList[0].description == "bread"
-		assert entryList[0].setIdentifier == null
-		assert entryList[0].userId == account.userId
-
-		assert entryList[1].description == "sleep [time: total]"
-		assert entryList[1].setIdentifier.value == "Oura"
-		assert entryList[1].userId == account.userId
-
-		when: "When same data is re-imported again"
-		ouraDataService.getDataSleep(account, new Date(), false, new DataRequestContext(date, null,
-				[Identifier.look("Oura")], account.userId))
-
-		then: "Then previously imported entries from Oura should not be unset and no new entries should be created"
-		println "entries: ${Entry.findAll()}"
-		assert Entry.getCount() == 4
-		assert Entry.countByUserId(account.userId) == 4
-
-		List<Entry> newEntryList = Entry.getAll()
-		assert newEntryList[0].description == "bread"
-		assert newEntryList[0].setIdentifier == null
-		assert newEntryList[0].userId == account.userId
-
-		assert newEntryList[1].description == "sleep [time: total]"
-		assert newEntryList[1].setIdentifier.value == "Oura"
-		assert newEntryList[1].userId == account.userId
-	}
-
 	@Unroll
 	void "Test #methodName method when access token is invalid"() {
 		given: 'Mocked getOuraResource method of OauthService'
@@ -306,8 +158,31 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 			return new Response(new MockedHttpURLConnection(mockedResponseData))
 		} ]
 
-		when: 'The getDataSleep method is called'
-		ouraDataService.getDataSleep(account, new Date(), false, new DataService.DataRequestContext())
+		/*
+		 * Creating the date from entry's eventTime so that startDate and endDate range covers the created entries in 
+		 * DataRequestContext when re-importing the same entries.
+		 */
+		Date mockDate = new Date().parse('MM/dd/yyyy', '09/03/2016').clearTime()
+		account.lastData = mockDate - 2
+		account.lastPolled = account.lastData
+		account.save(flush: true)
+
+		DataRequestContext dataRequestContext = new DataRequestContext(mockDate, null, [Identifier.look("Oura")],
+				account.userId)
+		/*
+		 * Setting the max size to 5, so that during re-import only 5 entries will be available for duplicate 
+		 * matching in the DataRequestContext, rest 7 entries will be matched by the hasDuplicate() method call in 
+		 * Entry.groovy. Thus DataRequestContext and hasDuplicate() both will be tested for preventing 
+		 * duplicate entry creation during re-import.
+		 */
+		dataRequestContext.max = 5
+
+		// Keeping the Entry count zero before first poll.
+		Entry.list()*.delete(flush: true)
+		assert Entry.count() == 0
+
+		when: 'The polling is done for the first time'
+		ouraDataService.getDataSleep(account, mockDate, false, dataRequestContext)
 
 		then: 'Entries should be created successfully'
 		List<Entry> entryList = Entry.getAll()
@@ -323,6 +198,78 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList[13].amount == 54
 		entryList[13].units == 'bpm lowest'
 		entryList[13].setIdentifier.value == "Oura"
+
+		when: 'The same data with same DataRequestContext is re-imported.'
+		// Reset the lastData and lastPolled to same state.
+		account.lastData = mockDate - 2
+		account.lastPolled = account.lastData
+		account.save(flush: true)
+
+		// Note: The DataRequestContext is re-initialized in every call to getDataSleep.
+		ouraDataService.getDataSleep(account, mockDate, false, dataRequestContext)
+
+		then: 'Entry count should be same'
+		assert Entry.getCount() == 14
+
+		List<Entry> entryList1 = Entry.getAll()
+		entryList1.size() == 14
+
+		entryList1[0].timeZoneId == TimeZoneId.look("+01:00").id
+		entryList1[0].amount.round(new MathContext(3)) == new BigDecimal(23820 / 3600).round(new MathContext(3))
+		entryList1[0].units == 'hours total'
+		entryList1[0].description == "sleep [time: total]"
+		entryList1[0].setIdentifier.value == "Oura"
+
+		entryList1[13].timeZoneId == TimeZoneId.look("+05:30").id
+		entryList1[13].amount == 54
+		entryList1[13].units == 'bpm lowest'
+		entryList1[13].setIdentifier.value == "Oura"
+
+		when: 'The same data with same DataRequestContext but updated lastData and lastPolled is re-imported.'
+		ouraDataService.getDataSleep(account, mockDate, false, dataRequestContext)
+
+		then: 'Entry count should still be same as data is same'
+		assert Entry.getCount() == 14
+
+		List<Entry> entryList2 = Entry.getAll()
+		entryList2.size() == 14
+
+		entryList2[0].timeZoneId == TimeZoneId.look("+01:00").id
+		entryList2[0].amount.round(new MathContext(3)) == new BigDecimal(23820 / 3600).round(new MathContext(3))
+		entryList2[0].units == 'hours total'
+		entryList2[0].description == "sleep [time: total]"
+		entryList2[0].setIdentifier.value == "Oura"
+
+		entryList2[13].timeZoneId == TimeZoneId.look("+05:30").id
+		entryList2[13].amount == 54
+		entryList2[13].units == 'bpm lowest'
+		entryList2[13].setIdentifier.value == "Oura"
+
+		when: 'The same data with new DataRequestContext is re-imported.'
+		// Reset the lastData and lastPolled to same state.
+		account.lastData = mockDate - 2
+		account.lastPolled = account.lastData
+		account.save(flush: true)
+
+		// In this case all entries will be matched by the hasDuplicate() method call.
+		ouraDataService.getDataSleep(account, mockDate, false, new DataRequestContext())
+
+		then: 'Entry count should still remain the same'
+		assert Entry.getCount() == 14
+
+		List<Entry> entryList3 = Entry.getAll()
+		entryList3.size() == 14
+
+		entryList3[0].timeZoneId == TimeZoneId.look("+01:00").id
+		entryList3[0].amount.round(new MathContext(3)) == new BigDecimal(23820 / 3600).round(new MathContext(3))
+		entryList3[0].units == 'hours total'
+		entryList3[0].description == "sleep [time: total]"
+		entryList3[0].setIdentifier.value == "Oura"
+
+		entryList3[13].timeZoneId == TimeZoneId.look("+05:30").id
+		entryList3[13].amount == 54
+		entryList3[13].units == 'bpm lowest'
+		entryList3[13].setIdentifier.value == "Oura"
 	}
 
 	void "Test getDataActivity method to successfully create entries for activity data"() {
