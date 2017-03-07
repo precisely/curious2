@@ -72,7 +72,7 @@ abstract class DataService {
 	static class DataRequestContext {
 		Set<String> alreadyUnset
 		List<Entry> entriesInPollRange = null
-		Integer totalEntries, currentOffset = 0, max = 1000
+		Integer totalEntries, currentOffset = 0, max = 5000
 		Date pollStartDate, pollEndDate
 		List<Identifier> setIdentifiers
 		Long pollingUserId

@@ -155,22 +155,48 @@ class MigrationService {
 		return false
 	}
 
+	int getEntryCountWithCommentAndIdentifier(String thirdParty, Identifier identifier) {
+		int totalEntries = Entry.withCriteria {
+			// Comments are wrapped in parenthesis like (Oura).
+			eq('comment', "($thirdParty)")
+
+			or {
+				ne('setIdentifier', identifier)
+				isNull('setIdentifier')
+			}
+
+			isNotNull('userId')
+
+			projections {
+				rowCount()
+			}
+		} [0]
+
+		return totalEntries
+	}
+
 	public void updateThirdPartyEntryIdentifiers(String thirdParty) {
-		int totalEntries = Entry.countByComment("($thirdParty)")
 		Identifier identifier = Identifier.look(thirdParty)
 		Long identifierId = identifier.id
 
-		log.debug "Updating ${totalEntries} entries for $thirdParty to setIdentifier ${identifierId}"
+		int totalEntries = getEntryCountWithCommentAndIdentifier(thirdParty, identifier)
 
+		log.debug "Updating ${totalEntries} entries with valid user for $thirdParty to setIdentifier ${identifierId}"
+
+		int totalUpdatedEntries = 0
 		while (totalEntries > 0) {
-			Thread.sleep(3000)
-			sql("UPDATE entry SET set_identifier=${identifierId}, set_name='$thirdParty' WHERE comment='" +
-					"($thirdParty)' AND (set_identifier!=${identifierId} OR set_identifier IS NULL) ORDER BY date " +
-					"DESC LIMIT 20000")
-			totalEntries -= 20000
-		}
+			Thread.sleep(1000)
 
-		int totalUpdatedEntries = Entry.countBySetIdentifier(identifier)
+			int rowsAffected = sql("UPDATE entry SET set_identifier=${identifierId} WHERE comment='" +
+					"($thirdParty)' AND (set_identifier!=${identifierId} OR set_identifier IS NULL) AND " +
+					"user_id is not null ORDER BY date DESC LIMIT 40000")
+
+			if (rowsAffected > 0) {
+				totalUpdatedEntries += rowsAffected
+			}
+
+			totalEntries -= 40000
+		}
 
 		log.debug "Updated ${totalUpdatedEntries} entries for $thirdParty"
 	}
@@ -180,21 +206,15 @@ class MigrationService {
 
 		log.debug "Deleting ${totalIdentifiers} Identifiers with value like: $identifierValue"
 
-		while (totalIdentifiers > 0) {
-			Thread.sleep(3000)
-			sql("DELETE FROM identifier WHERE value LIKE BINARY '$identifierValue' LIMIT 20000")
-			totalIdentifiers -= 20000
-		}
+		int totalDeletedIdentifiers = sql("DELETE FROM identifier WHERE value LIKE BINARY '$identifierValue'")
+
+		log.debug "Deleted ${totalDeletedIdentifiers} Identifiers with value like: $identifierValue"
 	}
 
 	def doMigrations() {
 		if (Environment.getCurrent().equals(Environment.TEST))
 			return; // don't run in test environment
-		
-		try {
-			sql ("ALTER TABLE `migration` CHANGE COLUMN `code` code bigint(20) DEFAULT NULL")
-		} catch (Throwable t) {
-		}
+
 		tryMigration(SKIP_INITIAL_MIGRATIONS_ID) {
 			// if this is running on a brand new instance, skip initial migrations
 			skipMigrations = true
@@ -573,8 +593,8 @@ class MigrationService {
 			sql('alter table user_group drop index full_name')
 		}
 		tryMigration("Change repeat type column") {
-			if (sql('select * from entry where repeat_type is null limit 1')) {
-				if (!sql('alter table entry change repeat_type repeat_type_id int(11)')) {
+			if (sql('select * from entry where repeat_type is null limit 1') > 0) {
+				if (sql('alter table entry change repeat_type repeat_type_id int(11)') < 0) {
 					sql('alter table entry drop column repeat_type_id')
 					sql('alter table entry change repeat_type repeat_type_id int(11)')
 				}
@@ -931,30 +951,129 @@ class MigrationService {
 				totalNotifications -= 10000
 			}
 		}
-		tryMigration("Remove all Withings Identifiers and update associated entries") {
-			updateThirdPartyEntryIdentifiers('Withings')
-			deleteThirdPartyEntryIdentifiers('WI%')
+
+// - - - - - - - - - - - - - - - - - Re-run old failed migration- - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+		tryMigration("New string migration codes Updated") {
+			if (sql("ALTER TABLE migration MODIFY COLUMN tag varchar(255) DEFAULT NULL") >= 0) {
+
+				if (sql("UPDATE migration SET tag = CAST(code AS char) WHERE code IS NOT NULL AND" +
+						" (tag IS NULL OR tag = '')") > 0) {
+
+					sql("ALTER TABLE migration DROP COLUMN code")
+				}
+			}
 		}
 
-		tryMigration("Remove all Oura Identifiers and update associated entries") {
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+// - - - - - - - - - - - - - - - - Migrations for Improving Performance - - - - - - - - - - - - - - - - - - - - - - - -
+
+		/*
+		 * Cleaning up the database by removing entries with no user and date older than 30 days.
+		 * For a total of nearly 9800000+ entries without userId and date older than 30 days, migration will 
+		 * approximately take 2-3 hrs to complete.
+		 */
+		tryMigration('Delete all entries with no user and date older than 30 days') {
+			log.debug "Total Entry count before deletion is ${Entry.count()}"
+
+			Date thirtyDayAgo = new Date() - 30
+			int totalEntries = Entry.countByDateLessThanAndUserIdIsNull(thirtyDayAgo)
+
+			log.debug "Deleting ${totalEntries} entries with no user and date less than ${thirtyDayAgo}"
+
+			int totalDeletedEntries = sql("DELETE FROM entry WHERE date < :date AND user_id IS NULL",
+					[date: thirtyDayAgo])
+
+			log.debug "Deleted total ${totalDeletedEntries} entries."
+
+			log.debug "Total Entry count after deletion ${Entry.count()}"
+		}
+
+		/**
+		 * Update all device entries with new Identifier.
+		 */
+		tryMigration("Update entries for Oura with new Identifier") {
 			updateThirdPartyEntryIdentifiers('Oura')
+		}
+
+		tryMigration("Update entries for Withings with new Identifier") {
+			updateThirdPartyEntryIdentifiers('Withings')
+		}
+
+		tryMigration("Update entries for FitBit with new Identifier") {
+			updateThirdPartyEntryIdentifiers('FitBit')
+		}
+
+		tryMigration("Update entries for Jawbone Up with new Identifier") {
+			updateThirdPartyEntryIdentifiers('Jawbone Up')
+		}
+
+		tryMigration("Update entries for Moves with new Identifier") {
+			updateThirdPartyEntryIdentifiers('Moves')
+		}
+
+		/*
+		* Preventing the delete calls for Identifiers from DataIntegrationViolationException. Making sure that none of
+		* the Identifiers being deleted are referenced in any of the entries. The entries with userId has already
+		* been assigned new Identifiers, hence the entries left with no userId (if any after the above migration)
+		* should be having the new Identifier.
+		*/
+		tryMigration('Update entries with no user to new set_identifier') {
+			log.debug 'Updating set_identifiers for entries with no user so that old identifiers can be deleted.'
+
+			['Oura', 'Withings', 'Moves', 'FitBit', 'Jawbone Up'].each { String thirdParty ->
+				int totalEntries = Entry.countByCommentAndUserIdIsNull("($thirdParty)")
+
+				Identifier identifier = Identifier.look(thirdParty)
+				Long identifierId = identifier.id
+
+				log.debug "Updating ${totalEntries} entries with no user for $thirdParty to setIdentifier " +
+						"${identifierId} to prevent delete calls"
+
+				int totalUpdatedEntries = 0
+				while (totalEntries > 0) {
+					Thread.sleep(3000)
+					
+					int rowsAffected = sql("UPDATE entry SET set_identifier=${identifierId} WHERE comment='" +
+							"($thirdParty)' AND (set_identifier!=${identifierId} OR set_identifier IS NULL)" +
+							"AND user_id IS NULL ORDER BY date DESC LIMIT 40000")
+
+					if (rowsAffected > 0) {
+						totalUpdatedEntries += rowsAffected
+					}
+
+					totalEntries -= 40000
+				}
+
+				log.debug "Updated ${totalUpdatedEntries} entries for $thirdParty to prevent delete calls."
+			}
+		}
+
+		/**
+		 * Removing all Junk identifiers after all entries have been assigned the new identifiers.
+		 */
+		tryMigration("Remove all Junk Oura Identifiers") {
 			deleteThirdPartyEntryIdentifiers('OURA%')
 		}
 
-		tryMigration("Remove all Fitbit Identifiers and dfgdf update associated entries") {
-			updateThirdPartyEntryIdentifiers('FitBit')
+		tryMigration("Remove all Junk Withings Identifiers") {
+			deleteThirdPartyEntryIdentifiers('WI%')
+		}
+
+		tryMigration("Remove all Junk Fitbit Identifiers") {
 			deleteThirdPartyEntryIdentifiers('fitbit%')
 		}
 
-		tryMigration("Remove all Jawbone Up Identifiers and update associated entries") {
-			updateThirdPartyEntryIdentifiers('Jawbone Up')
+		tryMigration("Remove all Junk Jawbone Up Identifiers") {
 			deleteThirdPartyEntryIdentifiers('JUP%')
 		}
 
-		tryMigration("Remove all Moves Identifiers and update associated entries") {
-			updateThirdPartyEntryIdentifiers('Moves')
+		tryMigration("Remove all Junk Moves Identifiers") {
 			deleteThirdPartyEntryIdentifiers('moves%')
 		}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	}
 }
