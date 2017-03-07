@@ -470,9 +470,11 @@ class LegacyOuraDataService extends DataService {
 							it.accountId == refreshTokenLegacy['userId']
 						}
 
-						oAuthAccountToUpdate.refreshToken = refreshTokenLegacy['refreshToken']
-						oAuthAccountToUpdate.typeId = ThirdParty.OURA
-						Utils.save(oAuthAccountToUpdate)
+						if (oAuthAccountToUpdate && refreshTokenLegacy['refreshToken']) {
+							oAuthAccountToUpdate.refreshToken = refreshTokenLegacy['refreshToken']
+							oAuthAccountToUpdate.typeId = ThirdParty.OURA
+							Utils.save(oAuthAccountToUpdate)
+						}
 					}
 				}
 			} catch (Exception e) {

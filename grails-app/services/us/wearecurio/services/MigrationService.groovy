@@ -751,6 +751,10 @@ class MigrationService {
 			}
 		}
 
+		tryMigration('Update size of account_id column in OAuthAccount domain') {
+			sql("ALTER TABLE oauth_account MODIFY COLUMN account_id varchar(32)")
+		}
+
 		// This migration will also update the typeId to new Oura typeId i.e 10.
 		tryMigration('Get refresh tokens from Legacy Oura Cloud') {
 			legacyOuraDataService.renewRefreshTokens()
@@ -766,8 +770,10 @@ class MigrationService {
 		 * not present in the Legacy Oura Server.
 		 */
 		tryMigration('Update remaining OAuthAccounts to new typeId') {
-			sql('UPDATE oauth_account SET type_id = :newTypeId where type_id = :oldTypeId',
+			int noOfRowsUpdated = sql('UPDATE oauth_account SET type_id = :newTypeId where type_id = :oldTypeId',
 					[newTypeId: 10, oldTypeId: 9])
+
+			log.debug "Updated ${noOfRowsUpdated} OAuthAccounts to new Oura typeId"
 		}
 	}
 	
