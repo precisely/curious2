@@ -4,24 +4,23 @@ import us.wearecurio.thirdparty.TagUnitMap
 
 class OuraTagUnitMap extends TagUnitMap {
 
-	private static Map sleepUnitMap, activityUnitMap, exerciseUnitMap, readinessUnitMap, columnDetailMap = [:]
+	private static Map sleepUnitMap, activityUnitMap, readinessUnitMap, columnDetailMap = [:]
 
 	Map buckets
 
 	static {
-		exerciseUnitMap = [
-			classification_light: [tag: "light $EXERCISE", unit: "hours", convert: true, from: "mins"],
-			classification_moderate: [tag: "moderate $EXERCISE", unit: "hours", convert: true, from: "mins"],
-			classification_sedentary: [tag: "sedentary $EXERCISE", unit: "hours", convert: true, from: "mins"],
-			classification_rest: [tag: "rest $EXERCISE", unit: "hours", convert: true, from: "mins"]
-		]
-
 		activityUnitMap = [
 			non_wear: [tag: ACTIVITY, unit: "hours nonwear", convert: true, from: "minutes"],
 			steps: [tag: ACTIVITY, unit: "steps"],
 			daily_movement: [tag: ACTIVITY, unit: "miles walk", convert: true, from: "meters"],
 			cal_active: [tag: ACTIVITY, unit: "kcal active"],
 			cal_total: [tag: ACTIVITY, unit: "kcal total"],
+
+			// Present in new Oura API.
+			rest: [tag: ACTIVITY, unit: "hours rest", convert: true, from: "minutes"],
+			inactive: [tag: ACTIVITY, unit: "hours inactive", convert: true, from: "minutes"],
+			low: [tag: ACTIVITY, unit: "hours low", convert: true, from: "minutes"],
+			medium: [tag: ACTIVITY, unit: "hours medium", convert: true, from: "minutes"]
 		]
 
 		sleepUnitMap = [
@@ -53,7 +52,6 @@ class OuraTagUnitMap extends TagUnitMap {
 
 		columnDetailMap.putAll(sleepUnitMap)
 		columnDetailMap.putAll(activityUnitMap)
-		columnDetailMap.putAll(exerciseUnitMap)
 		columnDetailMap.putAll(readinessUnitMap)
 	}
 

@@ -240,7 +240,8 @@ class OuraDataService extends DataService {
 			String setName = SET_NAME
 			Integer timeZoneIdNumber = getTimeZoneId(account, activityEntry)
 
-			["non_wear", "steps", "daily_movement", "cal_active", "cal_total"].each { key ->
+			["non_wear", "steps", "daily_movement", "cal_active", "cal_total", "rest", "inactive", "low", "medium"]
+					.each { key ->
 				if (activityEntry[key]) {
 					tagUnitMap.buildEntry(creationMap, stats, key, Long.parseLong(activityEntry[key].toString()), userId,
 							timeZoneIdNumber, entryDate, COMMENT, setName, context)

@@ -276,21 +276,21 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		given: 'API response data'
 		String mockedResponseData = """{activity: [
 				{"steps": 11, "non_wear": 123, "daily_movement": 54, "class_5min":
-				"11000101000022221", "met_1min": [0.1, 0.1, 0.1], "low": 0, "score_training_volume": 97, "met_min_low":
-				0, "met_min_medium_plus": 0, "score_recovery_time": 100, "score": 100, "score_move_every_hour": 100,
+				"11000101000022221", "met_1min": [0.1, 0.1, 0.1], "low": 100, "score_training_volume": 97, "met_min_low"
+				:0, "met_min_medium_plus": 0, "score_recovery_time": 100, "score": 100, "score_move_every_hour": 100,
 				"timezone": 120, "met_min_high": 0, "inactive": 22, "cal_total": 1993, "cal_active": 1,
 				"score_stay_active": 100, "day_end": "2015-12-23T03:59:59+02:00", "inactivity_alerts": 0,
-				"score_meet_daily_targets": 100, "average_met": 1.03125, "met_min_medium": 0, "high": 0,
-				"score_training_frequency": 100, "rest": 191, "medium": 0, "day_start": "2015-12-22T04:00:00+02:00",
+				"score_meet_daily_targets": 100, "average_met": 1.03125, "met_min_medium": 0, "high": 75,
+				"score_training_frequency": 100, "rest": 191, "medium": 85, "day_start": "2015-12-22T04:00:00+02:00",
 				"met_min_inactive": 1, "summary_date": "2015-12-22"},
 
 				{"steps": 23, "non_wear": 237,
-				"daily_movement": 412, "class_5min": "11000101000022221", "met_1min": [0.1, 0.1, 0.1], "low": 0,
+				"daily_movement": 412, "class_5min": "11000101000022221", "met_1min": [0.1, 0.1, 0.1], "low": 90,
 				"score_training_volume": 95, "met_min_low": 0, "met_min_medium_plus": 0, "score_recovery_time": 100,
 				"score": 98, "score_move_every_hour": 100, "timezone": 180, "met_min_high": 0, "inactive": 22,
 				"cal_total": 2533, "cal_active": 2, "score_stay_active": 100, "day_end": "2015-12-23T03:59:59+03:00",
 				 "inactivity_alerts": 0, "score_meet_daily_targets": 100, "average_met": 1.03125, "met_min_medium":
-				 0, "high": 0, "score_training_frequency": 100, "rest": 191, "medium": 0, "day_start":
+				 0, "high": 70, "score_training_frequency": 100, "rest": 198, "medium": 75, "day_start":
 				 "2015-12-22T04:00:00+03:00", "met_min_inactive": 1, "summary_date": "2015-12-23"}]}"""
 
 		and: 'Mocked getOuraResource method of OauthService'
@@ -302,7 +302,7 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		ouraDataService.getDataActivity(account, new Date(), false, new DataService.DataRequestContext())
 
 		then: 'New entries should be saved successfully'
-		Entry.getCount() == 10
+		Entry.getCount() == 18
 
 		Entry entry1 = Entry.first()
 		Entry entry2 = Entry.last()
@@ -313,8 +313,8 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entry1.amount.round(new MathContext(3)) == new BigDecimal(123 / 60).round(new MathContext(3))
 		entry1.units == 'hours nonwear'
 
-		entry2.amount == 2533
-		entry2.units == 'kcal total'
+		entry2.amount.round(new MathContext(3)) == new BigDecimal(75 / 60).round(new MathContext(3))
+		entry2.units == 'hours medium'
 
 		entry1.setIdentifier.value == "Oura"
 		entry2.setIdentifier.value == "Oura"
