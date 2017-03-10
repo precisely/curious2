@@ -189,13 +189,13 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList.size() == 14
 
 		entryList[0].timeZoneId == TimeZoneId.look("+01:00").id
-		entryList[0].amount.round(new MathContext(3)) == new BigDecimal(23820 / 3600).round(new MathContext(3))
+		entryList[0].amount == new BigDecimal(25680 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList[0].units == 'hours total'
 		entryList[0].description == "sleep [time: total]"
 		entryList[0].setIdentifier.value == "Oura"
 
 		entryList[13].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList[13].amount == 54
+		entryList[13].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList[13].units == 'bpm lowest'
 		entryList[13].setIdentifier.value == "Oura"
 
@@ -215,13 +215,13 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList1.size() == 14
 
 		entryList1[0].timeZoneId == TimeZoneId.look("+01:00").id
-		entryList1[0].amount.round(new MathContext(3)) == new BigDecimal(23820 / 3600).round(new MathContext(3))
+		entryList1[0].amount == new BigDecimal(25680 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList1[0].units == 'hours total'
 		entryList1[0].description == "sleep [time: total]"
 		entryList1[0].setIdentifier.value == "Oura"
 
 		entryList1[13].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList1[13].amount == 54
+		entryList[13].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList1[13].units == 'bpm lowest'
 		entryList1[13].setIdentifier.value == "Oura"
 
@@ -235,13 +235,13 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList2.size() == 14
 
 		entryList2[0].timeZoneId == TimeZoneId.look("+01:00").id
-		entryList2[0].amount.round(new MathContext(3)) == new BigDecimal(23820 / 3600).round(new MathContext(3))
+		entryList1[0].amount == new BigDecimal(25680 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList2[0].units == 'hours total'
 		entryList2[0].description == "sleep [time: total]"
 		entryList2[0].setIdentifier.value == "Oura"
 
 		entryList2[13].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList2[13].amount == 54
+		entryList[13].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList2[13].units == 'bpm lowest'
 		entryList2[13].setIdentifier.value == "Oura"
 
@@ -261,13 +261,13 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList3.size() == 14
 
 		entryList3[0].timeZoneId == TimeZoneId.look("+01:00").id
-		entryList3[0].amount.round(new MathContext(3)) == new BigDecimal(23820 / 3600).round(new MathContext(3))
+		entryList1[0].amount == new BigDecimal(25680 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList3[0].units == 'hours total'
 		entryList3[0].description == "sleep [time: total]"
 		entryList3[0].setIdentifier.value == "Oura"
 
 		entryList3[13].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList3[13].amount == 54
+		entryList[13].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList3[13].units == 'bpm lowest'
 		entryList3[13].setIdentifier.value == "Oura"
 	}

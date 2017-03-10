@@ -24,7 +24,7 @@ class OuraTagUnitMap extends TagUnitMap {
 		]
 
 		sleepUnitMap = [
-			total: [tag: SLEEP, unit: "hours total", convert: true, from: "seconds"],
+			duration: [tag: SLEEP, unit: "hours total", convert: true, from: "seconds"],
 			score: [tag: SLEEP, unit: "score"],
 			awake: [tag: SLEEP, unit: "hours awake", convert: true, from: "seconds"],
 			rem: [tag: SLEEP, unit: "hours rem", convert: true, from: "seconds"],
