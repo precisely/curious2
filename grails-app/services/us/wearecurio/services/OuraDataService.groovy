@@ -3,6 +3,7 @@ package us.wearecurio.services
 import grails.converters.JSON
 import groovy.time.TimeCategory
 import groovyx.net.http.URIBuilder
+import java.text.ParseException
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.joda.time.DateTime
@@ -153,11 +154,11 @@ class OuraDataService extends DataService {
 
 			Integer timeZoneIdNumber = getTimeZoneId(account, sleepEntry)
 
-			Date sleepEnd = convertTimeToDate(sleepEntry['bedtime_end'])
+			Date sleepEnd = parseDateFromString(sleepEntry['bedtime_end'])
 
 			// Trying to calculate sleepEnd using bedtime_start and duration parameters if bedtime_end is missing.
 			if (!sleepEnd) {
-				Date sleepStart = convertTimeToDate(sleepEntry['bedtime_start'])
+				Date sleepStart = parseDateFromString(sleepEntry['bedtime_start'])
 
 				/*
 				* Total duration of the sleep period (sleep.duration = sleep.bedtime_end - sleep.bedtime_start)
@@ -229,7 +230,7 @@ class OuraDataService extends DataService {
 		JSONArray activityData = apiResponse["activity"]
 
 		activityData.each { Map activityEntry ->
-			Date entryDate = convertTimeToDate(activityEntry['day_start'])
+			Date entryDate = parseDateFromString(activityEntry['day_start'])
 
 			if (!entryDate) {
 				log.warn 'Response does not contain data to calculate entry date.'
@@ -292,18 +293,25 @@ class OuraDataService extends DataService {
 		JSONArray readinessData = apiResponse['readiness']
 
 		readinessData.each { Map readinessEntry ->
+			String setName = SET_NAME
+			Integer timeZoneIdNumber = getTimeZoneId(account, readinessEntry)
+
 			// Summary Date received in yyyy-MM-dd format.
-			SimpleDateFormat simpleDateFormat = new SimpleDateFormat('yyyy-MM-dd')
-			Date entryDate = simpleDateFormat.parse(readinessEntry['summary_date'])
+			String dateString = readinessEntry['summary_date']
+			Date entryDate
+			if (dateString) {
+				try {
+					entryDate = Date.parse('yyyy-MM-dd', dateString, TimeZoneId.getTimeZoneInstance(timeZoneIdNumber))
+				} catch (ParseException e) {
+					log.warn "Could not parse date [$dateString]", e
+				}
+			}
 
 			if (!entryDate) {
 				log.warn 'Response does not contain data to calculate entry date.'
 
 				return
 			}
-
-			String setName = SET_NAME
-			Integer timeZoneIdNumber = getTimeZoneId(account, readinessEntry)
 
 			if (readinessEntry['score']) {
 				tagUnitMap.buildEntry(creationMap, stats, 'readiness_score',
@@ -367,10 +375,10 @@ class OuraDataService extends DataService {
 	 * For a specific record from Ouracloud, the time of that record/event is the Date time. This helper method
 	 * converts that time to a Date object. Keeping it as a method to keep it DRY and also prevent it from missing at
 	 * ony place.
-	 * @param rawEntry Raw event/entry data received from Ouracloud API.
-	 * @return Converted date object
+	 * @param dateTimeString String representation of date to parse.
+	 * @return Date The converted date object
 	 */
-	Date convertTimeToDate(String dateTimeString) {
+	Date parseDateFromString(String dateTimeString) {
 		if (!dateTimeString) {
 			return
 		}

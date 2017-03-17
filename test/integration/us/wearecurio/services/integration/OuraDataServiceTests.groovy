@@ -329,17 +329,21 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 
 				{"score_sleep_balance": 90, "score": 82, "score_activity_balance": 96, "period_id": 0,
 				"score_previous_night": 77, "score_resting_hr": 82, "score_temperature": 98, "score_previous_day":
-				57, "summary_date": "2017-02-15", "score_recovery_index": 97}]}"""
+				57, "summary_date": "2017-02-15", "score_recovery_index": 97}]}
+				
+				{"score_sleep_balance": 90, "score": 82, "score_activity_balance": 96, "period_id": 0,
+				"score_previous_night": 77, "score_resting_hr": 82, "score_temperature": 98, "score_previous_day":
+				57, "score_recovery_index": 97}]}"""
 
 		and: 'Mocked getOuraResource method of OauthService'
 		ouraDataService.oauthService = [getOuraResource: { token, url, p, header ->
 			return new Response(new MockedHttpURLConnection(mockedResponseData))
 		} ]
 
-		when: 'The getDataReadiness method is called with valid token'
+		when: 'The getDataReadiness method is called with 2 valid and one invalid readiness response data'
 		ouraDataService.getDataReadiness(account, new Date(), false, new DataService.DataRequestContext())
 
-		then: 'New entries should be saved properly'
+		then: '2 Entries with summary_date should be saved and one without date should be rejected'
 		Entry.getCount() == 2
 
 		Entry entry1 = Entry.first()
