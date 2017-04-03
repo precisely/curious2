@@ -477,8 +477,8 @@ class DataController extends LoginController {
 		 */
 		if (params.containsKey('mobileSessionId') && params.balloonData) {
 			boolean showRemindAlertBalloon = !user.settings.hasFirstAlertEntryCountCompleted()
-			renderJSONGet([entries, showRemindAlertBalloon])
-			
+			renderJSONGet([entries, showRemindAlertBalloon, TagInputType.recentTwoWeekTagsWithInputType()])
+
 			return
 		}
 
@@ -933,6 +933,11 @@ class DataController extends LoginController {
 
 			return data
 		})
+	}
+
+	def getAllTagsWithInputType() {
+		boolean onlyRecentTags = false
+		renderJSONGet(TagInputType.recentTwoWeekTagsWithInputType(onlyRecentTags))
 	}
 
 	def autocompleteData() {
