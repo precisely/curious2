@@ -1,5 +1,7 @@
 package us.wearecurio.model
 
+import us.wearecurio.cache.BoundedCache
+
 class TagInputType {
 
 	Long tagId // BaseTagId
@@ -17,6 +19,23 @@ class TagInputType {
 	InputType inputType
 	ValueType valueType = ValueType.DISCRETE // Default ValueType
 
+	// Cache holder to cache Tags with its InputType, id, description, min, max and numberOfLevels.
+	static BoundedCache<Long, Map> tagsWithInputTypeCache = Collections.synchronizedMap(new BoundedCache<Long,
+			List<String>>(50000))
+
+	/*
+	 * A method to cache various properties of Tag and TagInputType.
+	 */
+	static void cache(List instanceList) {
+		instanceList.each { instance ->
+			synchronized(tagsWithInputTypeCache) {
+				tagsWithInputTypeCache.put(instance.tagId, [tagId: instance.tagId,
+						description: instance.description, max: instance.max, inputType: instance.inputType,
+						min: instance.min, noOfLevels: instance.noOfLevels, cacheDate: new Date()])
+			}
+		}
+	}
+
 	static constraints = {
 		userId nullable: true
 		tagId unique: true
@@ -27,14 +46,52 @@ class TagInputType {
 		tagId column:'tag_id', index:'tag_id_index'
 	}
 
-	static List recentTwoWeekTagsWithInputType(boolean recentTags = true) {
-		return executeQuery(
-				"SELECT new Map(t.id as tagId, t.description as description, tiy.inputType as inputType," +
+	static List recentTagsWithInputType(Date startDate = null, Date endDate = null, Date lastInputTypeUpdate = null) {
+		List resultInstanceList = []
+		Map cachedInstances = [:]
+
+		if (!endDate) {
+			endDate = new Date()
+		}
+
+		if (lastInputTypeUpdate) {
+			cachedInstances << tagsWithInputTypeCache.findAll { k, v ->
+				v.cacheDate > lastInputTypeUpdate
+			}
+
+			cachedInstances.each { k, v ->
+				resultInstanceList.add(v)
+			}
+
+			return resultInstanceList
+		}
+
+		if (tagsWithInputTypeCache) {
+			tagsWithInputTypeCache.each { k, v ->
+				resultInstanceList.add(v)
+			}
+
+			return resultInstanceList
+		}
+
+		Map namedParams = startDate != null ? [startDate: startDate, endDate: endDate] : [endDate: endDate]
+
+		String query = "SELECT new Map(t.id as tagId, t.description as description, tiy.inputType as inputType," +
 				" tiy.min as min, tiy.max as max, tiy.noOfLevels as noOfLevels) " +
 				"FROM Tag t, TagStats ts, TagInputType tiy " +
-				"WHERE t.id = ts.tagId and t.id = tiy.tagId " +
-				(recentTags ? "and ts.mostRecentUsage > :twoWeeksAgo " : "") + 
-				"group by t.id ORDER BY t.description", recentTags ? [twoWeeksAgo: new Date() - 14] : [:])
+				"WHERE t.id = ts.tagId and t.id = tiy.tagId "
+		if (startDate) {
+			query += "and ts.mostRecentUsage > :startDate "
+		}
+
+		query += "and ts.mostRecentUsage < :endDate group by t.id ORDER BY t.description"
+
+		resultInstanceList =  executeQuery(query, namedParams)
+
+		// Adding results to cached data.
+		cache(resultInstanceList)
+
+		return resultInstanceList
 	}
 }
 
