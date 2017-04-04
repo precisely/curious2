@@ -46,13 +46,23 @@ class TagInputType {
 		tagId column:'tag_id', index:'tag_id_index'
 	}
 
+	/**
+	 * A method to get recent Tags with it's input type and other properties such as description, noOfLevels, max, etc.
+	 * Results can be filtered passing startDate and endDate in the argument.
+	 * If values are present in cache then they are returned directly, if not then they are fetched from the database
+	 * and before returning added to BoundedCache.
+	 * If lastInputTypeUpdate Date is sent then only the data which was cached later to lastInputTypeUpdate Date are
+	 * returned. If no values are found then method returns an empty List.
+	 *
+	 * @param startDate
+	 * @param endDate
+	 * @param lastInputTypeUpdate
+	 *
+	 * @return List<Map> of matching data.
+	 */
 	static List recentTagsWithInputType(Date startDate = null, Date endDate = null, Date lastInputTypeUpdate = null) {
 		List resultInstanceList = []
 		Map cachedInstances = [:]
-
-		if (!endDate) {
-			endDate = new Date()
-		}
 
 		if (lastInputTypeUpdate) {
 			cachedInstances << tagsWithInputTypeCache.findAll { k, v ->
@@ -74,7 +84,8 @@ class TagInputType {
 			return resultInstanceList
 		}
 
-		Map namedParams = startDate != null ? [startDate: startDate, endDate: endDate] : [endDate: endDate]
+		Map namedParams = startDate != null ? (endDate != null ? [startDate: startDate, endDate: endDate] :
+				[startDate: startDate]) : (endDate != null ? [endDate: endDate] : [:])
 
 		String query = "SELECT new Map(t.id as tagId, t.description as description, tiy.inputType as inputType," +
 				" tiy.min as min, tiy.max as max, tiy.noOfLevels as noOfLevels) " +
@@ -83,10 +94,13 @@ class TagInputType {
 		if (startDate) {
 			query += "and ts.mostRecentUsage > :startDate "
 		}
+		if (endDate) {
+			query += "and ts.mostRecentUsage < :endDate "
+		}
 
-		query += "and ts.mostRecentUsage < :endDate group by t.id ORDER BY t.description"
+		query += "group by t.id ORDER BY t.description"
 
-		resultInstanceList =  executeQuery(query, namedParams)
+		resultInstanceList = executeQuery(query, namedParams)
 
 		// Adding results to cached data.
 		cache(resultInstanceList)

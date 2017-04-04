@@ -480,7 +480,7 @@ class DataController extends LoginController {
 
 			Date startDate = params.startDate ? parseDate(params.startDate) : (new Date() - 14)
 			Date endDate = params.endDate ? parseDate(params.endDate) : new Date()
-			Date lastInputTypeUpdate = params.lastInputTypeUpdate ? parseDate(params.endDate) : null
+			Date lastInputTypeUpdate = params.lastInputTypeUpdate ? parseDate(params.lastInputTypeUpdate) : null
 
 			renderJSONGet([entries, showRemindAlertBalloon, TagInputType.recentTagsWithInputType(startDate, endDate,
 					lastInputTypeUpdate)])
@@ -941,10 +941,15 @@ class DataController extends LoginController {
 		})
 	}
 
+	/**
+	 * An endpoint to get all the TagInputType instances.
+	 *
+	 * @return List of TagInputType.
+	 */
 	def getAllTagsWithInputType() {
 		Date startDate = params.startDate ? parseDate(params.startDate) : null
 		Date endDate = params.endDate ? parseDate(params.endDate) : null
-		Date lastInputTypeUpdate = params.lastInputTypeUpdate ? parseDate(params.endDate) : null
+		Date lastInputTypeUpdate = params.lastInputTypeUpdate ? parseDate(params.lastInputTypeUpdate) : null
 
 		renderJSONGet(TagInputType.recentTagsWithInputType(startDate, endDate, lastInputTypeUpdate))
 	}
