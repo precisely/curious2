@@ -1271,29 +1271,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		assert !controller.response.contentAsString.contains("\"cacheDate\":")
 		assert TagInputType.tagsWithInputTypeCache.size() == 3
-
-		when: 'getAllTagsWithInputType action is hit and cache has not been updated after lastInputTypeUpdate date'
-		controller.params.clear()
-		controller.response.reset()
-		controller.request.method = 'GET'
-		controller.params['lastInputTypeUpdate'] = 'Wed, 25 Feb 3017 10:44:07 GMT'
-		controller.getAllTagsWithInputType()
-
-		then: 'Server responds with the TagInputTypes that are updated after lastInputTypeUpdate date'
-		assert controller.response.contentAsString == '[]'
-
-		when: 'getAllInputType action is hit and TagInputType are persent in BoundedCache'
-		assert TagInputType.tagsWithInputTypeCache.size() == 3
-		controller.params.clear()
-		controller.response.reset()
-		controller.request.method = 'GET'
-		controller.getAllTagsWithInputType()
-
-		then: 'Results are fetched from the cache'
-		assert controller.response.contentAsString.contains("\"tagId\":${tagInstance1.id}")
-		assert controller.response.contentAsString.contains("\"tagId\":${tagInstance2.id}")
-		assert controller.response.contentAsString.contains("\"tagId\":${tagInstance3.id}")
-
-		assert controller.response.contentAsString.contains("\"cacheDate\":")
+		TagInputType.clearCache()
 	}
 }

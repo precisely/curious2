@@ -19,21 +19,22 @@ class TagInputType {
 	InputType inputType
 	ValueType valueType = ValueType.DISCRETE // Default ValueType
 
+	static Date cacheDate
+
 	// Cache holder to cache Tags with its InputType, id, description, min, max and numberOfLevels.
 	static BoundedCache<Long, Map> tagsWithInputTypeCache = Collections.synchronizedMap(new BoundedCache<Long,
-			List<String>>(50000))
+			Map>(50000))
 
 	/*
 	 * A method to cache various properties of Tag and TagInputType.
 	 */
 	static void cache(List instanceList) {
-		instanceList.each { instance ->
+		instanceList.each { Map instance ->
 			synchronized(tagsWithInputTypeCache) {
-				tagsWithInputTypeCache.put(instance.tagId, [tagId: instance.tagId,
-						description: instance.description, max: instance.max, inputType: instance.inputType,
-						min: instance.min, noOfLevels: instance.noOfLevels, cacheDate: new Date()])
+				tagsWithInputTypeCache.put(instance.tagId, instance)
 			}
 		}
+		cacheDate = new Date() // Updating cache date.
 	}
 
 	static constraints = {
@@ -61,31 +62,20 @@ class TagInputType {
 	 * @return List<Map> of matching data.
 	 */
 	static List recentTagsWithInputType(Date startDate = null, Date endDate = null, Date lastInputTypeUpdate = null) {
-		List resultInstanceList = []
-		Map cachedInstances = [:]
-
-		if (lastInputTypeUpdate) {
-			cachedInstances << tagsWithInputTypeCache.findAll { k, v ->
-				v.cacheDate > lastInputTypeUpdate
-			}
-
-			cachedInstances.each { k, v ->
-				resultInstanceList.add(v)
-			}
-
-			return resultInstanceList
-		}
+		List tagsWithInputTypeList = []
 
 		if (tagsWithInputTypeCache) {
-			tagsWithInputTypeCache.each { k, v ->
-				resultInstanceList.add(v)
+			tagsWithInputTypeList.addAll(tagsWithInputTypeCache.values())
+
+			if (lastInputTypeUpdate) {
+				return (cacheDate > lastInputTypeUpdate) ? tagsWithInputTypeList : []
 			}
 
-			return resultInstanceList
+			return tagsWithInputTypeList
 		}
 
-		Map namedParams = startDate != null ? (endDate != null ? [startDate: startDate, endDate: endDate] :
-				[startDate: startDate]) : (endDate != null ? [endDate: endDate] : [:])
+		Map namedParams = startDate ? (endDate ? [startDate: startDate, endDate: endDate] :
+				[startDate: startDate]) : (endDate ? [endDate: endDate] : [:])
 
 		String query = "SELECT new Map(t.id as tagId, t.description as description, tiy.inputType as inputType," +
 				" tiy.min as min, tiy.max as max, tiy.noOfLevels as noOfLevels) " +
@@ -100,12 +90,26 @@ class TagInputType {
 
 		query += "group by t.id ORDER BY t.description"
 
-		resultInstanceList = executeQuery(query, namedParams)
+		List resultInstanceList = executeQuery(query, namedParams)
 
 		// Adding results to cached data.
 		cache(resultInstanceList)
 
 		return resultInstanceList
+	}
+
+	/**
+	 * A method to remove entry from the cache for a given tagId.
+	 */
+	static void removeFromCache(String tagId) {
+		tagsWithInputTypeCache.remove(tagId)
+	}
+
+	/**
+	 * A method to clear cache data.
+	 */
+	static void clearCache() {
+		tagsWithInputTypeCache.clear()
 	}
 }
 
