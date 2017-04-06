@@ -478,12 +478,8 @@ class DataController extends LoginController {
 		if (params.containsKey('mobileSessionId') && params.balloonData) {
 			boolean showRemindAlertBalloon = !user.settings.hasFirstAlertEntryCountCompleted()
 
-			Date startDate = params.startDate ? parseDate(params.startDate) : (new Date() - 14)
-			Date endDate = params.endDate ? parseDate(params.endDate) : new Date()
-			Date lastInputTypeUpdate = params.lastInputTypeUpdate ? parseDate(params.lastInputTypeUpdate) : null
-
-			renderJSONGet([entries, showRemindAlertBalloon, TagInputType.recentTagsWithInputType(startDate, endDate,
-					lastInputTypeUpdate)])
+			// Currently TagInputType list will be same for all the Users.
+			renderJSONGet([entries, showRemindAlertBalloon, TagInputType.getRecentTagsWithInputType()])
 
 			return
 		}
@@ -947,7 +943,9 @@ class DataController extends LoginController {
 	 * @return List of TagInputType.
 	 */
 	def getAllTagsWithInputType() {
-		renderJSONGet(TagInputType.recentTagsWithInputType())
+		Date lastInputTypeUpdate = params.lastInputTypeUpdate ? parseDate(params.lastInputTypeUpdate) : null
+
+		renderJSONGet(TagInputType.getTagsWithInputType(lastInputTypeUpdate))
 	}
 
 	def autocompleteData() {

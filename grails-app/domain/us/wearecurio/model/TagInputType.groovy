@@ -7,6 +7,8 @@ class TagInputType {
 	Long tagId // BaseTagId
 	Long userId
 
+	String defaultUnit
+
 	// Maximum allowed value for this TagInputType.
 	Integer max
 
@@ -48,23 +50,43 @@ class TagInputType {
 	}
 
 	/**
-	 * A method to get recent Tags with it's input type and other properties such as description, noOfLevels, max, etc.
-	 * Results can be filtered passing startDate and endDate in the argument.
-	 * If values are present in cache then they are returned directly, if not then they are fetched from the database
-	 * and before returning added to BoundedCache.
-	 * If lastInputTypeUpdate Date is sent then only the data which was cached later to lastInputTypeUpdate Date are
-	 * returned. If no values are found then method returns an empty List.
+	 * A method to get Tags used withing last two weeks with it's input type and other properties such as description,
+	 * noOfLevels, max, etc. userId is an optional parameter.
+	 *
+	 * @param userId: optional
+	 * @return List<Map> of result instances.
+	 */
+	static List getRecentTagsWithInputType(Long userId = null) {
+		return getQueryResults(new Date() - 14, null, userId)
+	}
+
+	/**
+	 * A method to get Tags used withing a particular date range with it's input type and other properties such as
+	 * description, noOfLevels, max, etc. userId is an optional parameter.
 	 *
 	 * @param startDate
 	 * @param endDate
-	 * @param lastInputTypeUpdate
-	 *
-	 * @return List<Map> of matching data.
+	 * @param userId : optional
+	 * @return List<Map> of result instances.
 	 */
-	static List recentTagsWithInputType(Date startDate = null, Date endDate = null, Date lastInputTypeUpdate = null) {
+	static List getTagsWithInputType(Date startDate, Date endDate, Long userId = null) {
+		return getQueryResults(startDate, endDate, userId)
+	}
+
+	/**
+	 * A method to get Tags with it's input type and other properties such as
+	 * description, noOfLevels, max, etc. This method searches in the cache first based on the passed arguments and
+	 * if no cached values are found then a database query is done to get TagInputType instances.
+	 * userId is an optional parameter.
+	 *
+	 * @param lastInputTypeUpdate
+	 * @param userId
+	 * @return List<Map> of result instances.
+	 */
+	static List getTagsWithInputType(Date lastInputTypeUpdate, Long userId = null) {
 		List tagsWithInputTypeList = []
 
-		if (tagsWithInputTypeCache) {
+		if (tagsWithInputTypeCache || lastInputTypeUpdate) {
 			tagsWithInputTypeList.addAll(tagsWithInputTypeCache.values())
 
 			if (lastInputTypeUpdate) {
@@ -74,26 +96,61 @@ class TagInputType {
 			return tagsWithInputTypeList
 		}
 
+		return userId ? getTagsWithInputType(userId) : getTagsWithInputType()
+	}
+
+	/**
+	 * A method to get  All Tags with it's input type and other properties such as
+	 * description, noOfLevels, max, etc. Result list is cached before response. userId is an optional parameter.
+	 *
+	 * @param userId
+	 * @return List<Map> of result instances.
+	 */
+	static List getTagsWithInputType(Long userId = null) {
+		List resultInstanceList = getQueryResults(null, null, userId)
+
+		// Adding query result to cache.
+		cache(resultInstanceList)
+
+		return resultInstanceList
+	}
+
+	/**
+	 * A method which performs query on database and gets the desired result based on passed arguments.
+	 *
+	 * @param startDate
+	 * @param endDate
+	 * @param userId
+	 * @return List<Map> of result instances.
+	 */
+	static List getQueryResults(Date startDate, Date endDate, Long userId = null) {
 		Map namedParams = startDate ? (endDate ? [startDate: startDate, endDate: endDate] :
 				[startDate: startDate]) : (endDate ? [endDate: endDate] : [:])
 
+		if (userId) {
+			namedParams.userId = userId
+		}
+
 		String query = "SELECT new Map(t.id as tagId, t.description as description, tiy.inputType as inputType," +
-				" tiy.min as min, tiy.max as max, tiy.noOfLevels as noOfLevels) " +
-				"FROM Tag t, TagStats ts, TagInputType tiy " +
+				" tiy.min as min, tiy.max as max, tiy.noOfLevels as noOfLevels, ts.lastUnits as lastUnits, " +
+				"tiy.defaultUnit as defaultUnit) FROM Tag t, TagStats ts, TagInputType tiy " +
 				"WHERE t.id = ts.tagId and t.id = tiy.tagId "
+
 		if (startDate) {
 			query += "and ts.mostRecentUsage > :startDate "
 		}
+
 		if (endDate) {
 			query += "and ts.mostRecentUsage < :endDate "
+		}
+
+		if (userId) {
+			query += "and ts.userId = :userId and tiy.userId = :userId "
 		}
 
 		query += "group by t.id ORDER BY t.description"
 
 		List resultInstanceList = executeQuery(query, namedParams)
-
-		// Adding results to cached data.
-		cache(resultInstanceList)
 
 		return resultInstanceList
 	}

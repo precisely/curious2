@@ -1249,11 +1249,11 @@ class DataControllerTests extends CuriousControllerTestCase {
 		TagStats.createOrUpdate(userInstance.id, tagInstance3.id)
 
 		new TagInputType(tagId: tagInstance1.id, max: 10, min: 0, noOfLevels: 5,
-				inputType: InputType.THUMBS).save(flush: true)
+				inputType: InputType.THUMBS, defaultUnit: 'miles').save(flush: true)
 		new TagInputType(tagId: tagInstance2.id, max: 10, min: 0, noOfLevels: 5,
-				inputType: InputType.LEVEL).save(flush: true)
+				inputType: InputType.LEVEL, defaultUnit: 'hours').save(flush: true)
 		new TagInputType(tagId: tagInstance3.id, max: 10, min: 0, noOfLevels: 5,
-				inputType: InputType.SLIDER).save(flush: true)
+				inputType: InputType.SLIDER, defaultUnit: 'calories').save(flush: true)
 
 		when: 'getAllTagsWithInputType action is hit'
 		controller.request.method = 'GET'
@@ -1264,6 +1264,10 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert controller.response.contentAsString.contains("\"tagId\":${tagInstance1.id}")
 		assert controller.response.contentAsString.contains("\"tagId\":${tagInstance2.id}")
 		assert controller.response.contentAsString.contains("\"tagId\":${tagInstance3.id}")
+
+		assert controller.response.contentAsString.contains("\"defaultUnit\":\"miles\"")
+		assert controller.response.contentAsString.contains("\"defaultUnit\":\"hours\"")
+		assert controller.response.contentAsString.contains("\"defaultUnit\":\"calories\"")
 
 		assert controller.response.contentAsString.contains("\"inputType\":\"LEVEL\"")
 		assert controller.response.contentAsString.contains("\"inputType\":\"SLIDER\"")
