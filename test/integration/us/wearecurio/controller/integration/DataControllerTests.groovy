@@ -1273,7 +1273,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert controller.response.contentAsString.contains("\"inputType\":\"SLIDER\"")
 		assert controller.response.contentAsString.contains("\"inputType\":\"THUMBS\"")
 
-		assert !controller.response.contentAsString.contains("\"cacheDate\":")
+		assert controller.response.contentAsString.contains("\"cacheDate\":")
 		assert TagInputType.tagsWithInputTypeCache.size() == 3
 		TagInputType.clearCache()
 	}
