@@ -14,7 +14,7 @@ class ErrorController {
 		log.debug 'Sending error report to curious support.'
 
 		Throwable throwable = request.exception
-		String title = 'MEMORY ALLOCATION ERROR - OutOfMemoryError:'
+		String title = '[CURIOUS] - MEMORY ALLOCATION ERROR'
 
 		Utils.reportError(title, throwable)
 

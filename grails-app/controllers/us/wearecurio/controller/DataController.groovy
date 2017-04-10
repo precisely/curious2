@@ -942,12 +942,12 @@ class DataController extends LoginController {
 	 *
 	 * @return List of TagInputType.
 	 */
-	def getAllTagsWithInputType(Long lastInputTypeUpdate) {
+	def getAllTagsWithInputType(Long lastInputTypeCacheDate) {
 		debug "DataController.getAllTagsWithInputType() params:" + params
 
-		Date lastInputTypeUpdateDate = lastInputTypeUpdate ? new Date(lastInputTypeUpdate) : null
+		Date clientCacheDate = lastInputTypeCacheDate ? new Date(lastInputTypeCacheDate) : null
 
-		renderJSONGet(TagInputType.getAllTagsWithInputType(lastInputTypeUpdateDate))
+		renderJSONGet(TagInputType.getAllTagsWithInputType(clientCacheDate))
 	}
 
 	def autocompleteData() {

@@ -31,17 +31,17 @@ class TagInputType {
 	/*
 	 * A method to cache various properties of Tag and TagInputType.
 	 */
-	static void cache(List instanceList) {
-		if (!instanceList.size()) {
+	static void cache(List resultList) {
+		if (!resultList.size()) {
 			Utils.reportError('[Curious Server] - TagInputType Cache Empty', 'Received empty list from database for ' +
 					'TagInputType cache.')
 
 			return
 		}
 
-		instanceList.each { Map instance ->
+		resultList.each { Map dataMap ->
 			synchronized(tagsWithInputTypeCache) {
-				tagsWithInputTypeCache.put(instance.tagId, instance)
+				tagsWithInputTypeCache.put(dataMap.tagId, dataMap)
 			}
 		}
 		cacheDate = new Date() // Updating cache date.
@@ -65,7 +65,7 @@ class TagInputType {
 	 * @return List<Map> of result instances.
 	 */
 	static List getRecentTagsWithInputType(Long userId = null) {
-		return getQueryResults(new Date() - 14, null, userId)
+		return fetchTagInputTypeInfo(new Date() - 14, null, userId)
 	}
 
 	/**
@@ -74,30 +74,20 @@ class TagInputType {
 	 * if no cached values are found then a database query is done to get TagInputType instances.
 	 * userId is an optional parameter.
 	 *
-	 * @param lastInputTypeUpdate
+	 * @param clientCacheDate
 	 * @param userId
 	 * @return List<Map> of result instances.
 	 */
-	static Map getAllTagsWithInputType(Date lastInputTypeUpdate) {
+	static Map getAllTagsWithInputType(Date clientCacheDate) {
 		Map tagsWithInputTypeData = [:]
 
-		boolean sendUpdatedResults
-
-		if (lastInputTypeUpdate) {
-			if (cacheDate > lastInputTypeUpdate) {
-				sendUpdatedResults = true
-			}
-		} else {
-			sendUpdatedResults = true
-		}
-
-		if (sendUpdatedResults) {
+		if (!clientCacheDate || (cacheDate > clientCacheDate)) {
 			if (!tagsWithInputTypeCache.size() || !cacheDate) {
 				// Trying to update the cache if cache is empty.
-				cache(getQueryResults())
+				cache(fetchTagInputTypeInfo())
 			}
 
-			tagsWithInputTypeData.lastInputTypeUpdate = cacheDate.time
+			tagsWithInputTypeData.cacheDate = cacheDate.time
 			tagsWithInputTypeData.tagsWithInputTypeList = tagsWithInputTypeCache.values() as List
 		}
 
@@ -106,7 +96,7 @@ class TagInputType {
 
 	static void initializeTagsWithInputTypeCache() {
 		// Adding query result to cache.
-		cache(getQueryResults())
+		cache(fetchTagInputTypeInfo())
 	}
 
 	/**
@@ -119,7 +109,7 @@ class TagInputType {
 	 * @return List<Map> of result instances.
 	 */
 	static List getTagsWithInputTypeForDateRange(Date startDate, Date endDate, Long userId = null) {
-		return getQueryResults(startDate, endDate, userId)
+		return fetchTagInputTypeInfo(startDate, endDate, userId)
 	}
 
 	/**
@@ -130,20 +120,23 @@ class TagInputType {
 	 * @return List<Map> of result instances.
 	 */
 	static List getAllTagsWithInputTypeForUser(Long userId) {
-		return getQueryResults(null, null, userId)
+		return fetchTagInputTypeInfo(null, null, userId)
 	}
 
 	/**
-	 * A method which performs query on database and gets the desired result based on passed arguments.
+	 * A method to fetch TagInputType info for caching. If the result size is more than 35000 then an email is sent to
+	 * the support team with the actual count of matching entries.
 	 *
 	 * @param startDate
 	 * @param endDate
 	 * @param userId
 	 * @return List<Map> of result instances.
 	 */
-	static List getQueryResults(Date startDate = null, Date endDate =  null, Long userId = null) {
+	static List fetchTagInputTypeInfo(Date startDate = null, Date endDate =  null, Long userId = null) {
 		Map namedParams = startDate ? (endDate ? [startDate: startDate, endDate: endDate] :
 				[startDate: startDate]) : (endDate ? [endDate: endDate] : [:])
+
+		namedParams.max = 50000
 
 		if (userId) {
 			namedParams.userId = userId
@@ -169,6 +162,20 @@ class TagInputType {
 		query += "group by t.id ORDER BY t.description"
 
 		List resultInstanceList = executeQuery(query, namedParams)
+
+		if (resultInstanceList.size() > 35000) {
+			String countQuery = "SELECT count(*) as totalCount from TagInputType as tiy1 where tiy1.tagId in (" +
+					"SELECT tiy.tagId FROM Tag t, TagStats ts, TagInputType tiy WHERE t.id = ts.tagId and " +
+					"t.id = tiy.tagId group by t.id)"
+
+			int totalCount = executeQuery(countQuery, namedParams)[0]
+
+			String title = '[Curious] - TagInputType Total Count'
+			String message = "TagInputType cache size has increased significantly, current size is ${totalCount}. " +
+					'Please take necessary steps to cache from blowing up.'
+
+			Utils.reportError(title, message)
+		}
 
 		return resultInstanceList
 	}
