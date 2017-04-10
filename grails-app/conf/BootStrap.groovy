@@ -5,6 +5,7 @@ import us.wearecurio.data.DataRetriever
 import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.filters.EmailVerificationCheckFilters
 import us.wearecurio.marshaller.EnumMarshaller
+import us.wearecurio.model.TagInputType
 import us.wearecurio.model.TagStats
 import us.wearecurio.model.User
 import us.wearecurio.server.BackgroundTask
@@ -68,6 +69,7 @@ class BootStrap {
 		}
 
 		TagStats.initializeSharedTags()
+		TagInputType.initializeTagsWithInputTypeCache()
 
 		Utils.registerTestReset({ DataRetriever.resetCache() })
 

@@ -1,6 +1,7 @@
 package us.wearecurio.model
 
 import us.wearecurio.cache.BoundedCache
+import us.wearecurio.utility.Utils
 
 class TagInputType {
 
@@ -31,6 +32,13 @@ class TagInputType {
 	 * A method to cache various properties of Tag and TagInputType.
 	 */
 	static void cache(List instanceList) {
+		if (!instanceList.size()) {
+			Utils.reportError('[Curious Server] - TagInputType Cache Empty', 'Received empty list from database for ' +
+					'TagInputType cache.')
+
+			return
+		}
+
 		instanceList.each { Map instance ->
 			synchronized(tagsWithInputTypeCache) {
 				tagsWithInputTypeCache.put(instance.tagId, instance)
@@ -61,19 +69,6 @@ class TagInputType {
 	}
 
 	/**
-	 * A method to get Tags used withing a particular date range with it's input type and other properties such as
-	 * description, noOfLevels, max, etc. userId is an optional parameter.
-	 *
-	 * @param startDate
-	 * @param endDate
-	 * @param userId : optional
-	 * @return List<Map> of result instances.
-	 */
-	static List getTagsWithInputType(Date startDate, Date endDate, Long userId = null) {
-		return getQueryResults(startDate, endDate, userId)
-	}
-
-	/**
 	 * A method to get Tags with it's input type and other properties such as
 	 * description, noOfLevels, max, etc. This method searches in the cache first based on the passed arguments and
 	 * if no cached values are found then a database query is done to get TagInputType instances.
@@ -83,36 +78,59 @@ class TagInputType {
 	 * @param userId
 	 * @return List<Map> of result instances.
 	 */
-	static List getTagsWithInputType(Date lastInputTypeUpdate, Long userId = null) {
-		List tagsWithInputTypeList = []
+	static Map getAllTagsWithInputType(Date lastInputTypeUpdate) {
+		Map tagsWithInputTypeData = [:]
 
-		if (tagsWithInputTypeCache || lastInputTypeUpdate) {
-			tagsWithInputTypeList.addAll(tagsWithInputTypeCache.values())
+		boolean sendUpdatedResults
 
-			if (lastInputTypeUpdate) {
-				return (cacheDate > lastInputTypeUpdate) ? tagsWithInputTypeList : []
+		if (lastInputTypeUpdate) {
+			if (cacheDate > lastInputTypeUpdate) {
+				sendUpdatedResults = true
 			}
-
-			return tagsWithInputTypeList
+		} else {
+			sendUpdatedResults = true
 		}
 
-		return userId ? getTagsWithInputType(userId) : getTagsWithInputType()
+		if (sendUpdatedResults) {
+			if (!tagsWithInputTypeCache.size() || !cacheDate) {
+				// Trying to update the cache if cache is empty.
+				cache(getQueryResults())
+			}
+
+			tagsWithInputTypeData.lastInputTypeUpdate = cacheDate.time
+			tagsWithInputTypeData.tagsWithInputTypeList = tagsWithInputTypeCache.values() as List
+		}
+
+		return tagsWithInputTypeData
+	}
+
+	static void initializeTagsWithInputTypeCache() {
+		// Adding query result to cache.
+		cache(getQueryResults())
 	}
 
 	/**
-	 * A method to get  All Tags with it's input type and other properties such as
+	 * A method to get Tags used withing a particular date range with it's input type and other properties such as
+	 * description, noOfLevels, max, etc. userId is an optional parameter.
+	 *
+	 * @param startDate
+	 * @param endDate
+	 * @param userId : optional
+	 * @return List<Map> of result instances.
+	 */
+	static List getTagsWithInputTypeForDateRange(Date startDate, Date endDate, Long userId = null) {
+		return getQueryResults(startDate, endDate, userId)
+	}
+
+	/**
+	 * A method to get all Tags with it's input type and other properties such as
 	 * description, noOfLevels, max, etc. Result list is cached before response. userId is an optional parameter.
 	 *
 	 * @param userId
 	 * @return List<Map> of result instances.
 	 */
-	static List getTagsWithInputType(Long userId = null) {
-		List resultInstanceList = getQueryResults(null, null, userId)
-
-		// Adding query result to cache.
-		cache(resultInstanceList)
-
-		return resultInstanceList
+	static List getAllTagsWithInputTypeForUser(Long userId) {
+		return getQueryResults(null, null, userId)
 	}
 
 	/**
@@ -123,7 +141,7 @@ class TagInputType {
 	 * @param userId
 	 * @return List<Map> of result instances.
 	 */
-	static List getQueryResults(Date startDate, Date endDate, Long userId = null) {
+	static List getQueryResults(Date startDate = null, Date endDate =  null, Long userId = null) {
 		Map namedParams = startDate ? (endDate ? [startDate: startDate, endDate: endDate] :
 				[startDate: startDate]) : (endDate ? [endDate: endDate] : [:])
 
