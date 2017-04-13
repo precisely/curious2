@@ -27,6 +27,9 @@
 				<li>
 					<g:link controller="admin" action="exportStudy">Export Study</g:link>
 				</li>
+				<li>
+					<g:link controller="admin" action="uploadTagInputTypeCSV">Import TagInputType from CSV</g:link>
+				</li>
 			</ul>
 </body>
 </html>

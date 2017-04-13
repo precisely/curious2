@@ -654,5 +654,11 @@ fileuploader {
 			provider = CDNProvider.GOOGLE
 			expirationPeriod = Time.DAY * 90 // 90 Day time in seconds. Note this time should be in seconds.
 		}
+		tagInputType {
+			maxSize = 1024 * 1024 * 2 //2 mbytes
+			allowedExtensions = ["csv", "CSV"]
+			path = "./web-app/tag-input-type"
+			storageTypes = ""
+		}
 	}
 }

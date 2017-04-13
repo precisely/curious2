@@ -1,10 +1,15 @@
 package us.wearecurio.controller
 
-import org.grails.databinding.SimpleMapDataBindingSource
+import com.causecode.fileuploader.ProviderNotFoundException
+import com.causecode.fileuploader.StorageConfigurationException
+import com.causecode.fileuploader.UFile
+import com.causecode.fileuploader.UploadFailureException
+import org.springframework.web.multipart.MultipartFile
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.SurveyAnswer
 import us.wearecurio.model.SurveyQuestion
+import us.wearecurio.model.TagInputType
 import us.wearecurio.model.User
 import us.wearecurio.utility.Utils
 
@@ -13,6 +18,8 @@ import java.text.SimpleDateFormat
 class AdminController extends LoginController {
 
 	def databaseService
+	def tagInputTypeService
+	def fileUploaderService
 
 	def dashboard() {
 		
@@ -315,5 +322,52 @@ class AdminController extends LoginController {
 			surveyQuestion.delete(flush: true)
 		}
 		renderJSONPost([success: true])
+	}
+
+	def uploadTagInputTypeCSV() {
+		render(view: 'uploadTagInputTypeCSV')
+	}
+
+	def importTagInputTypeFromCSV() {
+		MultipartFile tagInputTypeCSV = request.getFile('tagInputTypeCSV')
+
+		log.debug "TagInputType count before CSV upload - ${TagInputType.count()}"
+
+		if (!tagInputTypeCSV || tagInputTypeCSV.empty) {
+			render(view: 'csvUploadResult', model: [message: 'Please attach a CSV File'])
+
+			return
+		}
+
+		UFile tagInputTypeUfile
+		try {
+			tagInputTypeUfile = fileUploaderService.saveFile("tagInputType", tagInputTypeCSV)
+		} catch (StorageConfigurationException | UploadFailureException | ProviderNotFoundException | IOException e) {
+			Utils.reportError("Error while saving CSV file with TagInputType data", e)
+			render(view: 'csvUploadResult', model: [message: 'Could not upload CSV file, please contact support'])
+
+			return
+		}
+
+		Map result
+
+		try {
+			result = tagInputTypeService.importFromCSV(new File(tagInputTypeUfile?.path))
+		} catch (IllegalArgumentException e) {
+			render(view: 'csvUploadResult', model: [message: e.message])
+
+			return
+		}
+
+		log.debug "TagInputType count after CSV upload - ${TagInputType.count()}"
+
+		if (!result.success) {
+			render(view: 'csvUploadResult', model: [message: 'CSV incorrect, please fix and re-upload. Syntax error' +
+					" in lines ${result.invalidRows}"])
+
+			return
+		}
+
+		render(view: 'csvUploadResult', model: [message: 'Successfully imported all TagInputType from CSV'])
 	}
 }

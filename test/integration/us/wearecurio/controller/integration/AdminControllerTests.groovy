@@ -1,15 +1,13 @@
 package us.wearecurio.controller.integration
 
-
-import static org.junit.Assert.*
-
-import org.junit.*
-import org.scribe.model.Response
-
+import org.apache.commons.fileupload.disk.DiskFileItem
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import org.springframework.web.multipart.commons.CommonsMultipartFile
 import us.wearecurio.controller.AdminController
-import us.wearecurio.model.*
-import us.wearecurio.test.common.MockedHttpURLConnection
-import us.wearecurio.utility.Utils
+import us.wearecurio.model.SurveyAnswer
+import us.wearecurio.model.SurveyQuestion
 /**
  *
  */
@@ -43,6 +41,27 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	@After
 	void tearDown() {
 		super.tearDown()
+	}
+
+	byte[] getDefaultFileContent() {
+		return "tag name, default unit, max, min, number of levels, input type, value type, override\n" +
+				"sleep, hours, 10, 0, 5, level, , \n activity, cal, 10, 0, 5, smiley, continuous, \n" +
+				"readiness,score, 10, 0 , 5, thumbs, , \n , , , \n sleep, mins, 10, 0, 10, slider, continuous, true" as
+				byte[]
+	}
+
+	File getFile(String filePath) {
+		File file = new File(filePath)
+		file.createNewFile()
+		file << getDefaultFileContent()
+	}
+
+	DiskFileItem getDiskFileItemInstance(File file) {
+		DiskFileItem fileItem = new DiskFileItem('tagInputTypeCSV', 'application/vnd.ms-excel', false,
+				file.name, (int) file.length() , file.parentFile)
+		fileItem.outputStream.write(getDefaultFileContent())
+
+		return fileItem
 	}
 
 	@Test
@@ -422,5 +441,23 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		assert controller.response.json.success == false
 		assert controller.response.json.message == messageSource.getMessage("default.not.found.message",
 				["Survey question", controller.params.id] as Object[], null)
+	}
+
+	@Test
+	void "test importTagInputTypeFromCSV action to import TagInputType from CSV file"() {
+		given: 'A csv file which contains TagInputType data'
+		File file = getFile('./target/temp.csv')
+		DiskFileItem fileItem = getDiskFileItemInstance(file)
+		CommonsMultipartFile commonsMultipartFile = new CommonsMultipartFile(fileItem)
+
+		when: 'importTagInputTypeFromCSV action is hit'
+		controller.request.addFile(commonsMultipartFile)
+		controller.importTagInputTypeFromCSV()
+
+		then: 'New TagInputType are created for valid rows in csv file and invalid rows are sent in the response'
+		controller.response.status == 200
+		controller.response.json.toString() == "[\"CSV incorrect, please fix and re-upload." +
+				" Syntax error in lines [[row:5, error:The row must have 8 columns]]\"]"
+		file.delete()
 	}
 }
