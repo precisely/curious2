@@ -44,7 +44,7 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	}
 
 	byte[] getDefaultFileContent() {
-		return "tag name, default unit, max, min, number of levels, input type, value type, override\n" +
+		return "tag description, default unit, max, min, number of levels, input type, value type, override\n" +
 				"sleep, hours, 10, 0, 5, level, , \n activity, cal, 10, 0, 5, smiley, continuous, \n" +
 				"readiness,score, 10, 0 , 5, thumbs, , \n , , , \n sleep, mins, 10, 0, 10, slider, continuous, true" as
 				byte[]
@@ -56,10 +56,10 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		file << getDefaultFileContent()
 	}
 
-	DiskFileItem getDiskFileItemInstance(File file) {
+	DiskFileItem getDiskFileItemInstance(File file, byte[] fileContent = getDefaultFileContent()) {
 		DiskFileItem fileItem = new DiskFileItem('tagInputTypeCSV', 'application/vnd.ms-excel', false,
 				file.name, (int) file.length() , file.parentFile)
-		fileItem.outputStream.write(getDefaultFileContent())
+		fileItem.outputStream.write(fileContent)
 
 		return fileItem
 	}
@@ -450,14 +450,29 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		DiskFileItem fileItem = getDiskFileItemInstance(file)
 		CommonsMultipartFile commonsMultipartFile = new CommonsMultipartFile(fileItem)
 
-		when: 'importTagInputTypeFromCSV action is hit'
+		when: 'importTagInputTypeFromCSV action is hit and file has invalid data'
 		controller.request.addFile(commonsMultipartFile)
 		controller.importTagInputTypeFromCSV()
 
 		then: 'New TagInputType are created for valid rows in csv file and invalid rows are sent in the response'
 		controller.response.status == 200
-		controller.response.json.toString() == "[\"CSV incorrect, please fix and re-upload." +
-				" Syntax error in lines [[row:5, error:The row must have 8 columns]]\"]"
+		controller.modelAndView.model.message == "CSV incorrect, please fix and re-upload." +
+				" Syntax error in lines [[row:5, error:The row must have 8 columns]]"
+
+		when: 'A valid file is passed'
+		controller.response.reset()
+		byte[] content = "tag description, default unit, max, min, number of levels, input type, value type," +
+				"override \n sleep, hours, 10, 0, 5, level, , \n activity, cal, 10, 0, 5, smiley, continuous, \n" +
+				"readiness,score, 10, 0 , 5, thumbs, , \n sleep, mins, 10, 0, 10, slider, continuous, true" as
+				byte[]
+		fileItem = getDiskFileItemInstance(file, content)
+		commonsMultipartFile = new CommonsMultipartFile(fileItem)
+		controller.request.addFile(commonsMultipartFile)
+		controller.importTagInputTypeFromCSV()
+
+		then: 'New TagInputType are created for all the entries and a proper message is sent in response'
+		controller.response.status == 200
+		controller.modelAndView.model.message == 'Successfully imported all TagInputType from CSV'
 		file.delete()
 	}
 }

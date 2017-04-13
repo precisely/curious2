@@ -328,6 +328,11 @@ class AdminController extends LoginController {
 		render(view: 'uploadTagInputTypeCSV')
 	}
 
+	/**
+	 * An endpoint to import TagInputType from uploaded CSV file.
+	 *
+	 * @return Message with report of the upload and errors in uploaded file.
+	 */
 	def importTagInputTypeFromCSV() {
 		MultipartFile tagInputTypeCSV = request.getFile('tagInputTypeCSV')
 
