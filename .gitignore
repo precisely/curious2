@@ -39,4 +39,3 @@ grails-console
 *.iml
 /temp/
 classes/
-/web-app/tag-input-type/

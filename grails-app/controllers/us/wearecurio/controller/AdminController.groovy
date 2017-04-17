@@ -1,9 +1,5 @@
 package us.wearecurio.controller
 
-import com.causecode.fileuploader.ProviderNotFoundException
-import com.causecode.fileuploader.StorageConfigurationException
-import com.causecode.fileuploader.UFile
-import com.causecode.fileuploader.UploadFailureException
 import org.springframework.web.multipart.MultipartFile
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Sprint
@@ -11,6 +7,7 @@ import us.wearecurio.model.SurveyAnswer
 import us.wearecurio.model.SurveyQuestion
 import us.wearecurio.model.TagInputType
 import us.wearecurio.model.User
+import us.wearecurio.services.TagInputTypeService
 import us.wearecurio.utility.Utils
 
 import java.text.SimpleDateFormat
@@ -18,8 +15,7 @@ import java.text.SimpleDateFormat
 class AdminController extends LoginController {
 
 	def databaseService
-	def tagInputTypeService
-	def fileUploaderService
+	TagInputTypeService tagInputTypeService
 
 	def dashboard() {
 		
@@ -344,12 +340,36 @@ class AdminController extends LoginController {
 			return
 		}
 
-		UFile tagInputTypeUfile
+		Long fileSize = tagInputTypeCSV.size
+		String fileExtension = tagInputTypeCSV.originalFilename.split('\\.').last()?.toLowerCase()
+
+		if (fileExtension != 'csv' || fileSize > (1024 * 1024 * 2)) {
+			render(view: 'csvUploadResult', model: [message: 'Invalid file'])
+
+			return
+
+		}
+
+		File tempTagInputTypeCSV
+		String uploadPath = '/tmp/tag-input-type/'
+
 		try {
-			tagInputTypeUfile = fileUploaderService.saveFile("tagInputType", tagInputTypeCSV)
-		} catch (StorageConfigurationException | UploadFailureException | ProviderNotFoundException | IOException e) {
+			File uploadDir = new File(uploadPath)
+
+			if (!uploadDir.exists()) {
+				if (!uploadDir.mkdirs()) {
+					render(view: 'csvUploadResult', model: [message: 'Failed to create directory for temporary ' +
+							'file upload.'])
+
+					return
+				}
+			}
+
+			tempTagInputTypeCSV = new File(uploadPath, tagInputTypeCSV.originalFilename)
+			tagInputTypeCSV.transferTo(tempTagInputTypeCSV)
+		} catch (IllegalStateException | IOException e) {
 			Utils.reportError("Error while saving CSV file with TagInputType data", e)
-			render(view: 'csvUploadResult', model: [message: 'Could not upload CSV file, please contact support'])
+			render(view: 'csvUploadResult', model: [message: 'Could not upload CSV file, please contact support.'])
 
 			return
 		}
@@ -357,7 +377,7 @@ class AdminController extends LoginController {
 		Map result
 
 		try {
-			result = tagInputTypeService.importFromCSV(new File(tagInputTypeUfile?.path))
+			result = tagInputTypeService.importFromCSV(tempTagInputTypeCSV)
 		} catch (IllegalArgumentException e) {
 			render(view: 'csvUploadResult', model: [message: e.message])
 
@@ -367,8 +387,9 @@ class AdminController extends LoginController {
 		log.debug "TagInputType count after CSV upload - ${TagInputType.count()}"
 
 		if (!result.success) {
-			render(view: 'csvUploadResult', model: [message: 'CSV incorrect, please fix and re-upload. Syntax error' +
-					" in lines ${result.invalidRows}"])
+			render(view: 'csvUploadResult', model: [message: 'The CSV file you uploaded contains some invalid rows' +
+					'. A CSV file containing the invalid rows has been email to you. Please fix the file and ' +
+					"re-upload. Syntax error in lines ${result.invalidRows}"])
 
 			return
 		}

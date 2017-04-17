@@ -45,9 +45,9 @@ class AdminControllerTests extends CuriousControllerTestCase {
 
 	byte[] getDefaultFileContent() {
 		return "tag description, default unit, max, min, number of levels, input type, value type, override\n" +
-				"sleep, hours, 10, 0, 5, level, , \n activity, cal, 10, 0, 5, smiley, continuous, \n" +
-				"readiness,score, 10, 0 , 5, thumbs, , \n , , , \n sleep, mins, 10, 0, 10, slider, continuous, true" as
-				byte[]
+				"sleep, hours, 10, 0, 5, thumbs, , \n mood, , 10, 0, 5, smiley, , \n" +
+				"misbehavior, , 10, 0 , 5, boolean, , \n , , , \n bowell moment, , 10, 0, 5, slider, continuous," +
+				" true \n energy, , 10, 0, 5, level, , " as byte[]
 	}
 
 	File getFile(String filePath) {

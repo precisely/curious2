@@ -15,7 +15,7 @@
     </div>
     <div class="main container-fluid survey-factory">
         <form action="/admin/importTagInputTypeFromCSV" method="post" name="csvUpload" enctype="multipart/form-data"
-                id="csvUpload">
+                id="csvForm">
             <input type="file" name="tagInputTypeCSV" id="csvFile" required/>
             <br>
             <button type="submit" class="btn btn-default">Upload</button>
@@ -27,7 +27,7 @@
             First row is reserved for titles and will not be parsed while import.
             There are 8 columns and these needs to be in the exact order as mentioned below -
             1. tag description*  : Description of the base tag.
-            2. default unit*     : Unit of measurement for the tag entry.
+            2. default unit      : This column is optional. Unit of measurement for the tag entry.
             3. max*              : Maximum allowed value for this TagInputType.
             4. min*              : Minimum allowed value for this TagInputType.
             5. number of levels* : Number of divisions the InputWidget on the client side shows up for this
@@ -42,17 +42,20 @@
         </div>
     </div>
     <script>
-        $('#csvFile').bind('change', function () {
-            var file = this.files[0];
+        $('#csvForm').bind('submit', function () {
+            var file = this[0].files[0];
             var fileName = file.name;
             var fileSize = file.size; // Size in bytes.
             var fileExtension = fileName.substring(fileName.lastIndexOf('.'));
             if (fileSize > 2000000) {
                 alert('File size greater than 2 Mb');
+                return false;
             }
             if (fileExtension != '.csv') {
                 alert('Invalid file extension')
+                return false;
             }
+            return true;
         });
     </script>
 </body>

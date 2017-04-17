@@ -50,6 +50,7 @@ class TagInputType {
 	static constraints = {
 		userId nullable: true
 		tagId unique: true
+		defaultUnit nullable: true
 	}
 
 	static mapping = {
@@ -87,8 +88,10 @@ class TagInputType {
 				cache(fetchTagInputTypeInfo())
 			}
 
-			tagsWithInputTypeData.cacheDate = cacheDate.time
-			tagsWithInputTypeData.tagsWithInputTypeList = tagsWithInputTypeCache.values() as List
+			if (cacheDate && tagsWithInputTypeCache.values()) {
+				tagsWithInputTypeData.cacheDate = cacheDate.time
+				tagsWithInputTypeData.tagsWithInputTypeList = tagsWithInputTypeCache.values() as List
+			}
 		}
 
 		return tagsWithInputTypeData
