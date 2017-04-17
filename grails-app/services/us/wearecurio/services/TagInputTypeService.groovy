@@ -1,6 +1,7 @@
 package us.wearecurio.services
 
 import org.grails.plugins.csv.CSVWriter
+import org.springframework.mail.MailException
 import us.wearecurio.model.InputType
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagInputType
@@ -103,7 +104,11 @@ class TagInputTypeService {
 
 				TagInputType tagInputType = TagInputType.findByTagId(tagId)
 
-				if (tagInputType && override) {
+				if (tagInputType) {
+					if (!override) {
+						return
+					}
+
 					log.debug "Overriding TagInputType for tag ${tagDescription}"
 
 					tagInputType.tagId = tagId
@@ -113,27 +118,17 @@ class TagInputTypeService {
 					tagInputType.noOfLevels = noOfLevels
 					tagInputType.inputType = inputType
 					tagInputType.valueType = valueType
-
-					if (!Utils.save(tagInputType, true)) {
-						invalidRows.add([row: rowNumber, error: 'This row contains invalid data'])
-						csvWriter << [val1: tagDescription, val2: defaultUnit, val3: max, val4: min, val5: noOfLevels,
-								val6: inputType, val7: valueType, val8: override]
-					}
-
-					return
-				}
-
-				if (!tagInputType) {
+				} else {
 					log.debug "Creating new TagInputType for tag ${tagDescription}"
 
 					tagInputType = new TagInputType(tagId: tagId, defaultUnit: defaultUnit, max: max,
 							min: min, noOfLevels: noOfLevels, inputType: inputType, valueType: valueType)
+				}
 
-					if (!Utils.save(tagInputType, true)) {
-						invalidRows.add([row: rowNumber, error: 'This row contains invalid data'])
-						csvWriter << [val1: tagDescription, val2: defaultUnit, val3: max, val4: min, val5: noOfLevels,
-								val6: inputType, val7: valueType, val8: override]
-					}
+				if (!Utils.save(tagInputType, true)) {
+					invalidRows.add([row: rowNumber, error: 'This row contains invalid data'])
+					csvWriter << [val1: tagDescription, val2: defaultUnit, val3: max, val4: min, val5: noOfLevels,
+							val6: inputType, val7: valueType, val8: override]
 				}
 			} catch (IllegalArgumentException e) {
 				log.error "Invalid argument in CSV file on line number ${rowNumber}, stacktrace - ", e
@@ -152,15 +147,22 @@ class TagInputTypeService {
 			success = false
 			User userInstance = securityService.getCurrentUser()
 
-			log.debug "Sending invalid CSV file to user ${userInstance.name}"
+			log.debug "Sending invalid CSV file to user ${userInstance?.name}"
 
-			sendMail {
-				multipart true
-				to userInstance.email
-				from 'server@wearecurio.us'
-				subject '[Curious] - CSV upload error.'
-				body 'Please fix the attached CSV and re-upload.'
-				attach 'InvalidTagInputType.csv', 'application/vnd.ms-excel', csvWriter.writer.toString().getBytes("UTF-8")
+			try {
+				String userEmail = userInstance?.email
+				byte[] invalidCsvData = csvWriter.writer.toString().getBytes("UTF-8")
+
+				EmailService.get().sendMail {
+					multipart true
+					to userEmail
+					from 'server@wearecurio.us'
+					subject '[Curious] - CSV upload error.'
+					body 'Please fix the attached CSV and re-upload.'
+					attach 'InvalidTagInputType.csv', 'application/vnd.ms-excel', invalidCsvData
+				}
+			} catch (MailException e) {
+				log.error 'Could not send InvalidCsvFile to user\'s email account', e
 			}
 		}
 

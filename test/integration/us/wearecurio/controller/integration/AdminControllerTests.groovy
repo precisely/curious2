@@ -8,6 +8,10 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile
 import us.wearecurio.controller.AdminController
 import us.wearecurio.model.SurveyAnswer
 import us.wearecurio.model.SurveyQuestion
+import us.wearecurio.model.User
+import us.wearecurio.services.SecurityService
+import us.wearecurio.services.TagInputTypeService
+import us.wearecurio.utility.Utils
 /**
  *
  */
@@ -18,6 +22,7 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	SurveyQuestion surveyQuestionInstance1
 	SurveyQuestion surveyQuestionInstance2
 	SurveyQuestion surveyQuestionInstance3
+	TagInputTypeService tagInputTypeService
 
 	@Before
 	void setUp() {
@@ -445,10 +450,20 @@ class AdminControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void "test importTagInputTypeFromCSV action to import TagInputType from CSV file"() {
-		given: 'A csv file which contains TagInputType data'
+		given: 'A CSV file which contains TagInputType data'
 		File file = getFile('./target/temp.csv')
 		DiskFileItem fileItem = getDiskFileItemInstance(file)
 		CommonsMultipartFile commonsMultipartFile = new CommonsMultipartFile(fileItem)
+
+		and: 'Mocked getCurrentUser method'
+		User user = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
+					password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
+		Utils.save(user, true)
+
+		tagInputTypeService.securityService = [getCurrentUser: { ->
+			return user
+		}] as SecurityService
+		controller.tagInputTypeService = tagInputTypeService
 
 		when: 'importTagInputTypeFromCSV action is hit and file has invalid data'
 		controller.request.addFile(commonsMultipartFile)
@@ -456,8 +471,9 @@ class AdminControllerTests extends CuriousControllerTestCase {
 
 		then: 'New TagInputType are created for valid rows in csv file and invalid rows are sent in the response'
 		controller.response.status == 200
-		controller.modelAndView.model.message == "CSV incorrect, please fix and re-upload." +
-				" Syntax error in lines [[row:5, error:The row must have 8 columns]]"
+		controller.modelAndView.model.message == 'The CSV file you uploaded contains some invalid rows. ' +
+				'A CSV file containing the invalid rows has been email to you. Please fix the file and re-upload. ' +
+				'Syntax error in lines [[row:5, error:The row must have 8 columns]]'
 
 		when: 'A valid file is passed'
 		controller.response.reset()
