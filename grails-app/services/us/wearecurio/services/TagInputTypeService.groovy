@@ -82,8 +82,8 @@ class TagInputTypeService {
 			try {
 				tagDescription = tagInputTypeData[0].toString().trim().toLowerCase()
 				defaultUnit = tagInputTypeData[1].toString().trim()
-				max = tagInputTypeData[2].toString().trim().toInteger()
-				min = tagInputTypeData[3].toString().trim().toInteger()
+				max = tagInputTypeData[2].toString().trim().toBigDecimal()
+				min = tagInputTypeData[3].toString().trim().toBigDecimal()
 				noOfLevels = tagInputTypeData[4].toString().trim().toInteger()
 				inputType = tagInputTypeData[5].toString().trim().toUpperCase()
 				valueType = tagInputTypeData[6].toString().trim().toUpperCase() ?: ValueType.DISCRETE
