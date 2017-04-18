@@ -1,11 +1,13 @@
 package us.wearecurio.controller
 
-import org.grails.databinding.SimpleMapDataBindingSource
+import org.springframework.web.multipart.MultipartFile
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.SurveyAnswer
 import us.wearecurio.model.SurveyQuestion
+import us.wearecurio.model.TagInputType
 import us.wearecurio.model.User
+import us.wearecurio.services.TagInputTypeService
 import us.wearecurio.utility.Utils
 
 import java.text.SimpleDateFormat
@@ -13,6 +15,7 @@ import java.text.SimpleDateFormat
 class AdminController extends LoginController {
 
 	def databaseService
+	TagInputTypeService tagInputTypeService
 
 	def dashboard() {
 		
@@ -315,5 +318,81 @@ class AdminController extends LoginController {
 			surveyQuestion.delete(flush: true)
 		}
 		renderJSONPost([success: true])
+	}
+
+	def uploadTagInputTypeCSV() {
+		render(view: 'uploadTagInputTypeCSV')
+	}
+
+	/**
+	 * An endpoint to import TagInputType from uploaded CSV file.
+	 *
+	 * @return Message with report of the upload and errors in uploaded file.
+	 */
+	def importTagInputTypeFromCSV() {
+		MultipartFile tagInputTypeCSV = request.getFile('tagInputTypeCSV')
+
+		log.debug "TagInputType count before CSV upload - ${TagInputType.count()}"
+
+		if (!tagInputTypeCSV || tagInputTypeCSV.empty) {
+			render(view: 'csvUploadResult', model: [message: 'Please attach a CSV File'])
+
+			return
+		}
+
+		Long fileSize = tagInputTypeCSV.size
+		String fileExtension = tagInputTypeCSV.originalFilename.split('\\.').last()?.toLowerCase()
+
+		if (fileExtension != 'csv' || fileSize > (1024 * 1024 * 2)) {
+			render(view: 'csvUploadResult', model: [message: 'Invalid file'])
+
+			return
+		}
+
+		File tempTagInputTypeCSV
+		String uploadPath = '/tmp/tag-input-type/'
+
+		try {
+			File uploadDir = new File(uploadPath)
+
+			if (!uploadDir.exists()) {
+				if (!uploadDir.mkdirs()) {
+					render(view: 'csvUploadResult', model: [message: 'Failed to create directory for temporary ' +
+							'file upload.'])
+
+					return
+				}
+			}
+
+			tempTagInputTypeCSV = new File(uploadPath, tagInputTypeCSV.originalFilename)
+			tagInputTypeCSV.transferTo(tempTagInputTypeCSV)
+		} catch (IllegalStateException | IOException e) {
+			Utils.reportError("Error while saving CSV file with TagInputType data", e)
+			render(view: 'csvUploadResult', model: [message: 'Could not upload CSV file, please contact support.'])
+
+			return
+		}
+
+		Map result
+
+		try {
+			result = tagInputTypeService.importFromCSV(tempTagInputTypeCSV)
+		} catch (IllegalArgumentException e) {
+			render(view: 'csvUploadResult', model: [message: e.message])
+
+			return
+		}
+
+		log.debug "TagInputType count after CSV upload - ${TagInputType.count()}"
+
+		if (!result.success) {
+			render(view: 'csvUploadResult', model: [message: 'The CSV file you uploaded contains some invalid rows' +
+					'. A CSV file containing the invalid rows has been emailed to you. Please fix the file and ' +
+					"re-upload. Syntax error in lines ${result.invalidRows}"])
+
+			return
+		}
+
+		render(view: 'csvUploadResult', model: [message: 'Successfully imported all TagInputType from CSV'])
 	}
 }

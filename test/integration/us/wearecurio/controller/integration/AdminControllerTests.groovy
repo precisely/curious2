@@ -1,14 +1,16 @@
 package us.wearecurio.controller.integration
 
-
-import static org.junit.Assert.*
-
-import org.junit.*
-import org.scribe.model.Response
-
+import org.apache.commons.fileupload.disk.DiskFileItem
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import org.springframework.web.multipart.commons.CommonsMultipartFile
 import us.wearecurio.controller.AdminController
-import us.wearecurio.model.*
-import us.wearecurio.test.common.MockedHttpURLConnection
+import us.wearecurio.model.SurveyAnswer
+import us.wearecurio.model.SurveyQuestion
+import us.wearecurio.model.User
+import us.wearecurio.services.SecurityService
+import us.wearecurio.services.TagInputTypeService
 import us.wearecurio.utility.Utils
 /**
  *
@@ -20,6 +22,7 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	SurveyQuestion surveyQuestionInstance1
 	SurveyQuestion surveyQuestionInstance2
 	SurveyQuestion surveyQuestionInstance3
+	TagInputTypeService tagInputTypeService
 
 	@Before
 	void setUp() {
@@ -43,6 +46,27 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	@After
 	void tearDown() {
 		super.tearDown()
+	}
+
+	byte[] getDefaultFileContent() {
+		return "tag description, default unit, max, min, number of levels, input type, value type, override\n" +
+				"sleep, hours, 10, 0, 5, thumbs, , \n mood, , 10, 0, 5, smiley, , \n" +
+				"misbehavior, , 10, 0 , 5, boolean, , \n , , , \n bowell movement, , 10, 0, 5, slider, ," +
+				" true \n energy, , 10, 0, 5, level, , " as byte[]
+	}
+
+	File getFile(String filePath) {
+		File file = new File(filePath)
+		file.createNewFile()
+		file << getDefaultFileContent()
+	}
+
+	DiskFileItem getDiskFileItemInstance(File file, byte[] fileContent = getDefaultFileContent()) {
+		DiskFileItem fileItem = new DiskFileItem('tagInputTypeCSV', 'application/vnd.ms-excel', false,
+				file.name, (int) file.length() , file.parentFile)
+		fileItem.outputStream.write(fileContent)
+
+		return fileItem
 	}
 
 	@Test
@@ -422,5 +446,49 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		assert controller.response.json.success == false
 		assert controller.response.json.message == messageSource.getMessage("default.not.found.message",
 				["Survey question", controller.params.id] as Object[], null)
+	}
+
+	@Test
+	void "test importTagInputTypeFromCSV action to import TagInputType from CSV file"() {
+		given: 'A CSV file which contains TagInputType data'
+		File file = getFile('./target/temp.csv')
+		DiskFileItem fileItem = getDiskFileItemInstance(file)
+		CommonsMultipartFile commonsMultipartFile = new CommonsMultipartFile(fileItem)
+
+		and: 'Mocked getCurrentUser method'
+		User user = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
+					password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
+		Utils.save(user, true)
+
+		tagInputTypeService.securityService = [getCurrentUser: { ->
+			return user
+		}] as SecurityService
+		controller.tagInputTypeService = tagInputTypeService
+
+		when: 'importTagInputTypeFromCSV action is hit and file has invalid data'
+		controller.request.addFile(commonsMultipartFile)
+		controller.importTagInputTypeFromCSV()
+
+		then: 'New TagInputType are created for valid rows in csv file and invalid rows are sent in the response'
+		controller.response.status == 200
+		controller.modelAndView.model.message == 'The CSV file you uploaded contains some invalid rows. ' +
+				'A CSV file containing the invalid rows has been email to you. Please fix the file and re-upload. ' +
+				'Syntax error in lines [[row:5, error:The row must have 8 columns]]'
+
+		when: 'A valid file is passed'
+		controller.response.reset()
+		byte[] content = "tag description, default unit, max, min, number of levels, input type, value type," +
+				"override \n sleep, hours, 10, 0, 5, level, , \n activity, cal, 10, 0, 5, smiley, continuous, \n" +
+				"readiness,score, 10, 0 , 5, thumbs, , \n sleep, mins, 10, 0, 10, slider, continuous, true" as
+				byte[]
+		fileItem = getDiskFileItemInstance(file, content)
+		commonsMultipartFile = new CommonsMultipartFile(fileItem)
+		controller.request.addFile(commonsMultipartFile)
+		controller.importTagInputTypeFromCSV()
+
+		then: 'New TagInputType are created for all the entries and a proper message is sent in response'
+		controller.response.status == 200
+		controller.modelAndView.model.message == 'Successfully imported all TagInputType from CSV'
+		file.delete()
 	}
 }

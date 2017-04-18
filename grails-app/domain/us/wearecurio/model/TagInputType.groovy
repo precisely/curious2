@@ -11,10 +11,10 @@ class TagInputType {
 	String defaultUnit
 
 	// Maximum allowed value for this TagInputType.
-	Integer max
+	BigDecimal max
 
 	// Minimum allowed value for this TagInputType.
-	Integer min
+	BigDecimal min
 
 	// Number of divisions the InputWidget on the client side shows up for this TagInputType.
 	Integer noOfLevels
@@ -25,36 +25,39 @@ class TagInputType {
 	static Date cacheDate
 
 	// Cache holder to cache Tags with its InputType, id, description, min, max and numberOfLevels.
-	static BoundedCache<Long, Map> tagsWithInputTypeCache = Collections.synchronizedMap(new BoundedCache<Long,
+	static BoundedCache<Long, Map> cachedTagInputTypes = Collections.synchronizedMap(new BoundedCache<Long,
 			Map>(50000))
+
+	static constraints = {
+		userId nullable: true
+		tagId unique: true
+		defaultUnit nullable: true
+	}
+
+	static mapping = {
+		userId column:'user_id', index:'user_id_index'
+		tagId column:'tag_id', index:'tag_id_index'
+	}
 
 	/*
 	 * A method to cache various properties of Tag and TagInputType.
 	 */
-	static void cache(List resultList) {
-		if (!resultList.size()) {
+	static void cache(List tagInputTypes) {
+		if (!tagInputTypes.size()) {
 			Utils.reportError('[Curious Server] - TagInputType Cache Empty', 'Received empty list from database for ' +
 					'TagInputType cache.')
 
 			return
 		}
 
-		resultList.each { Map dataMap ->
-			synchronized(tagsWithInputTypeCache) {
-				tagsWithInputTypeCache.put(dataMap.tagId, dataMap)
+		tagInputTypes.each { Map dataMap ->
+			synchronized(cachedTagInputTypes) {
+				cachedTagInputTypes.put(dataMap.tagId, dataMap)
 			}
 		}
-		cacheDate = new Date() // Updating cache date.
-	}
-
-	static constraints = {
-		userId nullable: true
-		tagId unique: true
-	}
-
-	static mapping = {
-		userId column:'user_id', index:'user_id_index'
-		tagId column:'tag_id', index:'tag_id_index'
+		if (cachedTagInputTypes.values()) {
+			cacheDate = new Date() // Updating cache date.
+		}
 	}
 
 	/**
@@ -79,22 +82,19 @@ class TagInputType {
 	 * @return List<Map> of result instances.
 	 */
 	static Map getAllTagsWithInputType(Date clientCacheDate) {
-		Map tagsWithInputTypeData = [:]
-
 		if (!clientCacheDate || (cacheDate > clientCacheDate)) {
-			if (!tagsWithInputTypeCache.size() || !cacheDate) {
+			if (!cachedTagInputTypes.size() || !cacheDate) {
 				// Trying to update the cache if cache is empty.
 				cache(fetchTagInputTypeInfo())
 			}
 
-			tagsWithInputTypeData.cacheDate = cacheDate.time
-			tagsWithInputTypeData.tagsWithInputTypeList = tagsWithInputTypeCache.values() as List
+			return [cacheDate: cacheDate?.time, tagsWithInputTypeList: cachedTagInputTypes.values() as List]
 		}
 
-		return tagsWithInputTypeData
+		return [:]
 	}
 
-	static void initializeTagsWithInputTypeCache() {
+	static void initializeCachedTagWithInputTypes() {
 		// Adding query result to cache.
 		cache(fetchTagInputTypeInfo())
 	}
@@ -147,18 +147,9 @@ class TagInputType {
 				"tiy.defaultUnit as defaultUnit) FROM Tag t, TagStats ts, TagInputType tiy " +
 				"WHERE t.id = ts.tagId and t.id = tiy.tagId "
 
-		if (startDate) {
-			query += "and ts.mostRecentUsage > :startDate "
-		}
-
-		if (endDate) {
-			query += "and ts.mostRecentUsage < :endDate "
-		}
-
-		if (userId) {
-			query += "and ts.userId = :userId and tiy.userId = :userId "
-		}
-
+		query += startDate ? "and ts.mostRecentUsage > :startDate " : ""
+		query += endDate ? "and ts.mostRecentUsage < :endDate " : ""
+		query += userId ? "and ts.userId = :userId and tiy.userId = :userId " : ""
 		query += "group by t.id ORDER BY t.description"
 
 		List resultInstanceList = executeQuery(query, namedParams)
@@ -184,14 +175,14 @@ class TagInputType {
 	 * A method to remove entry from the cache for a given tagId.
 	 */
 	static void removeFromCache(String tagId) {
-		tagsWithInputTypeCache.remove(tagId)
+		cachedTagInputTypes.remove(tagId)
 	}
 
 	/**
 	 * A method to clear cache data.
 	 */
 	static void clearCache() {
-		tagsWithInputTypeCache.clear()
+		cachedTagInputTypes.clear()
 	}
 }
 

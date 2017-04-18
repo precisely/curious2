@@ -27,7 +27,7 @@ class TagInputTypeSpec extends IntegrationSpec {
 				inputType: InputType.LEVEL, defaultUnit: 'hours').save(flush: true)
 
 		when: 'getAllTagsWithInputType method is called and no data is present in cache'
-		assert TagInputType.tagsWithInputTypeCache.size() == 0
+		assert TagInputType.cachedTagInputTypes.size() == 0
 		Map resultMap = TagInputType.getAllTagsWithInputType(null)
 
 		then: 'Method returns all the new instances of TagInputType and cache gets updated'
@@ -36,7 +36,7 @@ class TagInputTypeSpec extends IntegrationSpec {
 		resultMap.tagsWithInputTypeList[0].inputType == InputType.LEVEL
 		resultMap.tagsWithInputTypeList[1].tagId == tagInstance1.id
 		resultMap.tagsWithInputTypeList[1].inputType == InputType.THUMBS
-		TagInputType.tagsWithInputTypeCache.size() == 2
+		TagInputType.cachedTagInputTypes.size() == 2
 
 		when: 'getAllTagsWithInputType method is called and cache has not been updated after clientCacheDate'
 		resultMap = TagInputType.getAllTagsWithInputType(new Date())
