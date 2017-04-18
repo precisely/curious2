@@ -51,7 +51,7 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	byte[] getDefaultFileContent() {
 		return "tag description, default unit, max, min, number of levels, input type, value type, override\n" +
 				"sleep, hours, 10, 0, 5, thumbs, , \n mood, , 10, 0, 5, smiley, , \n" +
-				"misbehavior, , 10, 0 , 5, boolean, , \n , , , \n bowell moment, , 10, 0, 5, slider, continuous," +
+				"misbehavior, , 10, 0 , 5, boolean, , \n , , , \n bowell movement, , 10, 0, 5, slider, ," +
 				" true \n energy, , 10, 0, 5, level, , " as byte[]
 	}
 

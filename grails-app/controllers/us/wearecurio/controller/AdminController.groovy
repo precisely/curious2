@@ -347,7 +347,6 @@ class AdminController extends LoginController {
 			render(view: 'csvUploadResult', model: [message: 'Invalid file'])
 
 			return
-
 		}
 
 		File tempTagInputTypeCSV
@@ -388,7 +387,7 @@ class AdminController extends LoginController {
 
 		if (!result.success) {
 			render(view: 'csvUploadResult', model: [message: 'The CSV file you uploaded contains some invalid rows' +
-					'. A CSV file containing the invalid rows has been email to you. Please fix the file and ' +
+					'. A CSV file containing the invalid rows has been emailed to you. Please fix the file and ' +
 					"re-upload. Syntax error in lines ${result.invalidRows}"])
 
 			return

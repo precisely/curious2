@@ -110,20 +110,19 @@ class TagInputTypeService {
 					}
 
 					log.debug "Overriding TagInputType for tag ${tagDescription}"
-
-					tagInputType.tagId = tagId
-					tagInputType.defaultUnit = defaultUnit
-					tagInputType.max = max
-					tagInputType.min = min
-					tagInputType.noOfLevels = noOfLevels
-					tagInputType.inputType = inputType
-					tagInputType.valueType = valueType
 				} else {
 					log.debug "Creating new TagInputType for tag ${tagDescription}"
 
-					tagInputType = new TagInputType(tagId: tagId, defaultUnit: defaultUnit, max: max,
-							min: min, noOfLevels: noOfLevels, inputType: inputType, valueType: valueType)
+					tagInputType = new TagInputType()
 				}
+
+				tagInputType.tagId = tagId
+				tagInputType.defaultUnit = defaultUnit
+				tagInputType.max = max
+				tagInputType.min = min
+				tagInputType.noOfLevels = noOfLevels
+				tagInputType.inputType = inputType
+				tagInputType.valueType = valueType
 
 				if (!Utils.save(tagInputType, true)) {
 					invalidRows.add([row: rowNumber, error: 'This row contains invalid data'])
@@ -147,10 +146,10 @@ class TagInputTypeService {
 			success = false
 			User userInstance = securityService.getCurrentUser()
 
-			log.debug "Sending invalid CSV file to user ${userInstance?.name}"
+			log.debug "Sending invalid CSV file to user ${userInstance.name}"
 
 			try {
-				String userEmail = userInstance?.email
+				String userEmail = userInstance.email
 				byte[] invalidCsvData = csvWriter.writer.toString().getBytes("UTF-8")
 
 				EmailService.get().sendMail {
