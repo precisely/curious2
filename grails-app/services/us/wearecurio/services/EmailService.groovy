@@ -28,7 +28,7 @@ class EmailService {
 				log.debug "Calling mail service sendMail"
 				mailService.sendMail(callable)
 			} catch (Exception e) {
-				log.error "Error while sending email to: " + toString
+				log.error "Error while sending email"
 				e.printStackTrace()
 			}
 		}

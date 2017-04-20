@@ -4,11 +4,11 @@ import groovyx.net.http.URIBuilder
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
 import us.wearecurio.hashids.DefaultHashIDGenerator
+import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
-import us.wearecurio.model.ThirdParty
-import us.wearecurio.services.OuraDataService
 import us.wearecurio.security.NoAuth
+import us.wearecurio.services.OuraDataService
 
 /**
  * A generic controller to handle all authentication made by oauth plugin.
@@ -188,7 +188,7 @@ class AuthenticationController extends SessionController {
 			userId = user.id
 		}
 
-		oauthAccountService.createOrUpdate(ThirdParty.OURA, userInfo.id.toString(), tokenInstance, userId)
+		oauthAccountService.createOrUpdate(ThirdParty.OURA, userInfo['user_id']?.toString(), tokenInstance, userId)
 	}
 
 	def twenty3andmeAuth() {

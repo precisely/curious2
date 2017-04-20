@@ -1031,13 +1031,13 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		$contentWrapper.hide();
 
 		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' +
-				this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0px; width: calc(100% - 75px);" /></span>');
+				this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0px; width: calc(100% - 125px);" /></span>');
 		$('#' + $selectee.attr('id') + ' .track-input-dropdown').show();
 		var popoverContent = _.template($('#entry-details-popover-content').html())({editType: currentEntryId, entryId: $selectee.attr('id'), repeatType: repeatType});
 		createPopover($selectee.find('.track-input-dropdown'), popoverContent, '#recordList');
 
 		$('#' + self.editId + 'tagTextInput')
-			.val(entryText).focus()
+			.val(entryText)
 			.data('entryTextSet', true)
 			.on("keyup", function(e) {
 				var entryData = $selectee.data();

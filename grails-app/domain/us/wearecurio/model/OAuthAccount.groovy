@@ -27,7 +27,7 @@ class OAuthAccount {
 
 	static constraints = {
 		accessToken maxSize: 1024
-		accountId maxSize: 24	// Jawbone sends around 22 characters accountId
+		accountId maxSize: 32	// New Oura API is sending 32 characters accountId
 		expiresOn nullable: true
 		userId(unique:['typeId'])
 		lastSubscribed(nullable:true)

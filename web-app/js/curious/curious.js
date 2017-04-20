@@ -33,8 +33,8 @@ $.fn.isUnderEvent = function(e) {
 $.fn.selectRange = function(start, end) {
 	return this.each(function() {
 		if(this.setSelectionRange) {
-			this.focus();
 			this.setSelectionRange(start, end);
+			this.focus();
 		} else if(this.createTextRange) {
 			var range = this.createTextRange();
 			range.collapse(true);
