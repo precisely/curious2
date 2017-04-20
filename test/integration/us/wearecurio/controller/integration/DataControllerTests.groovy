@@ -1233,4 +1233,48 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert TrackingProjectRequest.count() == 1
 		assert TrackingProjectRequest.first().email == "selena@gomz.com"
 	}
+
+	@Test
+	void 'test getAllTagsWithInputType action'() {
+		given: 'A few instances of Tag, TagStats and TagInputType'
+		User userInstance = User.create([username:'shaneMac1', sex:'F', name:'shane macgowen', email:'shane@pogues.com',
+				birthdate:'01/01/1960', password:'shanexyz', action:'doregister',controller:'home'])
+
+		Tag tagInstance1 = Tag.create('sleep')
+		Tag tagInstance2 = Tag.create('activity')
+		Tag tagInstance3 = Tag.create('exercise')
+
+		TagStats.createOrUpdate(userInstance.id, tagInstance1.id)
+		TagStats.createOrUpdate(userInstance.id, tagInstance2.id)
+		TagStats.createOrUpdate(userInstance.id, tagInstance3.id)
+
+		new TagInputType(tagId: tagInstance1.id, max: 10, min: 0, noOfLevels: 5,
+				inputType: InputType.THUMBS, defaultUnit: 'miles').save(flush: true)
+		new TagInputType(tagId: tagInstance2.id, max: 10, min: 0, noOfLevels: 5,
+				inputType: InputType.LEVEL, defaultUnit: 'hours').save(flush: true)
+		new TagInputType(tagId: tagInstance3.id, max: 10, min: 0, noOfLevels: 5,
+				inputType: InputType.SLIDER, defaultUnit: 'calories').save(flush: true)
+
+		when: 'getAllTagsWithInputType action is hit'
+		controller.request.method = 'GET'
+		controller.getAllTagsWithInputType()
+
+		then: 'Server responds with all available TagInputType and the resulting TagInputTypes are added to ' +
+				'BoundedCache'
+		assert controller.response.contentAsString.contains("\"tagId\":${tagInstance1.id}")
+		assert controller.response.contentAsString.contains("\"tagId\":${tagInstance2.id}")
+		assert controller.response.contentAsString.contains("\"tagId\":${tagInstance3.id}")
+
+		assert controller.response.contentAsString.contains("\"defaultUnit\":\"miles\"")
+		assert controller.response.contentAsString.contains("\"defaultUnit\":\"hours\"")
+		assert controller.response.contentAsString.contains("\"defaultUnit\":\"calories\"")
+
+		assert controller.response.contentAsString.contains("\"inputType\":\"LEVEL\"")
+		assert controller.response.contentAsString.contains("\"inputType\":\"SLIDER\"")
+		assert controller.response.contentAsString.contains("\"inputType\":\"THUMBS\"")
+
+		assert controller.response.contentAsString.contains("\"cacheDate\":")
+		assert TagInputType.cachedTagInputTypes.size() == 3
+		TagInputType.clearCache()
+	}
 }

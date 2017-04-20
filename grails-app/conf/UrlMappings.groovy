@@ -90,6 +90,8 @@ class UrlMappings {
 
 		"500" (controller: "authentication", action: "authenticateProvider", exception: AuthenticationRequiredException)
 
+		"500" (controller: "error", action: "memoryError", exception: OutOfMemoryError)
+
 		"/"(view: "/index")
 
 		// Default page to be loaded when access is denied
