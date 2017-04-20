@@ -32,8 +32,8 @@ class OuraTagUnitMap extends TagUnitMap {
 			deep: [tag: SLEEP, unit: "hours deep", convert: true, from: "seconds"],
 
 			// Present in new Oura API.
-			wake_up_count: [tag: SLEEP, unit: 'wake up times'],
-			got_up_count: [tag: SLEEP, unit: 'got up times'],
+			wake_up_count: [tag: SLEEP, unit: 'wake times'],
+			got_up_count: [tag: SLEEP, unit: 'got-up times'],
 			efficiency: [tag: SLEEP, unit: '%'],
 			hr_lowest: [tag: SLEEP, unit: 'bpm lowest'],
 			restless: [tag: SLEEP, unit: '%'],
