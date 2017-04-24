@@ -477,8 +477,6 @@ class DataController extends LoginController {
 		 */
 		if (params.containsKey('mobileSessionId') && params.balloonData) {
 			boolean showRemindAlertBalloon = !user.settings.hasFirstAlertEntryCountCompleted()
-
-			// Currently TagInputType list will be same for all the Users.
 			renderJSONGet([entries, showRemindAlertBalloon, TagInputType.getRecentTagsWithInputType(user.id)])
 
 			return

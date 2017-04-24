@@ -66,7 +66,7 @@ class TagInputType {
 	 * A method to get Tags used withing last two weeks with it's input type and other properties such as description,
 	 * noOfLevels, max, etc.
 	 *
-	 * @param userId: optional
+	 * @param userId Long Id of the User.
 	 * @return List<Map> of result instances.
 	 */
 	static List getRecentTagsWithInputType(Long userId) {

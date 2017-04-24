@@ -44,7 +44,7 @@ class TagInputTypeService {
 			col6:'input type' { it.val6 }
 			col7:'value type' { it.val7 }
 			col8:'override' { it.val8 }
-			col9:'default' {it.val9}
+			col9:'default' { it.val9 }
 		})
 
 		String tagDescription, defaultUnit

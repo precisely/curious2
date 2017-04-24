@@ -49,16 +49,17 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	}
 
 	byte[] getDefaultFileContent() {
-		return "tag description, default unit, max, min, number of levels, input type, value type, override\n" +
-				"sleep, hours, 10, 0, 5, thumbs, , \n mood, , 10, 0, 5, smiley, , \n" +
-				"misbehavior, , 10, 0 , 5, boolean, , \n , , , \n bowell movement, , 10, 0, 5, slider, ," +
-				" true \n energy, , 10, 0, 5, level, , " as byte[]
+		return "tag description, default unit, max, min, number of levels, input type, value type, override," +
+				"default \n sleep, hours, 10, 0, 5, thumbs, , ,\n mood, , 10, 0, 5, smiley, ,, \n" +
+				"misbehavior, , 10, 0 , 5, boolean, , ,\n , , , \n bowell movement, , 10, 0, 5, slider, ," +
+				" true ,\n energy, , 10, 0, 5, level, ,," as byte[]
 	}
 
 	File getFile(String filePath) {
 		File file = new File(filePath)
 		file.createNewFile()
-		file << getDefaultFileContent()
+
+		return file
 	}
 
 	DiskFileItem getDiskFileItemInstance(File file, byte[] fileContent = getDefaultFileContent()) {
@@ -449,7 +450,7 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "test importTagInputTypeFromCSV action to import TagInputType from CSV file"() {
+	void "test importTagInputTypeFromCSV action to import TagInputType from an incorrect CSV file"() {
 		given: 'A CSV file which contains TagInputType data'
 		File file = getFile('./target/temp.csv')
 		DiskFileItem fileItem = getDiskFileItemInstance(file)
@@ -470,25 +471,29 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		controller.importTagInputTypeFromCSV()
 
 		then: 'New TagInputType are created for valid rows in csv file and invalid rows are sent in the response'
-		controller.response.status == 200
-		controller.modelAndView.model.message == 'The CSV file you uploaded contains some invalid rows. ' +
-				'A CSV file containing the invalid rows has been email to you. Please fix the file and re-upload. ' +
-				'Syntax error in lines [[row:5, error:The row must have 8 columns]]'
+		assert controller.response.status == 200
+		assert controller.modelAndView.model.message == 'The CSV file you uploaded contains some invalid rows. ' +
+				'A CSV file containing the invalid rows has been emailed to you. Please fix the file and re-upload. ' +
+				'Syntax error in lines [[row:5, error:The row must have 9 columns]]'
+		file.delete()
+	}
 
-		when: 'A valid file is passed'
-		controller.response.reset()
+	@Test
+	void "test importTagInputTypeFromCSV action to import TagInputType from a correct CSV file"() {
+		when: 'A valid CSV file is passed'
 		byte[] content = "tag description, default unit, max, min, number of levels, input type, value type," +
-				"override \n sleep, hours, 10, 0, 5, level, , \n activity, cal, 10, 0, 5, smiley, continuous, \n" +
-				"readiness,score, 10, 0 , 5, thumbs, , \n sleep, mins, 10, 0, 10, slider, continuous, true" as
-				byte[]
-		fileItem = getDiskFileItemInstance(file, content)
-		commonsMultipartFile = new CommonsMultipartFile(fileItem)
+				"override, default \n sleep, hours, 10, 0, 5, level, , , \n activity, cal, 10, 0, 5, smiley, " +
+				"continuous, , \n readiness,score, 10, 0 , 5, thumbs, , ,\n sleep, mins, 10, 0, 10, slider, " +
+				"continuous, true, true" as byte[]
+		File file = getFile('./target/temp.csv')
+		DiskFileItem fileItem = getDiskFileItemInstance(file, content)
+		CommonsMultipartFile commonsMultipartFile = new CommonsMultipartFile(fileItem)
 		controller.request.addFile(commonsMultipartFile)
 		controller.importTagInputTypeFromCSV()
 
 		then: 'New TagInputType are created for all the entries and a proper message is sent in response'
-		controller.response.status == 200
-		controller.modelAndView.model.message == 'Successfully imported all TagInputType from CSV'
+		assert controller.response.status == 200
+		assert controller.modelAndView.model.message == 'Successfully imported all TagInputType from CSV'
 		file.delete()
 	}
 }

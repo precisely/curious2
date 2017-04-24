@@ -9,14 +9,21 @@ import us.wearecurio.model.User
 
 class TagInputTypeSpec extends IntegrationSpec {
 
+	Tag tagInstance1
+	Tag tagInstance2
+
+	User userInstance
+
+	void setup() {
+		tagInstance1 = Tag.look('sleep')
+		tagInstance2 = Tag.look('energy')
+
+		userInstance = User.create([username :'shaneMac1', sex:'F', name:'shane macgowen', email:'sha@pogues.com',
+				birthdate:'01/01/1960', password:'shanexyz', action:'doregister', controller:'home'])
+	}
+
 	void "test various overloaded methods from TagInputType class"() {
 		given: 'A few instances of Tag, TagStats and TagInputType'
-		User userInstance = User.create([username :'shaneMac1', sex:'F', name:'shane macgowen', email:'sha@pogues.com',
-				birthdate:'01/01/1960', password:'shanexyz', action:'doregister', controller:'home'])
-
-		Tag tagInstance1 = Tag.create('sleep')
-		Tag tagInstance2 = Tag.create('activity')
-
 		new TagStats([userId: userInstance.id, tagId: tagInstance1.id, description: 'sleep', countLastThreeMonths: 80L,
 				mostRecentUsage: new Date() - 2, countLastYear: 302L, countAllTime: 1024L]).save(flush: true)
 		TagStats.createOrUpdate(userInstance.id, tagInstance2.id)
@@ -72,5 +79,55 @@ class TagInputTypeSpec extends IntegrationSpec {
 		resultList[1].tagId == tagInstance1.id
 		resultList[1].inputType == InputType.THUMBS
 		TagInputType.clearCache()
+	}
+
+	void "test getDefaultTagInputTypes method"() {
+		given: 'Two default TagInputType instances and one non default TagInputType instance'
+		new TagInputType(tagId: 1, max: 10, min: 0, noOfLevels: 5,
+				inputType: InputType.THUMBS, defaultUnit: 'miles', isDefault: true).save(flush: true)
+		new TagInputType(tagId: 2, max: 10, min: 0, noOfLevels: 5,
+				inputType: InputType.LEVEL, defaultUnit: 'hours', isDefault: true).save(flush: true)
+		new TagInputType(tagId: 3, max: 10, min: 0, noOfLevels: 5,
+				inputType: InputType.LEVEL, defaultUnit: 'hours').save(flush: true)
+
+		when: 'The getDefaultTagInputTypes is called'
+		List defaultTagInputs = TagInputType.getDefaultTagInputTypes()
+
+		then: 'The list should contain the two default tags'
+		defaultTagInputs.size() == 2
+		defaultTagInputs[0].tagId == 1
+		defaultTagInputs[1].tagId == 2
+	}
+
+	void "test getRecentTagsWithInputType method to return atleast 8 TagInputTypes"() {
+		given: 'TagStats for User for two tags'
+		TagStats.createOrUpdate(userInstance.id, tagInstance1.id)
+		TagStats.createOrUpdate(userInstance.id, tagInstance2.id)
+
+		[tagInstance1.id, tagInstance2.id].each {
+			new TagInputType(tagId: it, max: 10, min: 0, noOfLevels: 5,
+					inputType: InputType.LEVEL, defaultUnit: 'hours', isDefault: true).save(flush: true)
+		}
+
+		and: '6 Default TagInputTypes instances'
+		['coffee', 'bowell movement', 'apple', 'banana', 'beer', 'dance'].each {
+			new TagInputType(tagId: Tag.look(it).id , max: 10, min: 0, noOfLevels: 5,
+					inputType: InputType.LEVEL, defaultUnit: 'hours', isDefault: true).save(flush: true)
+		}
+
+		when: 'The getRecentTagsWithInputType method is called'
+		List tagsWithInputType = TagInputType.getRecentTagsWithInputType(userInstance.id)
+
+		then: 'There should be 8 TagInputTypes'
+		tagsWithInputType.size() == 8
+
+		when: 'There are TagInputTypes for tags used in the past 14 days'
+		['run', 'mood', 'misbehavior', 'coffee', 'bowell movement', 'apple', 'banana', 'beer'].each {
+			TagStats.createOrUpdate(userInstance.id, Tag.look(it).id)
+		}
+		tagsWithInputType = TagInputType.getRecentTagsWithInputType(userInstance.id)
+
+		then: 'There should be 10 TagInputTypes with no default TagInputTypes'
+		tagsWithInputType.size() == 10
 	}
 }
