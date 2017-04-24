@@ -479,7 +479,7 @@ class DataController extends LoginController {
 			boolean showRemindAlertBalloon = !user.settings.hasFirstAlertEntryCountCompleted()
 
 			// Currently TagInputType list will be same for all the Users.
-			renderJSONGet([entries, showRemindAlertBalloon, TagInputType.getRecentTagsWithInputType()])
+			renderJSONGet([entries, showRemindAlertBalloon, TagInputType.getRecentTagsWithInputType(user.id)])
 
 			return
 		}

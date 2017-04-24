@@ -5,7 +5,7 @@ import us.wearecurio.utility.Utils
 
 class TagInputType {
 
-	Long tagId // BaseTagId
+	Long tagId
 	Long userId
 
 	String defaultUnit
@@ -21,6 +21,8 @@ class TagInputType {
 
 	InputType inputType
 	ValueType valueType = ValueType.DISCRETE // Default ValueType
+
+	boolean isDefault
 
 	static Date cacheDate
 
@@ -62,13 +64,30 @@ class TagInputType {
 
 	/**
 	 * A method to get Tags used withing last two weeks with it's input type and other properties such as description,
-	 * noOfLevels, max, etc. userId is an optional parameter.
+	 * noOfLevels, max, etc.
 	 *
 	 * @param userId: optional
 	 * @return List<Map> of result instances.
 	 */
-	static List getRecentTagsWithInputType(Long userId = null) {
-		return fetchTagInputTypeInfo(new Date() - 14, null, userId)
+	static List getRecentTagsWithInputType(Long userId) {
+		TreeSet tagInputTypes = new TreeSet<>([compare: { tagInputTypeMap1, tagInputTypeMap2 ->
+			tagInputTypeMap1.description <=> tagInputTypeMap2.description
+		}] as Comparator)
+
+		tagInputTypes.addAll(fetchTagInputTypeInfo(new Date() - 14, null, userId))
+
+		if (!tagInputTypes || tagInputTypes.size() < 8) {
+			tagInputTypes.addAll(getDefaultTagInputTypes())
+		}
+
+		return tagInputTypes as List
+	}
+
+	static List getDefaultTagInputTypes() {
+		return executeQuery("SELECT new Map(t.id as tagId, t.description as description," +
+				" tiy.inputType as inputType, tiy.min as min, tiy.max as max, tiy.noOfLevels as noOfLevels," +
+				" tiy.defaultUnit as defaultUnit) FROM Tag t, TagInputType tiy WHERE t.id = tiy.tagId" +
+				" and tiy.isDefault = :isDefault", [isDefault: true, max: 8])
 	}
 
 	/**
@@ -132,24 +151,35 @@ class TagInputType {
 	 * @param userId
 	 * @return List<Map> of result instances.
 	 */
-	static List fetchTagInputTypeInfo(Date startDate = null, Date endDate =  null, Long userId = null) {
-		Map namedParams = startDate ? (endDate ? [startDate: startDate, endDate: endDate] :
-				[startDate: startDate]) : (endDate ? [endDate: endDate] : [:])
+	static List fetchTagInputTypeInfo(Date startDate = null, Date endDate =  null, Long userId = null,
+			boolean isDefault = false) {
+		Map namedParams = [max: 50000]
 
-		namedParams.max = 50000
+		String query = "SELECT new Map(t.id as tagId, t.description as description, tiy.inputType as inputType," +
+				" tiy.min as min, tiy.max as max, tiy.noOfLevels as noOfLevels, tiy.defaultUnit as defaultUnit," +
+				" ts.lastUnits as lastUnits) FROM Tag t, TagStats ts, TagInputType tiy " +
+				"WHERE t.id = ts.tagId and t.id = tiy.tagId "
+
+		if (startDate) {
+			query += "and ts.mostRecentUsage > :startDate "
+			namedParams.startDate = startDate
+		}
+
+		if (endDate) {
+			query += "and ts.mostRecentUsage < :endDate "
+			namedParams.endDate = endDate
+		}
 
 		if (userId) {
 			namedParams.userId = userId
+			query += "and ts.userId = :userId "
 		}
 
-		String query = "SELECT new Map(t.id as tagId, t.description as description, tiy.inputType as inputType," +
-				" tiy.min as min, tiy.max as max, tiy.noOfLevels as noOfLevels, ts.lastUnits as lastUnits, " +
-				"tiy.defaultUnit as defaultUnit) FROM Tag t, TagStats ts, TagInputType tiy " +
-				"WHERE t.id = ts.tagId and t.id = tiy.tagId "
+		if (isDefault) {
+			namedParams.isDefault = isDefault
+			query += "and tiy.isDefault = :isDefault "
+		}
 
-		query += startDate ? "and ts.mostRecentUsage > :startDate " : ""
-		query += endDate ? "and ts.mostRecentUsage < :endDate " : ""
-		query += userId ? "and ts.userId = :userId and tiy.userId = :userId " : ""
 		query += "group by t.id ORDER BY t.description"
 
 		List resultInstanceList = executeQuery(query, namedParams)

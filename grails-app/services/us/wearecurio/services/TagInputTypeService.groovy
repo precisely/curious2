@@ -32,7 +32,7 @@ class TagInputTypeService {
 		}
 
 		List<String> expectedTitles = ['tag description', 'default unit', 'max', 'min', 'number of levels',
-				'input type', 'value type', 'override']
+				'input type', 'value type', 'override', 'default']
 
 		StringWriter stringWriter = new StringWriter()
 		CSVWriter csvWriter = new CSVWriter(stringWriter, {
@@ -44,6 +44,7 @@ class TagInputTypeService {
 			col6:'input type' { it.val6 }
 			col7:'value type' { it.val7 }
 			col8:'override' { it.val8 }
+			col9:'default' {it.val9}
 		})
 
 		String tagDescription, defaultUnit
@@ -51,6 +52,7 @@ class TagInputTypeService {
 		InputType inputType
 		ValueType valueType
 		boolean override
+		boolean isDefault
 
 		csvFile.toCsvReader().eachLine { rowData ->
 			List tagInputTypeData = rowData as List
@@ -69,15 +71,17 @@ class TagInputTypeService {
 				return
 			}
 
-			if (tagInputTypeData.size() != 8) {
-				invalidRows.add([row: rowNumber, error: 'The row must have 8 columns'])
+			if (tagInputTypeData.size() != 9) {
+				invalidRows.add([row: rowNumber, error: 'The row must have 9 columns'])
 
 				csvWriter << [val1: tagInputTypeData[0], val2: tagInputTypeData[1], val3: tagInputTypeData[2], val4:
 						tagInputTypeData[3], val5: tagInputTypeData[4], val6: tagInputTypeData[5],
-						val7: tagInputTypeData[6], val8: tagInputTypeData[7]]
+						val7: tagInputTypeData[6], val8: tagInputTypeData[7], val9: tagInputTypeData[8]]
 
 				return false
 			}
+
+			boolean isRowInvalid
 
 			try {
 				tagDescription = tagInputTypeData[0].toString().trim().toLowerCase()
@@ -88,13 +92,13 @@ class TagInputTypeService {
 				inputType = tagInputTypeData[5].toString().trim().toUpperCase()
 				valueType = tagInputTypeData[6].toString().trim().toUpperCase() ?: ValueType.DISCRETE
 				override = tagInputTypeData[7].toString().toBoolean()
-
+				isDefault = tagInputTypeData[8].toString().toBoolean()
 
 				if (!tagDescription || !(max >= 0) || !(min >= 0) || !(noOfLevels >= 0) || !inputType ||
 						!(valueType in [ValueType.DISCRETE, ValueType.CONTINUOUS])) {
 					invalidRows.add([row: rowNumber, error: 'This row contains invalid data'])
 					csvWriter << [val1: tagDescription, val2: defaultUnit, val3: max, val4: min, val5: noOfLevels,
-							val6: inputType, val7: valueType, val8: override]
+							val6: inputType, val7: valueType, val8: override, val9: isDefault]
 
 					return false
 				}
@@ -123,20 +127,21 @@ class TagInputTypeService {
 				tagInputType.noOfLevels = noOfLevels
 				tagInputType.inputType = inputType
 				tagInputType.valueType = valueType
+				tagInputType.isDefault = isDefault
 
 				if (!Utils.save(tagInputType, true)) {
-					invalidRows.add([row: rowNumber, error: 'This row contains invalid data'])
-					csvWriter << [val1: tagDescription, val2: defaultUnit, val3: max, val4: min, val5: noOfLevels,
-							val6: inputType, val7: valueType, val8: override]
+					isRowInvalid = true
 				}
 			} catch (IllegalArgumentException e) {
 				log.error "Invalid argument in CSV file on line number ${rowNumber}, stacktrace - ", e
-
-				invalidRows.add([row: rowNumber, error: 'This row contains invalid data'])
-				csvWriter << [val1: tagDescription, val2: defaultUnit, val3: max, val4: min, val5: noOfLevels,
-					val6: inputType, val7: valueType, val8: override]
+				isRowInvalid = true
 			}
 
+			if (isRowInvalid) {
+				invalidRows.add([row: rowNumber, error: 'This row contains invalid data'])
+				csvWriter << [val1: tagDescription, val2: defaultUnit, val3: max, val4: min, val5: noOfLevels,
+							  val6: inputType, val7: valueType, val8: override, val9: isDefault]
+			}
 		}
 
 		// updating cache
