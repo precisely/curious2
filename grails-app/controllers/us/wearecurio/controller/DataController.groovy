@@ -477,8 +477,8 @@ class DataController extends LoginController {
 		 */
 		if (params.containsKey('mobileSessionId') && params.balloonData) {
 			boolean showRemindAlertBalloon = !user.settings.hasFirstAlertEntryCountCompleted()
-			renderJSONGet([entries, showRemindAlertBalloon])
-			
+			renderJSONGet([entries, showRemindAlertBalloon, TagInputType.getRecentTagsWithInputType(user.id)])
+
 			return
 		}
 
@@ -933,6 +933,19 @@ class DataController extends LoginController {
 
 			return data
 		})
+	}
+
+	/**
+	 * An endpoint to get all the TagInputType instances.
+	 *
+	 * @return List of TagInputType.
+	 */
+	def getAllTagsWithInputType(Long lastInputTypeCacheDate) {
+		debug "DataController.getAllTagsWithInputType() params:" + params
+
+		Date clientCacheDate = lastInputTypeCacheDate ? new Date(lastInputTypeCacheDate) : null
+
+		renderJSONGet(TagInputType.getAllTagsWithInputType(clientCacheDate))
 	}
 
 	def autocompleteData() {
@@ -1545,7 +1558,7 @@ class DataController extends LoginController {
 		}
 
 		trackingProjectRequest.save(flush: true)
-		EmailService.get().sendMail {
+		EmailService.get().sendEmail {
 			to "support@wearecurio.us"
 			from "server@wearecurio.us"
 			subject "[Curious] New Request- Autism, ME/CFS, Or Sleep Tracking Projects"
