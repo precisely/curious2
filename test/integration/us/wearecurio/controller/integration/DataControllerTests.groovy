@@ -1241,19 +1241,26 @@ class DataControllerTests extends CuriousControllerTestCase {
 				birthdate:'01/01/1960', password:'shanexyz', action:'doregister',controller:'home'])
 
 		Tag tagInstance1 = Tag.create('sleep')
-		Tag tagInstance2 = Tag.create('activity')
-		Tag tagInstance3 = Tag.create('exercise')
+		Tag tagInstance2 = Tag.create('mood')
+		Tag tagInstance3 = Tag.create('energy')
+
+		// Clearing old instances if any.
+		TagStats.findAllByUserId(userInstance.id)*.delete(flush: true)
 
 		TagStats.createOrUpdate(userInstance.id, tagInstance1.id)
 		TagStats.createOrUpdate(userInstance.id, tagInstance2.id)
 		TagStats.createOrUpdate(userInstance.id, tagInstance3.id)
 
+		// Clearing old instances if any.
+		TagInputType.list()*.delete(flush: true)
+		TagInputType.clearCache()
+
 		new TagInputType(tagId: tagInstance1.id, max: 10, min: 0, noOfLevels: 5,
 				inputType: InputType.THUMBS, defaultUnit: 'miles').save(flush: true)
 		new TagInputType(tagId: tagInstance2.id, max: 10, min: 0, noOfLevels: 5,
-				inputType: InputType.LEVEL, defaultUnit: 'hours').save(flush: true)
+				inputType: InputType.SMILEY, defaultUnit: 'hours').save(flush: true)
 		new TagInputType(tagId: tagInstance3.id, max: 10, min: 0, noOfLevels: 5,
-				inputType: InputType.SLIDER, defaultUnit: 'calories').save(flush: true)
+				inputType: InputType.LEVEL, defaultUnit: 'calories').save(flush: true)
 
 		when: 'getAllTagsWithInputType action is hit'
 		controller.request.method = 'GET'
@@ -1261,20 +1268,47 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		then: 'Server responds with all available TagInputType and the resulting TagInputTypes are added to ' +
 				'BoundedCache'
-		assert controller.response.contentAsString.contains("\"tagId\":${tagInstance1.id}")
-		assert controller.response.contentAsString.contains("\"tagId\":${tagInstance2.id}")
-		assert controller.response.contentAsString.contains("\"tagId\":${tagInstance3.id}")
+		List jsonResponse = controller.response.json.tagsWithInputTypeList
 
-		assert controller.response.contentAsString.contains("\"defaultUnit\":\"miles\"")
-		assert controller.response.contentAsString.contains("\"defaultUnit\":\"hours\"")
-		assert controller.response.contentAsString.contains("\"defaultUnit\":\"calories\"")
+		assert jsonResponse.size() == 3
+		assert jsonResponse[0].description == 'energy'
+		assert jsonResponse[1].description == 'mood'
+		assert jsonResponse[2].description == 'sleep'
 
-		assert controller.response.contentAsString.contains("\"inputType\":\"LEVEL\"")
-		assert controller.response.contentAsString.contains("\"inputType\":\"SLIDER\"")
-		assert controller.response.contentAsString.contains("\"inputType\":\"THUMBS\"")
-
-		assert controller.response.contentAsString.contains("\"cacheDate\":")
+		assert controller.response.json.cacheDate == TagInputType.cacheDate.time
 		assert TagInputType.cachedTagInputTypes.size() == 3
-		TagInputType.clearCache()
+
+		when: 'The clientCacheDate is present in request and the cache is not updated after this date'
+		controller.response.reset()
+		Long oldCacheDate = TagInputType.cacheDate.time
+		controller.params.lastInputTypeCacheDate = oldCacheDate
+		controller.getAllTagsWithInputType()
+
+		then: 'The result should be empty'
+		assert controller.response.json == [:]
+
+		when: 'The cache is updated and the client still has old cache date'
+		controller.response.reset()
+		controller.params.lastInputTypeCacheDate = oldCacheDate
+
+		new TagInputType(tagId: Tag.look('tea').id, max: 10, min: 0, noOfLevels: 5,
+				inputType: InputType.LEVEL, defaultUnit: 'calories', isDefault: true).save(flush: true)
+		TagInputType.initializeCachedTagWithInputTypes()
+
+		controller.getAllTagsWithInputType()
+		jsonResponse = controller.response.json.tagsWithInputTypeList
+
+		then: 'The response should have updated cache date and TagInputTypeList'
+		assert jsonResponse.size() == 4
+		assert jsonResponse[0].description == 'energy'
+		assert jsonResponse[1].description == 'mood'
+		assert jsonResponse[2].description == 'sleep'
+		assert jsonResponse[3].description == 'tea'
+
+		Long updatedCacheDate = TagInputType.cacheDate.time
+
+		assert oldCacheDate < updatedCacheDate
+		assert controller.response.json.cacheDate == updatedCacheDate
+		assert TagInputType.cachedTagInputTypes.size() == 4
 	}
 }

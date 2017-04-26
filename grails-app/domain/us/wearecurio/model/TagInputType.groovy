@@ -57,6 +57,7 @@ class TagInputType {
 				cachedTagInputTypes.put(dataMap.tagId, dataMap)
 			}
 		}
+
 		if (cachedTagInputTypes.values()) {
 			cacheDate = new Date() // Updating cache date.
 		}
@@ -70,24 +71,42 @@ class TagInputType {
 	 * @return List<Map> of result instances.
 	 */
 	static List getRecentTagsWithInputType(Long userId) {
-		TreeSet tagInputTypes = new TreeSet<>([compare: { tagInputTypeMap1, tagInputTypeMap2 ->
+		Set tagInputTypes = new TreeSet<>([compare: { tagInputTypeMap1, tagInputTypeMap2 ->
 			tagInputTypeMap1.description <=> tagInputTypeMap2.description
 		}] as Comparator)
 
-		tagInputTypes.addAll(fetchTagInputTypeInfo(new Date() - 14, null, userId))
+		List recentTagInputTypes = executeQuery("SELECT new Map(t.id as tagId, t.description as description," +
+				" tiy.inputType as inputType, tiy.min as min, tiy.max as max, tiy.noOfLevels as noOfLevels," +
+				" tiy.defaultUnit as defaultUnit, ts.lastUnits as lastUnits) FROM Tag t, TagInputType tiy," +
+				" TagStats ts WHERE t.id = tiy.tagId AND t.id = ts.tagId AND ts.userId = :userId" +
+				" AND ts.mostRecentUsage > :startDate GROUP BY t.id ORDER BY ts.countAllTime DESC, t.description",
+				[userId: userId, startDate: new Date() - 14, max: 20]) ?: []
+
+		tagInputTypes.addAll(recentTagInputTypes)
 
 		if (!tagInputTypes || tagInputTypes.size() < 8) {
-			tagInputTypes.addAll(getDefaultTagInputTypes())
+			tagInputTypes.addAll(getDefaultTagInputTypes(tagInputTypes))
 		}
 
 		return tagInputTypes as List
 	}
 
-	static List getDefaultTagInputTypes() {
-		return executeQuery("SELECT new Map(t.id as tagId, t.description as description," +
+	static List getDefaultTagInputTypes(Set recentTagInputTypes) {
+		String query = "SELECT new Map(t.id as tagId, t.description as description," +
 				" tiy.inputType as inputType, tiy.min as min, tiy.max as max, tiy.noOfLevels as noOfLevels," +
 				" tiy.defaultUnit as defaultUnit) FROM Tag t, TagInputType tiy WHERE t.id = tiy.tagId" +
-				" and tiy.isDefault = :isDefault", [isDefault: true, max: 8])
+				" AND tiy.isDefault = :isDefault"
+
+		Map args = [isDefault: true, max: 8 - recentTagInputTypes.size()]
+
+		if (recentTagInputTypes) {
+			query += " AND t.id NOT IN :tagIds"
+			args.tagIds = recentTagInputTypes*.tagId*.toLong()
+		}
+
+		query += " ORDER BY t.description"
+
+		return executeQuery(query, args)
 	}
 
 	/**
@@ -104,7 +123,7 @@ class TagInputType {
 		if (!clientCacheDate || (cacheDate > clientCacheDate)) {
 			if (!cachedTagInputTypes.size() || !cacheDate) {
 				// Trying to update the cache if cache is empty.
-				cache(fetchTagInputTypeInfo())
+				cache(getAllTagInputTypes())
 			}
 
 			return [cacheDate: cacheDate?.time, tagsWithInputTypeList: cachedTagInputTypes.values() as List]
@@ -115,31 +134,7 @@ class TagInputType {
 
 	static void initializeCachedTagWithInputTypes() {
 		// Adding query result to cache.
-		cache(fetchTagInputTypeInfo())
-	}
-
-	/**
-	 * A method to get Tags used withing a particular date range with it's input type and other properties such as
-	 * description, noOfLevels, max, etc. userId is an optional parameter.
-	 *
-	 * @param startDate
-	 * @param endDate
-	 * @param userId : optional
-	 * @return List<Map> of result instances.
-	 */
-	static List getTagsWithInputTypeForDateRange(Date startDate, Date endDate, Long userId = null) {
-		return fetchTagInputTypeInfo(startDate, endDate, userId)
-	}
-
-	/**
-	 * A method to get all Tags with it's input type and other properties such as
-	 * description, noOfLevels, max, etc. Result list is cached before response. userId is an optional parameter.
-	 *
-	 * @param userId
-	 * @return List<Map> of result instances.
-	 */
-	static List getAllTagsWithInputTypeForUser(Long userId) {
-		return fetchTagInputTypeInfo(null, null, userId)
+		cache(getAllTagInputTypes())
 	}
 
 	/**
@@ -151,49 +146,20 @@ class TagInputType {
 	 * @param userId
 	 * @return List<Map> of result instances.
 	 */
-	static List fetchTagInputTypeInfo(Date startDate = null, Date endDate =  null, Long userId = null,
-			boolean isDefault = false) {
-		Map namedParams = [max: 50000]
+	static List getAllTagInputTypes() {
+		String query = "SELECT new Map(t.id as tagId, t.description as description," +
+				" tiy.inputType as inputType, tiy.min as min, tiy.max as max, tiy.noOfLevels as noOfLevels," +
+				" tiy.defaultUnit as defaultUnit) FROM Tag t, TagInputType tiy WHERE t.id = tiy.tagId" +
+				" GROUP BY t.id ORDER BY t.description"
 
-		String query = "SELECT new Map(t.id as tagId, t.description as description, tiy.inputType as inputType," +
-				" tiy.min as min, tiy.max as max, tiy.noOfLevels as noOfLevels, tiy.defaultUnit as defaultUnit," +
-				" ts.lastUnits as lastUnits) FROM Tag t, TagStats ts, TagInputType tiy " +
-				"WHERE t.id = ts.tagId and t.id = tiy.tagId "
+		List resultInstanceList = executeQuery(query, [max: 50000])
 
-		if (startDate) {
-			query += "and ts.mostRecentUsage > :startDate "
-			namedParams.startDate = startDate
-		}
+		int totalCount = resultInstanceList.size()
 
-		if (endDate) {
-			query += "and ts.mostRecentUsage < :endDate "
-			namedParams.endDate = endDate
-		}
-
-		if (userId) {
-			namedParams.userId = userId
-			query += "and ts.userId = :userId "
-		}
-
-		if (isDefault) {
-			namedParams.isDefault = isDefault
-			query += "and tiy.isDefault = :isDefault "
-		}
-
-		query += "group by t.id ORDER BY t.description"
-
-		List resultInstanceList = executeQuery(query, namedParams)
-
-		if (resultInstanceList.size() > 35000) {
-			String countQuery = "SELECT count(*) as totalCount from TagInputType as tiy1 where tiy1.tagId in (" +
-					"SELECT tiy.tagId FROM Tag t, TagStats ts, TagInputType tiy WHERE t.id = ts.tagId and " +
-					"t.id = tiy.tagId group by t.id)"
-
-			int totalCount = executeQuery(countQuery, namedParams)[0]
-
+		if (totalCount > 35000) {
 			String title = '[Curious] - TagInputType Total Count'
 			String message = "TagInputType cache size has increased significantly, current size is ${totalCount}. " +
-					'Please take necessary steps to cache from blowing up.'
+					'Please take necessary steps to prevent cache from blowing up.'
 
 			Utils.reportError(title, message)
 		}

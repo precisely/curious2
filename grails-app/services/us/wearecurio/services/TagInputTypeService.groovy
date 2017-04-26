@@ -144,8 +144,8 @@ class TagInputTypeService {
 			}
 		}
 
-		// updating cache
-		TagInputType.cache(TagInputType.fetchTagInputTypeInfo())
+		// Updating cache
+		TagInputType.initializeCachedTagWithInputTypes()
 
 		if (invalidRows) {
 			success = false
@@ -157,7 +157,7 @@ class TagInputTypeService {
 				String userEmail = userInstance.email
 				byte[] invalidCsvData = csvWriter.writer.toString().getBytes("UTF-8")
 
-				EmailService.get().sendMail {
+				EmailService.get().sendEmail {
 					multipart true
 					to userEmail
 					from 'server@wearecurio.us'

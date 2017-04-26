@@ -30,16 +30,15 @@
 			2. default unit      : This column is optional. Unit of measurement for the tag entry.
 			3. max*              : Maximum allowed value for this TagInputType.
 			4. min*              : Minimum allowed value for this TagInputType.
-			5. number of levels* : Number of divisions the InputWidget on the client side shows up for this
-								   TagInputType.
+			5. number of levels* : Number of divisions the InputWidget on the client side shows up for this TagInputType.
 			6. input type*       : Input type of the Tag.
-								   Pick one from these values - (slider, level, boolean, smiley, thumbs)
+			                       Pick one from these values - (slider, level, boolean, smiley, thumbs)
 			7. value type        : This column is optional. Value type of the Tag. Possible values are discrete or
-								   continuous. If no value is provided then by default inputType is set to discrete.
+			                       continuous. If no value is provided then by default inputType is set to discrete.
 			8. override          : This column is optional. This provides the option to override an existing
-								   TagInputType. In order to do so, set the value for this field to 'true'.
+			                       TagInputType. In order to do so, set the value for this field to 'true'.
 			9. default           : This column is optional. This provides the option to set an input tag as default.
-								   Set the value of this field to 'true' to make it default input type.
+			                       Set the value of this field to 'true' to make it default input type.
 			</pre>
 		</div>
 	</div>
