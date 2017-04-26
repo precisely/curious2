@@ -42,7 +42,7 @@ class TagInputType {
 	}
 
 	/*
-	 * A method to cache various properties of Tag and TagInputType.
+	 * A method to cache various TagInputTypes.
 	 */
 	static void cache(List tagInputTypes) {
 		if (!tagInputTypes.size()) {
@@ -64,8 +64,8 @@ class TagInputType {
 	}
 
 	/**
-	 * A method to get Tags used withing last two weeks with it's input type and other properties such as description,
-	 * noOfLevels, max, etc.
+	 * A method to get TagInputTypes for tags used in last 2 weeks. If the count is less than 8, then it adds the 
+	 * default TagInputTypes to make the count 8.
 	 *
 	 * @param userId Long Id of the User.
 	 * @return List<Map> of result instances.
@@ -91,6 +91,11 @@ class TagInputType {
 		return tagInputTypes as List
 	}
 
+	/*
+	 * This method returns the default TagInputTypes excluding the ones already present in recent TagInputTypes.
+	 * 
+	 * @param Set of recent TagInputTypes
+	 */
 	static List getDefaultTagInputTypes(Set recentTagInputTypes) {
 		String query = "SELECT new Map(t.id as tagId, t.description as description," +
 				" tiy.inputType as inputType, tiy.min as min, tiy.max as max, tiy.noOfLevels as noOfLevels," +
@@ -110,13 +115,12 @@ class TagInputType {
 	}
 
 	/**
-	 * A method to get Tags with it's input type and other properties such as
-	 * description, noOfLevels, max, etc. This method searches in the cache first based on the passed arguments and
-	 * if no cached values are found then a database query is done to get TagInputType instances.
-	 * userId is an optional parameter.
+	 * A method to get all TagInputTypes for auto complete. This method searches in the cache first based on the passed 
+	 * client cache date, if current cache date is greater than client cache date then new cache date and updated 
+	 * list is sent in the response, otherwise empty map is sent. If the cache is empty, a database call is done to 
+	 * update the cache.
 	 *
 	 * @param clientCacheDate
-	 * @param userId
 	 * @return List<Map> of result instances.
 	 */
 	static Map getAllTagsWithInputType(Date clientCacheDate) {
@@ -138,12 +142,9 @@ class TagInputType {
 	}
 
 	/**
-	 * A method to fetch TagInputType info for caching. If the result size is more than 35000 then an email is sent to
-	 * the support team with the actual count of matching entries.
-	 *
-	 * @param startDate
-	 * @param endDate
-	 * @param userId
+	 * A method to get all TagInputTypes caching. If the result size is more than 35000 then an email is 
+	 * sent to the support team with the actual count of matching entries.
+	 * 
 	 * @return List<Map> of result instances.
 	 */
 	static List getAllTagInputTypes() {

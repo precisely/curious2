@@ -2078,7 +2078,6 @@ class Entry implements Comparable {
 			datePrecisionSecs:fetchDatePrecisionSecs(),
 			timeZoneName:this.fetchTimeZoneName(),
 			tagId:tag.id,
-			baseTagId: baseTag?.id,
 			description:((durationType?.isStartOrEnd()) && baseTag != null && (!repeatType?.isContinuous())) ? tag.getDescription() : baseTag.getDescription(),
 			amount:amount,
 			amountPrecision:fetchAmountPrecision(),
