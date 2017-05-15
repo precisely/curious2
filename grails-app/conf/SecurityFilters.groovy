@@ -123,7 +123,7 @@ class SecurityFilters {
 				}
 			}
 		}
-		adminPages(controller: "(admin|sharedTagGroup|userGroup|analyticsTask)", action:'*') {
+		adminPages(controller: "(admin|sharedTagGroup|userGroup|analyticsTask|survey)", action:'*') {
 			before = {
 				def a = actionName
 				if (params.controller == null) {

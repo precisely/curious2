@@ -1484,6 +1484,16 @@ body.tags-displayed .floating-column {
 	color: black;
 }
 
+.survey-input {
+	color: black;
+	background-color: white;
+	text-align: left;
+	margin-bottom: 15px;
+	padding-left: 5px;
+	height: 40px;
+	width: 100%;
+}
+
 .modal-body #code {
 	background-color: #f7f7f7;
 }
@@ -1558,7 +1568,7 @@ body.tags-displayed .floating-column {
 	margin-bottom: 15px;
 }
 
-.input-affordance input[type="radio"] {
+.input-affordance input[type="radio"], .profile-tag-radio {
 	position: absolute;
 	display: none;
 	height: 16px;
@@ -1566,7 +1576,7 @@ body.tags-displayed .floating-column {
 	border-radius: 5px;
 }
 
-.input-affordance input[type="radio"] + label {
+.input-affordance input[type="radio"] + label, .profile-tag-radio + label {
 	font-weight: normal;
 	color: #787878;
 }
@@ -1600,7 +1610,7 @@ body.tags-displayed .floating-column {
 	margin-left:200px;
 }
 
-.user-name-radio .input-affordance label:after {
+.user-name-radio .input-affordance label:after, .profile-tag-radio + label:after {
 	content: "";
 	position: absolute;
 	display: inline-block;
@@ -1658,7 +1668,8 @@ body.tags-displayed .floating-column {
 	box-shadow: none;
 }
 
-#addData .bio-radio input[type=radio]:checked+label:after , .user-name-radio .bio-radio input[type=radio]:checked+label:after{
+#addData .bio-radio input[type=radio]:checked+label:after ,
+		.user-name-radio .bio-radio input[type=radio]:checked+label:after, .profile-tag-radio:checked + label:after {
 	background-color: #575757;
 	box-shadow: none;
 }
@@ -1688,7 +1699,7 @@ body.tags-displayed .floating-column {
 	top: 25px;
 }
 
-.input-affordance .radio-public-label, .input-affordance .radio-private-label {
+.input-affordance .radio-public-label, .input-affordance .radio-private-label, .profile-tag-radio + label {
 	position: absolute;
 	font-size: 12px;
 	cursor: pointer;
@@ -4504,7 +4515,7 @@ input[type = "number"] {
 	background-color: #ddd;
 }
 
-.save-user-details {
+.save-user-details, .add-profile-tag {
 	background-color: #c04f7f;
 	text-transform: uppercase;
 	color: #ffffff;
@@ -4516,6 +4527,11 @@ input[type = "number"] {
 	line-height: 0;
 	margin-top: -2px;
 	margin-right: 30px;
+}
+
+.add-profile-tag {
+	width: 50px !important;
+	margin: 0px;
 }
 
 .edit-image-button {
@@ -4725,7 +4741,7 @@ input[type = "number"] {
 	margin-left: 20px;
 }
 
-.interest-list label{
+.interest-list-label {
     padding-right: 10px;
     text-transform: uppercase;
     font-size: 14px;
@@ -5105,4 +5121,82 @@ input.cropit-image-zoom-input {
 .interested-button {
 	margin-top: 10px;
 	margin-right: 2px;
+}
+
+.survey-answer-checkbox {
+	display: flex;
+	align-items: center;
+	margin-bottom: 16px;
+}
+
+.survey-answer-checkbox label {
+	height: 28px;
+	width: 28px;
+	margin-right: 15px;
+	background-color: white;
+	border-color: #979797;
+}
+
+.survey-answer-checkbox label:after {
+	width: 15px;
+	height: 8px;
+	top: 7px;
+	left: 6px;
+}
+
+.survey-answer-checkbox-label {
+	font-size: 14px;
+	font-weight: normal;
+}
+
+.profile-tag-radio-group {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 250px;
+	height: 50px;
+	margin-bottom: 0px;
+	background-color: white;
+	padding-right: 10px;
+	padding-left: 10px;
+}
+
+.profile-tag-radio + label {
+	position: relative !important;
+}
+
+.action-icon:before {
+	color: #797979
+}
+
+.tooltip.top .tooltip-inner {
+	background-color: #797979;
+	color: white;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.tooltip.top .tooltip-arrow {
+	border-top-color: #797979;
+}
+
+.cancel-button-link {
+	color: #333333 !important;
+	font-weight: normal;
+}
+
+.breadcrumb {
+	padding: 8px 15px;
+	margin-bottom: 20px;
+	list-style: none;
+	background-color: #f5f5f5;
+	border-radius: 4px;
+}
+
+.breadcrumb a {
+	color: #797979;
+}
+
+.breadcrumb>li {
+	display: inline-block;
 }

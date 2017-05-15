@@ -14,7 +14,7 @@
 <script type="text/javascript" src="/js/curious/interestTagList.js?ver=22"></script>
 <script type="text/javascript" src="/js/jquery/jquery.infinite.scroll.js"></script>
 <c:jsCSRFToken keys="createHelpEntriesDataCSRF, saveSurveyDataCSRF, getPeopleDataCSRF, hideHelpDataCSRF, 
-		getGroupsList, getInterestTagsDataCSRF"/>
+		getGroupsList, getInterestTagsDataCSRF, getSurveyDataCSRF"/>
 </head>
 <body class="${pageProperty(name: 'body.class') ?: '' }">
 <content tag="menu">
@@ -57,7 +57,7 @@
 	</div>
 </content>
 <script>
-	var showModal = ${(session.survey == 'compass')? true: false};
+	var surveyCode = getSearchParams().surveyCode;
 	var showHelpModal = ${session.showHelp?: false};
 	var notificationCount;
 
@@ -99,33 +99,32 @@
 				}
 			});
 
-			if ((typeof showModal != 'undefined') && showModal) {
+			if ((typeof surveyCode != 'undefined') && surveyCode) {
 				var interestTagList;
-				$.ajax({
-					url: '/home/getSurveyData',
-					success: function(data) {
-						if (data != null) {
-							$('#survey-carousel-content .carousel-inner').html(data);
-							var questionCount = $('#survey-carousel-content .carousel-inner').find('.item').length;
-							if (questionCount == 1) {
-								$('#navigate-right').html('<button type="submit" class="navigate-carousel-right">SUBMIT</button>');
-							}
-	
-							queueJSON("getting login info", "/home/getPeopleData?callback=?", function(data) { 
-								if (!checkData(data))
-									return;
-	
-								this.interestTagList = new InterestTagList("interestTagInput", "interestTagList");
-							});
-	
-							$('#takeSurveyOverlay').modal({show: true});
-						} else {
-							console.log('data error!');
+				var params = {code: surveyCode};
+				queuePostJSON("Getting survey data", "/home/getSurveyData", 
+						getCSRFPreventionObject('getSurveyDataCSRF', params), function(data) {
+
+					if (data && data.success) {
+						$('#survey-carousel-content .carousel-inner').html(data.htmlContent);
+						var questionCount = $('#survey-carousel-content .carousel-inner').find('.item').length;
+						if (questionCount == 1) {
+							$('#navigate-right').html('<button type="submit" class="navigate-carousel-right">SUBMIT</button>');
 						}
-					},
-					error: function(xhr) {
-						console.log('xhr:', xhr);
+
+						queueJSON("getting login info", "/home/getPeopleData?callback=?", function(data) { 
+							if (!checkData(data))
+								return;
+
+							this.interestTagList = new InterestTagList("interestTagInput", "interestTagList");
+						});
+
+						$('#takeSurveyOverlay').modal({show: true});
+					} else {
+						console.log('data error!', data);
 					}
+				}, function(xhr) {
+					console.log('xhr:', xhr);
 				});
 			}
 			if (showHelpModal) {

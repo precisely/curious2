@@ -8,6 +8,8 @@ import us.wearecurio.controller.DataController
 import us.wearecurio.data.RepeatType
 import us.wearecurio.model.*
 import us.wearecurio.model.Model.Visibility
+import us.wearecurio.model.survey.SurveyQuestion
+import us.wearecurio.model.survey.UserSurveyAnswer
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils

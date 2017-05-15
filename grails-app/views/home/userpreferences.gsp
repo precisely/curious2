@@ -205,7 +205,7 @@ function editUserDetails() {
 								<div class="form-group">
 									<label class="control-label" for="Email">Email</label><br>
 									<div class="input-group">
-										<g:textField type="text" class="form-control" type="email" required="" name="email" value="${user.email}"/>
+										<g:textField class="form-control" type="email" required="" name="email" value="${user.email}"/>
 									</div>
 								</div>
 
@@ -317,8 +317,28 @@ function editUserDetails() {
 			</g:form>
 		</div>
 		<div class="interest-list">
-			<label class="control-label" for="interests">Interest Tags</label>
-			<input type="text" class="form-control" id="interestTagInputField" name="data" value="" />
+			<div>
+				<label class="control-label interest-list-label" for="interestTagInputField">Interest Tags</label>
+				<input type="text" class="form-control" id="interestTagInputField" name="data" value="" />
+
+				<div class="profile-tag-radio-group">
+					<div>
+						<input type="radio" class="radio-public profile-tag-radio" name="namePrivacy" value="public"
+							   id="profile-tag-public-radio" checked>
+						<label for="profile-tag-public-radio" class="radio-public-label">Public</label>
+					</div>
+					<div>
+						<input type="radio" class="radio-private profile-tag-radio" name="namePrivacy" value="private"
+							   id="profile-tag-private-radio">
+						<label for="profile-tag-private-radio" class="radio-private-label">Private</label>
+					</div>
+					<div>
+						<button class="add-profile-tag" type="button">Add</button>
+					</div>
+				</div>
+			</div>
+			
+
 			<div id="interestTagsList"></div>
 		</div>
 		<div class="modal fade" id="avatarModal" role="dialog">

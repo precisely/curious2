@@ -11,7 +11,7 @@
 				Some error has occurred while performing the operation.
 			</div>
 			<div id="survey-carousel-content" class="carousel slide" data-ride="carousel" data-interval="false" data-wrap="false">
-				<form id="surveyForm">
+				<form id="surveyAnswersForm">
 					<div class="modal-body">
 						<div class="alert alert-danger hide" id="survey-alert" role="alert">
 							Some error has occurred while completing the survey.
@@ -28,7 +28,7 @@
 							</button>
 						</a>
 						<a id="navigate-right" href="#survey-carousel-content" role="button" data-slide="next">
-							<button type="button" class="navigate-carousel-right">
+							<button type="button" class="navigate-carousel-right" formnovalidate>
 								Next
 							</button>
 						</a>

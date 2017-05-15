@@ -1,0 +1,211 @@
+package us.wearecurio.controller.survey
+
+import grails.converters.JSON
+import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
+import org.springframework.dao.DataIntegrityViolationException
+import us.wearecurio.controller.LoginController
+import us.wearecurio.model.User
+import us.wearecurio.model.survey.PossibleAnswer
+import us.wearecurio.model.survey.Question
+import us.wearecurio.model.survey.SurveyStatus
+import us.wearecurio.model.survey.UserAnswer
+import us.wearecurio.model.survey.Survey
+import us.wearecurio.utility.Utils
+
+class SurveyController extends LoginController {
+
+	def index() {
+		[surveyList: Survey.list(max: 100)]
+	}
+
+	def surveyDetails(Survey surveyInstance) {
+		[surveyInstance: surveyInstance]
+	}
+
+	def create() {
+		render model: [surveyInstance: new Survey()], view: 'surveyForm'
+	}
+
+	def save() {
+		log.debug "Save survey: $params"
+
+		Survey surveyInstance = Survey.findByCodeAndTitle(params.code, params.title)
+		if (surveyInstance) {
+			flash.message = 'Survey with this code and title already exists.'
+			flash.messageType = 'danger'
+			redirect(uri: 'survey/create')
+
+			return
+		}
+
+		surveyInstance = new Survey(params)
+
+		if (Utils.save(surveyInstance)) {
+			flash.message = 'Survey saved successfully.'
+			flash.messageType = 'success'
+			redirect(uri: 'survey/index')
+		} else {
+			flash.message = 'Could not save survey. Please contact support.'
+			flash.messageType = 'danger'
+			redirect(uri: 'survey/create')
+		}
+	}
+
+	def edit(Survey surveyInstance) {
+		if (!surveyInstance) {
+			flash.message = g.message(code: "default.not.found.message", args: ['Survey', params.id])
+			flash.messageType = 'danger'
+			redirect(uri: 'survey/index')
+
+			return
+		}
+
+		render model: [surveyInstance: surveyInstance], view: 'surveyForm'
+	}
+
+	def update(Survey surveyInstance) {
+		log.debug "Update survey: $params"
+
+		if (!surveyInstance) {
+			flash.message = g.message(code: "default.not.found.message", args: ['Survey', params.id])
+			flash.messageType = 'danger'
+
+			return
+		}
+
+		bindData(surveyInstance, params)
+
+		if (Utils.save(surveyInstance)) {
+			flash.message = 'Survey updated successfully.'
+			flash.messageType = 'success'
+		} else {
+			flash.message = 'Could not update survey. Please contact support.'
+			flash.messageType = 'danger'
+		}
+
+		render model: [surveyInstance: surveyInstance], view: 'surveyDetails'
+	}
+
+	def addQuestion() {
+		log.debug "Add survey question: $params"
+
+		render model: [questionInstance: new Question(), surveyId: params.id], view: 'questionForm'
+	}
+
+	def questionDetails(Question questionInstance) {
+		[questionInstance: questionInstance, surveyId: params.surveyId]
+	}
+
+	def saveQuestion(Survey surveyInstance) {
+		log.debug "Save survey question: $params"
+
+		if (!surveyInstance) {
+			flash.message = g.message(code: "default.not.found.message", args: ['Survey', params.id])
+			flash.messageType = 'danger'
+			redirect(uri: 'survey/index')
+
+			return
+		}
+
+		surveyInstance.addToQuestions(params)
+
+		if (Utils.save(surveyInstance)) { 
+			flash.message = 'Survey saved successfully.'
+			flash.messageType = 'success'
+		} else {
+			flash.message = 'Could not save survey. Please contact support.'
+			flash.messageType = 'danger'
+		}
+
+		render model: [surveyInstance: surveyInstance], view: 'surveyDetails'
+	}
+
+	def editQuestion(Question questionInstance) {
+		if (!questionInstance) {
+			flash.message = g.message(code: "default.not.found.message", args: ['Question', params.id])
+			flash.messageType = 'danger'
+			redirect(uri: 'survey/index')
+
+			return
+		}
+
+		render model: [questionInstance: questionInstance, surveyId: params.surveyId], view: 'questionForm'
+	}
+
+	def updateQuestion(Survey surveyInstance) {
+		log.debug "Update Question: $params"
+
+		Question questionInstance = Question.get(params.questionId)
+		if (!questionInstance) {
+			flash.message = g.message(code: "default.not.found.message", args: ['Question', params.id])
+			flash.messageType = 'danger'
+
+			return
+		}
+
+		bindData(questionInstance, params)
+
+		if (Utils.save(questionInstance)) {
+			flash.message = 'Survey updated successfully.'
+			flash.messageType = 'success'
+		} else {
+			flash.message = 'Could not update survey. Please contact support.'
+			flash.messageType = 'danger'
+		}
+
+		render model: [surveyInstance: surveyInstance], view: 'surveyDetails'
+	}
+
+	def addAnswers(Question questionInstance) {
+		log.debug "Add Answers: $params"
+
+		if (!questionInstance) {
+			renderJSONPost([success: false, message: g.message(code: "default.not.found.message",
+					args: ["Question", params.id])])
+
+			return
+		}
+
+		List possibleAnswersList = []
+
+		try {
+			possibleAnswersList = JSON.parse(params.possibleAnswers) as List
+		} catch(ConverterException e) {
+			log.error "Could not parse possible answers from request.", e
+
+			return
+		}
+
+		questionInstance.addOrUpdateAnswers(possibleAnswersList)
+
+		if (Utils.save(questionInstance)) {
+			renderJSONPost([success: true, message: 'Answers updated successfully'])
+		} else {
+			renderJSONPost([success: false, message: 'Could not update answers.'])
+		}
+	}
+
+	def deleteAnswer(PossibleAnswer possibleAnswerInstance, Question questionInstance) {
+		log.debug "Delete Answer: $params"
+
+		if (!questionInstance) {
+			renderJSONPost([success: false, message: 'Could not find Question.'])
+
+			return
+		}
+
+		if (!possibleAnswerInstance) {
+			renderJSONPost([success: false, message: 'Could not find answer.'])
+
+			return
+		}
+
+		questionInstance.removeFromAnswers(possibleAnswerInstance)
+
+		if (Utils.save(questionInstance)) {
+			renderJSONPost([success: true, message: 'Deleted successfully.'])
+		} else {
+			renderJSONPost([success: false, message: 'Could not delete answer.'])
+		}
+	}
+}

@@ -202,29 +202,68 @@ $(document).ready(function() {
 			});
 		return false;
 	});
-	
-	$('#navigate-left').prop('disabled', true).children('button').text('');
-	$('#survey-carousel-content').on('slid.bs.carousel', '', function() {
-		var $this = $(this);
-		$('#navigate-left').prop('disabled', false).children('button').text('PREVIOUS');
-		$('#navigate-right').prop('href','#survey-carousel-content')
-		.html('<button type="button" class="navigate-carousel-right">NEXT</button>');
 
-		if ($('#survey-carousel-content .carousel-inner .item:first').hasClass('active')) {
-			$('#navigate-left').prop('disabled', true).children('button').text('');
-		} else if ($('#survey-carousel-content .carousel-inner .item:last').hasClass('active')) {
-			$('#navigate-right').prop('href','#')
-			.html('<button type="submit" class="navigate-carousel-right">SUBMIT</button>');
+	var previousButtonLink = $('#navigate-left');
+	var previousButton = $('#navigate-left button');
+
+	var nextButtonLink = $('#navigate-right');
+	var nextButton = $('#navigate-right button');
+
+	var carouselContent = $('#survey-carousel-content');
+
+	// Initially hide the previous button.
+	previousButton.hide();
+
+	// Before slide listener.
+	carouselContent.on('slide.bs.carousel', function(e) {
+		/*
+		 * For previous move, the direction indicated by bootstrap carousel is right. So allowing previous moves but
+		 * checking for next moves whether the slide has a required question, if yes preventing it from sliding.
+		 */
+		if (e.direction === 'right') {
+			return true;
+		}
+
+		var textArea = $(this).find('.active').find('textarea');
+		var radioButton = $(this).find('.active').find(':radio');
+		var checkbox = $(this).find('.active').find(':checkbox');
+		var selectedRadioButton = $(this).find('.active').find(':radio:checked');
+		var selectedCheckbox = $(this).find('.active').find(':checkbox:checked');
+
+		if ((textArea.prop('required') && !textArea.val()) ||
+				(radioButton.prop('required') && selectedRadioButton.length === 0) || 
+				(checkbox.prop('required') && selectedCheckbox.length === 0)) {
+			showAlert('This is a required question!');
+			return false;
 		}
 	});
 
-	$('#surveyForm').submit(function(event) {
+	// After slide listener.
+	carouselContent.on('slid.bs.carousel', function(e) {
+		previousButton.show();
+
+		nextButton.text('Next').prop('type', 'button');
+		nextButtonLink.prop('href', '#survey-carousel-content');
+
+		if (carouselContent.find('.carousel-inner .item:first').hasClass('active')) {
+			previousButton.hide();
+		} else if (carouselContent.find('.carousel-inner .item:last').hasClass('active')) {
+			nextButton.text('Submit').prop('type', 'submit');
+			nextButtonLink.prop('href', '#');
+		}
+	});
+
+	$('#surveyAnswersForm').submit(function() {
+		console.log('>>>>>>>>>>> filtered answerData ', $(this).serializeObject());
+
 		var params = $(this).serializeObject();
 
-		queuePostJSON('Completing survey', '/data/saveSurveyData', getCSRFPreventionObject('saveSurveyDataCSRF', params),
-				function(data) {
-			if (!checkData(data))
+		queuePostJSON('Completing survey', '/data/saveSurveyData',
+				getCSRFPreventionObject('saveSurveyDataCSRF', params), function(data) {
+
+			if (!checkData(data)) {
 				return;
+			}
 
 			if (data.success) {
 				$('#takeSurveyOverlay').modal('hide');
@@ -234,8 +273,9 @@ $(document).ready(function() {
 			}
 		}, function(xhr) {
 			console.log('xhr:', xhr);
-			showAlert('Internal server error occurred.');
+			showAlert('Could not save survey.');
 		});
+
 		return false;
 	});
 

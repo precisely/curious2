@@ -1,15 +1,10 @@
 package us.wearecurio.controller.integration
 
-
-import static org.junit.Assert.*
-
+import us.wearecurio.model.survey.SurveyAnswer
+import us.wearecurio.model.survey.SurveyQuestion
 import org.junit.*
-import org.scribe.model.Response
-
 import us.wearecurio.controller.AdminController
-import us.wearecurio.model.*
-import us.wearecurio.test.common.MockedHttpURLConnection
-import us.wearecurio.utility.Utils
+
 /**
  *
  */

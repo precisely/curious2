@@ -16,6 +16,9 @@ import us.wearecurio.model.Identifier
 import us.wearecurio.model.Model
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.PlotData
+import us.wearecurio.profiletags.ProfileTag
+import us.wearecurio.profiletags.ProfileTagStatus
+import us.wearecurio.profiletags.ProfileTagType
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagProperties
@@ -753,6 +756,29 @@ class MigrationService {
 
 		tryMigration('Update size of account_id column in OAuthAccount domain') {
 			sql("ALTER TABLE oauth_account MODIFY COLUMN account_id varchar(32)")
+		}
+
+		tryMigration('Move all interest tags to ProfileTags') {
+			List rows = sqlRows("select * from _user_tag limit 20000")
+
+			log.debug "Total ${rows.size()} interest tags found to be migrated to ProfileTags."
+
+			rows.each {
+				Long userId = it['user_interest_tags_id']
+				Tag tag = Tag.get(it['tag_id'])
+
+				ProfileTag profileTag = new ProfileTag()
+				profileTag.status = ProfileTagStatus.PUBLIC
+				profileTag.type = ProfileTagType.INTEREST
+				profileTag.tag = tag
+				profileTag.userId = userId
+
+				if (Utils.save(profileTag, true)) {
+					User.get(userId)?.reindex()
+				}
+			}
+
+			log.debug "Successfully created ${ProfileTag.count()} ProfileTags."
 		}
 	}
 	
