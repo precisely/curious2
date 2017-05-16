@@ -117,7 +117,7 @@ class User {
 	// Returns list of Public interest tags.
 	@Deprecated
 	List<Tag> getInterestTags() {
-		return ProfileTag.getPublicInterestTags(this.id)
+		return ProfileTag.getPublicInterestTags(this.id)*.tag
 	}
 
 	static hasMany = [
@@ -722,8 +722,8 @@ class User {
 	def fetchInterestTagsJSON() {
 		def retVal = []
 
-		ProfileTag.getPublicInterestTags(this.id).each { Tag tag ->
-			retVal.add([description: tag.description])
+		ProfileTag.getPublicInterestTags(this.id).each { ProfileTag profileTag ->
+			retVal.add([description: profileTag.tag.description])
 		}
 
 		return retVal
@@ -918,7 +918,7 @@ class User {
 	}
 
 	String getPublicInterestTagsString() {
-		return ProfileTag.getPublicInterestTags(this.id)*.description.join(" ")
+		return ProfileTag.getPublicInterestTags(this.id)*.tag.description.join(" ")
 	}
 
 	def validateUserPreferences(Map map, User user) {

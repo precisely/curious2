@@ -7,9 +7,9 @@
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
 showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, pingDataCSRF,
-excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getInterestTagsDataCSRF, addInterestTagDataCSRF, deleteInterestTagDataCSRF, updateInterestTagDataCSRF, updateAvatarCSRF" />
+excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getInterestTagsCSRF, addInterestTagCSRF, deleteInterestTagCSRF, updateAvatarCSRF" />
 
-<script type="text/javascript" src="/js/curious/interestTagList.js?ver=22"></script>
+<script type="text/javascript" src="/js/curious/profileTag.js?ver=23"></script>
 <script src="/js/jquery/jquery.cropit.min.js"></script>
 <script>
 function refreshPage() {
@@ -91,7 +91,12 @@ $(function() {
 			return true;
 		});
 	});
-	this.interestTagList = new InterestTagList("interestTagInputField", "interestTagsList");
+
+	interestTagList = new InterestTagList("interestTagInputField", "interestTagsList");
+
+	$('#add-profile-tag').click(function() {
+		interestTagList.processInput();
+	});
 });
 
 function editUserDetails() {
@@ -323,23 +328,31 @@ function editUserDetails() {
 
 				<div class="profile-tag-radio-group">
 					<div>
-						<input type="radio" class="radio-public profile-tag-radio" name="namePrivacy" value="public"
-							   id="profile-tag-public-radio" checked>
+						<input type="radio" class="radio-public profile-tag-radio" name="namePrivacy" value="PUBLIC"
+								id="profile-tag-public-radio" checked>
 						<label for="profile-tag-public-radio" class="radio-public-label">Public</label>
 					</div>
 					<div>
-						<input type="radio" class="radio-private profile-tag-radio" name="namePrivacy" value="private"
-							   id="profile-tag-private-radio">
+						<input type="radio" class="radio-private profile-tag-radio" name="namePrivacy" value="PRIVATE"
+								id="profile-tag-private-radio">
 						<label for="profile-tag-private-radio" class="radio-private-label">Private</label>
 					</div>
 					<div>
-						<button class="add-profile-tag" type="button">Add</button>
+						<button class="add-profile-tag" id="add-profile-tag" type="button">Add</button>
 					</div>
 				</div>
 			</div>
-			
 
-			<div id="interestTagsList"></div>
+			<div class="profile-tag-listing" id="interestTagsList">
+				<div>
+					<span class="profile-tag-list-heading">Public Tags</span>
+					<div id="public-list"></div>
+				</div>
+				<div>
+					<span class="profile-tag-list-heading">Private Tags</span>
+					<div id="private-list"></div>
+				</div>
+			</div>
 		</div>
 		<div class="modal fade" id="avatarModal" role="dialog">
 			<div class="modal-dialog">

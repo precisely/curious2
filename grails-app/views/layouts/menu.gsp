@@ -11,10 +11,10 @@
 <script type="text/javascript" src="/js/curious/treeview.js?ver=22"></script>
 <script type="text/javascript" src="/js/curious/taglist.js?ver=22"></script>
 <script type="text/javascript" src="/js/curious/curiosities.js?ver=22"></script>
-<script type="text/javascript" src="/js/curious/interestTagList.js?ver=22"></script>
+<script type="text/javascript" src="/js/curious/profileTag.js?ver=23"></script>
 <script type="text/javascript" src="/js/jquery/jquery.infinite.scroll.js"></script>
 <c:jsCSRFToken keys="createHelpEntriesDataCSRF, saveSurveyDataCSRF, getPeopleDataCSRF, hideHelpDataCSRF, 
-		getGroupsList, getInterestTagsDataCSRF, getSurveyDataCSRF"/>
+		getGroupsList, getInterestTagsCSRF, getSurveyDataCSRF"/>
 </head>
 <body class="${pageProperty(name: 'body.class') ?: '' }">
 <content tag="menu">
@@ -111,13 +111,6 @@
 						if (questionCount == 1) {
 							$('#navigate-right').html('<button type="submit" class="navigate-carousel-right">SUBMIT</button>');
 						}
-
-						queueJSON("getting login info", "/home/getPeopleData?callback=?", function(data) { 
-							if (!checkData(data))
-								return;
-
-							this.interestTagList = new InterestTagList("interestTagInput", "interestTagList");
-						});
 
 						$('#takeSurveyOverlay').modal({show: true});
 					} else {

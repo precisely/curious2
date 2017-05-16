@@ -40,6 +40,13 @@ input, optgroup, select, textarea {
   color: #77BB77;
 }
 
+.interest-list {
+	border: 1px solid #e0e0e0;
+	padding: 30px;
+	background-color: white;
+	margin-top: 20px;
+}
+
 .interest-list input[type="text"] {
 	height:40px;
 	border-radius: 2px;
@@ -3901,14 +3908,14 @@ body .modal-header button {
 	padding: 10px;
 	font-size: 14px;
 	color: #8c8c8c !important;
-	width: 95%;
+	width: 100%;
 	margin-bottom: 30px;
 	background-color: #f7f7f7;
 }
 
 #takeSurveyOverlay .modal-body textarea {
 	height: 200px;
-	width: 95%;
+	width: 100%;
 	background-color: #f7f7f7;
 	border: none;
 	border-radius: 2px;
@@ -3920,10 +3927,10 @@ body .modal-header button {
 .modal-body .form-group ol {
 	border: 1px solid #A19C9C;
 	padding: 10px;
-	height: 10em;
+	height: 15em;
 	list-style: none;
-	overflow: auto;
-	width: 95%;
+	overflow-y: scroll;
+	width: 100%;
 }
 
 .modal-backdrop {
@@ -4741,25 +4748,22 @@ input[type = "number"] {
 	margin-left: 20px;
 }
 
-.interest-list-label {
-    padding-right: 10px;
-    text-transform: uppercase;
-    font-size: 14px;
-    color: #B6B6B6;
-    font-weight: 300;
-    margin-top: 40px
+.interest-list-label, .profile-tag-list-heading {
+	text-transform: uppercase;
+	font-size: 14px;
+	color: #B6B6B6;
+	font-weight: 300;
 }
 
 .interest-tags-container {
-    background-color: #ffffff;
-    padding-top: 15px;
-    padding-bottom: 15px;
-    padding-left: 10px;
-    border: 1px solid #e0e0e0;
-    margin-top: 12px;
-    margin-bottom: -7px;
-    border-left: 5px solid #c04f4f;
-    height: 60px;
+	background-color: #ffffff;
+	padding-top: 15px;
+	padding-bottom: 15px;
+	padding-left: 10px;
+	border: 1px solid #e0e0e0;
+	margin-bottom: 5px;
+	border-left: 5px solid #c04f4f;
+	height: 60px;
 }
 
 .interest-tags-container a {
@@ -5155,10 +5159,9 @@ input.cropit-image-zoom-input {
 	justify-content: space-between;
 	width: 250px;
 	height: 50px;
-	margin-bottom: 0px;
+	margin-bottom: 12px;
 	background-color: white;
 	padding-right: 10px;
-	padding-left: 10px;
 }
 
 .profile-tag-radio + label {
@@ -5199,4 +5202,40 @@ input.cropit-image-zoom-input {
 
 .breadcrumb>li {
 	display: inline-block;
+}
+
+.survey-slides-buttons {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.survey-slides-buttons div {
+	width: 25%;
+	height: 100%;
+}
+
+.profile-tag-delete {
+	padding-left:0;
+	float: right;
+}
+
+.profile-tag-delete i {
+	padding-right: 10px;
+	color: #797979;
+	margin-top: 5px;
+}
+
+.profile-tag-listing {
+	display: flex;
+	width: 100%;
+	justify-content: space-between;
+}
+
+.profile-tag-listing > div {
+	width: 45%;
+}
+
+.profile-tag-listing #public-list , .profile-tag-listing #private-list {
+	margin-top: 12px;
 }

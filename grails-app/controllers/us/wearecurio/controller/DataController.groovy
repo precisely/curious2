@@ -1466,6 +1466,12 @@ class DataController extends LoginController {
 
 		Set activeQuestions = surveyInstance.questions.findAll { it.status == QuestionStatus.ACTIVE }
 
+		if (!activeQuestions.size()) {
+			renderJSONPost([success: false, message: 'There are no active questions for this survey.'])
+
+			return
+		}
+
 		/*
 		 * PageRenderer bean injection only works outside the scope of a web request. Hence getting the bean from the
 		 * application context.

@@ -43,12 +43,3 @@
 
 	</div>
 </g:each>
-<div class="item ${(questions.size() == 0) ? 'active' : ''}">
-	<div class="form-group">
-		<div class="section">Type some interesting bio tags here:</div>
-		<div>
-			<input type="text" id="interestTagInput"/>
-			<ol id="interestTagList"></ol>
-		</div>
-	</div>
-</div>

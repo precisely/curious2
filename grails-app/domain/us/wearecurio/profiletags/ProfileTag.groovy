@@ -118,41 +118,37 @@ class ProfileTag {
 		return hasGeneticTag(tag, userId, ProfileTagStatus.PRIVATE)
 	}
 
-	static List<Tag> getTags(Long userId, ProfileTagType type, ProfileTagStatus status) {
+	static List<ProfileTag> getTags(Long userId, ProfileTagType type, ProfileTagStatus status) {
 		return withCriteria {
 			eq('userId', userId)
 			eq('type', type)
 			eq('status', status)
 
-			projections {
-				property('tag')
-			}
-
 			maxResults(1000)
 		}
 	}
 
-	static List<Tag> getInterestTags(Long userId, ProfileTagStatus status) {
+	static List<ProfileTag> getInterestTags(Long userId, ProfileTagStatus status) {
 		return getTags(userId, ProfileTagType.INTEREST, status)
 	}
 
-	static List<Tag> getPublicInterestTags(Long userId) {
+	static List<ProfileTag> getPublicInterestTags(Long userId) {
 		return getInterestTags(userId, ProfileTagStatus.PUBLIC)
 	}
 
-	static List<Tag> getPrivateInterestTags(Long userId) {
+	static List<ProfileTag> getPrivateInterestTags(Long userId) {
 		return getInterestTags(userId, ProfileTagStatus.PRIVATE)
 	}
 
-	static List<Tag> getGeneticTags(Long userId, ProfileTagStatus status) {
+	static List<ProfileTag> getGeneticTags(Long userId, ProfileTagStatus status) {
 		return getTags(userId, ProfileTagType.GENETIC, status)
 	}
 
-	static List<Tag> getPublicGeneticTags(Long userId) {
+	static List<ProfileTag> getPublicGeneticTags(Long userId) {
 		return getGeneticTags(userId, ProfileTagStatus.PUBLIC)
 	}
 
-	static List<Tag> getPrivateGeneticTags(Long userId) {
+	static List<ProfileTag> getPrivateGeneticTags(Long userId) {
 		return getGeneticTags(userId, ProfileTagStatus.PRIVATE)
 	}
 }

@@ -204,7 +204,7 @@ $(document).ready(function() {
 	});
 
 	var previousButtonLink = $('#navigate-left');
-	var previousButton = $('#navigate-left button');
+	var previousButton = $('#slide-left-button');
 
 	var nextButtonLink = $('#navigate-right');
 	var nextButton = $('#navigate-right button');
@@ -254,8 +254,6 @@ $(document).ready(function() {
 	});
 
 	$('#surveyAnswersForm').submit(function() {
-		console.log('>>>>>>>>>>> filtered answerData ', $(this).serializeObject());
-
 		var params = $(this).serializeObject();
 
 		queuePostJSON('Completing survey', '/data/saveSurveyData',
