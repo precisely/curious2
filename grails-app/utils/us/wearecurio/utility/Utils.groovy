@@ -65,7 +65,7 @@ class Utils {
 			String messageBody = "Error:\n" + output
 			String messageSubject = title + ": " + GrailsUtil.environment
 
-			EmailService.get().sendMail {
+			EmailService.get().sendEmail {
 				to "server@wearecurio.us"
 				from "server@wearecurio.us"
 				subject messageSubject
@@ -83,7 +83,7 @@ class Utils {
 		String messageBody = message
 		String messageSubject = title + ": " + GrailsUtil.environment
 		
-		EmailService.get().sendMail {
+		EmailService.get().sendEmail {
 			to "server@wearecurio.us"
 			from "server@wearecurio.us"
 			subject messageSubject

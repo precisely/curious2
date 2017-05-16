@@ -1,13 +1,11 @@
 package us.wearecurio.handlers
 
 import org.apache.commons.logging.LogFactory
-import us.wearecurio.utility.Utils
 import us.wearecurio.services.EmailService
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
-import org.codehaus.groovy.runtime.InvokerInvocationException
 import org.springframework.web.servlet.ModelAndView
 
 import grails.util.GrailsUtil
@@ -38,7 +36,7 @@ class CuriousExceptionResolver extends GrailsExceptionResolver {
 	   
 	   	def messageBody = "Error while executing Curious app:\n" + output
 		def messageSubject = "CURIOUS SERVER ERROR: " + GrailsUtil.environment
-		EmailService.get().sendMail {
+		EmailService.get().sendEmail {
 			to "server@wearecurio.us"
 			from "server@wearecurio.us"
 			subject messageSubject
