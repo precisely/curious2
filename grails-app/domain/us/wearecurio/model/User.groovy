@@ -120,6 +120,8 @@ class User {
 		return ProfileTag.getPublicInterestTags(this.id)*.tag
 	}
 
+	Set<Survey> surveys = []
+
 	static hasMany = [
 		surveys: Survey
 	]

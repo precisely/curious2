@@ -114,7 +114,7 @@
 
 						$('#takeSurveyOverlay').modal({show: true});
 					} else {
-						console.log('data error!', data);
+						showAlert(data.message);
 					}
 				}, function(xhr) {
 					console.log('xhr:', xhr);

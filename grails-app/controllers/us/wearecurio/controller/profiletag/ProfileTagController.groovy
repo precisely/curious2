@@ -48,7 +48,9 @@ class ProfileTagController extends LoginController {
 
 		ProfileTagStatus status = params.tagStatus as ProfileTagStatus
 		Tag newTag = Tag.look(params.tagName.toLowerCase().trim())
-		ProfileTag newProfileTag = ProfileTag.addInterestTag(newTag, user.id, status)
+
+		boolean flush = true
+		ProfileTag newProfileTag = ProfileTag.addInterestTag(newTag, user.id, status, flush)
 
 		if (newProfileTag)  {
 			debug "Successfully added profile tag"
@@ -72,6 +74,7 @@ class ProfileTagController extends LoginController {
 		if (!profileTagInstance) {
 			debug "no profile tag id specified"
 			renderStringGet("No profile tag id specified")
+
 			return
 		}
 

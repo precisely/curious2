@@ -5,6 +5,7 @@ import groovy.lang.Closure;
 
 import java.text.DateFormat
 import java.util.concurrent.atomic.AtomicInteger
+import us.wearecurio.profiletags.ProfileTag
 
 import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery
 
@@ -136,6 +137,7 @@ public class SearchServiceIntegrationSpecBase extends IntegrationSpec {
         for (Entry o in Entry.list()) {
             o.delete(flush:true)
         }
+        ProfileTag.list()*.delete(flush: true)
         for (Tag o in Tag.list()) {
             o.delete(flush:true)
         }

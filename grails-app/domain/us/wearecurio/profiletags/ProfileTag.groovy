@@ -2,6 +2,7 @@ package us.wearecurio.profiletags
 
 import groovy.transform.EqualsAndHashCode
 import us.wearecurio.model.Tag
+import us.wearecurio.model.User
 import us.wearecurio.services.SearchService
 import us.wearecurio.utility.Utils
 
@@ -24,42 +25,44 @@ class ProfileTag {
 		status index: 'status_index'
 	}
 
-	static ProfileTag add(Map params) {
+	static ProfileTag add(Map params, boolean flush = false) {
 		ProfileTag profileTag = new ProfileTag(params)
 
-		if (!profileTag.validate() || !Utils.save(profileTag, true)) {
+		if (!profileTag.validate() || !Utils.save(profileTag, flush)) {
 			return
 		}
+
+		SearchService.get()?.index(User.get(params.userId))
 
 		return profileTag
 	}
 
-	static ProfileTag add(Tag tag, Long userId, ProfileTagType type, ProfileTagStatus status) {
-		return add([tag: tag, userId: userId, type: type, status: status])
+	static ProfileTag add(Tag tag, Long userId, ProfileTagType type, ProfileTagStatus status, boolean flush = false) {
+		return add([tag: tag, userId: userId, type: type, status: status], flush)
 	}
 
-	static ProfileTag addInterestTag(Tag tag, Long userId, ProfileTagStatus status) {
-		return add(tag, userId, ProfileTagType.INTEREST, status)
+	static ProfileTag addInterestTag(Tag tag, Long userId, ProfileTagStatus status, boolean flush = false) {
+		return add(tag, userId, ProfileTagType.INTEREST, status, flush)
 	}
 
-	static ProfileTag addPublicInterestTag(Tag tag, Long userId) {
-		return addInterestTag(tag, userId, ProfileTagStatus.PUBLIC)
+	static ProfileTag addPublicInterestTag(Tag tag, Long userId, boolean flush = false) {
+		return addInterestTag(tag, userId, ProfileTagStatus.PUBLIC, flush)
 	}
 
-	static ProfileTag addPrivateInterestTag(Tag tag, Long userId) {
-		return addInterestTag(tag, userId, ProfileTagStatus.PRIVATE)
+	static ProfileTag addPrivateInterestTag(Tag tag, Long userId, boolean flush = false) {
+		return addInterestTag(tag, userId, ProfileTagStatus.PRIVATE, flush)
 	}
 
-	static ProfileTag addGeneticTag(Tag tag, Long userId, ProfileTagStatus status) {
-		return add(tag, userId, ProfileTagType.GENETIC, status)
+	static ProfileTag addGeneticTag(Tag tag, Long userId, ProfileTagStatus status, boolean flush = false) {
+		return add(tag, userId, ProfileTagType.GENETIC, status, flush)
 	}
 
-	static ProfileTag addPublicGeneticTag(Tag tag, Long userId) {
-		return addGeneticTag(tag, userId, ProfileTagStatus.PUBLIC)
+	static ProfileTag addPublicGeneticTag(Tag tag, Long userId, boolean flush = false) {
+		return addGeneticTag(tag, userId, ProfileTagStatus.PUBLIC, flush)
 	}
 
-	static ProfileTag addPrivateGeneticTag(Tag tag, Long userId) {
-		return addGeneticTag(tag, userId, ProfileTagStatus.PRIVATE)
+	static ProfileTag addPrivateGeneticTag(Tag tag, Long userId, boolean flush = false) {
+		return addGeneticTag(tag, userId, ProfileTagStatus.PRIVATE, flush)
 	}
 
 	static void delete(Tag tag, Long userId, ProfileTagType type, ProfileTagStatus status) {

@@ -15,14 +15,28 @@ import us.wearecurio.utility.Utils
 class SurveyController extends LoginController {
 
 	def index() {
+		log.debug "SurveyList: $params"
+
 		[surveyList: Survey.list(max: 100)]
 	}
 
 	def surveyDetails(Survey surveyInstance) {
+		log.debug "SurveyDetails: $params"
+
+		if (!surveyInstance) {
+			flash.message = g.message(code: "default.not.found.message", args: ['Survey', params.id])
+			flash.messageType = 'danger'
+			redirect(uri: 'survey/index')
+
+			return
+		}
+
 		[surveyInstance: surveyInstance]
 	}
 
 	def create() {
+		log.debug "CreateSurvey: $params"
+
 		render model: [surveyInstance: new Survey()], view: 'surveyForm'
 	}
 
@@ -40,18 +54,23 @@ class SurveyController extends LoginController {
 
 		surveyInstance = new Survey(params)
 
-		if (Utils.save(surveyInstance)) {
-			flash.message = 'Survey saved successfully.'
-			flash.messageType = 'success'
-			redirect(uri: 'survey/index')
-		} else {
-			flash.message = 'Could not save survey. Please contact support.'
+		if (!Utils.save(surveyInstance)) {
+			flash.message = 'Could not save survey.'
 			flash.messageType = 'danger'
 			redirect(uri: 'survey/create')
+
+			return
 		}
+
+		flash.message = 'Survey saved successfully.'
+		flash.messageType = 'success'
+
+		redirect(uri: 'survey/index')
 	}
 
 	def edit(Survey surveyInstance) {
+		log.debug "Edit survey: $params"
+
 		if (!surveyInstance) {
 			flash.message = g.message(code: "default.not.found.message", args: ['Survey', params.id])
 			flash.messageType = 'danger'
@@ -69,19 +88,23 @@ class SurveyController extends LoginController {
 		if (!surveyInstance) {
 			flash.message = g.message(code: "default.not.found.message", args: ['Survey', params.id])
 			flash.messageType = 'danger'
+			redirect(uri: 'survey/index')
 
 			return
 		}
 
 		bindData(surveyInstance, params)
 
-		if (Utils.save(surveyInstance)) {
-			flash.message = 'Survey updated successfully.'
-			flash.messageType = 'success'
-		} else {
-			flash.message = 'Could not update survey. Please contact support.'
+		if (!Utils.save(surveyInstance)) {
+			flash.message = 'Could not update survey.'
 			flash.messageType = 'danger'
+			redirect(uri: 'survey/index')
+
+			return
 		}
+
+		flash.message = 'Survey updated successfully.'
+		flash.messageType = 'success'
 
 		render model: [surveyInstance: surveyInstance], view: 'surveyDetails'
 	}
@@ -93,6 +116,16 @@ class SurveyController extends LoginController {
 	}
 
 	def questionDetails(Question questionInstance) {
+		log.debug "QuestionDetails: $params"
+
+		if (!questionInstance) {
+			flash.message = g.message(code: "default.not.found.message", args: ['Question', params.id])
+			flash.messageType = 'danger'
+			redirect(uri: 'survey/index')
+
+			return
+		}
+
 		[questionInstance: questionInstance, surveyId: params.surveyId]
 	}
 
@@ -109,13 +142,16 @@ class SurveyController extends LoginController {
 
 		surveyInstance.addToQuestions(params)
 
-		if (Utils.save(surveyInstance)) { 
-			flash.message = 'Survey saved successfully.'
-			flash.messageType = 'success'
-		} else {
-			flash.message = 'Could not save survey. Please contact support.'
+		if (!Utils.save(surveyInstance, true)) {
+			flash.message = 'Could not add question.'
 			flash.messageType = 'danger'
+			redirect(uri: 'survey/index')
+
+			return
 		}
+
+		flash.message = 'Question added successfully.'
+		flash.messageType = 'success'
 
 		render model: [surveyInstance: surveyInstance], view: 'surveyDetails'
 	}
@@ -132,28 +168,31 @@ class SurveyController extends LoginController {
 		render model: [questionInstance: questionInstance, surveyId: params.surveyId], view: 'questionForm'
 	}
 
-	def updateQuestion(Survey surveyInstance) {
+	def updateQuestion(Question questionInstance) {
 		log.debug "Update Question: $params"
 
-		Question questionInstance = Question.get(params.questionId)
 		if (!questionInstance) {
 			flash.message = g.message(code: "default.not.found.message", args: ['Question', params.id])
 			flash.messageType = 'danger'
+			redirect(uri: 'survey/index')
 
 			return
 		}
 
 		bindData(questionInstance, params)
 
-		if (Utils.save(questionInstance)) {
-			flash.message = 'Survey updated successfully.'
-			flash.messageType = 'success'
-		} else {
-			flash.message = 'Could not update survey. Please contact support.'
+		if (!Utils.save(questionInstance)) {
+			flash.message = 'Could not update question.'
 			flash.messageType = 'danger'
+			redirect(uri: 'survey/index')
+
+			return 
 		}
 
-		render model: [surveyInstance: surveyInstance], view: 'surveyDetails'
+		flash.message = 'Question updated successfully.'
+		flash.messageType = 'success'
+
+		render model: [surveyInstance: questionInstance.survey], view: 'surveyDetails'
 	}
 
 	def addAnswers(Question questionInstance) {
@@ -172,16 +211,17 @@ class SurveyController extends LoginController {
 			possibleAnswersList = JSON.parse(params.possibleAnswers) as List
 		} catch(ConverterException e) {
 			log.error "Could not parse possible answers from request.", e
+			renderJSONPost([success: false, message: 'Invalid Data'])
 
 			return
 		}
 
 		questionInstance.addOrUpdateAnswers(possibleAnswersList)
 
-		if (Utils.save(questionInstance)) {
-			renderJSONPost([success: true, message: 'Answers updated successfully'])
+		if (Utils.save(questionInstance, true)) {
+			renderJSONPost([success: true, message: 'Answers added successfully'])
 		} else {
-			renderJSONPost([success: false, message: 'Could not update answers.'])
+			renderJSONPost([success: false, message: 'Could not add answers'])
 		}
 	}
 
@@ -202,7 +242,7 @@ class SurveyController extends LoginController {
 
 		questionInstance.removeFromAnswers(possibleAnswerInstance)
 
-		if (Utils.save(questionInstance)) {
+		if (Utils.save(questionInstance, true)) {
 			renderJSONPost([success: true, message: 'Deleted successfully.'])
 		} else {
 			renderJSONPost([success: false, message: 'Could not delete answer.'])

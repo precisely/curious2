@@ -22,10 +22,7 @@
 
 		<div class="main container-fluid survey-factory">
 			<g:form controller="survey" action="${questionInstance.id ? 'updateQuestion' : 'saveQuestion'}">
-				<input hidden name="id" value="${surveyId}" />
-				<g:if test="${questionInstance.id}">
-					<input hidden name="questionId" value="${questionInstance.id}" />
-				</g:if>
+				<input hidden name="id" value="${questionInstance.id ?: surveyId}" />
 				<div>
 					<label for="question">
 						Question

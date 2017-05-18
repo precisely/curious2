@@ -10,7 +10,7 @@
 	</div>
 	<div class="user-details-content">
 		<span>Interest Tags:</span>
-		<span class="label-value">{{- user.interestTagsString }}</span>
+		<span class="label-value">{{- user.publicInterestTagsString }}</span>
 	</div>
 	<div class="user-details-content hide">
 		<span>Public Trackathons:</span>

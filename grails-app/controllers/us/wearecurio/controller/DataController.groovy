@@ -1451,8 +1451,7 @@ class DataController extends LoginController {
 		Survey surveyInstance = Survey.findByCodeAndStatus(params.code, SurveyStatus.ACTIVE)
 
 		if (!surveyInstance) {
-			renderJSONPost([success: false, message: g.message(code: "default.not.found.message",
-					args: ['Survey', 'code'])])
+			renderJSONPost([success: false, message: 'Invalid Survey Code.'])
 
 			return
 		}
@@ -1486,11 +1485,10 @@ class DataController extends LoginController {
 		log.debug "Data.saveSurveyData() $params"
 
 		User currentUserInstance = sessionUser()
-		Survey surveyInstance = Survey.findByCode(params.surveyCode)
+		Survey surveyInstance = Survey.findByCodeAndStatus(params.surveyCode, SurveyStatus.ACTIVE)
 
 		if (!surveyInstance) {
-			renderJSONPost([success: false, message: g.message(code: "default.not.found.message",
-					args: ['Survey', 'code'])])
+			renderJSONPost([success: false, message: 'Invalid Survey Code.'])
 
 			return
 		}
@@ -1556,12 +1554,13 @@ class DataController extends LoginController {
 					if ((surveyQuestion.isRequired) && answerList.size() == 0) {
 						throw new IllegalArgumentException()
 					}
+					
 
 					UserAnswer.createAnswers(currentUserInstance, surveyQuestion, answerList)
 				}
 
-				currentUserInstance.addToSurveys(surveyInstance)
-				Utils.save(currentUserInstance)
+				currentUserInstance.surveys.add(surveyInstance)
+				Utils.save(currentUserInstance, true)
 
 				renderJSONPost([success: true])
 			} catch (IllegalArgumentException e) {
