@@ -477,6 +477,14 @@ environments {
 		]
 				
 		elasticSearch.client.mode = 'local'
+
+		pushNotification {
+			apns {
+				pathToCertificate = "ios-cert/may-2017/iphone_dev_test.p12"
+				password = "causecode.11"
+				environment = "dev"
+			}
+		}
 		
 		api {
 			weatherunderground {

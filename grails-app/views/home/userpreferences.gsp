@@ -7,9 +7,9 @@
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
 showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, pingDataCSRF,
-excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getInterestTagsDataCSRF, addInterestTagDataCSRF, deleteInterestTagDataCSRF, updateInterestTagDataCSRF, updateAvatarCSRF" />
+excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getInterestTagsCSRF, addInterestTagCSRF, deleteInterestTagCSRF, updateAvatarCSRF" />
 
-<script type="text/javascript" src="/js/curious/interestTagList.js?ver=22"></script>
+<script type="text/javascript" src="/js/curious/profileTag.js?ver=23"></script>
 <script src="/js/jquery/jquery.cropit.min.js"></script>
 <script>
 function refreshPage() {
@@ -91,7 +91,12 @@ $(function() {
 			return true;
 		});
 	});
-	this.interestTagList = new InterestTagList("interestTagInputField", "interestTagsList");
+
+	interestTagList = new InterestTagList("interestTagInputField", "interestTagsList");
+
+	$('#add-profile-tag').click(function() {
+		interestTagList.processInput();
+	});
 });
 
 function editUserDetails() {
@@ -205,7 +210,7 @@ function editUserDetails() {
 								<div class="form-group">
 									<label class="control-label" for="Email">Email</label><br>
 									<div class="input-group">
-										<g:textField type="text" class="form-control" type="email" required="" name="email" value="${user.email}"/>
+										<g:textField class="form-control" type="email" required="" name="email" value="${user.email}"/>
 									</div>
 								</div>
 
@@ -317,9 +322,37 @@ function editUserDetails() {
 			</g:form>
 		</div>
 		<div class="interest-list">
-			<label class="control-label" for="interests">Interest Tags</label>
-			<input type="text" class="form-control" id="interestTagInputField" name="data" value="" />
-			<div id="interestTagsList"></div>
+			<div>
+				<label class="control-label interest-list-label" for="interestTagInputField">Interest Tags</label>
+				<input type="text" class="form-control" id="interestTagInputField" name="data" value="" />
+
+				<div class="profile-tag-radio-group">
+					<div>
+						<input type="radio" class="radio-public profile-tag-radio" name="namePrivacy" value="PUBLIC"
+								id="profile-tag-public-radio" checked>
+						<label for="profile-tag-public-radio" class="radio-public-label">Public</label>
+					</div>
+					<div>
+						<input type="radio" class="radio-private profile-tag-radio" name="namePrivacy" value="PRIVATE"
+								id="profile-tag-private-radio">
+						<label for="profile-tag-private-radio" class="radio-private-label">Private</label>
+					</div>
+					<div>
+						<button class="add-profile-tag" id="add-profile-tag" type="button">Add</button>
+					</div>
+				</div>
+			</div>
+
+			<div class="profile-tag-listing" id="interestTagsList">
+				<div>
+					<span class="profile-tag-list-heading">Public Tags</span>
+					<div id="public-list"></div>
+				</div>
+				<div>
+					<span class="profile-tag-list-heading">Private Tags</span>
+					<div id="private-list"></div>
+				</div>
+			</div>
 		</div>
 		<div class="modal fade" id="avatarModal" role="dialog">
 			<div class="modal-dialog">

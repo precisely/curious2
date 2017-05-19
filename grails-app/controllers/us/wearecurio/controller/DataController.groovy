@@ -1,6 +1,8 @@
 package us.wearecurio.controller
 
 import grails.converters.JSON
+import grails.gsp.PageRenderer
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDate
@@ -13,6 +15,13 @@ import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.data.UserSettings
 import us.wearecurio.model.*
 import us.wearecurio.model.Model.Visibility
+import us.wearecurio.model.survey.AnswerType
+import us.wearecurio.model.survey.Question
+import us.wearecurio.model.survey.QuestionStatus
+import us.wearecurio.model.survey.Survey
+import us.wearecurio.model.survey.SurveyStatus
+import us.wearecurio.model.survey.UserAnswer
+import us.wearecurio.model.survey.PossibleAnswer
 import us.wearecurio.security.NoAuth
 import us.wearecurio.services.EmailService
 import us.wearecurio.services.EntryParserService
@@ -29,6 +38,8 @@ class DataController extends LoginController {
 
 	EntryParserService entryParserService
 	SearchService searchService
+
+	GrailsApplication grailsApplication
 
 	static debug(str) {
 		log.debug(str)
@@ -1447,39 +1458,130 @@ class DataController extends LoginController {
 					   userIdList: userIdList, displayNames: displayNames])
 	}
 
-	def saveSurveyData() {
-		log.debug "Data.saveSurveyData() $params"
-		User currentUserInstance = sessionUser()
+	def getSurveyData() {
+		log.debug "Data.getSurveyData(): $params"
 
-		if (!params.answer) {
-			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Answers"])])
+		Survey surveyInstance = Survey.findByCodeAndStatus(params.code, SurveyStatus.ACTIVE)
+
+		if (!surveyInstance) {
+			renderJSONPost([success: false, message: 'Invalid Survey Code.'])
+
 			return
 		}
 
-		UserSurveyAnswer.withTransaction { status ->
+		User currentUserInstance = sessionUser()
+		if (currentUserInstance.surveys.contains(surveyInstance)) {
+			renderJSONPost([success: false, message: 'User has already completed the survey.'])
+
+			return
+		}
+
+		Set activeQuestions = surveyInstance.questions.findAll { it.status == QuestionStatus.ACTIVE }
+
+		if (!activeQuestions.size()) {
+			renderJSONPost([success: false, message: 'There are no active questions for this survey.'])
+
+			return
+		}
+
+		/*
+		 * PageRenderer bean injection only works outside the scope of a web request. Hence getting the bean from the
+		 * application context.
+		 */
+		PageRenderer groovyPageRenderer = grailsApplication.mainContext.getBean('groovyPageRenderer')
+
+		renderJSONPost([success: true, htmlContent: groovyPageRenderer.render(model: [questions: activeQuestions,
+				surveyCode: surveyInstance.code], template: "/survey/surveySlides")])
+	}
+
+	def saveSurveyData() {
+		log.debug "Data.saveSurveyData() $params"
+
+		User currentUserInstance = sessionUser()
+		Survey surveyInstance = Survey.findByCodeAndStatus(params.surveyCode, SurveyStatus.ACTIVE)
+
+		if (!surveyInstance) {
+			renderJSONPost([success: false, message: 'Invalid Survey Code.'])
+
+			return
+		}
+
+		if (currentUserInstance.surveys.contains(surveyInstance)) {
+			renderJSONPost([success: false, message: 'User has already completed the survey.'])
+
+			return
+		}
+
+		List<Question> activeQuestions = [] 
+		activeQuestions.addAll(surveyInstance.questions.findAll { it.status == QuestionStatus.ACTIVE })
+
+		int noOfQuestions = activeQuestions.size()
+
+		UserAnswer.withTransaction { status ->
 			try {
-				params.answer.each({ questionAnswerMap ->
-					UserSurveyAnswer userSurveyAnswer = UserSurveyAnswer.create(currentUserInstance, questionAnswerMap.key, questionAnswerMap.value)
-					if (!userSurveyAnswer) {
+				noOfQuestions.times { index ->
+					Long questionId = params.long("questionId${index}")
+
+					Question surveyQuestion = activeQuestions.find {
+						it.id == questionId
+					}
+
+					if (!surveyQuestion) {
+						return
+					}
+
+					activeQuestions.remove(surveyQuestion)
+
+					List answerList = []
+					if (surveyQuestion.answerType.isMCQType()) {
+						List<PossibleAnswer> surveyAnswers = []
+						surveyAnswers.addAll(surveyQuestion.answers)
+
+						int noOfAnswers = surveyAnswers.size()
+
+						noOfAnswers.times { answerIndex ->
+							String answerText = params["answerText${index}${answerIndex}"]
+							Long answerId = params.long("answerId${index}${answerIndex}")
+
+							PossibleAnswer answerInstance = surveyAnswers.find {
+								it.id == answerId
+							}
+
+							if (answerInstance && answerText) {
+								answerList.add(answerInstance)
+								surveyAnswers.remove(answerInstance)
+							}
+						}
+
+						// For radio type there should be one answer, if not, the data is invalid.
+						if ((surveyQuestion.answerType == AnswerType.MCQ_RADIO) && answerList.size() > 1) {
+							throw new IllegalArgumentException()
+						}
+					} else {
+						if (params["answerText${index}"]) {
+							answerList.add(params["answerText${index}"])
+						}
+					}
+
+					// For a required question, there should be an answer.
+					if ((surveyQuestion.isRequired) && answerList.size() == 0) {
 						throw new IllegalArgumentException()
 					}
-				})
-				session.survey = null
+					
+
+					UserAnswer.createAnswers(currentUserInstance, surveyQuestion, answerList)
+				}
+
+				currentUserInstance.surveys.add(surveyInstance)
+				Utils.save(currentUserInstance, true)
+
 				renderJSONPost([success: true])
 			} catch (IllegalArgumentException e) {
 				Utils.reportError("Error while saving survey data", e)
 				status.setRollbackOnly()
-				renderJSONPost([success: false, message: g.message(code: "not.saved.message", args: ["Answers"])])
+				renderJSONPost([success: false, message: g.message(code: "not.saved.message", args: ["Survey Data"])])
 			}
 		}
-	}
-
-	def getSurveyData() {
-		log.debug "Data.getSurveyData()"
-		List questions = SurveyQuestion.findAllByStatus(SurveyQuestion.QuestionStatus.ACTIVE,
-			[max: 50, sort: "priority", order: "desc"])
-		Map model = [questions: questions]
-		render template: "/survey/questions", model: model
 	}
 
 	def getSprintParticipantsData(int offset, int max) {

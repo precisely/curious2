@@ -6,6 +6,7 @@ import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.filters.EmailVerificationCheckFilters
 import us.wearecurio.marshaller.EnumMarshaller
 import us.wearecurio.model.TagInputType
+import us.wearecurio.marshaller.ProfileTagMarshaller
 import us.wearecurio.model.TagStats
 import us.wearecurio.server.BackgroundTask
 import us.wearecurio.services.AlertGenerationService
@@ -55,7 +56,10 @@ class BootStrap {
 		EmailVerificationCheckFilters.populateEmailVerificationEndpoints()
 
 		migrationService.doMigrations()
+
 		JSON.registerObjectMarshaller(new EnumMarshaller())
+		JSON.registerObjectMarshaller(new ProfileTagMarshaller())
+
 		def springContext = WebApplicationContextUtils.getWebApplicationContext( servletContext )
 		springContext.getBean( "customObjectMarshallers" ).register()
 		BackgroundTask.launch {

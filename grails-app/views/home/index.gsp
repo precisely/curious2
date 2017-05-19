@@ -10,8 +10,7 @@
 		deleteTagGroupDataCSRF, addTagToTagGroupDataCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, 
 		updateEntrySDataCSRF,removeTagFromTagGroupCSRF, removeTagFromTagGroupDataCSRF, addTagGroupToTagGroupCSRF, 
 		removeTagGroupFromTagGroupCSRF, pingDataCSRF,showTagGroupDataCSRF, saveDeviceEntriesStateDataCSRF,
-		createTagGroupDataCSRF, excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getInterestTagsDataCSRF, 
-		addInterestTagDataCSRF, deleteInterestTagDataCSRF, updateInterestTagDataCSRF" />
+		createTagGroupDataCSRF, excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF" />
 </head>
 <body class="track-page">
 

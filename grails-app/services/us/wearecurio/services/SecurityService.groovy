@@ -127,9 +127,7 @@ class SecurityService {
 			}
 			return [false, null]
 		}
-		if (params.survey) {
-			session.survey = params.survey
-		}
+
 		return [true, null]
 	}
 

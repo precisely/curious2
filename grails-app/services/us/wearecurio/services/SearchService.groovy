@@ -107,7 +107,7 @@ class SearchService {
 					notifyOnComments: hit.source.notifyOnComments,
 					created: hit.source.created,
 					score: hit.score,
-					interestTagsString: hit.source.interestTagsString,
+					publicInterestTagsString: hit.source.publicInterestTagsString,
 					followed: followed,
 					avatarURL: hit.source.avatarURL
 				]
@@ -373,7 +373,7 @@ class SearchService {
 				filters << "(_type:sprint AND visibility:PUBLIC AND _exists_:description AND ((NOT _exists_:deleted) OR deleted:false) AND ((name:$tagsOr) OR (description:$tagsOr)))"
 			}
 			if ((type & USER_TYPE) > 0) {
-				filters << "(_type:user AND _id:(NOT $user.id) AND virtual:false AND ((publicName:$tagsOr) OR (publicBio:$tagsOr) OR (interestTagsString:$tagsOr)))"
+				filters << "(_type:user AND _id:(NOT $user.id) AND virtual:false AND ((publicName:$tagsOr) OR (publicBio:$tagsOr) OR (publicInterestTagsString:$tagsOr)))"
 			}
 		}
 		
@@ -620,7 +620,7 @@ class SearchService {
 		//fsqb.add(typeFilter("user"), weightFactorFunction(6.0f))
 		fsqb.add(andFilter(typeFilter("user"), queryFilter(queryString("username:($userQuery)"))), weightFactorFunction(60.0f))
 		fsqb.add(andFilter(typeFilter("user"), queryFilter(queryString("publicName:($userQuery)"))), weightFactorFunction(60.0f))
-		fsqb.add(andFilter(typeFilter("user"), queryFilter(queryString("interestTagsString:($userQuery)"))), weightFactorFunction(40.0f))
+		fsqb.add(andFilter(typeFilter("user"), queryFilter(queryString("publicInterestTagsString:($userQuery)"))), weightFactorFunction(40.0f))
 		fsqb.add(andFilter(typeFilter("user"), queryFilter(queryString("publicBio:($userQuery)"))), weightFactorFunction(40.0f))
 	}
 		
