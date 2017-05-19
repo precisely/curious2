@@ -67,6 +67,8 @@ class ProfileTag {
 
 	static void delete(Tag tag, Long userId, ProfileTagType type, ProfileTagStatus status) {
 		findByTagAndUserIdAndTypeAndStatus(tag, userId, type, status)?.delete()
+
+		SearchService.get()?.index(User.get(userId))
 	}
 
 	static void deleteInterestTag(Tag tag, Long userId, ProfileTagStatus status) {

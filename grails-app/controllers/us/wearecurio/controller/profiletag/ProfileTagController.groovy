@@ -6,6 +6,7 @@ import us.wearecurio.model.Tag
 import us.wearecurio.model.User
 import us.wearecurio.profiletags.ProfileTag
 import us.wearecurio.profiletags.ProfileTagStatus
+import us.wearecurio.services.SearchService
 import us.wearecurio.utility.Utils
 
 class ProfileTagController extends LoginController {
@@ -80,6 +81,7 @@ class ProfileTagController extends LoginController {
 
 		try {
 			profileTagInstance.delete(flush: true)
+			SearchService.get()?.index(user)
 
 			debug "Successfully removed ProfileTag"
 			renderJSONGet([success: true])
