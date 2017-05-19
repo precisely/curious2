@@ -214,6 +214,26 @@ $(document).ready(function() {
 	// Initially hide the previous button.
 	previousButton.hide();
 
+	function checkForRequiredQuestion(element) {
+		var activeSlide = $(element).find('.active');
+
+		var textArea = activeSlide.find('textarea');
+		var radioButton = activeSlide.find(':radio');
+		var checkbox = activeSlide.find(':checkbox');
+
+		var selectedRadioButton = activeSlide.find(':radio:checked');
+		var selectedCheckbox = activeSlide.find(':checkbox:checked');
+
+		if ((textArea.prop('required') && !textArea.val()) ||
+			(radioButton.prop('required') && selectedRadioButton.length === 0) ||
+			(checkbox.prop('required') && selectedCheckbox.length === 0)) {
+			showAlert('This is a required question!');
+			return false;
+		}
+
+		return true;
+	}
+
 	// Before slide listener.
 	carouselContent.on('slide.bs.carousel', function(e) {
 		/*
@@ -224,18 +244,7 @@ $(document).ready(function() {
 			return true;
 		}
 
-		var textArea = $(this).find('.active').find('textarea');
-		var radioButton = $(this).find('.active').find(':radio');
-		var checkbox = $(this).find('.active').find(':checkbox');
-		var selectedRadioButton = $(this).find('.active').find(':radio:checked');
-		var selectedCheckbox = $(this).find('.active').find(':checkbox:checked');
-
-		if ((textArea.prop('required') && !textArea.val()) ||
-				(radioButton.prop('required') && selectedRadioButton.length === 0) || 
-				(checkbox.prop('required') && selectedCheckbox.length === 0)) {
-			showAlert('This is a required question!');
-			return false;
-		}
+		return checkForRequiredQuestion(this);
 	});
 
 	// After slide listener.
@@ -254,6 +263,10 @@ $(document).ready(function() {
 	});
 
 	$('#surveyAnswersForm').submit(function() {
+		if (!checkForRequiredQuestion(this)) {
+			return false;
+		}
+
 		var params = $(this).serializeObject();
 
 		queuePostJSON('Completing survey', '/data/saveSurveyData',

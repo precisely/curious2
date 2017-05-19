@@ -16,6 +16,7 @@
 				<th>Priority</th>
 				<th>Status</th>
 				<th>Answer Type</th>
+				<th>Required</th>
 				<th>Actions</th>
 			</tr>
 		</thead>
@@ -33,6 +34,9 @@
 					</td>
 					<td>
 						${questionInstance.answerType.displayText}
+					</td>
+					<td>
+						${questionInstance.isRequired ? 'Yes' : 'No'}
 					</td>
 					<td>
 						<g:link controller="survey" action="editQuestion" id="${questionInstance.id}"

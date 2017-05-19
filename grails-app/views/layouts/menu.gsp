@@ -106,10 +106,18 @@
 						getCSRFPreventionObject('getSurveyDataCSRF', params), function(data) {
 
 					if (data && data.success) {
-						$('#survey-carousel-content .carousel-inner').html(data.htmlContent);
-						var questionCount = $('#survey-carousel-content .carousel-inner').find('.item').length;
+						var carouselInnerContent = $('#survey-carousel-content .carousel-inner');
+						carouselInnerContent.html(data.htmlContent);
+
+						var questionCount = carouselInnerContent.find('.item').length;
 						if (questionCount == 1) {
-							$('#navigate-right').html('<button type="submit" class="navigate-carousel-right">SUBMIT</button>');
+							var submitButtonLink = $('#navigate-right'); 
+
+							var submitButton = submitButtonLink.find('button');
+							submitButton.text('SUBMIT');
+							submitButton.prop('type', 'submit');
+
+							submitButtonLink.prop('href', '#');
 						}
 
 						$('#takeSurveyOverlay').modal({show: true});

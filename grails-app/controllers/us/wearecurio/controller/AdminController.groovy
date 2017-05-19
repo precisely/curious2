@@ -4,8 +4,6 @@ import java.text.SimpleDateFormat
 import org.springframework.web.multipart.MultipartFile
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Sprint
-import us.wearecurio.model.SurveyAnswer
-import us.wearecurio.model.SurveyQuestion
 import us.wearecurio.model.TagInputType
 import us.wearecurio.model.User
 import us.wearecurio.services.TagInputTypeService

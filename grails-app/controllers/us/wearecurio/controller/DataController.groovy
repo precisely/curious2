@@ -1555,7 +1555,7 @@ class DataController extends LoginController {
 
 						// For radio type there should be one answer, if not, the data is invalid.
 						if ((surveyQuestion.answerType == AnswerType.MCQ_RADIO) && answerList.size() > 1) {
-							throw new IllegalArgumentException()
+							throw new IllegalArgumentException('A single choice question cannot have multiple answers.')
 						}
 					} else {
 						if (params["answerText${index}"]) {
@@ -1565,7 +1565,7 @@ class DataController extends LoginController {
 
 					// For a required question, there should be an answer.
 					if ((surveyQuestion.isRequired) && answerList.size() == 0) {
-						throw new IllegalArgumentException()
+						throw new IllegalArgumentException('A required question has not been answered.')
 					}
 					
 
