@@ -1101,5 +1101,12 @@ class MigrationService {
 
 			log.debug "Successfully created ${ProfileTag.count()} ProfileTags."
 		}
+
+		tryMigration('Remove old tables related to Survey') {
+			sql('DROP TABLE survey_question_survey_answer')
+			sql('DROP TABLE survey_question')
+			sql('DROP TABLE survey_answer')
+			sql('DROP TABLE user_survey_answer')
+		}
 	}
 }

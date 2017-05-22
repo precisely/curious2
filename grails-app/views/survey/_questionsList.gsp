@@ -17,6 +17,7 @@
 				<th>Status</th>
 				<th>Answer Type</th>
 				<th>Required</th>
+				<th>No of Answers</th>
 				<th>Actions</th>
 			</tr>
 		</thead>
@@ -37,6 +38,9 @@
 					</td>
 					<td>
 						${questionInstance.isRequired ? 'Yes' : 'No'}
+					</td>
+					<td>
+						${questionInstance.answers.size()}
 					</td>
 					<td>
 						<g:link controller="survey" action="editQuestion" id="${questionInstance.id}"
