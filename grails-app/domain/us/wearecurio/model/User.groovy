@@ -12,9 +12,7 @@ import org.hibernate.criterion.CriteriaSpecification
 import us.wearecurio.cache.BoundedCache
 import us.wearecurio.data.UserSettings
 import us.wearecurio.model.survey.Survey
-import us.wearecurio.profiletags.ProfileTag
-import us.wearecurio.profiletags.ProfileTagStatus
-import us.wearecurio.profiletags.ProfileTagType
+import us.wearecurio.model.profiletags.ProfileTag
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.services.EmailService
 import us.wearecurio.services.SearchService
@@ -112,12 +110,6 @@ class User {
 			'publicName',
 			'website'
 		]
-	}
-
-	// Returns list of Public interest tags.
-	@Deprecated
-	List<Tag> getInterestTags() {
-		return ProfileTag.getPublicInterestTags(this.id)*.tag
 	}
 
 	Set<Survey> surveys = []
@@ -694,6 +686,12 @@ class User {
 
 	List<GenericTagGroup> getTagGroups() {
 		getTagGroups(this.id)
+	}
+
+	// Returns list of Public interest tags.
+	@Deprecated
+	List<Tag> getInterestTags() {
+		return ProfileTag.getPublicInterestTags(this.id)*.tag
 	}
 
 	// Adds public interest tag.

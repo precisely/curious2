@@ -13,7 +13,7 @@ import us.wearecurio.model.survey.QuestionStatus
 import us.wearecurio.model.survey.Survey
 import us.wearecurio.model.survey.SurveyStatus
 import us.wearecurio.model.survey.UserAnswer
-import us.wearecurio.profiletags.ProfileTag
+import us.wearecurio.model.profiletags.ProfileTag
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
@@ -1215,7 +1215,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		when: 'The getSurveyData action is hit with survey code for Inactive survey'
 		controller.session.userId = user.id
-		controller.params.code = 's001'
+		controller.params.surveyCode = 's001'
 		controller.getSurveyData()
 
 		then: 'The request should fail with appropriate message'
@@ -1226,7 +1226,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		when: 'The incorrect code is sent in the request'
 		controller.response.reset()
 		controller.session.userId = user.id
-		controller.params.code = 's002'
+		controller.params.surveyCode = 's002'
 		controller.getSurveyData()
 
 		then: 'The request should fail with appropriate message'
@@ -1241,7 +1241,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.response.reset()
 		controller.session.userId = user.id
-		controller.params.code = 's001'
+		controller.params.surveyCode = 's001'
 		controller.getSurveyData()
 
 		then: 'The request should fail with appropriate message'
@@ -1255,7 +1255,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.response.reset()
 		controller.session.userId = user.id
-		controller.params.code = 's001'
+		controller.params.surveyCode = 's001'
 		controller.getSurveyData()
 
 		then: 'The response should contain the html content for survey modal slides'

@@ -7,8 +7,8 @@ import spock.lang.Unroll
 import us.wearecurio.controller.profiletag.ProfileTagController
 import us.wearecurio.model.Tag
 import us.wearecurio.model.User
-import us.wearecurio.profiletags.ProfileTag
-import us.wearecurio.profiletags.ProfileTagStatus
+import us.wearecurio.model.profiletags.ProfileTag
+import us.wearecurio.model.profiletags.ProfileTagStatus
 
 class ProfileTagControllerSpec extends IntegrationSpec {
 

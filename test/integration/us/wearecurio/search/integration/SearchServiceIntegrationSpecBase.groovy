@@ -1,19 +1,14 @@
 package us.wearecurio.search.integration
 
 import grails.test.spock.IntegrationSpec
-import groovy.lang.Closure;
-
 import java.text.DateFormat
 import java.util.concurrent.atomic.AtomicInteger
-import us.wearecurio.profiletags.ProfileTag
+import us.wearecurio.model.profiletags.ProfileTag
 
 import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery
 
 import org.grails.plugins.elasticsearch.ElasticSearchAdminService;
 import org.grails.plugins.elasticsearch.ElasticSearchService
-
-import spock.lang.*
-
 import us.wearecurio.model.*
 import us.wearecurio.utility.Utils
 

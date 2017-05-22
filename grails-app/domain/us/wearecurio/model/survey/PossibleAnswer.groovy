@@ -1,11 +1,14 @@
 package us.wearecurio.model.survey
 
 import groovy.transform.EqualsAndHashCode
-import groovy.transform.ToString
 import us.wearecurio.model.Tag
 
+/**
+ * A domain that holds possible answers for a Question.
+ * It also contains a tag field which is the associated tag with this answer. As such, when a answer is selected
+ * by any User, its associated tag is added to User's public interest tag.
+ */
 @EqualsAndHashCode
-@ToString(includes = ['id'], includePackage = false)
 class PossibleAnswer {
 
 	String answer
@@ -53,5 +56,9 @@ class PossibleAnswer {
 		this.tag = getTag(args)
 
 		return this
+	}
+
+	String toString() {
+		return "PossibleAnswer(id: ${id}, answer: ${answer}, tag: ${tag.description})"
 	}
 }

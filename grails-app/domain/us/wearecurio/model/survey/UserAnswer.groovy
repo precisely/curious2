@@ -1,13 +1,14 @@
 package us.wearecurio.model.survey
 
-import groovy.transform.ToString
-import spock.util.mop.Use
 import us.wearecurio.model.User
-import us.wearecurio.profiletags.ProfileTag
+import us.wearecurio.model.profiletags.ProfileTag
 import us.wearecurio.utility.Utils
-import org.apache.commons.logging.LogFactory
 
-@ToString(includes = ['id', 'userId'], includePackage = false)
+/**
+ * A domain that holds answers given by a User for a Question.
+ * It contains a field answerText which represents the text of the answer. In case of descriptive questions, the 
+ * answerText is directly entered by User, else the answerText is the same as the answer field in PossibleAnswer domain.
+ */
 class UserAnswer {
 
 	Long userId
@@ -50,5 +51,9 @@ class UserAnswer {
 		}
 
 		return userSurveyAnswer
+	}
+
+	String toString() {
+		return "UserAnswer(id: ${id}, questionId: ${question.id}, userId: ${userId}), answerText: ${answerText}"
 	}
 }

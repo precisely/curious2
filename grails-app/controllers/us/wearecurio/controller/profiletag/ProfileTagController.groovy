@@ -1,21 +1,23 @@
 package us.wearecurio.controller.profiletag
 
-import grails.converters.JSON
 import us.wearecurio.controller.LoginController
 import us.wearecurio.model.Tag
 import us.wearecurio.model.User
-import us.wearecurio.profiletags.ProfileTag
-import us.wearecurio.profiletags.ProfileTagStatus
+import us.wearecurio.model.profiletags.ProfileTag
+import us.wearecurio.model.profiletags.ProfileTagStatus
 import us.wearecurio.services.SearchService
-import us.wearecurio.utility.Utils
 
+/**
+ * A controller for handling all ProfileTag related requests like getting all interest tags, adding interest tags and
+ * deleting interest tags.
+ */
 class ProfileTagController extends LoginController {
 
 	def getInterestTags() {
-		debug "ProfileTagController.getInterestTags() userId: " + params.userId
+		debug "ProfileTagController.getInterestTags() params: " + params
 
 		User user = sessionUser()
-		if (user == null) {
+		if (!user) {
 			debug "auth failure"
 			renderStringGet(AUTH_ERROR_MESSAGE)
 			return
@@ -26,24 +28,17 @@ class ProfileTagController extends LoginController {
 	}
 
 	def addInterestTag() {
-		debug "ProfileTagController.addInterestTag() params " + params
+		debug "ProfileTagController.addInterestTag() params: " + params
 
 		User user = sessionUser()
-		if (user == null) {
-			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
-			return
-		}
 
-		if (!params.tagName) {
-			debug "no tag name specified"
-			renderStringGet("No tag name specified")
-			return
-		}
+		String message = !user ? AUTH_ERROR_MESSAGE : (!params.tagName ? 'No tag name specified' : 
+				(!params.tagStatus ? 'No tag status specified' : ''))
 
-		if (!params.tagStatus) {
-			debug "no tag status specified"
-			renderStringGet("No tag status specified")
+		if (message) {
+			debug message
+			renderStringGet(message)
+
 			return
 		}
 
@@ -66,15 +61,11 @@ class ProfileTagController extends LoginController {
 		debug "ProfileTagController.deleteInterestTag() params: ${params}"
 
 		User user = sessionUser()
-		if (user == null) {
-			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
-			return
-		}
+		String message = !user ? AUTH_ERROR_MESSAGE : (!profileTagInstance ? 'No profile tag id specified' : '')
 
-		if (!profileTagInstance) {
-			debug "no profile tag id specified"
-			renderStringGet("No profile tag id specified")
+		if (message) {
+			debug message
+			renderStringGet(message)
 
 			return
 		}

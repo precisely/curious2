@@ -1,10 +1,13 @@
 package us.wearecurio.model.survey
 
 import groovy.transform.EqualsAndHashCode
-import groovy.transform.ToString
 
+/**
+ * A class representing model for Survey. The code and title are unique fields used for representing a Survey.
+ * A survey contains a set of questions (represented by Question domain).
+ * The status field determines whether this survey is currently active or not.
+ */
 @EqualsAndHashCode
-@ToString(includes = ['id', 'code', 'title'], includePackage = false)
 class Survey {
 
 	String code
@@ -26,6 +29,10 @@ class Survey {
 	static constraints = {
 		code unique: true, blank: false
 		title unique: true, blank: false
+	}
+
+	String toString() {
+		return "Survey(id: ${id}, code: ${code})"
 	}
 }
 

@@ -1,4 +1,4 @@
-package us.wearecurio.profiletags
+package us.wearecurio.model.profiletags
 
 import groovy.transform.EqualsAndHashCode
 import us.wearecurio.model.Tag
@@ -6,6 +6,11 @@ import us.wearecurio.model.User
 import us.wearecurio.services.SearchService
 import us.wearecurio.utility.Utils
 
+/**
+ * A domain that holds questions for Survey. It contains set of answers(represented by Answer domain).
+ * The status field determines whether this Question is currently active or not.
+ * AnswerType field is used to determine whether the answer is descriptive, single choice or multiple choice.
+ */
 @EqualsAndHashCode
 class ProfileTag {
 
@@ -155,6 +160,10 @@ class ProfileTag {
 
 	static List<ProfileTag> getPrivateGeneticTags(Long userId) {
 		return getGeneticTags(userId, ProfileTagStatus.PRIVATE)
+	}
+
+	String toString() {
+		return "ProfileTag(id: ${id}, type: ${type}, status: ${status}, userId: ${userId}, tag: ${tag.description})"
 	}
 }
 

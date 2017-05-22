@@ -1,11 +1,14 @@
 package us.wearecurio.model.survey
 
 import groovy.transform.EqualsAndHashCode
-import groovy.transform.ToString
 import us.wearecurio.utility.Utils
 
+/**
+ * A domain that holds questions for Survey. It contains set of answers(represented by Answer domain).
+ * The status field determines whether this Question is currently active or not.
+ * AnswerType field is used to determine whether the answer is descriptive, single choice or multiple choice.
+ */
 @EqualsAndHashCode
-@ToString(includes = ['id'], includePackage = false)
 class Question {
 
 	String question
@@ -47,6 +50,10 @@ class Question {
 				this.addToAnswers(possibleAnswerInstance)
 			}
 		}
+	}
+
+	String toString() {
+		return "Question(id: ${id}, status: ${status}, question: ${question})"
 	}
 }
 

@@ -4,7 +4,7 @@ import grails.converters.JSON
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller
 import org.codehaus.groovy.grails.web.json.JSONWriter
-import us.wearecurio.profiletags.ProfileTag
+import us.wearecurio.model.profiletags.ProfileTag
 
 class ProfileTagMarshaller implements ObjectMarshaller<JSON> {
 

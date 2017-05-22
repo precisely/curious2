@@ -91,6 +91,7 @@ class SurveyControllerSpec extends IntegrationSpec {
 		's001' | ''       | ''
 		''     | 'Survey' | ''
 		''     | ''       | 'ACTIVE'
+		null   | null     | null
 	}
 
 	void "test edit action for rendering survey form"() {
@@ -188,9 +189,10 @@ class SurveyControllerSpec extends IntegrationSpec {
 		's001' | ''       | ''
 		''     | 'Survey' | ''
 		''     | ''       | 'ACTIVE'
+		null   | null     | null
 	}
 
-	void "test saveQuestion action for redirecting to index when id is incorrect"() {
+	void "test saveQuestion action for redirecting to index when survey id is incorrect"() {
 		when: 'The saveQuestion action is hit with random id'
 		controller.params.id = 1
 		controller.saveQuestion()
@@ -270,6 +272,7 @@ class SurveyControllerSpec extends IntegrationSpec {
 		'question' | '1'      | 'ACTIVE'  | ''
 		'question' | '1'      | 'INVALID' | 'MCQ_RADIO'
 		'question' | '1'      | 'ACTIVE'  | 'INVALID'
+		null       | null     | null      | null
 	}
 
 	void "test updateQuestion action when the question instance with id is not found"() {
@@ -453,7 +456,7 @@ class SurveyControllerSpec extends IntegrationSpec {
 		json1.success == false
 		json1.message == 'Could not find answer.'
 
-		when: 'The delete action is hit with invalid answer id'
+		when: 'The delete action is hit with valid answer id'
 		controller.response.reset()
 		controller.params.'questionInstance.id' = surveyInstance.questions[0].id
 		controller.params.'possibleAnswerInstance.id' = surveyInstance.questions[0].answers[0].id
@@ -463,5 +466,6 @@ class SurveyControllerSpec extends IntegrationSpec {
 		JSONElement json2 = JSON.parse(controller.response.text)
 		json2.success == true
 		json2.message == 'Deleted successfully.'
+		PossibleAnswer.count() == 0
 	}
 }

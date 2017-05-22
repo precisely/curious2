@@ -101,7 +101,7 @@
 
 			if ((typeof surveyCode != 'undefined') && surveyCode) {
 				var interestTagList;
-				var params = {code: surveyCode};
+				var params = {surveyCode: surveyCode};
 				queuePostJSON("Getting survey data", "/home/getSurveyData", 
 						getCSRFPreventionObject('getSurveyDataCSRF', params), function(data) {
 

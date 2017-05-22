@@ -1458,22 +1458,22 @@ class DataController extends LoginController {
 					   userIdList: userIdList, displayNames: displayNames])
 	}
 
-	def getSurveyData() {
-		log.debug "Data.getSurveyData(): $params"
+	private Map validateAndGetSurveyAndActiveQuestions(Map params) {
+		Survey surveyInstance = Survey.findByCodeAndStatus(params.surveyCode, SurveyStatus.ACTIVE)
 
-		Survey surveyInstance = Survey.findByCodeAndStatus(params.code, SurveyStatus.ACTIVE)
+		Map result = [:]
 
 		if (!surveyInstance) {
 			renderJSONPost([success: false, message: 'Invalid Survey Code.'])
 
-			return
+			return result
 		}
 
 		User currentUserInstance = sessionUser()
 		if (currentUserInstance.surveys.contains(surveyInstance)) {
 			renderJSONPost([success: false, message: 'User has already completed the survey.'])
 
-			return
+			return result
 		}
 
 		Set activeQuestions = surveyInstance.questions.findAll { it.status == QuestionStatus.ACTIVE }
@@ -1481,6 +1481,25 @@ class DataController extends LoginController {
 		if (!activeQuestions.size()) {
 			renderJSONPost([success: false, message: 'There are no active questions for this survey.'])
 
+			return result
+		}
+
+		result = [surveyInstance: surveyInstance, activeQuestions: activeQuestions, user: currentUserInstance]
+
+		return result
+	} 
+
+	/**
+	 * This action is used for getting the html response with all the slides for active questions. This response is 
+	 * directly rendered within a bootstrap modal. Refer surveySlides.gsp template for how the questions and answers 
+	 * are rendered.
+	 */
+	def getSurveyData() {
+		log.debug "Data.getSurveyData(): $params"
+
+		Map result = validateAndGetSurveyAndActiveQuestions(params)
+
+		if (!result.user || !result.surveyInstance || !result.activeQuestions) {
 			return
 		}
 
@@ -1490,36 +1509,33 @@ class DataController extends LoginController {
 		 */
 		PageRenderer groovyPageRenderer = grailsApplication.mainContext.getBean('groovyPageRenderer')
 
-		renderJSONPost([success: true, htmlContent: groovyPageRenderer.render(model: [questions: activeQuestions,
-				surveyCode: surveyInstance.code], template: "/survey/surveySlides")])
+		renderJSONPost([success: true, htmlContent: groovyPageRenderer.render(model: [questions: result.activeQuestions,
+				surveyCode: result.surveyInstance.code], template: "/survey/surveySlides")])
 	}
 
+	/**
+	 * This action is used for saving survey data from a User. This endpoint creates instances of UserAnswer and 
+	 * ProfileTag(for tags associated with PossibleAnswer). The entire transaction is rolled back incase any of the 
+	 * required question has not been answered.
+	 */
 	def saveSurveyData() {
 		log.debug "Data.saveSurveyData() $params"
 
-		User currentUserInstance = sessionUser()
-		Survey surveyInstance = Survey.findByCodeAndStatus(params.surveyCode, SurveyStatus.ACTIVE)
+		Map result = validateAndGetSurveyAndActiveQuestions(params)
 
-		if (!surveyInstance) {
-			renderJSONPost([success: false, message: 'Invalid Survey Code.'])
-
+		if (!result.user || !result.surveyInstance || !result.activeQuestions) {
 			return
 		}
 
-		if (currentUserInstance.surveys.contains(surveyInstance)) {
-			renderJSONPost([success: false, message: 'User has already completed the survey.'])
+		Survey surveyInstance = result.surveyInstance
+		Set activeQuestions = result.activeQuestions
+		User currentUserInstance = result.user
 
-			return
-		}
-
-		List<Question> activeQuestions = [] 
-		activeQuestions.addAll(surveyInstance.questions.findAll { it.status == QuestionStatus.ACTIVE })
-
-		int noOfQuestions = activeQuestions.size()
+		int noOfActiveQuestions = activeQuestions.size()
 
 		UserAnswer.withTransaction { status ->
 			try {
-				noOfQuestions.times { index ->
+				noOfActiveQuestions.times { index ->
 					Long questionId = params.long("questionId${index}")
 
 					Question surveyQuestion = activeQuestions.find {
