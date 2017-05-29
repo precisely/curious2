@@ -89,11 +89,11 @@ class SearchQueryServiceGroup1Spec extends Specification {
 		userId	| query	| followedUsersIds	| 
 		expected
 		34		| "foo"	| []				|
-		"(((publicName:(foo)) OR (publicBio:(foo)) OR (interestTagsString:(foo)) OR (username:(foo))) AND _type:user AND _id:34 AND virtual:false)"
+		"(((publicName:(foo)) OR (publicBio:(foo)) OR (publicInterestTagsString:(foo)) OR (username:(foo))) AND _type:user AND _id:34 AND virtual:false)"
 		578		| "foo"	| [3]				|
-		"(((publicName:(foo)) OR (publicBio:(foo)) OR (interestTagsString:(foo)) OR (username:(foo))) AND _type:user AND _id:(3 OR 578) AND virtual:false)"
+		"(((publicName:(foo)) OR (publicBio:(foo)) OR (publicInterestTagsString:(foo)) OR (username:(foo))) AND _type:user AND _id:(3 OR 578) AND virtual:false)"
 		
 		4637	| "foo" | [6]				|
-		"(((publicName:(foo)) OR (publicBio:(foo)) OR (interestTagsString:(foo)) OR (username:(foo))) AND _type:user AND _id:(6 OR 4637) AND virtual:false)"
+		"(((publicName:(foo)) OR (publicBio:(foo)) OR (publicInterestTagsString:(foo)) OR (username:(foo))) AND _type:user AND _id:(6 OR 4637) AND virtual:false)"
 	}	
 }

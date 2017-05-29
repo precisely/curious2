@@ -202,29 +202,79 @@ $(document).ready(function() {
 			});
 		return false;
 	});
-	
-	$('#navigate-left').prop('disabled', true).children('button').text('');
-	$('#survey-carousel-content').on('slid.bs.carousel', '', function() {
-		var $this = $(this);
-		$('#navigate-left').prop('disabled', false).children('button').text('PREVIOUS');
-		$('#navigate-right').prop('href','#survey-carousel-content')
-		.html('<button type="button" class="navigate-carousel-right">NEXT</button>');
 
-		if ($('#survey-carousel-content .carousel-inner .item:first').hasClass('active')) {
-			$('#navigate-left').prop('disabled', true).children('button').text('');
-		} else if ($('#survey-carousel-content .carousel-inner .item:last').hasClass('active')) {
-			$('#navigate-right').prop('href','#')
-			.html('<button type="submit" class="navigate-carousel-right">SUBMIT</button>');
+	var previousButtonLink = $('#navigate-left');
+	var previousButton = $('#slide-left-button');
+
+	var nextButtonLink = $('#navigate-right');
+	var nextButton = $('#navigate-right button');
+
+	var carouselContent = $('#survey-carousel-content');
+
+	// Initially hide the previous button.
+	previousButton.hide();
+
+	function checkForRequiredQuestion(element) {
+		var activeSlide = $(element).find('.active');
+
+		var textArea = activeSlide.find('textarea');
+		var radioButton = activeSlide.find(':radio');
+		var checkbox = activeSlide.find(':checkbox');
+
+		var selectedRadioButton = activeSlide.find(':radio:checked');
+		var selectedCheckbox = activeSlide.find(':checkbox:checked');
+
+		if ((textArea.prop('required') && !textArea.val()) ||
+			(radioButton.prop('required') && selectedRadioButton.length === 0) ||
+			(checkbox.prop('required') && selectedCheckbox.length === 0)) {
+			showAlert('This is a required question!');
+			return false;
+		}
+
+		return true;
+	}
+
+	// Before slide listener.
+	carouselContent.on('slide.bs.carousel', function(e) {
+		/*
+		 * For previous move, the direction indicated by bootstrap carousel is right. So allowing previous moves but
+		 * checking for next moves whether the slide has a required question, if yes preventing it from sliding.
+		 */
+		if (e.direction === 'right') {
+			return true;
+		}
+
+		return checkForRequiredQuestion(this);
+	});
+
+	// After slide listener.
+	carouselContent.on('slid.bs.carousel', function(e) {
+		previousButton.show();
+
+		nextButton.text('Next').prop('type', 'button');
+		nextButtonLink.prop('href', '#survey-carousel-content');
+
+		if (carouselContent.find('.carousel-inner .item:first').hasClass('active')) {
+			previousButton.hide();
+		} else if (carouselContent.find('.carousel-inner .item:last').hasClass('active')) {
+			nextButton.text('Submit').prop('type', 'submit');
+			nextButtonLink.prop('href', '#');
 		}
 	});
 
-	$('#surveyForm').submit(function(event) {
+	$('#surveyAnswersForm').submit(function() {
+		if (!checkForRequiredQuestion(this)) {
+			return false;
+		}
+
 		var params = $(this).serializeObject();
 
-		queuePostJSON('Completing survey', '/data/saveSurveyData', getCSRFPreventionObject('saveSurveyDataCSRF', params),
-				function(data) {
-			if (!checkData(data))
+		queuePostJSON('Completing survey', '/data/saveSurveyData',
+				getCSRFPreventionObject('saveSurveyDataCSRF', params), function(data) {
+
+			if (!checkData(data)) {
 				return;
+			}
 
 			if (data.success) {
 				$('#takeSurveyOverlay').modal('hide');
@@ -234,8 +284,9 @@ $(document).ready(function() {
 			}
 		}, function(xhr) {
 			console.log('xhr:', xhr);
-			showAlert('Internal server error occurred.');
+			showAlert('Could not save survey.');
 		});
+
 		return false;
 	});
 

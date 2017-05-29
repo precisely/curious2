@@ -11,6 +11,8 @@ import org.hibernate.criterion.CriteriaSpecification
 
 import us.wearecurio.cache.BoundedCache
 import us.wearecurio.data.UserSettings
+import us.wearecurio.model.survey.Survey
+import us.wearecurio.model.profiletags.ProfileTag
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.services.EmailService
 import us.wearecurio.services.SearchService
@@ -103,17 +105,17 @@ class User {
 			'virtualUserGroupIdFollowers',
 			'virtualUserGroupIdDiscussions',
 			'avatarURL',
-			'interestTagsString',
+			'publicInterestTagsString',
 			'publicBio',
 			'publicName',
 			'website'
 		]
 	}
 
-	SortedSet interestTags
+	Set<Survey> surveys = []
 
 	static hasMany = [
-		interestTags: Tag
+		surveys: Survey
 	]
 
 	static Map<Long, Set<Long>> tagIdCache = Collections.synchronizedMap(new BoundedCache<Long, Set<Long>>(100000))
@@ -686,30 +688,42 @@ class User {
 		getTagGroups(this.id)
 	}
 
+	// Returns list of Public interest tags.
+	@Deprecated
+	List<Tag> getInterestTags() {
+		return ProfileTag.getPublicInterestTags(this.id)*.tag
+	}
+
+	// Adds public interest tag.
+	@Deprecated
 	void addInterestTag(Tag tag) {
-		this.addToInterestTags(tag)
+		ProfileTag.addPublicInterestTag(tag, this.id)
 	}
 
+	// Deletes public interest tag.
+	@Deprecated
 	void deleteInterestTag(Tag tag) {
-		this.removeFromInterestTags(tag)
+		ProfileTag.deletePublicInterestTag(tag, this.id)
 	}
 
+	// Deletes public interest tag.
+	@Deprecated
 	void removeInterestTag(Tag tag) {
-		this.removeFromInterestTags(tag)
+		deleteInterestTag(tag)
 	}
 
+	// Looks for public interest tag.
+	@Deprecated
 	boolean hasInterestTag(Tag tag) {
-		this.interestTags?.contains(tag) ? true : false
+		return ProfileTag.hasPublicInterestTag(tag, this.id)
 	}
 
+	// Returns a list of public interest tags for JSON response.
 	def fetchInterestTagsJSON() {
 		def retVal = []
 
-		if (!this.interestTags)
-			return []
-
-		for (Tag tag : this.interestTags) {
-			retVal.add([description:tag.getDescription()])
+		ProfileTag.getPublicInterestTags(this.id).each { ProfileTag profileTag ->
+			retVal.add([description: profileTag.tag.description])
 		}
 
 		return retVal
@@ -897,8 +911,14 @@ class User {
 		return settings.isBioPublic() ? bio : ""
 	}
 
+	// Returns a space separated string of all public interest tags.
+	@Deprecated
 	String getInterestTagsString() {
-		return this.interestTags?.collect { it.description }?.join(" ")
+		return getInterestTags()*.description.join(" ")
+	}
+
+	String getPublicInterestTagsString() {
+		return ProfileTag.getPublicInterestTags(this.id)*.tag.description.join(" ")
 	}
 
 	def validateUserPreferences(Map map, User user) {

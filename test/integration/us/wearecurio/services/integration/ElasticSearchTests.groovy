@@ -215,7 +215,9 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 
 		when:
 		def discussionResults = Discussion.search(searchType:'query_and_fetch') {
-			query_string(query:  "groupIds:" + dbGroupIds[0].toString())
+			query_string(query:  "groupIds:" + dbGroupIds.find {
+				it == groupA.id
+			}.toString())
 		}
 
 		then:
@@ -684,7 +686,9 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		assert !dbGroupIds.contains(groupB.id)
 		
 		def discussionResults = Discussion.search(searchType:'query_and_fetch') {
-			query_string(query: "groupIds:" + dbGroupIds[0].toString())
+			query_string(query: "groupIds:" + dbGroupIds.find {
+				it == groupA.id
+			}.toString())
 		}
 		assert discussionResults
 		assert discussionResults.searchResults.size() == 1
