@@ -108,6 +108,7 @@ class SearchService {
 					created: hit.source.created,
 					score: hit.score,
 					publicInterestTagsString: hit.source.publicInterestTagsString,
+					interestTagsString: hit.source.publicInterestTagsString,
 					followed: followed,
 					avatarURL: hit.source.avatarURL
 				]
