@@ -29,6 +29,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.model.VerificationStatus
+import us.wearecurio.model.registration.UserRegistration
 import us.wearecurio.server.Migration
 import us.wearecurio.utility.Utils
 
@@ -1107,6 +1108,16 @@ class MigrationService {
 			sql('DROP TABLE survey_question')
 			sql('DROP TABLE survey_answer')
 			sql('DROP TABLE user_survey_answer')
+		}
+
+		tryMigration('Create UserRegistration entries for existing Users') {
+			List users = sqlRows('Select * from _user limit 5000')  // Users count on 31-May-2017 - 3261
+
+			log.debug("Creating UserRegistration for ${users.size()} users.")
+
+			users.each { User user ->
+				UserRegistration.create(user.id)
+			}
 		}
 	}
 }

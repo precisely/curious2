@@ -112,12 +112,6 @@ class User {
 		]
 	}
 
-	Set<Survey> surveys = []
-
-	static hasMany = [
-		surveys: Survey
-	]
-
 	static Map<Long, Set<Long>> tagIdCache = Collections.synchronizedMap(new BoundedCache<Long, Set<Long>>(100000))
 	static Map<Long, Set<Long>> tagGroupIdCache = Collections.synchronizedMap(new BoundedCache<Long, Set<Long>>(100000))
 

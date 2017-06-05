@@ -18,10 +18,12 @@ import us.wearecurio.model.Model.Visibility
 import us.wearecurio.model.survey.AnswerType
 import us.wearecurio.model.survey.Question
 import us.wearecurio.model.survey.QuestionStatus
+import us.wearecurio.model.survey.Status
 import us.wearecurio.model.survey.Survey
 import us.wearecurio.model.survey.SurveyStatus
 import us.wearecurio.model.survey.UserAnswer
 import us.wearecurio.model.survey.PossibleAnswer
+import us.wearecurio.model.survey.UserSurvey
 import us.wearecurio.security.NoAuth
 import us.wearecurio.services.EmailService
 import us.wearecurio.services.EntryParserService
@@ -1470,7 +1472,7 @@ class DataController extends LoginController {
 		}
 
 		User currentUserInstance = sessionUser()
-		if (currentUserInstance.surveys.contains(surveyInstance)) {
+		if (UserSurvey.findByUserAndSurvey(currentUserInstance, surveyInstance)?.status == Status.TAKEN) {
 			renderJSONPost([success: false, message: 'User has already completed the survey.'])
 
 			return result
@@ -1588,7 +1590,7 @@ class DataController extends LoginController {
 					UserAnswer.createAnswers(currentUserInstance, surveyQuestion, answerList)
 				}
 
-				currentUserInstance.surveys.add(surveyInstance)
+				UserSurvey.create(currentUserInstance, surveyInstance, Status.TAKEN)
 				Utils.save(currentUserInstance, true)
 
 				renderJSONPost([success: true])
