@@ -10,6 +10,7 @@ import us.wearecurio.thirdparty.oura.LegacyOuraApi
 import us.wearecurio.thirdparty.oura.OuraApi
 import us.wearecurio.thirdparty.ttandme.Twenty3AndMeApi
 import us.wearecurio.thirdparty.withings.WithingsApi
+import org.apache.log4j.DailyRollingFileAppender
 // locations to search for config files that get merged into the main config;
 // config files can be ConfigSlurper scripts, Java properties files, or classes
 // in the classpath in ConfigSlurper format
@@ -160,7 +161,7 @@ elasticSearch {
 environments {
     development {
 		grails.mail.disabled=true
-		
+
         grails.logging.jul.usebridge = false
         grails.serverURL = "http://127.0.0.1:8080/"	/** If last `/` is removed, modify url's in oauth provider configurations **/
 		grails.serverURLProtocol = "http"
@@ -254,14 +255,11 @@ environments {
 		facebookAppId = "174406919567104"
 		
 		curiousanalytics.servers = [
-			'http://curiousanalytics:8090',
-			'http://curiousanalytics:8091'
+			'http://analytics-svc.qa-curious:8090',
 		]
 		
-		elasticSearch.client.mode = 'local'
-		
 		/*elasticSearch.client.mode = 'node'
-		
+
 		elasticSearch.client.hosts = [
 		       [host:'127.0.0.1', port:9300],
 		]*/
@@ -274,7 +272,7 @@ environments {
 		elasticSearch.client.mode = 'transport'
 		
 		elasticSearch.client.hosts = [
-		       [host:'curiouselastic', port:9300],
+		       [host:'elasticsearch-svc.qa-curious', port:9300],
 		]
 		
 		api {
@@ -320,6 +318,10 @@ environments {
 				oura {
 					key = 'WSMOSZBZYDCCINZ2'
 					secret = '6K6E4XCJPFUFEIRMGVGSHQTCEWQ2AMDP'
+				}
+				twitter {
+					key = "gI2yYQiHUaCSaMemzkfXWPWSv"
+					secret = "9v5XAQ860KaYQuk1w0Ez2hjfJ3Dpl58Sg5s3tdhbWWY9WHOmQh"
 				}
 			}
 		}
@@ -547,6 +549,39 @@ log4j.main = {
 					'grails.app.jobs.com.causecode',
 					'grails.app.jobs.us.wearecurio.jobs']
 				trace "org.scribe.model"
+			}
+			production {
+				appender new DailyRollingFileAppender(name: 'debugFile', datePattern: "'.'MM-dd-yyyy",
+						fileName: '/opt/jetty/logs/logFile',
+						layout: pattern(conversionPattern: '%-5p %d %c{2} %x - %m%n%n'))
+				debug debugFile: ['us.wearecurio.model',
+						'us.wearecurio.controller',
+						'us.wearecurio.services',
+						'us.wearecurio.server',
+						'us.wearecurio.util',
+						'us.wearecurio.exceptions',
+						'us.wearecurio.utility',
+						'us.wearecurio',
+						'grails.app.conf',
+						'grails.app.controllers',
+						'grails.app.services.us.wearecurio',
+						'grails.app.services.com.causecode',
+						'grails.app.jobs.com.causecode',
+						'com.causecode',
+						'grails.app.jobs.us.wearecurio.jobs',
+						'SecurityFilters']
+
+				warn debugFile: ['us.wearecurio.parse',
+						'org.codehaus.groovy.grails.web.servlet',
+						'org.codehaus.groovy.grails.web.pages',
+						'org.codehaus.groovy.grails.web.sitemesh',
+						'org.codehaus.groovy.grails.web.mapping.filter',
+						'org.codehaus.groovy.grails.web.mapping',
+						'org.codehaus.groovy.grails.commons',
+						'org.codehaus.groovy.grails.plugins',
+						'org.codehaus.groovy.grails.orm.hibernate',
+						'org.springframework',
+						'org.hibernate']
 			}
 		}
 	}

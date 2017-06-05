@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: analytics
+  namespace: prod-curious
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: analytics
+        tier: backend
+    spec:
+      volumes:
+        - name: analytics-logs
+          persistentVolumeClaim:
+            claimName: curious-pvc-nfs
+      containers:
+        - name: analytics-server
+          image: us.gcr.io/we-are-curious/clojure-kube-qa:latest  # Can be used for production.
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 2Gi
+            limits:
+              cpu: 2
+              memory: 8Gi
+          ports:
+          - containerPort: 8090
+          volumeMounts:
+            - name: analytics-logs
+              mountPath: /home/log/curious-analytics-job-error/
+              subPath: log/curious-analytics-job-error
+            - name: analytics-logs
+              mountPath: /home/log/curious-analytics-job/
+              subPath: log/curious-analytics-job
+      imagePullSecrets:
+        - name: curiouskey
