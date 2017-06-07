@@ -1499,9 +1499,12 @@ class DataController extends LoginController {
 	def getSurveyData() {
 		log.debug "Data.getSurveyData(): $params"
 
-		Map result = validateAndGetSurveyAndActiveQuestions(params)
+		User user = sessionUser()
+		def result = event('checkPromoCode', user)
 
-		if (!result.user || !result.surveyInstance || !result.activeQuestions) {
+		if (!result.value || !result.value.surveyInstance || !result.value.activeQuestions) {
+			renderJSONPost([success: false])
+
 			return
 		}
 
@@ -1511,8 +1514,9 @@ class DataController extends LoginController {
 		 */
 		PageRenderer groovyPageRenderer = grailsApplication.mainContext.getBean('groovyPageRenderer')
 
-		renderJSONPost([success: true, htmlContent: groovyPageRenderer.render(model: [questions: result.activeQuestions,
-				surveyCode: result.surveyInstance.code], template: "/survey/surveySlides")])
+		renderJSONPost([success: true, htmlContent: groovyPageRenderer.render(model:
+				[questions: result.value.activeQuestions, surveyCode: result.value.surveyInstance.code],
+				template: "/survey/surveySlides")])
 	}
 
 	/**
@@ -1590,7 +1594,7 @@ class DataController extends LoginController {
 					UserAnswer.createAnswers(currentUserInstance, surveyQuestion, answerList)
 				}
 
-				UserSurvey.create(currentUserInstance, surveyInstance, Status.TAKEN)
+				UserSurvey.createOrUpdate(currentUserInstance, surveyInstance, Status.TAKEN)
 				Utils.save(currentUserInstance, true)
 
 				renderJSONPost([success: true])

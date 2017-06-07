@@ -7,9 +7,11 @@ import us.wearecurio.controller.LoginController
 import us.wearecurio.model.User
 import us.wearecurio.model.survey.PossibleAnswer
 import us.wearecurio.model.survey.Question
+import us.wearecurio.model.survey.Status
 import us.wearecurio.model.survey.SurveyStatus
 import us.wearecurio.model.survey.UserAnswer
 import us.wearecurio.model.survey.Survey
+import us.wearecurio.model.survey.UserSurvey
 import us.wearecurio.utility.Utils
 
 class SurveyController extends LoginController {
@@ -247,5 +249,38 @@ class SurveyController extends LoginController {
 		} else {
 			renderJSONPost([success: false, message: 'Could not delete answer.'])
 		}
+	}
+
+	/**
+	 * This endpoint can be used when a User marks a Survey as IGNORED.
+	 *
+	 * @params surveyId: Valid id of the Survey
+	 *
+	 * @return userSurveyInstance
+	 */
+	def ignore() {
+		log.debug "Ignore Survey: $params"
+
+		User user = sessionUser()
+
+		Survey survey = Survey.findById(params.surveyId)
+
+		if (!survey) {
+			log.debug "Survey not found for surveyId: ${params.surveyId}"
+
+			return
+		}
+
+		UserSurvey userSurvey = UserSurvey.findByUserAndSurvey(user, survey)
+		if (!userSurvey) {
+			log.debug "UserServey missing for user - ${user} and survey - ${survey}"
+
+			return
+		}
+
+		userSurvey.status = Status.IGNORED
+		Utils.save(userSurvey, true)
+
+		return [userSurveyInstance: userSurvey]
 	}
 }

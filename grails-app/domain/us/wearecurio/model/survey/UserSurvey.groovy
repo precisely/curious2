@@ -17,8 +17,14 @@ class UserSurvey {
 		id composite: ['user', 'survey']
 	}
 
-	static UserSurvey create(User user, Survey survey, Status status) {
-		UserSurvey userSurvey = new UserSurvey([user: user, survey: survey, status: status])
+	static UserSurvey createOrUpdate(User user, Survey survey, Status status) throws IllegalArgumentException {
+
+		if (!user || !survey || !status) {
+			throw new IllegalArgumentException('Error while saving UserSurvey instance: params missing')
+		}
+
+		UserSurvey userSurvey = findByUserAndSurvey(user, survey) ?: new UserSurvey([user: user, survey: survey])
+		userSurvey.status = status
 		Utils.save(userSurvey, true)
 
 		return userSurvey

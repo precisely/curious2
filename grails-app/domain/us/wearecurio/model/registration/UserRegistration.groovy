@@ -9,13 +9,13 @@ class UserRegistration {
 
 	Long userId
 
-	String promoCode
+	String promoCode   // Multipurpose code.
 
 	Date dateCreated
 	Date lastUpdated
 
 	static constraints = {
-		promoCode nullable: true, unique: true
+		promoCode nullable: true
 		userId unique: true
 		dateCreated bindable: false
 		lastUpdated bindable: false

@@ -1,6 +1,9 @@
 package us.wearecurio.controller
 
 import us.wearecurio.model.registration.UserRegistration
+import us.wearecurio.model.survey.Status
+import us.wearecurio.model.survey.Survey
+import us.wearecurio.model.survey.UserSurvey
 import us.wearecurio.security.NoAuth
 
 import java.text.SimpleDateFormat
@@ -481,7 +484,18 @@ class LoginController extends SessionController {
 				debug "Error creating user: " + retVal['validateErrors']
 				return retVal
 			} else {
-				UserRegistration userRegistration = UserRegistration.create(user.id, params.promoCode)
+				String promoCode = params.promoCode ?: null
+				UserRegistration userRegistration = UserRegistration.create(user.id, promoCode)
+				Survey survey
+				UserSurvey userSurvey
+
+				if (promoCode) {
+					survey = Survey.findByCode(promoCode)
+					if (survey) {
+						userSurvey = new UserSurvey(user: user, survey: survey, status: Status.NOT_TAKEN)
+						Utils.save(userSurvey)
+					}
+				}
 
 				if (!userRegistration.validate()) {
 					status.setRollbackOnly()
@@ -491,8 +505,6 @@ class LoginController extends SessionController {
 					userRegistration.errors.allErrors.each {
 						retVal['validateErrors'] += it
 					}
-
-					debug "Error creating UserRegistration.." + retVal['validateErrors']
 
 					return retVal
 				}

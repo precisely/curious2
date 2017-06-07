@@ -57,7 +57,6 @@
 	</div>
 </content>
 <script>
-	var surveyCode = getSearchParams().surveyCode;
 	var showHelpModal = ${session.showHelp?: false};
 	var notificationCount;
 
@@ -99,38 +98,33 @@
 				}
 			});
 
-			if ((typeof surveyCode != 'undefined') && surveyCode) {
-				var interestTagList;
-				var params = {surveyCode: surveyCode};
-				queuePostJSON("Getting survey data", "/home/getSurveyData", 
-						getCSRFPreventionObject('getSurveyDataCSRF', params), function(data) {
+			queueJSON("Getting survey data", "/home/getSurveyData",
+					getCSRFPreventionObject('getSurveyDataCSRF'), function(data) {
 
-					if (data && data.success) {
-						var carouselInnerContent = $('#survey-carousel-content .carousel-inner');
-						carouselInnerContent.html(data.htmlContent);
+				if (data && data.success) {
+					var carouselInnerContent = $('#survey-carousel-content .carousel-inner');
+					carouselInnerContent.html(data.htmlContent);
 
-						var questionCount = carouselInnerContent.find('.item').length;
-						if (questionCount == 1) {
-							var submitButtonLink = $('#navigate-right'); 
+					var questionCount = carouselInnerContent.find('.item').length;
+					if (questionCount == 1) {
+						var submitButtonLink = $('#navigate-right');
 
-							var submitButton = submitButtonLink.find('button');
-							submitButton.text('SUBMIT');
-							submitButton.prop('type', 'submit');
+						var submitButton = submitButtonLink.find('button');
+						submitButton.text('SUBMIT');
+						submitButton.prop('type', 'submit');
 
-							submitButtonLink.prop('href', '#');
-						}
-
-						$('#takeSurveyOverlay').modal({show: true});
-					} else {
-						showAlert(data.message);
+						submitButtonLink.prop('href', '#');
 					}
-				}, function(xhr) {
-					console.log('xhr:', xhr);
-				});
-			}
-			if (showHelpModal) {
-				$('#helpWizardOverlay').modal({show: true});
-			}
+
+					$('#takeSurveyOverlay').modal({show: true});
+				} else {
+					if (showHelpModal) {
+						$('#helpWizardOverlay').modal({show: true});
+					}
+				}
+			}, function(xhr) {
+				console.log('xhr:', xhr);
+			});
 		});
 		jQuery.curCSS = jQuery.css;
 	
