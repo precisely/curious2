@@ -10,7 +10,7 @@
 <script type="text/javascript" src="/js/curious/autocomplete.js?ver=22"></script>
 <script type="text/javascript" src="/js/curious/treeview.js?ver=22"></script>
 <script type="text/javascript" src="/js/curious/taglist.js?ver=22"></script>
-<script type="text/javascript" src="/js/curious/curiosities.js?ver=22"></script>
+%{--<script type="text/javascript" src="/js/curious/curiosities.js?ver=22"></script>--}%
 <script type="text/javascript" src="/js/curious/profileTag.js?ver=23"></script>
 <script type="text/javascript" src="/js/jquery/jquery.infinite.scroll.js"></script>
 <c:jsCSRFToken keys="createHelpEntriesDataCSRF, saveSurveyDataCSRF, getPeopleDataCSRF, hideHelpDataCSRF, 
@@ -35,7 +35,7 @@
 			<li><g:link controller='home' action="graph">Chart</g:link></li>
 			<li><a href="/home/social#all" id="social-menu">Social</a></li>
 			<li><a href="/home/sprint#all">Trackathons</a></li>
-			<li><g:link controller='home' action="curiosities">Curiosities</g:link></li>
+			%{--<li><g:link controller='home' action="curiosities">Curiosities</g:link></li>--}%
 			<c:ifAdmin>
 				<li><g:link controller="admin" action="dashboard">Admin</g:link></li>
 			</c:ifAdmin>

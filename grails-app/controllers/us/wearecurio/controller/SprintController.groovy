@@ -263,6 +263,7 @@ class SprintController extends LoginController {
 		renderJSONPost([success: true])
 	}
 
+	// When a user starts a sprint(trackathon), the user becomes a member of the group as a reader and writer.
 	def start() {
 		Sprint sprintInstance = Sprint.findByHash(params.id)
 		User currentUser = sessionUser()
@@ -359,6 +360,7 @@ class SprintController extends LoginController {
 					   totalParticipants: sprintInstance.getParticipantsCount()])
 	}
 
+	// When a user joins/follows a trackathon, the user becomes a member of the group as a reader as well as writer.
 	def join() {
 		Sprint sprintInstance = Sprint.findByHash(params.id)
 		User currentUser = sessionUser()

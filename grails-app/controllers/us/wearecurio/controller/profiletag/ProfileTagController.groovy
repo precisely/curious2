@@ -32,7 +32,7 @@ class ProfileTagController extends LoginController {
 
 		User user = sessionUser()
 
-		String message = !user ? AUTH_ERROR_MESSAGE : (!params.tagName ? 'No tag name specified' : 
+		String message = !user ? AUTH_ERROR_MESSAGE : (!params.tagNames ? 'No tag names specified' :
 				(!params.tagStatus ? 'No tag status specified' : ''))
 
 		if (message) {
@@ -43,17 +43,29 @@ class ProfileTagController extends LoginController {
 		}
 
 		ProfileTagStatus status = params.tagStatus as ProfileTagStatus
-		Tag newTag = Tag.look(params.tagName.toLowerCase().trim())
+		List<String> errorTagsList = []
+		List<ProfileTag> newProfileTags = []
 
-		boolean flush = true
-		ProfileTag newProfileTag = ProfileTag.addInterestTag(newTag, user.id, status, flush)
+		params.tagNames.each { tagName ->
+			Tag newTag = Tag.look(tagName.toLowerCase().trim())
 
-		if (newProfileTag)  {
-			debug "Successfully added profile tag"
-			renderJSONGet([success: true, profileTag: newProfileTag])
-		} else {
+			ProfileTag newProfileTag = ProfileTag.addInterestTag(newTag, user.id, status, true)
+			if (newProfileTag)  {
+				debug "Successfully added profile tag"
+				newProfileTags.add(newProfileTag)
+			} else {
+				debug "Failure adding profile tag"
+				errorTagsList.add(tagName)
+			}
+		}
+
+
+		if (errorTagsList)  {
 			debug "Failure adding profile tag"
-			renderStringGet("Error adding interest tag")
+			renderStringGet("Error adding interest tag for tags ${errorTagsList}")
+		} else {
+			debug "Successfully added profile tag"
+			renderJSONGet([success: true, profileTag: newProfileTags])
 		}
 	}
 

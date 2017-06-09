@@ -15,6 +15,8 @@ import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.data.UserSettings
 import us.wearecurio.model.*
 import us.wearecurio.model.Model.Visibility
+import us.wearecurio.model.profiletags.ProfileTag
+import us.wearecurio.model.profiletags.ProfileTagStatus
 import us.wearecurio.model.survey.AnswerType
 import us.wearecurio.model.survey.Question
 import us.wearecurio.model.survey.QuestionStatus
@@ -1553,6 +1555,18 @@ class DataController extends LoginController {
 					}
 
 					activeQuestions.remove(surveyQuestion)
+
+					// Creating ProfileTags and TagStats for Associated tags.
+					surveyQuestion.answers.each { PossibleAnswer possibleAnswer ->
+						possibleAnswer.associatedProfileTags.each { Tag tag ->
+							if (!ProfileTag.findByTag(tag)) {
+								ProfileTag.addInterestTag(tag, currentUserInstance.id, ProfileTagStatus.PRIVATE)
+							}
+						}
+						possibleAnswer.associatedTrackingTags.each { Tag tag ->
+							TagStats.createOrUpdate(currentUserInstance.id, tag.id)
+						}
+					}
 
 					List answerList = []
 					if (surveyQuestion.answerType.isMCQType()) {

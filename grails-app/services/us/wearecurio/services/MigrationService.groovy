@@ -1115,8 +1115,9 @@ class MigrationService {
 
 			log.debug("Creating UserRegistration for ${users.size()} users.")
 
-			users.each { User user ->
-				UserRegistration.create(user.id)
+			users.each {
+				Long userId = it['id']
+				UserRegistration.create(userId)
 			}
 		}
 	}

@@ -15,18 +15,24 @@ class PossibleAnswer {
 	Integer priority
 
 	/*
-	 * Associated tag with this answer. When user selects this answer for a question, this tag gets added to User's
-	 * public interest tags.
+	 * Associated profile tags and associated tracking tags with this answer.
+	 * When user selects this answer for a question, associatedProfileTags create ProfileTags and associatedTreckingTag
+	 * creates TagStats for the user.
 	 */
-	Tag tag
+	Set<Tag> associatedProfileTags = []
+	Set<Tag> associatedTrackingTags = []
 
 	static belongsTo = [
 		question: Question
 	]
 
+	static hasMany = [
+			associatedProfileTags: Tag,
+			associatedTrackingTags: Tag
+	]
+
 	static constraints = {
 		answer(blank: false, size: 1..1000)
-		tag nullable: true
 	}
 
 	static mapping = {
@@ -36,29 +42,30 @@ class PossibleAnswer {
 
 	static PossibleAnswer create(Map args) {
 		PossibleAnswer answer = new PossibleAnswer(args)
-		answer.tag = getTag(args)
+		answer.associatedProfileTags = getAssociatedTags(args.associatedProfileTags)
+		answer.associatedTrackingTags = getAssociatedTags(args.associatedTrackingTags)
 
 		return answer
 	}
 
-	static Tag getTag(Map args) {
-		Tag tag
-
-		if (args.tagDescription) {
-			tag = Tag.look(args.tagDescription.trim())
+	static getAssociatedTags(List tagDescriptionList) {
+		List<Tag> tagsList = []
+		tagDescriptionList.each { String tagDescription ->
+			tagsList.add(Tag.look(tagDescription.trim())) // Creates a new Tag for the given description if one does not exist.
 		}
 
-		return tag
+		return tagsList
 	}
 
 	PossibleAnswer update(Map args) {
 		this.properties = args
-		this.tag = getTag(args)
+		this.associatedProfileTags = getAssociatedTags(args.associatedProfileTags)
+		this.associatedTrackingTags = getAssociatedTags(args.associatedTrackingTags)
 
 		return this
 	}
 
 	String toString() {
-		return "PossibleAnswer(id: ${id}, answer: ${answer}, tag: ${tag.description})"
+		return "PossibleAnswer(id: ${id}, answer: ${answer})"
 	}
 }
