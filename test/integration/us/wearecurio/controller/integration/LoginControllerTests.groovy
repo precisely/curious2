@@ -8,6 +8,11 @@ import us.wearecurio.model.PasswordRecovery
 import us.wearecurio.model.Tag
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
+import us.wearecurio.model.registration.UserRegistration
+import us.wearecurio.model.survey.Status
+import us.wearecurio.model.survey.Survey
+import us.wearecurio.model.survey.SurveyStatus
+import us.wearecurio.model.survey.UserSurvey
 
 public class LoginControllerTests extends CuriousControllerTestCase {
 	static transactional = true
@@ -309,39 +314,83 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testDoregisterSuccess() {
+		given: 'User registration params and an active Survey'
 		LoginController controller = new LoginController()
+		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
+				status: SurveyStatus.ACTIVE)
+		surveyInstance.addToQuestions(question: 'This is the first question.', priority: '1', status: 'ACTIVE',
+				answerType: 'DESCRIPTIVE')
+
+		surveyInstance.addToQuestions(question: 'This is the second question.', priority: '2', status: 'ACTIVE',
+				answerType: 'MCQ_RADIO', isRequired: true)
+		surveyInstance.questions[1].addToAnswers([associatedProfileTags: [Tag.look('mood')], priority: '1',
+				answer: 'This is the second answer first radio', associatedTrackingTags: [Tag.look('sleep')]])
+		surveyInstance.questions[1].addToAnswers([associatedTrackingTags: [Tag.look('run')], priority: '2',
+				answer: 'This is the second answer second radio'])
+
+		surveyInstance.save(flush: true)
 		
 		UserGroup curious = UserGroup.create("curious", "Curious Discussions", "Discussion topics for Curious users",
 				[isReadOnly:false, defaultNotify:false])
 		UserGroup announce = UserGroup.create("announce", "Curious Announcements", "Announcements for Curious users",
 				[isReadOnly:true, defaultNotify:true])
-		
+
+		when: 'User does not register with promo code'
 		controller.session.userId = null
-		
+
 		controller.params.clear()
 		controller.params.putAll([
-			username:'q',
-			email:'q@q.com',
-			confirm_email: 'q@q.com',
-			password:'q',
-			name:'q q',
-			sex:'F',
-			groups:"['curious','announce']"
+				username:'q',
+				email:'q@q.com',
+				confirm_email: 'q@q.com',
+				password:'q',
+				name:'q q',
+				sex:'F',
+				groups:"['curious','announce']",
+		])
+
+		controller.doregister()
+
+		then: 'User, UserRegistration instances are created'
+		def q = User.findByUsername('q')
+
+		assert curious.hasWriter(q)
+		assert !announce.hasWriter(q)
+		assert announce.hasReader(q)
+		assert UserRegistration.findByUserId(q.id).promoCode == null
+		assert UserSurvey.count() == 0
+		assert q.hasInterestTag(Tag.look("newuser"))
+		assert controller.response.redirectedUrl.endsWith('/home/index')
+
+		when: 'User registers with a promo code'
+		controller.response.reset()
+		controller.params.clear()
+		controller.session.userId = null
+		controller.params.putAll([
+			username:'w',
+			email:'w@w.com',
+			confirm_email: 'w@w.com',
+			password:'w',
+			name:'w w',
+			sex:'m',
+			groups:"['curious','announce']",
+			promoCode: 's001'
 		])
 		
-		def c = controller.doregister()
-		
-		def q = User.findByUsername('q')
+		controller.doregister()
+
+		then: 'User, UserRegistration and UserSurvey instances are created'
+		q = User.findByUsername('w')
 		
 		assert curious.hasWriter(q)
 		assert !announce.hasWriter(q)
 		assert announce.hasReader(q)
-		
+		assert UserRegistration.findByUserIdAndPromoCode(q.id, 's001')
+		assert UserSurvey.findByUserAndSurvey(q, surveyInstance).status == Status.NOT_TAKEN
+		assert UserSurvey.count() == 1
 		assert q.hasInterestTag(Tag.look("newuser"))
 		
-		def rU = controller.response.redirectedUrl
-		
-		assert rU.endsWith('/home/index')
+		assert controller.response.redirectedUrl.endsWith('/home/index')
 	}
 
 	@Test

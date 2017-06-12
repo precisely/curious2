@@ -2,6 +2,7 @@ package us.wearecurio.model.survey
 
 import groovy.transform.EqualsAndHashCode
 import us.wearecurio.model.Tag
+import us.wearecurio.utility.Utils
 
 /**
  * A domain that holds possible answers for a Question.
@@ -41,9 +42,14 @@ class PossibleAnswer {
 	}
 
 	static PossibleAnswer create(Map args) {
-		PossibleAnswer answer = new PossibleAnswer(args)
-		answer.associatedProfileTags = getAssociatedTags(args.associatedProfileTags)
-		answer.associatedTrackingTags = getAssociatedTags(args.associatedTrackingTags)
+		PossibleAnswer answer = new PossibleAnswer(answer: args.answer, priority: args.priority?.toInteger())
+		getAssociatedTags(args.profileTags).each { Tag tag ->
+			answer.addToAssociatedProfileTags(tag)
+		}
+		getAssociatedTags(args.trackingTags).each { Tag tag ->
+			answer.addToAssociatedTrackingTags(tag)
+		}
+		Utils.save(answer)
 
 		return answer
 	}
@@ -58,9 +64,15 @@ class PossibleAnswer {
 	}
 
 	PossibleAnswer update(Map args) {
-		this.properties = args
-		this.associatedProfileTags = getAssociatedTags(args.associatedProfileTags)
-		this.associatedTrackingTags = getAssociatedTags(args.associatedTrackingTags)
+		this.answer = args.answer
+		this.priority = args.priority?.toInteger()
+		getAssociatedTags(args.profileTags).each { Tag tag ->
+			this.addToAssociatedProfileTags(tag)
+		}
+		getAssociatedTags(args.trackingTags).each { Tag tag ->
+			this.addToAssociatedTrackingTags(tag)
+		}
+		Utils.save(this)
 
 		return this
 	}

@@ -7,6 +7,7 @@ import org.codehaus.groovy.grails.web.json.JSONElement
 import spock.lang.Specification
 import spock.lang.Unroll
 import us.wearecurio.controller.survey.SurveyController
+import us.wearecurio.model.profiletags.ProfileTag
 import us.wearecurio.model.survey.AnswerType
 import us.wearecurio.model.survey.Question
 import us.wearecurio.model.survey.PossibleAnswer
@@ -368,7 +369,7 @@ class SurveyControllerSpec extends IntegrationSpec {
 		when: 'The addAnswers action is hit with valid JSON answer list'
 		controller.response.reset()
 		controller.params.id = surveyInstance.questions[0].id
-		controller.params.possibleAnswers = ([[tagDescription: 'sleep', priority: '1',
+		controller.params.possibleAnswers = ([[profileTags: ['sleep'], priority: '1',
 				answer: 'This is the first answer']] as JSON).toString()
 		controller.addAnswers()
 
@@ -380,15 +381,15 @@ class SurveyControllerSpec extends IntegrationSpec {
 		surveyInstance.questions[0].answers.size() == 1
 		PossibleAnswer possibleAnswer = PossibleAnswer.first()
 		possibleAnswer.answer == 'This is the first answer'
-		possibleAnswer.tag.description == 'sleep'
+		possibleAnswer.associatedProfileTags[0].description == 'sleep'
 		possibleAnswer.priority == 1
 
 		when: 'The answer list has answerId key, then the answer should be updated'
 		controller.response.reset()
 		controller.params.id = surveyInstance.questions[0].id
-		controller.params.possibleAnswers = ([[tagDescription: 'run', priority: '2',
+		controller.params.possibleAnswers = ([[profileTags: ['run'], priority: '2',
 				answer: 'This is the first answer updated', answerId: possibleAnswer.id],
-				[tagDescription: 'mood', priority: '3', answer: 'This is the second answer']] as JSON).toString()
+				[profileTags: ['mood'], priority: '3', answer: 'This is the second answer']] as JSON).toString()
 		controller.addAnswers()
 
 		then: 'The response succeeds with respective message'
@@ -399,19 +400,19 @@ class SurveyControllerSpec extends IntegrationSpec {
 		surveyInstance.questions[0].answers.size() == 2
 		PossibleAnswer possibleAnswer1 = PossibleAnswer.first()
 		possibleAnswer1.answer == 'This is the first answer updated'
-		possibleAnswer1.tag.description == 'run'
+		possibleAnswer1.associatedProfileTags[0].description == 'sleep'
 		possibleAnswer1.priority == 2
 
 		PossibleAnswer possibleAnswer2 = PossibleAnswer.last()
 		possibleAnswer2.answer == 'This is the second answer'
-		possibleAnswer2.tag.description == 'mood'
+		possibleAnswer2.associatedProfileTags[0].description == 'mood'
 		possibleAnswer2.priority == 3
 
 		when: 'The addAnswers action is hit with incomplete params'
 		controller.response.reset()
 		controller.params.id = surveyInstance.questions[0].id
-		controller.params.possibleAnswers = ([[tagDescription: 'sleep', answer: 'This is the first answer'],
-				[tagDescription: 'sleep', priority: '2']] as JSON).toString()
+		controller.params.possibleAnswers = ([[profileTags: ['sleep'], answer: 'This is the first answer'],
+				[profileTags: ['sleep'], priority: '2']] as JSON).toString()
 		controller.addAnswers()
 
 		then: 'The response fails with respective message'

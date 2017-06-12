@@ -49,34 +49,38 @@ class ProfileTagControllerSpec extends IntegrationSpec {
 	void "test addInterestTag for adding public and private tags"() {
 		when: 'The addInterestTag action is hit for this user with tagName and status'
 		controller.session.userId = user.id
-		controller.params.tagName = tagName
+		controller.params.tagNames = [tagName1, tagName2]
 		controller.params.tagStatus = tagStatus
 		controller.addInterestTag()
 
 		then: 'The newly created profiletag should be present in the response'
 		JSONElement json = JSON.parse(controller.response.text)
 		json.success == true
-		json.profileTag.tag.description == tagName
-		json.profileTag.status == tagStatus
-		ProfileTag.count() == 1
+		json.profileTag[0].tag.description == tagName1
+		json.profileTag[1].tag.description == tagName2
+		json.profileTag[0].status == tagStatus
+		json.profileTag[1].status == tagStatus
+		ProfileTag.count() == 2
 
-		ProfileTag profileTagInstance = ProfileTag.first()
-		profileTagInstance.tag.description == tagName
-		profileTagInstance.status == tagStatus as ProfileTagStatus
+		List profileTagInstanceList = ProfileTag.findAll()
+		profileTagInstanceList[0].tag.description == tagName1
+		profileTagInstanceList[0].status == tagStatus as ProfileTagStatus
+		profileTagInstanceList[1].tag.description == tagName2
+		profileTagInstanceList[1].status == tagStatus as ProfileTagStatus
 
 		where:
-		tagName  | tagStatus
-		'run'    | 'PUBLIC'
-		'sleep'  | 'PRIVATE'
-		'tea'    | 'PUBLIC'
-		'coffee' | 'PRIVATE'
+		tagName1 | tagName2  | tagStatus
+		'run'    | 'walk'    | 'PUBLIC'
+		'sleep'  | 'milk'    | 'PRIVATE'
+		'tea'    | 'exercise'| 'PUBLIC'
+		'coffee' | 'eat'     | 'PRIVATE'
  	}
 
 	@Unroll
 	void "test addInterestTag for when either of the two params are missing"() {
 		when: 'The addInterestTag action is hit for this user with tagName and status'
 		controller.session.userId = user.id
-		controller.params.tagName = tagName
+		controller.params.tagNames = tagNames
 		controller.params.tagStatus = tagStatus
 		controller.addInterestTag()
 
@@ -84,9 +88,9 @@ class ProfileTagControllerSpec extends IntegrationSpec {
 		controller.response.text == errorText
 
 		where:
-		tagName  | tagStatus | errorText
-		''       | 'PUBLIC'  | "'No tag name specified'"
-		'sleep'  | ''        | "'No tag status specified'"
+		tagNames  | tagStatus | errorText
+		[]        | 'PUBLIC'  | "'No tag names specified'"
+		['sleep'] | ''        | "'No tag status specified'"
 	}
 
 	void "test addInterestTag for preventing duplicates"() {
@@ -95,12 +99,12 @@ class ProfileTagControllerSpec extends IntegrationSpec {
 
 		when: 'The addInterestTag action is hit for this user with same tagName and status'
 		controller.session.userId = user.id
-		controller.params.tagName = 'tea'
+		controller.params.tagNames = ['tea']
 		controller.params.tagStatus = 'PUBLIC'
 		controller.addInterestTag()
 
 		then: 'The request should to add new tag'
-		controller.response.text == "'Error adding interest tag'"
+		controller.response.text == "'Error adding interest tag for tags [tea]'"
 	}
 
 	void "test deleteInterestTag to successfully delete profile tags"() {

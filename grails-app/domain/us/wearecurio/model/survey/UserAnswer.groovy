@@ -1,5 +1,7 @@
 package us.wearecurio.model.survey
 
+import us.wearecurio.model.Tag
+import us.wearecurio.model.TagStats
 import us.wearecurio.model.User
 import us.wearecurio.model.profiletags.ProfileTag
 import us.wearecurio.utility.Utils
@@ -34,7 +36,12 @@ class UserAnswer {
 	static UserAnswer createAnswer(User user, Question surveyQuestion, PossibleAnswer answerInstance) {
 		UserAnswer userAnswerInstance = createAnswer(user, surveyQuestion, answerInstance.answer)
 		if (userAnswerInstance) {
-			ProfileTag.addPublicInterestTag(answerInstance.tag, user.id)
+			answerInstance.associatedProfileTags.each { Tag tag ->
+				ProfileTag.addPrivateInterestTag(tag, user.id)
+			}
+			answerInstance.associatedTrackingTags.each { Tag tag ->
+				TagStats.createOrUpdate(user.id, tag.id)
+			}
 		}
 
 		return userAnswerInstance

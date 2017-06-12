@@ -9,6 +9,8 @@ import us.wearecurio.controller.DataController
 import us.wearecurio.data.RepeatType
 import us.wearecurio.model.*
 import us.wearecurio.model.Model.Visibility
+import us.wearecurio.model.registration.UserRegistration
+import us.wearecurio.model.survey.PossibleAnswer
 import us.wearecurio.model.survey.QuestionStatus
 import us.wearecurio.model.survey.Survey
 import us.wearecurio.model.survey.SurveyStatus
@@ -1142,16 +1144,16 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		surveyInstance.addToQuestions(question: 'This is the second question.', priority: '2', status: 'ACTIVE',
 				answerType: 'MCQ_RADIO', isRequired: true)
-		surveyInstance.questions[1].addToAnswers([tag: Tag.look('mood'), priority: '1', 
-				answer: 'This is the second answer first radio'])
-		surveyInstance.questions[1].addToAnswers([tag: Tag.look('run'), priority: '2',
+		surveyInstance.questions[1].addToAnswers([associatedProfileTags: [Tag.look('mood')], priority: '1',
+				answer: 'This is the second answer first radio', associatedTrackingTags: [Tag.look('sleep')]])
+		surveyInstance.questions[1].addToAnswers([associatedTrackingTags: [Tag.look('run')], priority: '2',
 				answer: 'This is the second answer second radio'])
 
 		surveyInstance.addToQuestions(question: 'This is the third question.', priority: '3', status: 'ACTIVE',
 				answerType: 'MCQ_CHECKBOX')
-		surveyInstance.questions[2].addToAnswers([tag: Tag.look('sleep'), priority: '1',
-				answer: 'This is the third answer first checkbox'])
-		surveyInstance.questions[2].addToAnswers([tag: Tag.look('coffee'), priority: '2',
+		surveyInstance.questions[2].addToAnswers([associatedProfileTags: [Tag.look('sleep')], priority: '1',
+				answer: 'This is the third answer first checkbox', associatedTrackingTags: [Tag.look('mood')]])
+		surveyInstance.questions[2].addToAnswers([associatedProfileTags: [Tag.look('coffee')], priority: '2',
 				answer: 'This is the third answer second checkbox'])
 		surveyInstance.save(flush: true)
 
@@ -1176,6 +1178,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert json.message == 'Survey Data could not be saved'
 		assert UserAnswer.count() == 0
 		assert ProfileTag.count() == 0
+		assert TagStats.count() == 0
 
 		when: 'The saveSurveyData action is hit with survey code for active survey and all answers'
 		controller.response.reset()
@@ -1197,11 +1200,12 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.saveSurveyData()
 
-		then: 'The request should complete successfully and UserAnswer and profiletags should be created'
+		then: 'The request should complete successfully and UserAnswer and profiletags, tagstats should be created'
 		JSONElement json1 = JSON.parse(controller.response.text)
 		assert json1.success == true
 		assert UserAnswer.count() == 4 // one descriptive, one radio and two checkboxes
 		assert ProfileTag.count() == 3 // mood, coffee, sleep
+		assert TagStats.count() == 2 // sleep, mood (Only one out of run or mood will be created depending on user's answer)
 	}
 
 	@Test
@@ -1212,27 +1216,15 @@ class DataControllerTests extends CuriousControllerTestCase {
 		surveyInstance.addToQuestions(question: 'This is the first question.', priority: '1', status: 'INACTIVE',
 				answerType: 'DESCRIPTIVE')
 		surveyInstance.save(flush: true)
+		UserRegistration.create(user.id, surveyInstance.code)
+		assert UserRegistration.count() == 1
 
 		when: 'The getSurveyData action is hit with survey code for Inactive survey'
 		controller.session.userId = user.id
-		controller.params.surveyCode = 's001'
 		controller.getSurveyData()
 
-		then: 'The request should fail with appropriate message'
-		JSONElement json = JSON.parse(controller.response.text)
-		assert json.success == false
-		assert json.message == 'Invalid Survey Code.'
-
-		when: 'The incorrect code is sent in the request'
-		controller.response.reset()
-		controller.session.userId = user.id
-		controller.params.surveyCode = 's002'
-		controller.getSurveyData()
-
-		then: 'The request should fail with appropriate message'
-		JSONElement json1 = JSON.parse(controller.response.text)
-		assert json1.success == false
-		assert json1.message == 'Invalid Survey Code.'
+		then: 'The request should fail'
+		assert controller.response.text.success == false
 
 		when: 'There are no active questions for this survey'
 		surveyInstance.status = SurveyStatus.ACTIVE
@@ -1244,10 +1236,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params.surveyCode = 's001'
 		controller.getSurveyData()
 
-		then: 'The request should fail with appropriate message'
-		JSONElement json3 = JSON.parse(controller.response.text)
-		assert json3.success == false
-		assert json3.message == 'There are no active questions for this survey.'
+		then: 'The request should fail'
+		assert controller.response.text.success == false
 
 		when: 'The code is correct, survey and questions are active and user has not yet attended the survey'
 		surveyInstance.questions[0].status = QuestionStatus.ACTIVE
@@ -1255,13 +1245,12 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.response.reset()
 		controller.session.userId = user.id
-		controller.params.surveyCode = 's001'
 		controller.getSurveyData()
 
 		then: 'The response should contain the html content for survey modal slides'
-		JSONElement json4 = JSON.parse(controller.response.text)
-		assert json4.success == true
-		assert json4.htmlContent.contains('<div class="section">QUESTION</div>')
+		JSONElement json = JSON.parse(controller.response.text)
+		assert json.success == true
+		assert json.htmlContent.contains('<div class="section">QUESTION</div>')
 	}
 
 	@Test
