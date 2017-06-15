@@ -1386,4 +1386,47 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert controller.response.json.cacheDate == updatedCacheDate
 		assert TagInputType.cachedTagInputTypes.size() == 4
 	}
+
+	@Test
+	void 'test getTagsForAutoComplete for various searchString'() {
+		given: 'A few Tag instances'
+		List tagDescriptions = ['sleep', 'run', 'coffee', 'exercise', 'mood']
+		tagDescriptions.each {String description ->
+			Tag.look(description)
+		}
+
+		when: 'getTagsForAutoComplete action is hit with empty searchString'
+		controller.request.method = 'GET'
+		controller.params.searchString = ''
+		controller.getTagsForAutoComplete()
+
+		then: 'The server returns false'
+		assert controller.response.status == 200
+		assert controller.response.json.success == false
+
+		when: 'getTagsForAutoComplete action is hit and no results are found for the given searchString'
+		controller.response.reset()
+		controller.params.clear()
+		controller.params.searchString = 'zxcvbnm'
+		controller.getTagsForAutoComplete()
+
+		then: 'Server returns empty list in response'
+		assert controller.response.status == 200
+		assert controller.response.json.success == true
+		assert controller.response.json.displayNames == []
+
+		when: 'getTagsForAutoComplete action is hit and results are found for the given searchString'
+		controller.response.reset()
+		controller.params.clear()
+		controller.params.searchString = 'e'
+		controller.getTagsForAutoComplete()
+
+		then: 'Server returns list of matching results'
+		assert controller.response.status == 200
+		assert controller.response.json.success == true
+		assert controller.response.json.displayNames.size() != null
+		controller.response.json.displayNames.each {
+			assert it.value.contains('e')
+		}
+	}
 }

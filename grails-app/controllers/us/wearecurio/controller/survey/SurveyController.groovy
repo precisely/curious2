@@ -189,7 +189,7 @@ class SurveyController extends LoginController {
 			flash.messageType = 'danger'
 			redirect(uri: 'survey/index')
 
-			return 
+			return
 		}
 
 		flash.message = 'Question updated successfully.'
@@ -268,6 +268,7 @@ class SurveyController extends LoginController {
 
 		if (!survey) {
 			log.debug "Survey not found for surveyId: ${params.surveyId}"
+			renderJSONGet([success: false, message: "Survey not found for surveyId: ${params.surveyId}"])
 
 			return
 		}
@@ -275,14 +276,13 @@ class SurveyController extends LoginController {
 		UserSurvey userSurvey = UserSurvey.findByUserAndSurvey(user, survey)
 		if (!userSurvey) {
 			log.debug "UserServey missing for user - ${user} and survey - ${survey}"
+			renderJSONGet([success: false, message: "UserServey missing for user - ${user} and survey - ${survey}"])
 
 			return
 		}
 
 		userSurvey.status = Status.IGNORED
-		Utils.save(userSurvey, true)
-
-		return [userSurveyInstance: userSurvey]
+		Utils.save(userSurvey, true) ? renderJSONGet([success: true]) : renderJSONGet([success: false])
 	}
 
 	/**
@@ -292,7 +292,7 @@ class SurveyController extends LoginController {
 	 * @params tagDescription - Description of the tag to be removed
 	 * @params tagType - either profileTag or trackingTag
 	 * @return success value
-     */
+	 */
 	def removeAssociatedTagFromPossibleAnswer() {
 		log.debug "Remove associated tags from PossibleAnswer: $params"
 

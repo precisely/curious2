@@ -1491,8 +1491,8 @@ class DataController extends LoginController {
 					   userIdList: userIdList, displayNames: displayNames])
 	}
 
-	private Map validateAndGetSurveyAndActiveQuestions(Map params) {
-		Survey surveyInstance = Survey.findByCodeAndStatus(params.surveyCode, SurveyStatus.ACTIVE)
+	private Map validateAndGetSurveyAndActiveQuestions(String surveyCode) {
+		Survey surveyInstance = Survey.findByCodeAndStatus(surveyCode, SurveyStatus.ACTIVE)
 
 		Map result = [:]
 
@@ -1558,7 +1558,7 @@ class DataController extends LoginController {
 	def saveSurveyData() {
 		log.debug "Data.saveSurveyData() $params"
 
-		Map result = validateAndGetSurveyAndActiveQuestions(params)
+		Map result = validateAndGetSurveyAndActiveQuestions(params.surveyCode)
 
 		if (!result.user || !result.surveyInstance || !result.activeQuestions) {
 			return

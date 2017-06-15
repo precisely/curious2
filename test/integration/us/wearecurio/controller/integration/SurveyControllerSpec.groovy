@@ -7,13 +7,16 @@ import org.codehaus.groovy.grails.web.json.JSONElement
 import spock.lang.Specification
 import spock.lang.Unroll
 import us.wearecurio.controller.survey.SurveyController
+import us.wearecurio.model.User
 import us.wearecurio.model.profiletags.ProfileTag
 import us.wearecurio.model.survey.AnswerType
 import us.wearecurio.model.survey.Question
 import us.wearecurio.model.survey.PossibleAnswer
 import us.wearecurio.model.survey.QuestionStatus
+import us.wearecurio.model.survey.Status
 import us.wearecurio.model.survey.Survey
 import us.wearecurio.model.survey.SurveyStatus
+import us.wearecurio.model.survey.UserSurvey
 
 class SurveyControllerSpec extends IntegrationSpec {
 
@@ -429,8 +432,7 @@ class SurveyControllerSpec extends IntegrationSpec {
 				answerType: 'MCQ_RADIO')
 		surveyInstance.save(flush: true)
 
-		surveyInstance.questions[0].addOrUpdateAnswers([[tagDescription: 'mood', priority: '1',
-				answer: 'This is the first answer']])
+		surveyInstance.questions[0].addOrUpdateAnswers([[priority: '1', answer: 'This is the first answer']])
 		surveyInstance.save(flush: true)
 
 		assert Survey.count() == 1
@@ -468,5 +470,111 @@ class SurveyControllerSpec extends IntegrationSpec {
 		json2.success == true
 		json2.message == 'Deleted successfully.'
 		PossibleAnswer.count() == 0
+	}
+
+	void 'test ignore endpoint for various cases'() {
+		given: 'Survey and a User instance'
+		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
+				status: SurveyStatus.ACTIVE)
+		surveyInstance.save(flush: true)
+		Survey surveyInstance1 = new Survey(code: 's002', title: 'This is the second survey title.',
+				status: SurveyStatus.ACTIVE)
+		surveyInstance1.save(flush: true)
+
+		assert Survey.count() == 2
+
+		User user = User.create([username: "y", sex: "F", email: "y@y.com", birthdate: "01/01/2001", name: "y y",
+				password: "y"])
+
+		UserSurvey userSurvey = UserSurvey.createOrUpdate(user, surveyInstance, Status.NOT_TAKEN)
+		assert userSurvey.id != null
+		assert userSurvey.status == Status.NOT_TAKEN
+
+		when: 'The ignore endpoint is hit without surveyId'
+		controller.request.method = 'GET'
+		controller.params.surveyId = null
+		controller.session.userId = user.id
+		controller.ignore()
+
+		then: 'Result should match the expected response'
+		controller.response.status == 200
+		controller.response.json.success == false
+		controller.response.json.message == 'Survey not found for surveyId: null'
+
+		when: 'The ignore endpoint is hit and no survey exist for the given user'
+		controller.params.clear()
+		controller.response.reset()
+		controller.params.surveyId = surveyInstance1.id
+		controller.session.userId = user.id
+		controller.ignore()
+
+		then: 'Server responds with failure message'
+		controller.response.status == 200
+		controller.response.json.success == false
+		controller.response.json.message == "UserServey missing for user - ${user} and survey - ${surveyInstance1}"
+
+		when: 'The ignore endpoint is hit and Survey gets ignored successfully'
+		controller.params.clear()
+		controller.response.reset()
+		controller.params.surveyId = surveyInstance.id
+		controller.session.userId = user.id
+		controller.ignore()
+
+		then: 'Server responds with success message'
+		controller.response.status == 200
+		controller.response.json.success == true
+		userSurvey.status == Status.IGNORED
+	}
+
+	void 'test removeAssociatedTagFromPossibleAnswer action for various cases'() {
+		given: 'An instance of PossibleAnswer and a few Tags'
+		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
+				status: SurveyStatus.ACTIVE)
+		surveyInstance.addToQuestions(question: 'This is the first question.', priority: 1, status: 'ACTIVE',
+				answerType: 'MCQ_RADIO')
+		surveyInstance.save(flush: true)
+		surveyInstance.questions[0].addOrUpdateAnswers([[priority: '1', answer: 'This is the first answer',
+				profileTags: ['sleep', 'run'], trackingTags: ['eat', 'mood']]])
+		surveyInstance.save(flush: true)
+		PossibleAnswer possibleAnswer = surveyInstance.questions.answers.first().first()
+		assert possibleAnswer.id
+		assert possibleAnswer.associatedTrackingTags.size() == 2
+		assert possibleAnswer.associatedProfileTags.size() == 2
+
+		when: 'removeAssociatedTagFromPossibleAnswer is hit and tagType is invalid in params'
+		controller.request.method = 'GET'
+		controller.params.answerId = possibleAnswer.id
+		controller.params.tagDescription = 'sleep'
+		controller.params.tagType = 'profiletag'
+		controller.removeAssociatedTagFromPossibleAnswer()
+
+		then: 'server should return false'
+		controller.response.status == 200
+		controller.response.json.success == false
+
+		when: 'The answer id is invalid'
+		controller.params.clear()
+		controller.response.reset()
+		controller.params.answerId = '1234'
+		controller.params.tagDescription = 'sleep'
+		controller.params.tagType = 'profileTag'
+		controller.removeAssociatedTagFromPossibleAnswer()
+
+		then: 'server should return false'
+		controller.response.status == 200
+		controller.response.json.success == false
+
+		when: 'An associatedProfileTag is removed successfully'
+		controller.params.clear()
+		controller.response.reset()
+		controller.params.answerId = possibleAnswer.id
+		controller.params.tagDescription = 'sleep'
+		controller.params.tagType = 'profileTag'
+		controller.removeAssociatedTagFromPossibleAnswer()
+
+		then: 'server should return true'
+		controller.response.status == 200
+		controller.response.json.success == true
+		possibleAnswer.associatedProfileTags.size() == 1
 	}
 }
