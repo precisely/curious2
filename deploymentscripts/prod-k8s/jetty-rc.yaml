@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: jetty
+  namespace: prod-curious
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: jetty
+        tier: backend
+    spec:
+      volumes:
+        - name: jetty
+          persistentVolumeClaim:
+            claimName: curious-pvc-nfs
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-instance-credentials
+        - name: ssl-certs
+          hostPath:
+            path: /etc/ssl/certs
+        - name: cloudsql
+          emptyDir:
+      containers:
+        - name: mysql-database
+          image: gcr.io/cloudsql-docker/gce-proxy:1.09
+          command: ["/cloud_sql_proxy", "--dir=/cloudsql", "-instances=we-are-curious:us-central1:curious-mysql-qa=tcp:3306", "-credential_file=/secrets/cloudsql/credentials.json"]
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: cloudsql-db-credentials
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cloudsql-db-credentials
+                  key: password
+          volumeMounts:
+            - name: cloudsql-instance-credentials
+              mountPath: /secrets/cloudsql
+              readOnly: true
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+            - name: cloudsql
+              mountPath: /cloudsql
+          ports:
+          - containerPort: 3306
+        - name: jetty
+          image: jetty:9.4.4-jre8-alpine
+          env:
+            - name: CURIOUSCONFIGHOME
+              value: '/home/curious/localconfig'
+          ports:
+            - containerPort: 8080
+              name: 'default-server'
+          volumeMounts:
+            - name: jetty
+              mountPath: /opt/jetty/logs
+              subPath: jetty/logs
+            - name: jetty
+              mountPath: /var/lib/jetty/webapps
+              subPath: jetty/webapps
+            - name: jetty
+              mountPath: /home/curious/localconfig
+              subPath: jetty/localconfig
