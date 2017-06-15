@@ -49,7 +49,6 @@ class PossibleAnswer {
 		getAssociatedTags(args.trackingTags).each { Tag tag ->
 			answer.addToAssociatedTrackingTags(tag)
 		}
-		Utils.save(answer)
 
 		return answer
 	}
@@ -57,6 +56,10 @@ class PossibleAnswer {
 	static getAssociatedTags(List tagDescriptionList) {
 		List<Tag> tagsList = []
 		tagDescriptionList.each { String tagDescription ->
+			if (!tagDescription.trim()) {
+				return
+			}
+
 			tagsList.add(Tag.look(tagDescription.trim())) // Creates a new Tag for the given description if one does not exist.
 		}
 
@@ -72,7 +75,6 @@ class PossibleAnswer {
 		getAssociatedTags(args.trackingTags).each { Tag tag ->
 			this.addToAssociatedTrackingTags(tag)
 		}
-		Utils.save(this)
 
 		return this
 	}

@@ -13,7 +13,63 @@
 			$(document).ready(function() {
 				var rowNumber = ${(questionInstance.answers.size() ?: -1) + 1};
 
-				var autocompleteWidget = new AutocompleteWidget("answerTagAutoComplete", 'tagDescription');
+				createAutocompleteForTags('associatedProfileTags', 'profileTagsAutocomplete');
+				createAutocompleteForTags('associatedTrackingTags', 'trackingTagsAutocomplete');
+
+				$(document).on("click", ".deleteProfileTags", function() {
+					var parentLi = $(this).parents('li');
+					var answerId = $('#answerId').val();
+					var tagDescription = $(this).parents('li')[0].textContent;
+					if (answerId) {
+						queueJSON('Removing tracking tag', '/survey/removeAssociatedTagFromPossibleAnswer',
+								{answerId: answerId, tagDescription: tagDescription.trim(), tagType: 'profileTag'},
+								function (data) {
+									if (!checkData(data)) {
+										return;
+									}
+
+									if (data.success) {
+										parentLi.remove();
+										showAlert('Tag removed successfully from answer');
+									} else {
+										showAlert('Could not remove Tag from answer')
+									}
+								}, function (xhr) {
+									console.log('error: ', xhr);
+								});
+					} else {
+						parentLi.remove();
+					}
+					return false;
+				});
+
+				// Deleting Tag from Possible Answer
+				$(document).on("click", ".deleteTrackingTags", function() {
+					var parentLi = $(this).parents('li');
+					var answerId = $('#answerId').val();
+					var tagDescription = $(this).parents('li')[0].textContent;
+					if (answerId) {
+						queueJSON('Removing tracking tag', '/survey/removeAssociatedTagFromPossibleAnswer',
+								{answerId: answerId, tagDescription: tagDescription.trim(), tagType: 'trackingTag'},
+								function (data) {
+									if (!checkData(data)) {
+										return;
+									}
+
+									if (data.success) {
+										parentLi.remove();
+										showAlert('Tag removed successfully from answer');
+									} else {
+										showAlert('Could not remove Tag from answer')
+									}
+								}, function (xhr) {
+									console.log('error: ', xhr);
+								});
+					} else {
+						parentLi.remove();
+					}
+					return false;
+				});
 
 				$("#addAnswerOverlay").on("hidden.bs.modal",function() {
 					$(this).find('form').trigger('reset');
@@ -22,12 +78,22 @@
 				$('#addSurveyAnswerForm').submit(function() {
 					// Defined in base.js file.
 					var params = $(this).serializeObject();
+					var profileTags = [];
+					var trackingTags = [];
+
+					$('#associatedProfileTags-list li').each(function () {
+						profileTags.push($(this).context.firstChild.data);
+					});
+					$('#associatedTrackingTags-list li').each(function () {
+						trackingTags.push($(this).context.firstChild.data);
+					});
 
 					if (rowIdInEditMode != null) {
 						var rowInEditMode = $('#answerRow' + rowIdInEditMode);
 						rowInEditMode.find('#answerText' + rowIdInEditMode).text(params.answer);
 						rowInEditMode.find('#priorityNumber' + rowIdInEditMode).text(params.priority);
-						rowInEditMode.find('#tagDescription' + rowIdInEditMode).text(params.tagDescription);
+						rowInEditMode.find('#profileTags' + rowIdInEditMode).text(profileTags);
+						rowInEditMode.find('#trackingTags' + rowIdInEditMode).text(trackingTags);
 
 						rowIdInEditMode = null;
 					} else {
@@ -41,15 +107,19 @@
 									'<td id=answerText' + rowNumber + '>' +
 										params.answer +
 									'</td>' +
-	
+
 									'<td id=priorityNumber' + rowNumber + '>' +
 										params.priority +
 									'</td>' +
 	
-									'<td id=tagDescription' + rowNumber + '>' +
-										params.tagDescription +
+									'<td id=profileTags' + rowNumber + '>' +
+										profileTags +
 									'</td>' +
-	
+
+									'<td id=trackingTags' + rowNumber + '>' +
+										trackingTags +
+									'</td>' +
+
 									'<td>' +
 										'<a href=#>' +
 											'<i class="fa fa-pencil action-icon"' +
@@ -81,7 +151,8 @@
 						var possibleAnswer = {
 							answer: $(answerRow[1]).text(),
 							priority: $(answerRow[2]).text(),
-							tagDescription: $(answerRow[3]).text()
+							profileTags: $(answerRow[3]).text() ? $(answerRow[3]).text().split(',') : [],
+							trackingTags: $(answerRow[4]).text() ? $(answerRow[4]).text().split(',') : [],
 						};
 
 						var answerId = $(answerRow[0]).text();
@@ -139,10 +210,25 @@
 
 				var rowInEditMode = '#answerRow' + rowId;
 				var answerModal = $('#addAnswerOverlay');
-				answerModal.find('#answerId').val($(rowInEditMode).find('#answerId' + rowId).text());
+				var answerId = answerModal.find('#answerId').val($(rowInEditMode).find('#answerId' + rowId).text());
+				if (answerId[0].value) {
+					var profileTagsList = $("#profileTags" + rowId).html().split(',');
+					for (var i = 0; i < profileTagsList.length; i++) {
+						var tagDescription = profileTagsList[i];
+						if (tagDescription.trim() != '') {
+							addProfileOrTrackingTagsToList($("#associatedProfileTags-list"), 'deleteProfileTags', tagDescription.trim());
+						}
+					}
+					var trackingTagsList = $("#trackingTags" + rowId).html().split(',');
+					for (var i = 0; i < trackingTagsList.length; i++) {
+						var tagDescription = trackingTagsList[i];
+						if (tagDescription.trim() != '') {
+							addProfileOrTrackingTagsToList($("#associatedTrackingTags-list"), 'deleteTrackingTags', tagDescription.trim());
+						}
+					}
+				}
 				answerModal.find('#answer').val($(rowInEditMode).find('#answerText' + rowId).text());
 				answerModal.find('#priority').val($(rowInEditMode).find('#priorityNumber' + rowId).text());
-				answerModal.find('#tagDescription').val($(rowInEditMode).find('#tagDescription' + rowId).text());
 				answerModal.find('.add-answer').text('Save');
 				answerModal.find('h4').text('Edit PossibleAnswer');
 				answerModal.modal('toggle');

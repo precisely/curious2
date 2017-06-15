@@ -23,11 +23,22 @@
 							name="answer" id="answer" required></textarea>
 					</div>
 					<div>
-						<label for="tagDescription">
-							Tag (Optional)
+						<label for="associatedProfileTags">
+							Associated Profile Tags (Optional)
 						</label>
-						<input placeholder="Add tag here..." name="tagDescription" id="tagDescription" 
-								class="survey-input" required />
+						<input type="text" placeholder="Add profile tags here..." name="associatedProfileTags" id="associatedProfileTags"
+								class="survey-input" />
+						<div id="profileTagsAutocomplete"></div>
+						<ul id="associatedProfileTags-list"></ul>
+					</div>
+					<div>
+						<label for="associatedTrackingTags">
+							Associated Tracking Tags (Optional)
+						</label>
+						<input type="text" placeholder="Add tracking tags here..." name="associatedTrackingTags" id="associatedTrackingTags"
+							   class="survey-input" />
+						<div id="trackingTagsAutocomplete"></div>
+						<ul id="associatedTrackingTags-list"></ul>
 					</div>
 					<div>
 						<label for="priority">

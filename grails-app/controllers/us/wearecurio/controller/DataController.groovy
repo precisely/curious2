@@ -3,6 +3,7 @@ package us.wearecurio.controller
 import grails.converters.JSON
 import grails.gsp.PageRenderer
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.hibernate.criterion.CriteriaSpecification
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDate
@@ -1415,6 +1416,34 @@ class DataController extends LoginController {
 			session.showHelp = null
 		}
 		renderJSONGet(success: true)
+	}
+
+	/**
+	 * End point to fetch tags for autocomplete while creating survey answers.
+	 *
+	 * @params searchString
+	 * @return List<Map> matching results.
+     */
+	def getTagsForAutoComplete() {
+		log.debug "Fetching all the tags for autocomplete, params: ${params}"
+
+		String query = params.searchString
+		if (!query) {
+			renderJSONGet([success: false])
+			return
+		}
+
+		List tagsResultList = Tag.withCriteria {
+			resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
+			projections {
+				property('description', 'label')
+				property('description', 'value')
+			}
+			ilike('description', "${query}%")
+			maxResults(10)
+		}
+
+		renderJSONGet([success: true, displayNames: tagsResultList])
 	}
 
 	def getAutocompleteParticipantsData() {

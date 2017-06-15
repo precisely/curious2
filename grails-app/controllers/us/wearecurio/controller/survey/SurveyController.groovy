@@ -4,6 +4,7 @@ import grails.converters.JSON
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
 import org.springframework.dao.DataIntegrityViolationException
 import us.wearecurio.controller.LoginController
+import us.wearecurio.model.Tag
 import us.wearecurio.model.User
 import us.wearecurio.model.survey.PossibleAnswer
 import us.wearecurio.model.survey.Question
@@ -282,5 +283,40 @@ class SurveyController extends LoginController {
 		Utils.save(userSurvey, true)
 
 		return [userSurveyInstance: userSurvey]
+	}
+
+	/**
+	 * An endpoint to remove associatedProfileTags or AssociatedTrackingTags from PossibleAnswer.
+	 *
+	 * @params answerId - PossibleAnswer Id
+	 * @params tagDescription - Description of the tag to be removed
+	 * @params tagType - either profileTag or trackingTag
+	 * @return success value
+     */
+	def removeAssociatedTagFromPossibleAnswer() {
+		log.debug "Remove associated tags from PossibleAnswer: $params"
+
+		if (!params.answerId || !params.tagDescription || !(params.tagType in ['profileTag', 'trackingTag'])) {
+			log.debug('Invalid params to remove associatedTags from PossibleAnswer')
+			renderJSONGet([success: false])
+
+			return
+		}
+
+		PossibleAnswer possibleAnswer = PossibleAnswer.get(params.answerId)
+		Tag tag = Tag.findByDescription(params.tagDescription.trim())
+
+		if (!possibleAnswer || !tag) {
+			log.debug("Could not find Tag or PossibleAnswer for tagDesc: ${params.tagDescription} and" +
+					" answer id ${params.answerId}")
+			renderJSONGet([success: false])
+
+			return
+		}
+
+		params.tagType == 'profileTag' ? possibleAnswer.removeFromAssociatedProfileTags(tag) :
+				possibleAnswer.removeFromAssociatedTrackingTags(tag)
+
+		return Utils.save(possibleAnswer) ? renderJSONGet([success: true]) : renderJSONGet([success: false])
 	}
 }

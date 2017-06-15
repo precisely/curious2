@@ -20,7 +20,8 @@
 			<tr>
 				<th>Answer</th>
 				<th>Priority</th>
-				<th>Tag</th>
+				<th>AssociatedProfileTags</th>
+				<th>AssociatedTrackingTags</th>
 				<th>Actions</th>
 			</tr>
 		</thead>
@@ -30,7 +31,12 @@
 					<td id="answerId${index}" class="hidden">${answerInstance.id}</td>
 					<td id="answerText${index}">${answerInstance.answer}</td>
 					<td id="priorityNumber${index}">${answerInstance.priority}</td>
-					<td id="tagDescription${index}">${answerInstance.tag?.description}</td>
+					<td id="profileTags${index}"><g:each in="${answerInstance.associatedProfileTags}" var="tagsInstance">
+						${tagsInstance.description},
+					</g:each> </td>
+					<td id="trackingTags${index}"><g:each in="${answerInstance.associatedTrackingTags}" var="tagsInstance">
+						${tagsInstance.description},
+					</g:each> </td>
 					<td>
 						<a href="#" data-toggle="tooltip" title="Edit Answer" data-placement="top">
 							<i class="fa fa-pencil action-icon" onclick="editAnswer(${index})"></i>
