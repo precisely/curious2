@@ -10,7 +10,6 @@ import us.wearecurio.data.RepeatType
 import us.wearecurio.model.*
 import us.wearecurio.model.Model.Visibility
 import us.wearecurio.model.registration.UserRegistration
-import us.wearecurio.model.survey.PossibleAnswer
 import us.wearecurio.model.survey.QuestionStatus
 import us.wearecurio.model.survey.Survey
 import us.wearecurio.model.survey.SurveyStatus
@@ -1220,9 +1219,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert UserRegistration.count() == 1
 		assert UserRegistration.findByUserId(user.id).id == userRegistration.id
 
-		when: 'The getSurveyData action is hit with survey code for Inactive survey'
+		when: 'The getSurveyTemplateData action is hit with survey code for Inactive survey'
 		controller.session.userId = user.id
-		controller.getSurveyData()
+		controller.getSurveyTemplateData()
 
 		then: 'The request should fail'
 		assert controller.response.json.success == false
@@ -1235,7 +1234,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.response.reset()
 		controller.session.userId = user.id
 		controller.params.surveyCode = 's001'
-		controller.getSurveyData()
+		controller.getSurveyTemplateData()
 
 		then: 'The request should fail'
 		assert controller.response.json.success == false

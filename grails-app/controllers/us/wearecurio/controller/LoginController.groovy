@@ -1,6 +1,5 @@
 package us.wearecurio.controller
 
-import grails.gsp.PageRenderer
 import us.wearecurio.model.registration.UserRegistration
 import us.wearecurio.model.survey.Status
 import us.wearecurio.model.survey.Survey
@@ -163,25 +162,31 @@ class LoginController extends SessionController {
 			}
 
 			Map userSettings = getUserSettings(user, params)
-			/*
-			* PageRenderer bean injection only works outside the scope of a web request. Hence getting the bean from the
-			* application context.
-			*/
-			def result = event('checkPromoCode', user)
-			boolean containsSurvey = true
-			PageRenderer groovyPageRenderer = grailsApplication.mainContext.getBean('groovyPageRenderer')
-			if (!result.value || !result.value.surveyInstance || !result.value.activeQuestions) {
-				containsSurvey = false
+			def uuid = session.persistentSession.fetchUuid()
+
+			Map responseMap = [user: user.getJSONDesc(), success:true, persistentSessionId:uuid, mobileSessionId:uuid,
+					hasVisitedMobileApp: userSettings.hasVisitedMobileApp,
+					hasPlottedFirstChart: userSettings.hasPlottedFirstChart]
+
+			if (params.containsKey('mobileSessionId')) {
+				def result = event('checkPromoCode', user)
+
+				boolean containsSurvey = true
+				if (!result.value || !result.value.surveyInstance || !result.value.activeQuestions) {
+					containsSurvey = false
+				}
+
+				if (containsSurvey) {
+					responseMap << [containsSurvey: true, surveyInstance: result.value.surveyInstance,
+							questions: result.value.activeQuestions, surveyCode: result.value.surveyInstance.code]
+				} else {
+					responseMap << [containsSurvey: false]
+				}
 			}
 
-			def uuid = session.persistentSession.fetchUuid()
 			debug "Logged in, persistent session ID " + uuid
 			// TODO: mobileSessionId is deprecated, will be removed eventually
-			renderJSONGet([user: user.getJSONDesc(), success:true, persistentSessionId:uuid, mobileSessionId:uuid, 
-					hasVisitedMobileApp: userSettings.hasVisitedMobileApp, containsSurvey: containsSurvey,
-					hasPlottedFirstChart: userSettings.hasPlottedFirstChart, htmlContent: groovyPageRenderer.render(
-					model: [questions: result.value?.activeQuestions, surveyCode: result.value?.surveyInstance?.code],
-					template: "/survey/surveySlides")])
+			renderJSONGet(responseMap)
 		} else {
 			debug "auth failure"
 			renderJSONGet([success:false])
@@ -622,23 +627,26 @@ class LoginController extends SessionController {
 		if (retVal['success']) {
 			def uuid = session.persistentSession.fetchUuid()
 
-			/*
-			* PageRenderer bean injection only works outside the scope of a web request. Hence getting the bean from the
-			* application context.
-			*/
-			def result = event('checkPromoCode', retVal['user'])
-			boolean containsSurvey = true
-			PageRenderer groovyPageRenderer = grailsApplication.mainContext.getBean('groovyPageRenderer')
-			if (!result.value || !result.value.surveyInstance || !result.value.activeQuestions) {
-				containsSurvey = false
-			}
-
-
-			renderJSONPost([success:true, persistentSessionId:uuid, mobileSessionId:uuid,
+			Map responseMap = [success:true, persistentSessionId:uuid, mobileSessionId:uuid,
 					hasVisitedMobileApp: userSettings.hasVisitedMobileApp,
-					hasPlottedFirstChart: userSettings.hasPlottedFirstChart, containsSurvey: containsSurvey,
-					htmlContent: groovyPageRenderer.render(model: [questions: result.value?.activeQuestions,
-					surveyCode: result.value?.surveyInstance?.code], template: "/survey/surveySlides")])
+					hasPlottedFirstChart: userSettings.hasPlottedFirstChart]
+
+			if (params.containsKey('mobileSessionId')) {
+				def result = event('checkPromoCode', retVal['user'])
+
+				boolean containsSurvey = true
+				if (!result.value || !result.value.surveyInstance || !result.value.activeQuestions) {
+					containsSurvey = false
+				}
+
+				if (containsSurvey) {
+					responseMap << [containsSurvey: true, surveyInstance: result.value.surveyInstance,
+							questions: result.value.activeQuestions, surveyCode: result.value.surveyInstance.code]
+				} else {
+					responseMap << [containsSurvey: false]
+				}
+			}
+			renderJSONPost(responseMap)
 		} else if (retVal['errorCode'] == REGISTER_ERROR_USER_ALREADY_EXISTS) {
 			renderJSONPost([success:false, message:"User " + params.username + " already exists"])
 		} else if (retVal['errorCode'] == REGISTER_MISSING_FIELDS) {

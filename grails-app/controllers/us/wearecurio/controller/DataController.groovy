@@ -1527,8 +1527,8 @@ class DataController extends LoginController {
 	 * directly rendered within a bootstrap modal. Refer surveySlides.gsp template for how the questions and answers 
 	 * are rendered.
 	 */
-	def getSurveyData() {
-		log.debug "Data.getSurveyData(): $params"
+	def getSurveyTemplateData() {
+		log.debug "Data.getSurveyTemplateData(): $params"
 
 		User user = sessionUser()
 		def result = event('checkPromoCode', user)
@@ -1548,6 +1548,27 @@ class DataController extends LoginController {
 		renderJSONPost([success: true, htmlContent: groovyPageRenderer.render(model:
 				[questions: result.value.activeQuestions, surveyCode: result.value.surveyInstance.code],
 				template: "/survey/surveySlides")])
+	}
+
+	/**
+	 * This action is used for getting the json response with all the details for active questions in a Survey.
+	 * This endpoint triggers a event which checks if a user used a promocode during signup. If yes and a survey exists
+	 * for that promoCode and user has registered within last 90 days than survey details are returned in json response.
+	 */
+	def getSurveyData() {
+		log.debug "Data.getSurveyData(): $params"
+
+		User user = sessionUser()
+		def result = event('checkPromoCode', user)
+
+		if (!result.value || !result.value.surveyInstance || !result.value.activeQuestions) {
+			renderJSONPost([success: false, containsSurvey: false, message: result.value?.message])
+
+			return
+		}
+
+		renderJSONPost([success: true, surveyInstance: result.value.surveyInstance, containsSurvey: true,
+				questions: result.value.activeQuestions, surveyCode: result.value.surveyInstance.code])
 	}
 
 	/**

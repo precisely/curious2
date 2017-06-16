@@ -98,7 +98,7 @@
 				}
 			});
 
-			queueJSON("Getting survey data", "/home/getSurveyData",
+			queueJSON("Getting survey data", "/home/getSurveyTemplateData",
 					getCSRFPreventionObject('getSurveyDataCSRF'), function(data) {
 
 				if (data && data.success) {
