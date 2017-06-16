@@ -1216,15 +1216,16 @@ class DataControllerTests extends CuriousControllerTestCase {
 		surveyInstance.addToQuestions(question: 'This is the first question.', priority: '1', status: 'INACTIVE',
 				answerType: 'DESCRIPTIVE')
 		surveyInstance.save(flush: true)
-		UserRegistration.create(user.id, surveyInstance.code)
+		UserRegistration userRegistration = UserRegistration.create(user.id, surveyInstance.code)
 		assert UserRegistration.count() == 1
+		assert UserRegistration.findByUserId(user.id).id == userRegistration.id
 
 		when: 'The getSurveyData action is hit with survey code for Inactive survey'
 		controller.session.userId = user.id
 		controller.getSurveyData()
 
 		then: 'The request should fail'
-		assert controller.response.text.success == false
+		assert controller.response.json.success == false
 
 		when: 'There are no active questions for this survey'
 		surveyInstance.status = SurveyStatus.ACTIVE
@@ -1237,20 +1238,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.getSurveyData()
 
 		then: 'The request should fail'
-		assert controller.response.text.success == false
-
-		when: 'The code is correct, survey and questions are active and user has not yet attended the survey'
-		surveyInstance.questions[0].status = QuestionStatus.ACTIVE
-		surveyInstance.save(flush: true)
-
-		controller.response.reset()
-		controller.session.userId = user.id
-		controller.getSurveyData()
-
-		then: 'The response should contain the html content for survey modal slides'
-		JSONElement json = JSON.parse(controller.response.text)
-		assert json.success == true
-		assert json.htmlContent.contains('<div class="section">QUESTION</div>')
+		assert controller.response.json.success == false
 	}
 
 	@Test

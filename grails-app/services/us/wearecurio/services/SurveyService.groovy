@@ -23,10 +23,11 @@ class SurveyService {
 		Map result = [:]
 
 		UserRegistration userRegistration = UserRegistration.findByUserId(currentUser.id)
-		String promoCode = userRegistration.promoCode
+		String promoCode = userRegistration?.promoCode
 
 		if (!promoCode) {
 			log.debug "User ${currentUser} did not use any promo code during signup."
+			result.message = "User ${currentUser} did not use any promo code during signup."
 
 			return result
 		}
@@ -44,14 +45,16 @@ class SurveyService {
 
 					if (!activeQuestions.size()) {
 						log.debug "There are no active questions for this survey."
+						result.message = "There are no active questions for this survey."
 
-						return
+						return result
 					}
 
 					result = [surveyInstance: survey, activeQuestions: activeQuestions]
 				}
 			} else {
 				log.debug "Active survey does not exist for promo code ${promoCode}"
+				result.message = "Active survey does not exist for promo code ${promoCode}"
 			}
 		}
 

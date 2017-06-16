@@ -1423,7 +1423,7 @@ class DataController extends LoginController {
 	 *
 	 * @params searchString
 	 * @return List<Map> matching results.
-     */
+	 */
 	def getTagsForAutoComplete() {
 		log.debug "Fetching all the tags for autocomplete, params: ${params}"
 
