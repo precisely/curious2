@@ -1110,15 +1110,5 @@ class MigrationService {
 			sql('DROP TABLE user_survey_answer')
 		}
 
-		tryMigration('Create UserRegistration entries for existing Users') {
-			List users = sqlRows('Select * from _user limit 5000')  // Users count on 31-May-2017 - 3261
-
-			log.debug("Creating UserRegistration for ${users.size()} users.")
-
-			users.each {
-				Long userId = it['id']
-				UserRegistration.create(userId)
-			}
-		}
 	}
 }

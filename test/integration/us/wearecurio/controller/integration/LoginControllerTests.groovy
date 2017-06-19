@@ -552,6 +552,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 
 		assert user.settings.get(VISITED_MOBILE_APP)
 		assert user.settings.hasVisitedMobileApp()
+		assert controller.response.json.survey == null
 	}
 
 	@Test
@@ -616,5 +617,65 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 
 		assert !user.settings.get(VISITED_MOBILE_APP)
 		assert !user.settings.hasVisitedMobileApp()
+		assert controller.response.json.survey == null
+	}
+
+	@Test
+	void "test doregisterData for fetching the survey when a promoCode is used"() {
+		given: 'An instance of Survey and UserRegistration'
+		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
+				status: SurveyStatus.ACTIVE)
+		surveyInstance.addToQuestions(question: 'This is the first question.', priority: 1, status: 'ACTIVE',
+				answerType: 'DESCRIPTIVE')
+		surveyInstance.addToQuestions(question: 'This is the second question.', priority: 1, status: 'INACTIVE',
+				answerType: 'DESCRIPTIVE')
+		surveyInstance.save(flush: true)
+
+		when: 'doRegisterData action is hit and survey exists for the promoCode used'
+		LoginController controller = new LoginController()
+		controller.session.userId = null
+		controller.params.clear()
+
+		// Sending the mobileSessionId parameter
+		controller.params.mobileSessionId = false
+		controller.params.promoCode = 's001'
+		controller.params.putAll(getRegisterParams())
+
+		controller.doregisterData()
+
+		then: 'Survey data is sent in response'
+		assert controller.response.json.survey.id == surveyInstance.id
+		assert controller.response.json.survey.questions[0].id != null
+		assert controller.response.json.survey.questions.size() == 1 // Only active survey gets added to response
+	}
+
+	@Test
+	void "test dologinData for fetching the survey when a promoCode is used"() {
+		given: 'An instance of Survey and UserRegistration'
+		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
+				status: SurveyStatus.ACTIVE)
+		surveyInstance.addToQuestions(question: 'This is the first question.', priority: 1, status: 'ACTIVE',
+				answerType: 'DESCRIPTIVE')
+		surveyInstance.addToQuestions(question: 'This is the second question.', priority: 1, status: 'INACTIVE',
+				answerType: 'DESCRIPTIVE')
+		surveyInstance.save(flush: true)
+		UserRegistration.create(user.id, 's001')
+
+		when: 'User has used a promoCode and survey exist for that promoCode which user has not taken'
+		LoginController controller = new LoginController()
+
+		controller.session.userId = null
+		controller.params['username'] = user.getUsername()
+		controller.params['password'] = 'y'
+
+		// Sending the mobileSessionId parameter
+		controller.params.mobileSessionId = false
+
+		controller.dologinData()
+
+		then: 'Survey data is also sent in response'
+		assert controller.response.json.survey.id == surveyInstance.id
+		assert controller.response.json.survey.questions[0].id != null
+		assert controller.response.json.survey.questions.size() == 1 // Only active survey gets added to response
 	}
 }

@@ -1,10 +1,12 @@
 package us.wearecurio.controller
 
 import us.wearecurio.model.registration.UserRegistration
+import us.wearecurio.model.survey.QuestionStatus
 import us.wearecurio.model.survey.Status
 import us.wearecurio.model.survey.Survey
 import us.wearecurio.model.survey.UserSurvey
 import us.wearecurio.security.NoAuth
+import us.wearecurio.services.SurveyService
 
 import java.text.SimpleDateFormat
 
@@ -25,6 +27,7 @@ class LoginController extends SessionController {
 
 	def HTTPBuilderService
 	EmailService emailService
+	SurveyService surveyService
 
 	static debug(str) {
 		log.debug(str)
@@ -163,30 +166,18 @@ class LoginController extends SessionController {
 
 			Map userSettings = getUserSettings(user, params)
 			def uuid = session.persistentSession.fetchUuid()
-
-			Map responseMap = [user: user.getJSONDesc(), success:true, persistentSessionId:uuid, mobileSessionId:uuid,
-					hasVisitedMobileApp: userSettings.hasVisitedMobileApp,
-					hasPlottedFirstChart: userSettings.hasPlottedFirstChart]
+			Survey surveyInstance
 
 			if (params.containsKey('mobileSessionId')) {
-				def result = event('checkPromoCode', user)
-
-				boolean containsSurvey = true
-				if (!result.value || !result.value.surveyInstance || !result.value.activeQuestions) {
-					containsSurvey = false
-				}
-
-				if (containsSurvey) {
-					responseMap << [containsSurvey: true, surveyInstance: result.value.surveyInstance,
-							questions: result.value.activeQuestions, surveyCode: result.value.surveyInstance.code]
-				} else {
-					responseMap << [containsSurvey: false]
-				}
+				surveyInstance = surveyService.checkPromoCode(user)
 			}
 
 			debug "Logged in, persistent session ID " + uuid
 			// TODO: mobileSessionId is deprecated, will be removed eventually
-			renderJSONGet(responseMap)
+			renderJSONGet([user: user.getJSONDesc(), success:true, persistentSessionId:uuid, mobileSessionId:uuid,
+					hasVisitedMobileApp: userSettings.hasVisitedMobileApp,
+					hasPlottedFirstChart: userSettings.hasPlottedFirstChart,
+					survey: surveyInstance?.getJSONDesc(QuestionStatus.ACTIVE)])
 		} else {
 			debug "auth failure"
 			renderJSONGet([success:false])
@@ -519,10 +510,13 @@ class LoginController extends SessionController {
 					status.setRollbackOnly()
 
 					retVal['errorCode'] = USER_REGISTRATION_FAILED
+					retVal['promoCode'] = promoCode
 					retVal['validateErrors'] = ''
 					userRegistration.errors.allErrors.each {
 						retVal['validateErrors'] += it
 					}
+					debug("Error registering user using promo code ${promoCode} for user-email ${p.email}." +
+							"Errors are: ${retVal['validateErrors']}")
 
 					return retVal
 				}
@@ -577,7 +571,8 @@ class LoginController extends SessionController {
 			flash.user = retVal['user']
 			redirect(url: toUrl(action: "register"))
 		} else if (retVal['errorCode'] == USER_REGISTRATION_FAILED) {
-			flash.message = "Error registering user - Please contact support."
+			flash.message = "Could not register using promo code ${retVal['promoCode']}. Please contact support" +
+					" and mention promo code."
 			flash.user = retVal['user']
 			redirect(url: toUrl(action: "register"))
 		} else {
@@ -626,27 +621,15 @@ class LoginController extends SessionController {
 		
 		if (retVal['success']) {
 			def uuid = session.persistentSession.fetchUuid()
-
-			Map responseMap = [success:true, persistentSessionId:uuid, mobileSessionId:uuid,
-					hasVisitedMobileApp: userSettings.hasVisitedMobileApp,
-					hasPlottedFirstChart: userSettings.hasPlottedFirstChart]
+			Survey surveyInstance
 
 			if (params.containsKey('mobileSessionId')) {
-				def result = event('checkPromoCode', retVal['user'])
-
-				boolean containsSurvey = true
-				if (!result.value || !result.value.surveyInstance || !result.value.activeQuestions) {
-					containsSurvey = false
-				}
-
-				if (containsSurvey) {
-					responseMap << [containsSurvey: true, surveyInstance: result.value.surveyInstance,
-							questions: result.value.activeQuestions, surveyCode: result.value.surveyInstance.code]
-				} else {
-					responseMap << [containsSurvey: false]
-				}
+				surveyInstance = surveyService.checkPromoCode(retVal['user'])
 			}
-			renderJSONPost(responseMap)
+			renderJSONPost([success:true, persistentSessionId:uuid, mobileSessionId:uuid,
+					hasVisitedMobileApp: userSettings.hasVisitedMobileApp,
+					hasPlottedFirstChart: userSettings.hasPlottedFirstChart,
+					survey: surveyInstance?.getJSONDesc(QuestionStatus.ACTIVE)])
 		} else if (retVal['errorCode'] == REGISTER_ERROR_USER_ALREADY_EXISTS) {
 			renderJSONPost([success:false, message:"User " + params.username + " already exists"])
 		} else if (retVal['errorCode'] == REGISTER_MISSING_FIELDS) {

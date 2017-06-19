@@ -3,7 +3,6 @@ package us.wearecurio.services
 import grails.transaction.Transactional
 import us.wearecurio.model.User
 import us.wearecurio.model.registration.UserRegistration
-import us.wearecurio.model.survey.QuestionStatus
 import us.wearecurio.model.survey.Status
 import us.wearecurio.model.survey.Survey
 import us.wearecurio.model.survey.SurveyStatus
@@ -14,50 +13,40 @@ class SurveyService {
 
 	SecurityService securityService
 
-	@grails.events.Listener
-	Map checkPromoCode(User user) {
+	Survey checkPromoCode(User currentUser) {
 
 		log.debug "SurveyService.checkPromoCode()"
 
-		User currentUser = user ?: securityService.currentUser()
-		Map result = [:]
+		if (!currentUser) {
+			log.debug 'Please provide a valid user instance to check promo code.'
+
+			return
+		}
 
 		UserRegistration userRegistration = UserRegistration.findByUserId(currentUser.id)
 		String promoCode = userRegistration?.promoCode
+		Survey survey
+		UserSurvey userSurvey
 
 		if (!promoCode) {
 			log.debug "User ${currentUser} did not use any promo code during signup."
-			result.message = "User ${currentUser} did not use any promo code during signup."
 
-			return result
+			return
 		}
 
 		if (promoCode && userRegistration.dateCreated > new Date() - 90) {
 			log.debug "Checking if Survey exists for promo code ${promoCode}..."
-			Survey survey = Survey.findByCode(promoCode)
 
-			if (survey && survey.status == SurveyStatus.ACTIVE) {
+			survey = Survey.findByCodeAndStatus(promoCode, SurveyStatus.ACTIVE)
+
+			if (survey) {
 				log.debug "Checking if User ${currentUser} has taken Survey ${survey}..."
-				UserSurvey userSurvey = UserSurvey.findByUserAndSurvey(currentUser, survey)
+				userSurvey = UserSurvey.findByUserAndSurvey(currentUser, survey)
 
 				if (!userSurvey || userSurvey.status == Status.NOT_TAKEN) {
-					Set activeQuestions = survey.questions.findAll { it.status == QuestionStatus.ACTIVE }
-
-					if (!activeQuestions.size()) {
-						log.debug "There are no active questions for this survey."
-						result.message = "There are no active questions for this survey."
-
-						return result
-					}
-
-					result = [surveyInstance: survey, activeQuestions: activeQuestions]
+					return survey
 				}
-			} else {
-				log.debug "Active survey does not exist for promo code ${promoCode}"
-				result.message = "Active survey does not exist for promo code ${promoCode}"
 			}
 		}
-
-		return result
 	}
 }

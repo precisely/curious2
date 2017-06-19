@@ -34,6 +34,26 @@ class Survey {
 	String toString() {
 		return "Survey(id: ${id}, code: ${code})"
 	}
+
+	/**
+	 * Get JSON description for surveyInstance
+	 */
+	Map getJSONDesc(QuestionStatus questionStatus) {
+		Map returnVal = [
+				id: this.id,
+				code: this.code,
+				status: this.status,
+				title: this.title
+		]
+
+		returnVal.questions = questionStatus ? getQuestions(questionStatus) : this.questions
+
+		return returnVal
+	}
+
+	Set getQuestions(QuestionStatus questionStatus) {
+		return this.questions.findAll { it.status == questionStatus }
+	}
 }
 
 enum SurveyStatus {

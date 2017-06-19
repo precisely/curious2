@@ -40,32 +40,23 @@ class SurveyServiceTests extends CuriousServiceTestCase {
 		assert UserRegistration.findByUserId(user2.id).id == userRegistration1.id
 
 		when: 'checkPromoCode method is called and user did not use any promoCode during signup'
-		Map result = surveyService.checkPromoCode(user2)
+		Survey result = surveyService.checkPromoCode(user2)
 
-		then: 'Method returns appropriate message in response'
-		result.message == "User ${user2} did not use any promo code during signup."
+		then: 'No surveyInstance is returned in response'
+		result == null
 
 		when: 'checkPromoCode method is hit and user did use the promoCode but survey is inactive'
 		result = surveyService.checkPromoCode(user)
 
-		then: 'Method returns appropriate message in response'
-		result.message == "Active survey does not exist for promo code s001"
+		then: 'No surveyInstance is returned in response'
+		result == null
 
-		when: 'checkPromoCode method is called and Survey with that promoCode does not have active questions'
+		when: 'checkPromoCode method is called and Survey with that promoCode does exist'
 		surveyInstance.status = SurveyStatus.ACTIVE
 		surveyInstance.save(flush: true)
 		result = surveyService.checkPromoCode(user)
 
-		then: 'Method returns appropriate message in response'
-		result.message == "There are no active questions for this survey."
-
-		when: 'checkPromoCode method is called and an active Survey with that promoCode does have active questions'
-		surveyInstance.questions[0].status = QuestionStatus.ACTIVE
-		surveyInstance.save(flush: true)
-		result = surveyService.checkPromoCode(user)
-
-		then: 'Method returns the Survey and Active questions'
-		result.surveyInstance == surveyInstance
-		result.activeQuestions == surveyInstance.questions
+		then: 'Method returns Survey instance in response'
+		result == surveyInstance
 	}
 }
