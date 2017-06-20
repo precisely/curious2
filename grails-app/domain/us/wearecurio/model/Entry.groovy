@@ -559,7 +559,7 @@ class Entry implements Comparable {
 	 * 
 	 * returns [status, entries array]
 	 */
-	static def parseAndCreate(Long userId, EntryStats stats, Date currentTime, String timeZoneName, String entryStr, Long repeatTypeId, Date repeatEnd, Date baseDate, boolean defaultToNow = true, int updateMode) {
+	static def parseAndCreate(Long userId, EntryStats stats, Date currentTime, String timeZoneName, String entryStr, Long repeatTypeId, Date repeatEnd, Date baseDate, boolean defaultToNow = true, int updateMode, String comment) {
 		EntryCommaSegmenter segmenter = new EntryCommaSegmenter(entryStr)
 		
 		def entries = []
@@ -576,6 +576,7 @@ class Entry implements Comparable {
 			parsed = EntryParserService.get().parse(currentTime, timeZoneName, text, repeatTypeId, repeatEnd, baseDate, defaultToNow, updateMode)
 		
 			status = parsed.status
+			parsed.comment = comment
 			
 			if (parsed.foundTime) {
 				for (previousParsed in previousParsedList) {

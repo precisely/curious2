@@ -92,7 +92,7 @@ class DataController extends LoginController {
 
 		debug("Current time " + currentTime + " baseDate " + baseDate)
 		
-		return Entry.parseAndCreate(user.id, stats, currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, defaultToNow, p.tutorial ? EntryParserService.UPDATEMODE_TUTORIAL : 0)
+		return Entry.parseAndCreate(user.id, stats, currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, defaultToNow, p.tutorial ? EntryParserService.UPDATEMODE_TUTORIAL : 0, p.comment)
 	}
 
 	protected def doAddEntry(Map params) {
