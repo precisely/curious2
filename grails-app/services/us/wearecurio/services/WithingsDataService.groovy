@@ -142,14 +142,6 @@ class WithingsDataService extends DataService {
 							tagKey = "height"
 							break
 
-						case 5: // fat free mass (kg)
-							tagKey = "fatFreeMass"
-							break
-
-						case 6: // fat ratio (%)
-							tagKey = "fatRatio"
-							break
-
 						case 8: // fat mass weight (kg)
 							tagKey = "fatMassWeight"
 							break
@@ -165,6 +157,9 @@ class WithingsDataService extends DataService {
 						case 11: // pulse (bpm)
 							tagKey = "heartRate"
 							break
+
+						default:
+							continue
 					}
 					tagUnitMap.buildEntry(creationMap, stats, tagKey, value, userId, timeZoneId, date, COMMENT,
 							setName, context)
