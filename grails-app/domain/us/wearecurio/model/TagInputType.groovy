@@ -188,7 +188,8 @@ enum InputType {
 	LEVEL(2),
 	BOOLEAN(3),
 	SMILEY(4),
-	THUMBS(5)
+	THUMBS(5),
+	DEFAULT(6)
 
 	final int id
 

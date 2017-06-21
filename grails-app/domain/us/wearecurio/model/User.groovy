@@ -11,7 +11,6 @@ import org.hibernate.criterion.CriteriaSpecification
 
 import us.wearecurio.cache.BoundedCache
 import us.wearecurio.data.UserSettings
-import us.wearecurio.model.survey.Survey
 import us.wearecurio.model.profiletags.ProfileTag
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.services.EmailService

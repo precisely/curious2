@@ -24,6 +24,7 @@ class UserRegistration {
 	static mapping = {
 		version false
 		userId column: 'user_id', index: 'user_id_index'
+		promoCode column: 'promo_code', index: 'promo_code_index'
 	}
 
 	String toString() {

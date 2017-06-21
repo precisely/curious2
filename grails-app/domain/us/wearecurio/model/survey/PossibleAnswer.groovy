@@ -17,7 +17,7 @@ class PossibleAnswer {
 
 	/*
 	 * Associated profile tags and associated tracking tags with this answer.
-	 * When user selects this answer for a question, associatedProfileTags create ProfileTags and associatedTreckingTag
+	 * When user selects this answer for a question, associatedProfileTags create ProfileTags and associatedTrackingTag
 	 * creates TagStats for the user.
 	 */
 	Set<Tag> associatedProfileTags = []
