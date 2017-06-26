@@ -433,16 +433,12 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		$("#" + this.listId).append(html);
 		$("#" + id).data({instance: entryDeviceDataInstance});
 
-        //Below is the code to round off ounces values for Withings data[total weight, fat weight] to 2 decimal places.
-		if (id == "withings-data") {
-			for(var i=0; i<groupedData['fat weight'].length; i++) {
-				groupedData['fat weight'][i].amounts[1].amount = groupedData['fat weight'][i].amounts[1].amount.toFixed(2);
-			}
-
-			for(var i=0; i<groupedData['total weight'].length; i++) {
-							groupedData['total weight'][i].amounts[1].amount = groupedData['total weight'][i].amounts[1].amount.toFixed(2);
-			}
-		}
+        //Below is the code to round off the values to 2 decimal places.
+        for(var i = 0; i < deviceEntry.length; i++) {
+            for(var j = 0; j < Object.keys(deviceEntry[i].amounts).length; j++) {
+                deviceEntry[i].amounts[j].amount = deviceEntry[i].amounts[j].amount.toFixed(2);
+            }
+        }
 
 		jQuery.each(groupedData, function(index, groupedEntry) {
 			this.displayDeviceSummaryEntry(groupedEntry, entryDeviceDataInstance);

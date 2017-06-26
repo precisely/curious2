@@ -119,8 +119,8 @@ class DataServiceTests extends CuriousServiceTestCase {
 		awakeEntry = Entry.findByUnits("hours awake")
 
 		then: "Entry for sleep awake gets modified"
-		totalSleepAwakeEntries == 1
-		assert awakeEntry.amount == 0.666666667
+		totalSleepAwakeEntries == 2
+		assert awakeEntry.amount == 0.7000
 	}
 
 	@Test
@@ -216,5 +216,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 		assert Entry.count() > 0
 		assert polledFitBit && polledWithings
 	}
+
+
 /**/
 }

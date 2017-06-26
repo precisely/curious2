@@ -23,7 +23,9 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	static transactional = true
 	
 	private static def log = LogFactory.getLog(this)
-	
+
+    private static final String BASE_DATA_PATH = "./test/integration/test-files/withings/%s-data%s.json"
+
 	UrlService urlService
 	WithingsDataService withingsDataService
 	User user2
@@ -35,7 +37,12 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	MockedHttpURLConnection mockedConnectionWithParams = new MockedHttpURLConnection()
 	
 	def grailsApplication
-	
+
+    private String testDataPath(String fileName, int number = 0) {
+        String fileNumber = number ? "-$number" : ""
+        return String.format(BASE_DATA_PATH, fileName, fileNumber)
+    }
+
 	void setup() {
 
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
@@ -330,5 +337,33 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 
 		then:
 		assert result.callbackurl.contains("http://") == true
-	}	
+	}
+
+    void testGetDataDefaultForTotalWeightAndFatWeight() {
+        given:
+        String mockedResponseData = new File(testDataPath("user")).text
+        setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(mockedResponseData))
+        setWithingsResourceRepsone(new MockedHttpURLConnection(mockedResponseData))
+
+        when:
+        withingsDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
+
+        then:
+        assert Entry.count() > 0
+    }
+
+	void "test whether different entries are not created on polling same data" () {
+		given: 'API response data'
+        String mockedResponseData = new File(testDataPath("user")).text
+        setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(mockedResponseData))
+        setWithingsResourceRepsone(new MockedHttpURLConnection(mockedResponseData))
+        assert Entry.count() == 0
+
+		when: 'Same sata is polled for more than one time'
+		withingsDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
+        withingsDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
+
+		then:
+		Entry.count() == 1
+	}
 }
