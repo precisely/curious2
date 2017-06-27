@@ -5,6 +5,7 @@ import us.wearecurio.data.DataRetriever
 import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.filters.EmailVerificationCheckFilters
 import us.wearecurio.marshaller.EnumMarshaller
+import us.wearecurio.marshaller.QuestionMarshaller
 import us.wearecurio.model.TagInputType
 import us.wearecurio.marshaller.ProfileTagMarshaller
 import us.wearecurio.model.TagStats
@@ -59,6 +60,7 @@ class BootStrap {
 
 		JSON.registerObjectMarshaller(new EnumMarshaller())
 		JSON.registerObjectMarshaller(new ProfileTagMarshaller())
+		JSON.registerObjectMarshaller(new QuestionMarshaller())
 
 		def springContext = WebApplicationContextUtils.getWebApplicationContext( servletContext )
 		springContext.getBean( "customObjectMarshallers" ).register()
