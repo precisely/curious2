@@ -24,8 +24,6 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	
 	private static def log = LogFactory.getLog(this)
 
-    private static final String BASE_DATA_PATH = "./test/integration/test-files/withings/%s-data%s.json"
-
 	UrlService urlService
 	WithingsDataService withingsDataService
 	User user2
@@ -37,11 +35,6 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	MockedHttpURLConnection mockedConnectionWithParams = new MockedHttpURLConnection()
 	
 	def grailsApplication
-
-    private String testDataPath(String fileName, int number = 0) {
-        String fileNumber = number ? "-$number" : ""
-        return String.format(BASE_DATA_PATH, fileName, fileNumber)
-    }
 
 	void setup() {
 
@@ -339,31 +332,64 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		assert result.callbackurl.contains("http://") == true
 	}
 
-    void testGetDataDefaultForTotalWeightAndFatWeight() {
-        given:
-        String mockedResponseData = new File(testDataPath("user")).text
-        setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(mockedResponseData))
-        setWithingsResourceRepsone(new MockedHttpURLConnection(mockedResponseData))
-
-        when:
-        withingsDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
-
-        then:
-        assert Entry.count() > 0
-    }
-
-	void "test whether different entries are not created on polling same data" () {
+	void "test getDataDefault method to create entries for Withings data" () {
 		given: 'API response data'
-        String mockedResponseData = new File(testDataPath("user")).text
-        setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(mockedResponseData))
-        setWithingsResourceRepsone(new MockedHttpURLConnection(mockedResponseData))
-        assert Entry.count() == 0
+		String mockedResponseData = """{
+				"status": 0, "body": { "updatetime": 1249409679, "timezone": "Europe/Paris", "measuregrps": [{ 
+				"grpid": 2909, "attrib": 0, "date": 1222930968, "category": 1, "measures": [{ "value": 79300, 				"type":1, "unit": -3 }, { "value": 652, "type": 5, "unit": -1 }, { "value": 178, "type": 6, 
+				"unit": -1 }, { "value": 14125, "type": 8, "unit": -3 } ]} ]} }"""
 
-		when: 'Same sata is polled for more than one time'
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(mockedResponseData))
+		setWithingsResourceRepsone(new MockedHttpURLConnection(mockedResponseData))
+		assert Entry.count() == 0
+
+		when: 'Data is polled for the first time'
 		withingsDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
-        withingsDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
 
-		then:
-		Entry.count() == 1
+		then: 'Entries should be created successfully'
+		List<Entry> entryList = Entry.getAll()
+		entryList.size() == 2
+
+		entryList[0].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList[0].setIdentifier.value == "Withings"
+		entryList[0].description == "total weight [amount]"
+		entryList[0].amount == new BigDecimal(629376.1794756 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList[0].units == 'lbs'
+
+		entryList[1].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList[1].setIdentifier.value == "Withings"
+		entryList[1].description == "fat weight [amount]"
+		entryList[1].amount == new BigDecimal(112105.151766 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList[1].units == 'lbs'
+
+		when: 'Data is re-polled with different data and same date'
+		String newMockedResponseData = """{
+				"status": 0, "body": { "updatetime": 1249409679, "timezone": "Europe/Paris", "measuregrps": [{ 
+				"grpid": 2909, "attrib": 0, "date": 1222930968, "category": 1, "measures": [{ "value": 79300, 
+				"type": 1, "unit": -3 }, { "value": 652, "type": 5, "unit": -1 }, { "value": 178, "type": 6, 
+				"unit": -1 }, { "value": 14125, "type": 8, "unit": -3 }, { "value": 80808, "type": 1, "unit": -3 }, 
+				{ "value": 15436, "type": 8, "unit": -3 } ]} ]} }"""
+
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(newMockedResponseData))
+		setWithingsResourceRepsone(new MockedHttpURLConnection(newMockedResponseData))
+		withingsDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
+
+		then: 'More entries should be created and existing entries should not be modified'
+		assert Entry.count() == 4
+
+		List<Entry> entryList1 = Entry.getAll()
+		entryList1.size() == 4
+
+		entryList1[0].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList1[0].setIdentifier.value == "Withings"
+		entryList1[0].description == "total weight [amount]"
+		entryList1[0].amount == new BigDecimal(629376.1794756 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[0].units == 'lbs'
+
+		entryList1[1].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList1[1].setIdentifier.value == "Withings"
+		entryList1[1].description == "fat weight [amount]"
+		entryList1[1].amount == new BigDecimal(112105.151766 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[1].units == 'lbs'
 	}
 }

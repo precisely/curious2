@@ -162,7 +162,7 @@ environments {
 		grails.mail.disabled=true
 		
         grails.logging.jul.usebridge = false
-        grails.serverURL = "http://causecode.ddns.net:8219/"	/** If last `/` is removed, modify url's in oauth provider configurations **/
+        grails.serverURL = "http://127.0.0.1:8080/"	/** If last `/` is removed, modify url's in oauth provider configurations **/
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
 		facebookAppId = "714092418734227"
@@ -210,14 +210,9 @@ environments {
 					secret = "f00f94c857cba5d166463ad6f2c1aab0"
 				}
 
-				/*withings {
+				withings {
 					key = "74b17c41e567dc3451092829e04c342f5c68c04806980936e1ec9cfeb8f3"
 					secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
-				}*/
-
-				withings {
-					key = "1115077734530050c8c081236576cdd6292e1c904ff95c74dc1440e6bf9"
-					secret = "0b241336d7bd65e2f146d5f1105f3554df676947bf2e7651144c93e57602"
 				}
 				ouraLegacy {
 					key = "curious-dev"
@@ -341,7 +336,7 @@ environments {
 			}
 		}
 		
-		api {
+/*		api {
 			weatherunderground {
 				key = "0de9ca6314e3b2ee"
 			}
@@ -394,7 +389,7 @@ environments {
 			gcm {
 				senderID = "AIzaSyCcKBWFkLYNu-lsJ1lRHNfa0QLV_HTX2Qk"
 			}
-		}
+		}*/
     }
     production {
 		grails.mail.disabled=false
@@ -636,11 +631,10 @@ oauth {
 		}
 		withings {
 			api = WithingsApi
-			callback = "${grails.serverURL}authentication/withingCallback"	// Exceptional case, since withings sends userId as parameter
+			callback = "${grails.serverURL }authentication/withingCallback"	// Exceptional case, since withings sends userId as parameter
 			successUri = "authentication/withings/success"
 			failureUri = "authentication/withings/fail"
 			signatureType = SignatureType.QueryString
-
 		}
 		ouraLegacy {
 			api = LegacyOuraApi

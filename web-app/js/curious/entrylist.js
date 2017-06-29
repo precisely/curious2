@@ -488,6 +488,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		self.entrySelectData = {};
 		self.groupedData = {};
 		var entryDataInstance = new EntryData(entries);
+		
 		jQuery.each(entryDataInstance.getNormalEntries(), function() {
 			if (onlyPinned && !RepeatType.isContinuous(this.repeatType)) {
 				return;

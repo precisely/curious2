@@ -54,12 +54,12 @@ class BootStrap {
 
 		EmailVerificationCheckFilters.populateEmailVerificationEndpoints()
 
-//		migrationService.doMigrations()
+		migrationService.doMigrations()
 		JSON.registerObjectMarshaller(new EnumMarshaller())
 		def springContext = WebApplicationContextUtils.getWebApplicationContext( servletContext )
 		springContext.getBean( "customObjectMarshallers" ).register()
 		BackgroundTask.launch {
-//			migrationService.doBackgroundMigrations()
+			migrationService.doBackgroundMigrations()
 			/*def userList = User.list()
 			for (user in userList) {
 				DataService.pollAllForUserId(user.id)

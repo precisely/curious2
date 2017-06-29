@@ -92,7 +92,7 @@ class UrlMappings {
 
 		"500" (controller: "error", action: "memoryError", exception: OutOfMemoryError)
 
-		"/"(controller: "home", action: "login")
+		"/"(view: "/index")
 
 		// Default page to be loaded when access is denied
 		"/accessDenied"(view: "/accessDenied")

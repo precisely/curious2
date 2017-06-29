@@ -104,6 +104,7 @@ abstract class TagUnitMap {
 				value['ratio'] = theMap.fetchConversionRatio(value['from'], value['unit'])
 			baseTagNames.add(value['tag'])
 		}
+
 		tagUnitMappings = map
 	}
 
@@ -176,7 +177,7 @@ abstract class TagUnitMap {
 
 		parsedEntry.putAll(args)
 
-		Entry e = context?.entryAlreadyExists(parsedEntry,tag.id)
+		Entry e = context?.entryAlreadyExists(parsedEntry, tag.id)
 
 		if (!e) {
 			e = Entry.updatePartialOrCreate(userId, parsedEntry, creationMap.groupForDate(date, baseTag?.description), stats)

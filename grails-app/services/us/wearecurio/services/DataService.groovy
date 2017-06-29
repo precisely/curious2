@@ -93,7 +93,7 @@ abstract class DataService {
 			totalEntries = currentOffset = 0
 		}
 
-		Entry entryAlreadyExists(Map entryMap, Long tagId=null) {
+		Entry entryAlreadyExists(Map entryMap, Long tagId = null) {
 			boolean entriesAvailableInPollRange = entriesInPollRange
 			Entry entry
 			if (!entriesInPollRange || entriesInPollRange.last().date.compareTo(entryMap.date) < 0) {
@@ -101,8 +101,13 @@ abstract class DataService {
 			}
 			if (entriesAvailableInPollRange) {
 				entry = entriesInPollRange.find {
-					(it.units == entryMap.amount["units"] && !it.date.compareTo(entryMap.date) &&
-							it.setIdentifier.toString() == entryMap.setName && (it.tag==tagId))
+					if (tagId) {
+						(it.units == entryMap.amount["units"] && !it.date.compareTo(entryMap.date) &&
+								it.setIdentifier.toString() == entryMap.setName && (it.tag == tagId))
+					} else {
+						(it.units == entryMap.amount["units"] && !it.date.compareTo(entryMap.date) &&
+								it.setIdentifier.toString() == entryMap.setName)
+					}
 				}
 			}
 			return entry
