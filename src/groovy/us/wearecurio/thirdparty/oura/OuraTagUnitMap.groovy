@@ -36,6 +36,7 @@ class OuraTagUnitMap extends TagUnitMap {
 			got_up_count: [tag: SLEEP, unit: 'got-up times'],
 			efficiency: [tag: SLEEP, unit: '%'],
 			hr_lowest: [tag: SLEEP, unit: 'bpm lowest'],
+			hr_average: [tag: 'heart rate', unit: 'bpm sleep'],
 			restless: [tag: SLEEP, unit: '%'],
 			score_total: [tag: SLEEP, unit: 'score total'],
 			score_rem: [tag: SLEEP, unit: 'score rem'],

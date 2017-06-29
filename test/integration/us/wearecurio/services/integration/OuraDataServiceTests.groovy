@@ -1,5 +1,6 @@
 package us.wearecurio.services.integration
 
+import us.wearecurio.model.Tag
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import org.scribe.model.Response
@@ -195,8 +196,9 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList[0].setIdentifier.value == "Oura"
 
 		entryList[13].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList[13].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
-		entryList[13].units == 'bpm lowest'
+		entryList[13].amount == new BigDecimal(56.875).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList[13].units == 'bpm sleep'
+		entryList[13].baseTag == Tag.look('heart rate')
 		entryList[13].setIdentifier.value == "Oura"
 
 		when: 'The same data with same DataRequestContext is re-imported.'
@@ -221,9 +223,10 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList1[0].setIdentifier.value == "Oura"
 
 		entryList1[13].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList[13].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
-		entryList1[13].units == 'bpm lowest'
-		entryList1[13].setIdentifier.value == "Oura"
+		entryList[13].amount == new BigDecimal(56.875).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList[13].units == 'bpm sleep'
+		entryList[13].baseTag == Tag.look('heart rate')
+		entryList[13].setIdentifier.value == "Oura"
 
 		when: 'The same data with same DataRequestContext but updated lastData and lastPolled is re-imported.'
 		ouraDataService.getDataSleep(account, mockDate, false, dataRequestContext)
@@ -241,9 +244,10 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList2[0].setIdentifier.value == "Oura"
 
 		entryList2[13].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList[13].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
-		entryList2[13].units == 'bpm lowest'
-		entryList2[13].setIdentifier.value == "Oura"
+		entryList[13].amount == new BigDecimal(56.875).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList[13].units == 'bpm sleep'
+		entryList[13].baseTag == Tag.look('heart rate')
+		entryList[13].setIdentifier.value == "Oura"
 
 		when: 'The same data with new DataRequestContext is re-imported.'
 		// Reset the lastData and lastPolled to same state.
@@ -267,9 +271,10 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList3[0].setIdentifier.value == "Oura"
 
 		entryList3[13].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList[13].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
-		entryList3[13].units == 'bpm lowest'
-		entryList3[13].setIdentifier.value == "Oura"
+		entryList[13].amount == new BigDecimal(56.875).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList[13].units == 'bpm sleep'
+		entryList[13].baseTag == Tag.look('heart rate')
+		entryList[13].setIdentifier.value == "Oura"
 	}
 
 	void "Test getDataActivity method to successfully create entries for activity data"() {
