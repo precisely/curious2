@@ -103,7 +103,7 @@ abstract class DataService {
 				entry = entriesInPollRange.find {
 					if (tagId) {
 						(it.units == entryMap.amount["units"] && !it.date.compareTo(entryMap.date) &&
-								it.setIdentifier.toString() == entryMap.setName && (it.tag == tagId))
+								it.setIdentifier.toString() == entryMap.setName && it.tag.id == tagId)
 					} else {
 						(it.units == entryMap.amount["units"] && !it.date.compareTo(entryMap.date) &&
 								it.setIdentifier.toString() == entryMap.setName)

@@ -4,6 +4,7 @@ import org.apache.commons.logging.LogFactory
 import org.scribe.model.Response
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Entry
+import us.wearecurio.model.Identifier
 import us.wearecurio.model.IntraDayQueueItem
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
@@ -391,5 +392,60 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		entryList1[1].description == "fat weight [amount]"
 		entryList1[1].amount == new BigDecimal(112105.151766 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList1[1].units == 'lbs'
+
+		entryList1[2].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList1[2].setIdentifier.value == "Withings"
+		entryList1[2].description == "total weight [amount]"
+		entryList1[2].amount == new BigDecimal(641344.6445256 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[2].units == 'lbs'
+
+		entryList1[3].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList1[3].setIdentifier.value == "Withings"
+		entryList1[3].description == "fat weight [amount]"
+		entryList1[3].amount == new BigDecimal(122510.09718 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[3].units == 'lbs'
+
+		when: 'Data is re-polled with updated values for previous data'
+		String updatedMockedResponseData = """{
+				"status": 0, "body": { "updatetime": 1249409679, "timezone": "Europe/Paris", "measuregrps": [{ 
+				"grpid": 2909, "attrib": 0, "date": 1222930968, "category": 1, "measures": [{ "value": 84300, "type":1,                "unit": -3 }, { "value": 652, "type": 5, "unit": -1 }, { "value": 178, "type": 6, "unit": -1 }, { 
+				"value": 19225, "type": 8, "unit": -3 } ]} ]} }"""
+
+		DataRequestContext dataRequestContext = new DataRequestContext(entryList1[0].date, null,
+				[Identifier.look("Withings")], account.userId)
+
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(updatedMockedResponseData))
+		setWithingsResourceRepsone(new MockedHttpURLConnection(updatedMockedResponseData))
+		withingsDataService.getDataDefault(account, entryList1[0].date, null, false, dataRequestContext)
+
+		then: 'Entries should be updated'
+		assert Entry.count() == 4
+
+		List<Entry> entryList2 = Entry.getAll()
+		entryList2.size() == 4
+
+		entryList2[0].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList2[0].setIdentifier.value == "Withings"
+		entryList2[0].description == "total weight [amount]"
+		entryList2[0].amount == new BigDecimal(669059.4190356 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList2[0].units == 'lbs'
+
+		entryList2[1].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList2[1].setIdentifier.value == "Withings"
+		entryList2[1].description == "fat weight [amount]"
+		entryList2[1].amount == new BigDecimal(152582.0561208 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList2[1].units == 'lbs'
+
+		entryList1[2].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList1[2].setIdentifier.value == "Withings"
+		entryList1[2].description == "total weight [amount]"
+		entryList1[2].amount == new BigDecimal(641344.6445256 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[2].units == 'lbs'
+
+		entryList1[3].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList1[3].setIdentifier.value == "Withings"
+		entryList1[3].description == "fat weight [amount]"
+		entryList1[3].amount == new BigDecimal(122510.09718 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[3].units == 'lbs'
 	}
 }
