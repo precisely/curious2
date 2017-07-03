@@ -25,7 +25,7 @@
 		<div>
 			<pre>CSV file format:
 			First row is reserved for titles and will not be parsed while import.
-			There are 9 columns and these needs to be in the exact order as mentioned below -
+			There are 8 columns and these needs to be in the exact order as mentioned below -
 			1. tag description*  : Description of the base tag.
 			2. default unit      : This column is optional. Unit of measurement for the tag entry.
 			3. max*              : Maximum allowed value for this TagInputType.
@@ -37,8 +37,6 @@
 			                       continuous. If no value is provided then by default inputType is set to discrete.
 			8. override          : This column is optional. This provides the option to override an existing
 			                       TagInputType. In order to do so, set the value for this field to 'true'.
-			9. default           : This column is optional. This provides the option to set an input tag as default.
-			                       Set the value of this field to 'true' to make it default input type.
 			</pre>
 		</div>
 	</div>
