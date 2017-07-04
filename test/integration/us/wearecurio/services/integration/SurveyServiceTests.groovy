@@ -28,9 +28,15 @@ class SurveyServiceTests extends CuriousServiceTestCase {
 		given: 'An instance of Survey and UserRegistration'
 		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
 				status: SurveyStatus.INACTIVE)
-		surveyInstance.addToQuestions(question: 'This is the first question.', priority: 1, status: 'INACTIVE',
+        surveyInstance.addToQuestions(question: 'This is the first question.', priority: 1, status: 'INACTIVE',
 				answerType: 'DESCRIPTIVE')
-		surveyInstance.save(flush: true)
+        surveyInstance.save(flush: true)
+
+        Survey defaultSurveyInstance = new Survey(code: 'default', title: 'This is the demo survey title.',
+                status: SurveyStatus.ACTIVE)
+        defaultSurveyInstance.addToQuestions(question: 'This is the first demo question.', priority: 1,
+                status: 'ACTIVE', answerType: 'DESCRIPTIVE')
+        defaultSurveyInstance.save(flush: true)
 
 		UserRegistration userRegistration = UserRegistration.create(user.id, surveyInstance.code)
 		UserRegistration userRegistration1 = UserRegistration.create(user2.id)
@@ -40,23 +46,23 @@ class SurveyServiceTests extends CuriousServiceTestCase {
 		assert UserRegistration.findByUserId(user2.id).id == userRegistration1.id
 
 		when: 'checkPromoCode method is called and user did not use any promoCode during signup'
-		Survey result = surveyService.checkPromoCode(user2)
+        Survey result = surveyService.checkPromoCode(user2)
 
-		then: 'No surveyInstance is returned in response'
-		result == null
+        then: 'Default surveyInstance is returned in response'
+		result.code == 'default'
 
-		when: 'checkPromoCode method is hit and user did use the promoCode but survey is inactive'
-		result = surveyService.checkPromoCode(user)
+		when: 'checkPromoCode method is hit and user used the incorrect promoCode or survey is inactive'
+        result = surveyService.checkPromoCode(user2)
 
-		then: 'No surveyInstance is returned in response'
-		result == null
+        then: 'Default surveyInstance is returned in response'
+		result.code == 'default'
 
 		when: 'checkPromoCode method is called and Survey with that promoCode does exist'
 		surveyInstance.status = SurveyStatus.ACTIVE
 		surveyInstance.save(flush: true)
 		result = surveyService.checkPromoCode(user)
 
-		then: 'Method returns Survey instance in response'
+        then: 'Method returns Survey instance in response'
 		result == surveyInstance
 	}
 }

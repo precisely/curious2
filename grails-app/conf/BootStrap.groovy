@@ -5,9 +5,7 @@ import us.wearecurio.data.DataRetriever
 import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.filters.EmailVerificationCheckFilters
 import us.wearecurio.marshaller.EnumMarshaller
-import us.wearecurio.marshaller.QuestionMarshaller
 import us.wearecurio.model.TagInputType
-import us.wearecurio.marshaller.ProfileTagMarshaller
 import us.wearecurio.model.TagStats
 import us.wearecurio.server.BackgroundTask
 import us.wearecurio.services.AlertGenerationService
@@ -24,93 +22,89 @@ import us.wearecurio.utility.Utils
 
 class BootStrap {
 
-	MigrationService migrationService
-	WithingsDataService withingsDataService
-	DatabaseService databaseService
-	EmailService emailService
-	AnalyticsService analyticsService
-	SecurityService securityService
-	SearchService searchService
-	EntryParserService entryParserService
-	AlertGenerationService alertGenerationService
+    MigrationService migrationService
+    WithingsDataService withingsDataService
+    DatabaseService databaseService
+    EmailService emailService
+    AnalyticsService analyticsService
+    SecurityService securityService
+    SearchService searchService
+    EntryParserService entryParserService
+    AlertGenerationService alertGenerationService
 
-	def grailsApplication
-	
-	static protected initClosures = []
-	
-	def init = { servletContext ->
-		log.debug "Curious bootstrap started executing."
-		def current = Environment.current
+    def grailsApplication
 
-		DatabaseService.set(databaseService)
-		EmailService.set(emailService)
-		SecurityService.set(securityService)
-		SearchService.set(searchService)
-		EntryParserService.set(entryParserService)
-		AnalyticsService.set(analyticsService)
-		AlertGenerationService.set(alertGenerationService)
+    static protected initClosures = []
 
-		DataRetriever.setDatabaseService(databaseService)
+    def init = { servletContext ->
+        log.debug "Curious bootstrap started executing."
+        def current = Environment.current
 
-		UnitGroupMap.initialize()
+        DatabaseService.set(databaseService)
+        EmailService.set(emailService)
+        SecurityService.set(securityService)
+        SearchService.set(searchService)
+        EntryParserService.set(entryParserService)
+        AnalyticsService.set(analyticsService)
+        AlertGenerationService.set(alertGenerationService)
 
-		EmailVerificationCheckFilters.populateEmailVerificationEndpoints()
+        DataRetriever.setDatabaseService(databaseService)
 
-		migrationService.doMigrations()
+        UnitGroupMap.initialize()
 
-		JSON.registerObjectMarshaller(new EnumMarshaller())
-		JSON.registerObjectMarshaller(new ProfileTagMarshaller())
-		JSON.registerObjectMarshaller(new QuestionMarshaller())
+        EmailVerificationCheckFilters.populateEmailVerificationEndpoints()
 
-		def springContext = WebApplicationContextUtils.getWebApplicationContext( servletContext )
-		springContext.getBean( "customObjectMarshallers" ).register()
-		BackgroundTask.launch {
-			migrationService.doBackgroundMigrations()
-			/*def userList = User.list()
-			for (user in userList) {
-				DataService.pollAllForUserId(user.id)
-			}*/
-		}
+        migrationService.doMigrations()
+        JSON.registerObjectMarshaller(new EnumMarshaller())
+        def springContext = WebApplicationContextUtils.getWebApplicationContext( servletContext )
+        springContext.getBean( "customObjectMarshallers" ).register()
+        BackgroundTask.launch {
+            migrationService.doBackgroundMigrations()
+            /*def userList = User.list()
+            for (user in userList) {
+                DataService.pollAllForUserId(user.id)
+            }*/
+        }
 
-		TagStats.initializeSharedTags()
-		TagInputType.initializeCachedTagWithInputTypes()
+        TagStats.initializeSharedTags()
+        TagInputType.initializeCachedTagWithInputTypes()
 
-		Utils.registerTestReset({ DataRetriever.resetCache() })
+        Utils.registerTestReset({ DataRetriever.resetCache() })
 
-		/**
-		 * This marshaller is implemented to parse date into javascript date format
-		 * when rendering response for a POST request. Default Date format in config is javascript this marshaller will override it.
-		 * Usage: 
-		 *  JSON.use("jsonDate") {
-		 *		sampleInstance as JSON
-		 *  }
-		 */
+        /**
+         * This marshaller is implemented to parse date into javascript date format
+         * when rendering response for a POST request. Default Date format in config is javascript this marshaller will override it.
+         * Usage:
+         *  JSON.use("jsonDate") {
+         *		sampleInstance as JSON
+         *  }
+         */
 
-		JSON.createNamedConfig("jsonDate") {
-			it.registerObjectMarshaller(Date) {
-				return it.format("yyyy-MM-dd'T'HH:mm:ssZ")
-			}
-		}
+        JSON.createNamedConfig("jsonDate") {
+            it.registerObjectMarshaller(Date) {
+                return it.format("yyyy-MM-dd'T'HH:mm:ssZ")
+            }
+        }
 
-		if (grailsApplication.config.wearecurious.runImportJobs)
-			withingsDataService.refreshSubscriptions()
+        if (grailsApplication.config.wearecurious.runImportJobs)
+            withingsDataService.refreshSubscriptions()
 
-		log.debug "Populating no auth actions."
-		securityService.populateNoAuthMethods()
+        log.debug "Populating no auth actions."
+        securityService.populateNoAuthMethods()
 
-		if (current != Environment.TEST && current != Environment.DEVELOPMENT) {
-			try {
-				new IntraDayDataThread().start()
-			} catch(IllegalStateException ie) {
-				log.debug "Bootstrap: Could not start IntraDayDataThread"
-				Utils.reportError("Bootstrap: Could not start IntraDayDataThread","")
-			}
-		}
+        if (current != Environment.TEST && current != Environment.DEVELOPMENT) {
+            try {
+                new IntraDayDataThread().start()
+            } catch(IllegalStateException ie) {
+                log.debug "Bootstrap: Could not start IntraDayDataThread"
+                Utils.reportError("Bootstrap: Could not start IntraDayDataThread","")
+            }
+        }
 
-		log.debug "Curious bootstrap finished executing."
-	}
+        log.debug "Curious bootstrap finished executing."
+    }
 
-	def destroy = {
-	}
+    def destroy = {
+    }
 
 }
