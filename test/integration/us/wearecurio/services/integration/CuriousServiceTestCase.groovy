@@ -84,10 +84,10 @@ abstract class CuriousServiceTestCase extends Specification {
 
 		user = User.create(params)
 		user2 = User.create(params2)
-		
+
 		println "new user " + user
 		println "new user " + user2
-		
+
 		userId = user.getId()
 		userId2 = user2.getId()
 	}
