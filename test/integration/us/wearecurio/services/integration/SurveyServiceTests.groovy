@@ -64,5 +64,14 @@ class SurveyServiceTests extends CuriousServiceTestCase {
 
 		then: 'Method returns Survey instance in response'
 		result == surveyInstance
+
+		when: 'checkPromoCode method is called and user didnot entered any promoCode and default ' +
+				'survey is unavailable'
+		defaultSurveyInstance.status=SurveyStatus.INACTIVE
+		defaultSurveyInstance.save(flush: true)
+		result = surveyService.checkPromoCode(user2)
+
+		then: 'Method returns no survey in response '
+		result==null
 	}
 }
