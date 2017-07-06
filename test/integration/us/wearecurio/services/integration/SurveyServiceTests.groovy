@@ -5,7 +5,6 @@ import us.wearecurio.model.survey.Survey
 import us.wearecurio.model.survey.SurveyStatus
 import us.wearecurio.services.SurveyService
 
-
 /**
  * This class contains integration test cases for SurveyService class.
  */
@@ -39,7 +38,7 @@ class SurveyServiceTests extends CuriousServiceTestCase {
 		assert UserRegistration.findByUserId(user2.id).id == userRegistration1.id
 
 		when: 'checkPromoCode method is called and user did not use any promoCode during signup'
-		Survey result = surveyService.checkPromoCode(user)
+		Survey result = surveyService.checkPromoCode(user2)
 
 		then: 'No surveyInstance is returned in response'
 		result == null
@@ -83,26 +82,20 @@ class SurveyServiceTests extends CuriousServiceTestCase {
 		when: 'checkPromoCode method is called and user did not use any promoCode during signup'
 		Survey result = surveyService.checkPromoCode(user2)
 
-		then: 'No surveyInstance is returned in response'
-		result.code == 'default'
-
-		when: 'Default checkPromoCode method is hit and user used the incorrect promoCode or survey is inactive'
-		result = surveyService.checkPromoCode(user2)
-
 		then: 'Default surveyInstance is returned in response'
 		result.code == 'default'
 
 		when: 'User did entered a promoCode but survey for that promoCode is Inactive'
 		result = surveyService.checkPromoCode(user)
 
-		then: 'Default survey is returned in response'
+		then: 'Default surveyInstance is returned in response'
 		result.code == 'default'
 
 		when: 'User did enter a promoCode but survey for that promoCode doesnt exist'
 		userRegistration1 = UserRegistration.create(user2.id,"test")
 		result = surveyService.checkPromoCode(user2)
 
-		then: 'Default survey is returned in response'
+		then: 'Default surveyInstance is returned in response'
 		result.code == 'default'
 	}
 }
