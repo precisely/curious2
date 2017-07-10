@@ -35,9 +35,9 @@ class BootStrap {
 	AlertGenerationService alertGenerationService
 
 	def grailsApplication
-	
+
 	static protected initClosures = []
-	
+
 	def init = { servletContext ->
 		log.debug "Curious bootstrap started executing."
 		def current = Environment.current
@@ -80,7 +80,7 @@ class BootStrap {
 		/**
 		 * This marshaller is implemented to parse date into javascript date format
 		 * when rendering response for a POST request. Default Date format in config is javascript this marshaller will override it.
-		 * Usage: 
+		 * Usage:
 		 *  JSON.use("jsonDate") {
 		 *		sampleInstance as JSON
 		 *  }

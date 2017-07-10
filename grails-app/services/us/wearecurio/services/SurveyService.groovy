@@ -24,20 +24,15 @@ class SurveyService {
 		}
 
 		UserRegistration userRegistration = UserRegistration.findByUserId(currentUser.id)
-		String promoCode = userRegistration?.promoCode
+		String promoCode = userRegistration?.promoCode ?: 'default'
 		Survey survey
 		UserSurvey userSurvey
 
-		if (!promoCode) {
-			log.debug "User ${currentUser} did not use any promo code during signup."
-
-			return
-		}
-
-		if (promoCode && userRegistration.dateCreated > new Date() - 90) {
+		if (userRegistration.dateCreated > new Date() - 90) {
 			log.debug "Checking if Survey exists for promo code ${promoCode}..."
 
-			survey = Survey.findByCodeAndStatus(promoCode, SurveyStatus.ACTIVE)
+			survey = Survey.findByCodeAndStatus(promoCode, SurveyStatus.ACTIVE) ?: Survey.findByCodeAndStatus(
+					'default', SurveyStatus.ACTIVE)
 
 			if (survey) {
 				log.debug "Checking if User ${currentUser} has taken Survey ${survey}..."
