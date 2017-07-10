@@ -1091,6 +1091,11 @@ class MigrationService {
 			sql("ALTER TABLE tag_input_type DROP COLUMN is_default")
 		}
 
+// - - - - - - - - - - - - - - - - Migrations to add admin to System group - - - - - - - - - - - - - - - - - - - - - - -
+
+		tryMigration("Add visheshd as admin to System group") {
+			UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME).addAdmin(User.findByUsername("visheshd"))
+		}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	}
