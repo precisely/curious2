@@ -8,6 +8,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile
 import us.wearecurio.controller.AdminController
 import us.wearecurio.model.SurveyAnswer
 import us.wearecurio.model.SurveyQuestion
+import us.wearecurio.model.TagInputType
 import us.wearecurio.model.User
 import us.wearecurio.services.SecurityService
 import us.wearecurio.services.TagInputTypeService
@@ -49,10 +50,10 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	}
 
 	byte[] getDefaultFileContent() {
-		return "tag description, default unit, max, min, number of levels, input type, value type, override," +
-				"default \n sleep, hours, 10, 0, 5, thumbs, , ,\n mood, , 10, 0, 5, smiley, ,, \n" +
-				"misbehavior, , 10, 0 , 5, boolean, , ,\n , , , \n bowell movement, , 10, 0, 5, slider, ," +
-				" true ,\n energy, , 10, 0, 5, level, ,," as byte[]
+		return "tag description, default unit, max, min, number of levels, input type, value type, override" +
+				" \n sleep, hours, 10, 0, 5, thumbs, , \n mood, , 10, 0, 5, smiley, ,\n" +
+				"misbehavior, , 10, 0 , 5, boolean, , \n , , , \n bowell movement, , 10, 0, 5, slider, ," +
+				" true\n energy, , 10, 0, 5, level, ," as byte[]
 	}
 
 	File getFile(String filePath) {
@@ -472,19 +473,21 @@ class AdminControllerTests extends CuriousControllerTestCase {
 
 		then: 'New TagInputType are created for valid rows in csv file and invalid rows are sent in the response'
 		assert controller.response.status == 200
+		assert TagInputType.count() == 5
 		assert controller.modelAndView.model.message == 'The CSV file you uploaded contains some invalid rows. ' +
 				'A CSV file containing the invalid rows has been emailed to you. Please fix the file and re-upload. ' +
-				'Syntax error in lines [[row:5, error:The row must have 9 columns]]'
+				'Syntax error in lines [[row:5, error:The row must have 8 columns]]'
 		file.delete()
+		fileItem.delete()
 	}
 
 	@Test
 	void "test importTagInputTypeFromCSV action to import TagInputType from a correct CSV file"() {
 		when: 'A valid CSV file is passed'
 		byte[] content = "tag description, default unit, max, min, number of levels, input type, value type," +
-				"override, default \n sleep, hours, 10, 0, 5, level, , , \n activity, cal, 10, 0, 5, smiley, " +
-				"continuous, , \n readiness,score, 10, 0 , 5, thumbs, , ,\n sleep, mins, 10, 0, 10, slider, " +
-				"continuous, true, true" as byte[]
+				"override \n sleep, hours, 10, 0, 5, level, , \n activity, cal, 10, 0, 5, smiley, " +
+				"continuous, \n readiness,score, 10, 0 , 5, thumbs, , \n sleep, mins, 10, 0, 10, slider, " +
+				"continuous, true \n melatonin,mg,10,0,5,default,," as byte[]
 		File file = getFile('./target/temp.csv')
 		DiskFileItem fileItem = getDiskFileItemInstance(file, content)
 		CommonsMultipartFile commonsMultipartFile = new CommonsMultipartFile(fileItem)
@@ -494,6 +497,8 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		then: 'New TagInputType are created for all the entries and a proper message is sent in response'
 		assert controller.response.status == 200
 		assert controller.modelAndView.model.message == 'Successfully imported all TagInputType from CSV'
+		assert TagInputType.count() == 4 // sleep gets overridden
 		file.delete()
+		fileItem.delete()
 	}
 }

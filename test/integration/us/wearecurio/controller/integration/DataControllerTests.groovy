@@ -1292,7 +1292,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params.lastInputTypeCacheDate = oldCacheDate
 
 		new TagInputType(tagId: Tag.look('tea').id, max: 10, min: 0, noOfLevels: 5,
-				inputType: InputType.LEVEL, defaultUnit: 'calories', isDefault: true).save(flush: true)
+				inputType: InputType.LEVEL, defaultUnit: 'calories').save(flush: true)
 		TagInputType.initializeCachedTagWithInputTypes()
 
 		controller.getAllTagsWithInputType()

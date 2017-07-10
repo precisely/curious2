@@ -1085,6 +1085,12 @@ class MigrationService {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+// - - - - - - - - - - - - Migrations to remove is_default column from tag_input_type table - - - - - - - - - - - - - -
+
+		tryMigration('Remove is_default column from tag_input_type') {
+			sql("ALTER TABLE tag_input_type DROP COLUMN is_default")
+		}
+
 // - - - - - - - - - - - - - - - - Migrations to add admin to System group - - - - - - - - - - - - - - - - - - - - - - -
 
 		tryMigration("Add visheshd as admin to System group") {
