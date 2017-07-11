@@ -1,15 +1,13 @@
-<div class="main container-fluid survey-factory">
-	<h1>
-		Survey Questions
-		<span>
-		<span>
-			<g:link controller="survey" action="addQuestion" id="${surveyInstance.id}">
-				<i class="fa fa-plus-circle action-icon"></i>
-			</g:link>
-		</span>
-		</span>
-	</h1>
-	<table class="table table-bordered table-hover table-striped">
+<div class="main container-fluid survey-factory survey-factory-container">
+	<div>
+		<h2 class="display-inline">
+			Survey Questions
+		</h2>
+		<button class="btn btn-default add-survey-button pull-right" onclick="window.location = '/survey/addQuestion/${surveyInstance.id}'">
+			<i class="fa fa-plus-circle survey-add-icon"></i> Add Question
+		</button>
+	</div>
+	<table class="table table-bordered table-hover table-striped remove-margin-bottom">
 		<thead>
 			<tr>
 				<th>Question</th>

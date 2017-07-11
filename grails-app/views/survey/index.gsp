@@ -8,19 +8,20 @@
 	<div class="red-header">
 		<h1>
 			Survey
-			<span>
-				<g:link controller="survey" action="create">
-					<i class="fa fa-plus-circle action-icon"></i>
-				</g:link>
-			</span>
 		</h1>
 	</div>
 
-	<div class="main container-fluid survey-factory">
-		<h4>
-			Survey List
-		</h4>
-		<table class="table table-bordered table-hover table-striped">
+	<div class="main container-fluid survey-factory survey-factory-container">
+		<div>
+			<h2 class="display-inline">
+				Survey List
+			</h2>
+			<button class="btn btn-default add-survey-button pull-right" onclick="window.location = '/survey/create'">
+				<i class="fa fa-plus-circle survey-add-icon"></i> Add Survey
+			</button>
+		</div>
+
+		<table class="table table-bordered table-hover table-striped remove-margin-bottom">
 			<thead>
 				<tr>
 					<th>Title</th>

@@ -37,7 +37,8 @@
 		</g:if>
 		<g:else>
 			<div>
-				<textarea name="answerText${index}" ${questionInstance.isRequired ? 'required' : ''}></textarea>
+				<textarea name="answerText${index}" maxlength="2000" ${questionInstance.isRequired ? 'required' : ''}>
+				</textarea>
 			</div>
 		</g:else>
 

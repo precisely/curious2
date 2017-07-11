@@ -46,7 +46,9 @@ class SurveyController extends LoginController {
 	def save() {
 		log.debug "Save survey: $params"
 
+		params.code = params.code?.toLowerCase()
 		Survey surveyInstance = Survey.findByCodeAndTitle(params.code, params.title)
+
 		if (surveyInstance) {
 			flash.message = 'Survey with this code and title already exists.'
 			flash.messageType = 'danger'

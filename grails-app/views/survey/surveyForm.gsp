@@ -32,12 +32,14 @@
 					<input class="survey-input" type="text" name="title" placeholder="Title" id="title" 
 							value="${surveyInstance.title}" required/>
 				</div>
-				<div>
+				<div id="survey-code">
 					<label for="code">
 						Code
 					</label>
+					<div data-toggle="tooltip", title="The Code will be lower cased." data-placement="top">
 					<input class="survey-input" type="text" name="code" placeholder="Code" id="code"
 							value="${surveyInstance.code}" required/>
+					</div>
 				</div>
 				<div>
 					<label for="status">

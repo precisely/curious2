@@ -15,7 +15,7 @@
 
 		<div class="main container-fluid survey-factory">
 			<div class="margin-bottom">
-				<ul class="breadcrumb">
+				<ul class="breadcrumb survey-breadcrumbs">
 					<li>
 						<g:link controller="survey" action="index" data-toggle="tooltip"
 								title="Go To Survey List" data-placement="top">

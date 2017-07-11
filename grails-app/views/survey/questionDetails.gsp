@@ -30,9 +30,9 @@
 
 									if (data.success) {
 										parentLi.remove();
-										showAlert('Tag removed successfully from answer');
+										showAlert('Tag removed successfully from answer.');
 									} else {
-										showAlert('Could not remove Tag from answer')
+										showAlert('Could not remove Tag from answer.')
 									}
 								}, function (xhr) {
 									console.log('error: ', xhr);
@@ -58,9 +58,9 @@
 
 									if (data.success) {
 										parentLi.remove();
-										showAlert('Tag removed successfully from answer');
+										showAlert('Tag removed successfully from answer.');
 									} else {
-										showAlert('Could not remove Tag from answer')
+										showAlert('Could not remove Tag from answer.')
 									}
 								}, function (xhr) {
 									console.log('error: ', xhr);

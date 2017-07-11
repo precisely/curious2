@@ -51,10 +51,10 @@ class ProfileTagController extends LoginController {
 
 			ProfileTag newProfileTag = ProfileTag.addInterestTag(newTag, user.id, status, true)
 			if (newProfileTag)  {
-				debug "Successfully added profile tag"
+				debug "Successfully added interest profile tag - ${tagName} for userId ${user.id}."
 				newProfileTags.add(newProfileTag)
 			} else {
-				debug "Failure adding profile tag"
+				debug "Failure adding interest profile tag - ${tagName} for uesrId ${user.id}."
 				errorTagsList.add(tagName)
 			}
 		}

@@ -1,21 +1,19 @@
 <%@ page import="us.wearecurio.model.survey.AnswerType" %>
-<div class="main container-fluid survey-factory">
-	<h1>
-		Survey Answers
-		<span>
-			<span>
-				<g:if test="${questionInstance.answerType != AnswerType.DESCRIPTIVE}">
-					<a href="#" data-toggle="modal" data-target="#addAnswerOverlay">
-						<i class="fa fa-plus-circle action-icon"></i>
-					</a>
-				</g:if>
-				<g:else>
-					( The AnswerType is descriptive. )
-				</g:else>
-			</span>
-		</span>
-	</h1>
-	<table class="table table-bordered table-hover table-striped">
+<div class="main container-fluid survey-factory survey-factory-container">
+	<div>
+		<h2 class="display-inline">
+			Survey Answers
+		</h2>
+		<g:if test="${questionInstance.answerType != AnswerType.DESCRIPTIVE}">
+			<a href="#" class="btn btn-default add-survey-button pull-right" data-toggle="modal" data-target="#addAnswerOverlay">
+				<i class="fa fa-plus-circle survey-add-icon"></i> Add Answer
+			</a>
+		</g:if>
+		<g:else>
+			( The AnswerType is descriptive. )
+		</g:else>
+	</div>
+	<table class="table table-bordered table-hover table-striped remove-margin-bottom">
 		<thead>
 			<tr>
 				<th>Answer</th>

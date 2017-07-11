@@ -33,7 +33,7 @@ class PossibleAnswer {
 	]
 
 	static constraints = {
-		answer(blank: false, size: 1..1000)
+		answer(blank: false, size: 1..2000)
 	}
 
 	static mapping = {

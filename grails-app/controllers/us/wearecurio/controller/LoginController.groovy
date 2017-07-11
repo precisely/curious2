@@ -493,7 +493,7 @@ class LoginController extends SessionController {
 				debug "Error creating user: " + retVal['validateErrors']
 				return retVal
 			} else {
-				String promoCode = params.promoCode ?: null
+				String promoCode = params.promoCode ? params.promoCode.toLowerCase() : null
 				UserRegistration userRegistration = UserRegistration.create(user.id, promoCode)
 				Survey survey
 				UserSurvey userSurvey
