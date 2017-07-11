@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-svc
+  namespace: prod-curious
+  labels:
+    app: analytics-service
+spec:
+  ports:
+    - port: 8090
+  selector:
+    app: analytics

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: curious-pvc-nfs
+  namespace: prod-curious
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+     requests:
+       storage: 80Gi

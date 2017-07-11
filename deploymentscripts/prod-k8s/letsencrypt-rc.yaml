@@ -1,0 +1,42 @@
+# Refer to the Github Repo: https://github.com/ployst/docker-letsencrypt
+
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: letsencrypt
+  namespace: prod-curious
+spec:
+  replicas: 1
+  selector:
+    name: letsencrypt
+    role: cert-app
+  template:
+      metadata:
+        name: letsencrypt-rc
+        labels:
+          name: letsencrypt
+          role: cert-app
+      spec:
+        containers:
+        - name: letsencrypt
+          image: ployst/letsencrypt:0.2.0
+          resources:
+            requests:
+              cpu: 0.2
+              memory: 500Mi
+            limits: # Pod cannot obtain resources more than the limits specified.
+              cpu: 1
+              memory: 1Gi
+          env:
+          - name: EMAIL
+            value: developers@causecode.com
+          - name: DOMAINS
+            value: wearecurio.us
+          - name: DEPLOYMENTS
+            value: nginx
+          - name: NAMESPACE
+            value: prod-curious
+          - name: SECRET_NAME # Name of the Secret in which certificate key information will be stored.
+            value: cert-wearecurio.us
+          ports:
+            - containerPort: 80
