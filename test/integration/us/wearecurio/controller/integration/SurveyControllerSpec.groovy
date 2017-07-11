@@ -42,13 +42,13 @@ class SurveyControllerSpec extends IntegrationSpec {
 		Survey.count() == 1
 
 		Survey surveyInstance = Survey.first()
-		surveyInstance.code == code
+		surveyInstance.code == code.toLowerCase()
 		surveyInstance.title == title
 
 		where:
 		code   | title                              | status
-		's001' | 'This is the first survey title.'  | 'ACTIVE'
-		's002' | 'This is the second survey title.' | 'INACTIVE'
+		'S001' | 'This is the first survey title.'  | 'ACTIVE'
+		'S002' | 'This is the second survey title.' | 'INACTIVE'
 	}
 
 	void "test save action when a survey with same title and code already exists"() {

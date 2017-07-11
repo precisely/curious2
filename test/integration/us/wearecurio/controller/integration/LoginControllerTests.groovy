@@ -374,7 +374,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 			name:'w w',
 			sex:'m',
 			groups:"['curious','announce']",
-			promoCode: 's001'
+			promoCode: 'S001'
 		])
 		
 		controller.doregister()
@@ -385,7 +385,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert curious.hasWriter(q)
 		assert !announce.hasWriter(q)
 		assert announce.hasReader(q)
-		assert UserRegistration.findByUserIdAndPromoCode(q.id, 's001')
+		assert UserRegistration.findByUserIdAndPromoCode(q.id, 's001') // promoCode gets saved in lower case.
 		assert UserSurvey.findByUserAndSurvey(q, surveyInstance).status == Status.NOT_TAKEN
 		assert UserSurvey.count() == 1
 		assert q.hasInterestTag(Tag.look("newuser"))

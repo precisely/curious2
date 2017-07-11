@@ -28,7 +28,7 @@ class SurveyService {
 		Survey survey
 		UserSurvey userSurvey
 
-		if (userRegistration.dateCreated > new Date() - 90) {
+		if (userRegistration && userRegistration.dateCreated > new Date() - 90) {
 			log.debug "Checking if Survey exists for promo code ${promoCode}..."
 
 			survey = Survey.findByCodeAndStatus(promoCode, SurveyStatus.ACTIVE) ?: Survey.findByCodeAndStatus(
