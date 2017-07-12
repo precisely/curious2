@@ -433,13 +433,6 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		$("#" + this.listId).append(html);
 		$("#" + id).data({instance: entryDeviceDataInstance});
 
-        //Below is the code to round off the values to 2 decimal places.
-        for(var i = 0; i < deviceEntry.length; i++) {
-            for(var j = 0; j < Object.keys(deviceEntry[i].amounts).length; j++) {
-                deviceEntry[i].amounts[j].amount = deviceEntry[i].amounts[j].amount.toFixed(2);
-            }
-        }
-
 		jQuery.each(groupedData, function(index, groupedEntry) {
 			this.displayDeviceSummaryEntry(groupedEntry, entryDeviceDataInstance);
 		}.bind(this));
