@@ -1,5 +1,6 @@
 package us.wearecurio.services.integration
 
+import us.wearecurio.model.Tag
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import org.scribe.model.Response
@@ -186,7 +187,7 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 
 		then: 'Entries should be created successfully'
 		List<Entry> entryList = Entry.getAll()
-		entryList.size() == 14
+		entryList.size() == 18
 
 		entryList[0].timeZoneId == TimeZoneId.look("+01:00").id
 		entryList[0].amount == new BigDecimal(25680 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
@@ -194,10 +195,22 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList[0].description == "sleep [time: total]"
 		entryList[0].setIdentifier.value == "Oura"
 
-		entryList[13].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList[13].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
-		entryList[13].units == 'bpm lowest'
-		entryList[13].setIdentifier.value == "Oura"
+		entryList[15].timeZoneId == TimeZoneId.look("+05:30").id
+		entryList[15].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList[15].units == 'bpm sleep'
+		entryList[15].baseTag == Tag.findByDescription('heart rate lowest')
+
+		entryList[16].timeZoneId == TimeZoneId.look("+05:30").id
+		entryList[16].amount == new BigDecimal(56.875).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList[16].units == 'bpm sleep'
+		entryList[16].baseTag == Tag.findByDescription('heart rate')
+		entryList[16].setIdentifier.value == "Oura"
+
+		entryList[17].timeZoneId == TimeZoneId.look("+05:30").id
+		entryList[17].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList[17].units == 'bpm sleep'
+		entryList[17].baseTag == Tag.findByDescription('heart rate variability')
+		entryList[17].setIdentifier.value == "Oura"
 
 		when: 'The same data with same DataRequestContext is re-imported.'
 		// Reset the lastData and lastPolled to same state.
@@ -209,10 +222,10 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		ouraDataService.getDataSleep(account, mockDate, false, dataRequestContext)
 
 		then: 'Entry count should be same'
-		assert Entry.getCount() == 14
+		assert Entry.getCount() == 18
 
 		List<Entry> entryList1 = Entry.getAll()
-		entryList1.size() == 14
+		entryList1.size() == 18
 
 		entryList1[0].timeZoneId == TimeZoneId.look("+01:00").id
 		entryList1[0].amount == new BigDecimal(25680 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
@@ -220,30 +233,48 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList1[0].description == "sleep [time: total]"
 		entryList1[0].setIdentifier.value == "Oura"
 
-		entryList1[13].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList[13].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
-		entryList1[13].units == 'bpm lowest'
-		entryList1[13].setIdentifier.value == "Oura"
+		entryList1[15].timeZoneId == TimeZoneId.look("+05:30").id
+		entryList1[15].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[15].units == 'bpm sleep'
+		entryList1[15].baseTag == Tag.findByDescription('heart rate lowest')
+		entryList1[15].setIdentifier.value == "Oura"
+
+		entryList1[16].amount == new BigDecimal(56.875).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[16].units == 'bpm sleep'
+		entryList1[16].baseTag == Tag.findByDescription('heart rate')
+
+		entryList1[17].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[17].units == 'bpm sleep'
+		entryList1[17].baseTag == Tag.findByDescription('heart rate variability')
 
 		when: 'The same data with same DataRequestContext but updated lastData and lastPolled is re-imported.'
 		ouraDataService.getDataSleep(account, mockDate, false, dataRequestContext)
 
 		then: 'Entry count should still be same as data is same'
-		assert Entry.getCount() == 14
+		assert Entry.getCount() == 18
 
 		List<Entry> entryList2 = Entry.getAll()
-		entryList2.size() == 14
+		entryList2.size() == 18
 
 		entryList2[0].timeZoneId == TimeZoneId.look("+01:00").id
-		entryList1[0].amount == new BigDecimal(25680 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList2[0].amount == new BigDecimal(25680 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList2[0].units == 'hours total'
 		entryList2[0].description == "sleep [time: total]"
 		entryList2[0].setIdentifier.value == "Oura"
 
-		entryList2[13].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList[13].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
-		entryList2[13].units == 'bpm lowest'
-		entryList2[13].setIdentifier.value == "Oura"
+		entryList2[15].timeZoneId == TimeZoneId.look("+05:30").id
+		entryList2[15].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList2[15].units == 'bpm sleep'
+		entryList2[15].baseTag == Tag.findByDescription('heart rate lowest')
+		entryList2[15].setIdentifier.value == "Oura"
+
+		entryList2[16].amount == new BigDecimal(56.875).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList2[16].units == 'bpm sleep'
+		entryList2[16].baseTag == Tag.findByDescription('heart rate')
+
+		entryList2[17].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList2[17].units == 'bpm sleep'
+		entryList2[17].baseTag == Tag.findByDescription('heart rate variability')
 
 		when: 'The same data with new DataRequestContext is re-imported.'
 		// Reset the lastData and lastPolled to same state.
@@ -255,21 +286,22 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		ouraDataService.getDataSleep(account, mockDate, false, new DataRequestContext())
 
 		then: 'Entry count should still remain the same'
-		assert Entry.getCount() == 14
+		assert Entry.getCount() == 18
 
 		List<Entry> entryList3 = Entry.getAll()
-		entryList3.size() == 14
+		entryList3.size() == 18
 
 		entryList3[0].timeZoneId == TimeZoneId.look("+01:00").id
-		entryList1[0].amount == new BigDecimal(25680 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList3[0].amount == new BigDecimal(25680 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList3[0].units == 'hours total'
 		entryList3[0].description == "sleep [time: total]"
 		entryList3[0].setIdentifier.value == "Oura"
 
-		entryList3[13].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList[13].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
-		entryList3[13].units == 'bpm lowest'
-		entryList3[13].setIdentifier.value == "Oura"
+		entryList3[15].timeZoneId == TimeZoneId.look("+05:30").id
+		entryList[15].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList[15].units == 'bpm sleep'
+		entryList[15].baseTag == Tag.findByDescription('heart rate lowest')
+		entryList[15].setIdentifier.value == "Oura"
 	}
 
 	void "Test getDataActivity method to successfully create entries for activity data"() {
