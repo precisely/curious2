@@ -1023,6 +1023,62 @@ function initTagListOnly(load) {
 	}
 }
 
+function createAutocompleteForTags(inputId, autocompleteId) {
+	var autocompleteTagsList = [];
+	$('#' + inputId).autocomplete({
+		appendTo: '#' + autocompleteId,
+		minLength: 0,
+		source: function(request, response) {
+			if (response) {
+				response($.map(autocompleteTagsList, function(data) {
+					return {label: data.label, value: data.value };
+				}));
+			}
+		}
+	});
+
+	$('#' + inputId).on('keyup', function() {
+		var searchString = $('#' + inputId).val();
+		queueJSON('Getting autocomplete', '/data/getTagsForAutoComplete',
+			{searchString: searchString, max: 10},
+			function(data) {
+				if (!checkData(data)) {
+					return;
+				}
+
+				if (data.success) {
+					autocompleteTagsList = data.displayNames;
+					$('#' + inputId).autocomplete('source');
+				}
+			}, function(xhr) {
+				console.log('error: ', xhr);
+			});
+	});
+
+	$('#' + inputId).keypress(function (e) {
+		var tagDescription = $(this).val();
+		var key = e.which;
+		if (key == 13) { // the enter key code
+			var deleteButtonClass = (inputId === 'associatedProfileTags') ? 'deleteProfileTags' : 'deleteTrackingTags';
+			$("#" + inputId).val('');
+			addProfileOrTrackingTagsToList($("#" + inputId + "-list"), deleteButtonClass, tagDescription);
+			return false;
+		}
+	});
+
+	$('#' + inputId).on('autocompleteselect', function( event, ui ) {
+		var deleteButtonClass = (inputId === 'associatedProfileTags') ? 'deleteProfileTags' : 'deleteTrackingTags';
+		$("#" + inputId).val('');
+		addProfileOrTrackingTagsToList($("#" + inputId + "-list"), deleteButtonClass, ui.item.value);
+	});
+}
+
+function addProfileOrTrackingTagsToList($element, deleteButtonClass, tagDescription) {
+	$element.append('<li>' + tagDescription +
+		' <button type="button" class="' + deleteButtonClass + '" data-tagDescription="' +
+		tagDescription + '"><i class="fa fa-times-circle"></i></button></li>');
+}
+
 //must be called from within $(document).ready()
 function initTagListWidget() {
 	var tagStore = new TagStore(); 

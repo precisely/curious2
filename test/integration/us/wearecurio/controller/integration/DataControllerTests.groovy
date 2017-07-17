@@ -1,6 +1,7 @@
 package us.wearecurio.controller.integration
 
 import grails.converters.JSON
+import org.codehaus.groovy.grails.web.json.JSONElement
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -8,6 +9,12 @@ import us.wearecurio.controller.DataController
 import us.wearecurio.data.RepeatType
 import us.wearecurio.model.*
 import us.wearecurio.model.Model.Visibility
+import us.wearecurio.model.registration.UserRegistration
+import us.wearecurio.model.survey.QuestionStatus
+import us.wearecurio.model.survey.Survey
+import us.wearecurio.model.survey.SurveyStatus
+import us.wearecurio.model.survey.UserAnswer
+import us.wearecurio.model.profiletags.ProfileTag
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
@@ -1125,57 +1132,112 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert Entry.count() == 2
 	}
 
-
 	@Test
-	void "Test SaveSurveyData"() {
-		Map questionParams = [code: "qcode1", priority: 4, question: "Question 1?", status: "ACTIVE"]
-		SurveyQuestion surveyQuestionInstance1 = SurveyQuestion.create(questionParams)
-		questionParams = [code: "qcode2", priority: 5, question: "Question 2?", status: "ACTIVE"]
-		SurveyQuestion surveyQuestionInstance2 = SurveyQuestion.create(questionParams)
-		questionParams = [code: "qcode3", priority: 3, question: "Question 3?", status: "ACTIVE"]
-		SurveyQuestion surveyQuestionInstance3 = SurveyQuestion.create(questionParams)
+	void "Test saveSurveyData to save answers for all active questions"() {
+		given: 'A Survey instance with active questions for all 3 answer types'
+		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
+				status: SurveyStatus.ACTIVE)
 
-		controller.session.userId = user.getId()
+		surveyInstance.addToQuestions(question: 'This is the first question.', priority: '1', status: 'ACTIVE',
+				answerType: 'DESCRIPTIVE')
 
-		// When all questions are answered properly
-		controller.params['answer'] = [qcode1: 'Answer no. 1.', qcode2: 'Answer no. 2.',
-			qcode3: 'Answer no. 3.']
+		surveyInstance.addToQuestions(question: 'This is the second question.', priority: '2', status: 'ACTIVE',
+				answerType: 'MCQ_RADIO', isRequired: true)
+		surveyInstance.questions[1].addToAnswers([associatedProfileTags: [Tag.look('mood')], priority: '1',
+				answer: 'This is the second answer first radio', associatedTrackingTags: [Tag.look('sleep')]])
+		surveyInstance.questions[1].addToAnswers([associatedTrackingTags: [Tag.look('run')], priority: '2',
+				answer: 'This is the second answer second radio'])
+
+		surveyInstance.addToQuestions(question: 'This is the third question.', priority: '3', status: 'ACTIVE',
+				answerType: 'MCQ_CHECKBOX')
+		surveyInstance.questions[2].addToAnswers([associatedProfileTags: [Tag.look('sleep')], priority: '1',
+				answer: 'This is the third answer first checkbox', associatedTrackingTags: [Tag.look('mood')]])
+		surveyInstance.questions[2].addToAnswers([associatedProfileTags: [Tag.look('coffee')], priority: '2',
+				answer: 'This is the third answer second checkbox'])
+		surveyInstance.save(flush: true)
+
+		when: 'A required question is not answered'
+		controller.session.userId = user.id
+		controller.params.surveyCode = 's001'
+
+		controller.params.questionId0 = surveyInstance.questions[0].id
+		controller.params.questionId1 = surveyInstance.questions[1].id
+
+		controller.params.questionId2 = surveyInstance.questions[2].id
+		controller.params.answerText20 = 'This is the third answer first checkbox'
+		controller.params.answerId20 = surveyInstance.questions[2].answers[0].id
+		controller.params.answerText21 = 'This is the third answer second checkbox'
+		controller.params.answerId21 = surveyInstance.questions[2].answers[1].id
+
 		controller.saveSurveyData()
-		assert controller.response.json.success == true
-		assert UserSurveyAnswer.count() == 3
+
+		then: 'The survey should rollback and no answers will be saved'
+		JSONElement json = JSON.parse(controller.response.text)
+		assert json.success == false
+		assert json.message == 'Survey Data could not be saved'
+		assert UserAnswer.count() == 0
+		assert ProfileTag.count() == 0
+		assert TagStats.count() == 0
+
+		when: 'The saveSurveyData action is hit with survey code for active survey and all answers'
 		controller.response.reset()
+		controller.session.userId = user.id
+		controller.params.surveyCode = 's001'
 
-		// When an answer is missing for a question
-		controller.params['answer'] = ['qcode1': null, 'qcode2': 'Answer no. 2.',
-			'qcode3': 'Answer no. 3.']
+		controller.params.questionId0 = surveyInstance.questions[0].id
+		controller.params.answerText0 = 'This is the first answer.'
+
+		controller.params.questionId1 = surveyInstance.questions[1].id
+		controller.params.answerText10 = 'This is the second answer first radio'
+		controller.params.answerId10 = surveyInstance.questions[1].answers[0].id
+
+		controller.params.questionId2 = surveyInstance.questions[2].id
+		controller.params.answerText20 = 'This is the third answer first checkbox'
+		controller.params.answerId20 = surveyInstance.questions[2].answers[0].id
+		controller.params.answerText21 = 'This is the third answer second checkbox'
+		controller.params.answerId21 = surveyInstance.questions[2].answers[1].id
+
 		controller.saveSurveyData()
-		assert UserSurveyAnswer.count() == 3		// 3 answers already created in previous call
-		assert controller.response.json.success == false
-		assert controller.response.json.message == messageSource.getMessage("not.saved.message", ["Answers"] as Object[], null)
 
-		controller.response.reset()
-
-		// When blank data is sent
-		controller.params['answer'] = [:]
-		controller.saveSurveyData()
-		assert UserSurveyAnswer.count() == 3
-		assert controller.response.json.success == false
-		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Answers"] as Object[], null)
+		then: 'The request should complete successfully and UserAnswer and profiletags, tagstats should be created'
+		JSONElement json1 = JSON.parse(controller.response.text)
+		assert json1.success == true
+		assert UserAnswer.count() == 4 // one descriptive, one radio and two checkboxes
+		assert ProfileTag.count() == 3 // mood, coffee, sleep
+		assert TagStats.count() == 2 // sleep, mood (Only one out of run or mood will be created depending on user's answer)
 	}
 
 	@Test
-	void "Test testGetSurveyData"() {
-		Map questionParams = [code: "qcode1", priority: 4, question: "Question 1?", status: "ACTIVE"]
-		SurveyQuestion surveyQuestionInstance1 = SurveyQuestion.create(questionParams)
-		questionParams = [code: "qcode2", priority: 5, question: "Question 2?", status: "ACTIVE"]
-		SurveyQuestion surveyQuestionInstance2 = SurveyQuestion.create(questionParams)
-		questionParams = [code: "qcode3", priority: 3, question: "Question 3?", status: "INACTIVE"]
-		SurveyQuestion surveyQuestionInstance3 = SurveyQuestion.create(questionParams)
+	void "Test testGetSurveyData to get only active survey"() {
+		given: 'A Survey instance'
+		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
+				status: SurveyStatus.INACTIVE)
+		surveyInstance.addToQuestions(question: 'This is the first question.', priority: '1', status: 'INACTIVE',
+				answerType: 'DESCRIPTIVE')
+		surveyInstance.save(flush: true)
+		UserRegistration userRegistration = UserRegistration.create(user.id, surveyInstance.code)
+		assert UserRegistration.count() == 1
+		assert UserRegistration.findByUserId(user.id).id == userRegistration.id
 
+		when: 'The getSurveyTemplateData action is hit with survey code for Inactive survey'
+		controller.session.userId = user.id
+		controller.getSurveyTemplateData()
 
-		def responseData = controller.getSurveyData()
-		assert controller.response.text.contains("<div class=\"item active\">")
-		assert !controller.response.text.contains("qcode3")
+		then: 'The request should fail'
+		assert controller.response.json.success == false
+
+		when: 'There are no active questions for this survey'
+		surveyInstance.status = SurveyStatus.ACTIVE
+		surveyInstance.questions[0].status = QuestionStatus.INACTIVE
+		surveyInstance.save(flush: true)
+
+		controller.response.reset()
+		controller.session.userId = user.id
+		controller.params.surveyCode = 's001'
+		controller.getSurveyTemplateData()
+
+		then: 'The request should fail'
+		assert controller.response.json.success == false
 	}
 
 	@Test
@@ -1310,5 +1372,48 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert oldCacheDate < updatedCacheDate
 		assert controller.response.json.cacheDate == updatedCacheDate
 		assert TagInputType.cachedTagInputTypes.size() == 4
+	}
+
+	@Test
+	void 'test getTagsForAutoComplete for various searchString'() {
+		given: 'A few Tag instances'
+		List tagDescriptions = ['sleep', 'run', 'coffee', 'exercise', 'mood']
+		tagDescriptions.each {String description ->
+			Tag.look(description)
+		}
+
+		when: 'getTagsForAutoComplete action is hit with empty searchString'
+		controller.request.method = 'GET'
+		controller.params.searchString = ''
+		controller.getTagsForAutoComplete()
+
+		then: 'The server returns false'
+		assert controller.response.status == 200
+		assert controller.response.json.success == false
+
+		when: 'getTagsForAutoComplete action is hit and no results are found for the given searchString'
+		controller.response.reset()
+		controller.params.clear()
+		controller.params.searchString = 'zxcvbnm'
+		controller.getTagsForAutoComplete()
+
+		then: 'Server returns empty list in response'
+		assert controller.response.status == 200
+		assert controller.response.json.success == true
+		assert controller.response.json.displayNames == []
+
+		when: 'getTagsForAutoComplete action is hit and results are found for the given searchString'
+		controller.response.reset()
+		controller.params.clear()
+		controller.params.searchString = 'e'
+		controller.getTagsForAutoComplete()
+
+		then: 'Server returns list of matching results'
+		assert controller.response.status == 200
+		assert controller.response.json.success == true
+		assert controller.response.json.displayNames.size() != null
+		controller.response.json.displayNames.each {
+			assert it.value.contains('e')
+		}
 	}
 }

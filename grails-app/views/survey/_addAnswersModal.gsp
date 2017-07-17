@@ -1,4 +1,4 @@
-<%@ page import="us.wearecurio.model.SurveyAnswer" %>
+<%@ page import="us.wearecurio.model.survey.PossibleAnswer" %>
 <div class="modal fade" id="addAnswerOverlay">
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -14,37 +14,38 @@
 			</div>
 			<form id="addSurveyAnswerForm">
 				<div class="modal-body">
+					<input id="answerId" class="hidden" name="answerId"/>
 					<div>
-						<label for="question">
-							Answer:
+						<label for="answer">
+							Answer
 						</label>
 						<textarea placeholder="Add answer text..." maxlength="1000" 
 							name="answer" id="answer" required></textarea>
 					</div>
-					<div class="row">
-						<div class="col-md-4">
-							<div class="input-affordance">
-								<label for="question">
-									Answer Code:
-								</label>
-								<input class="answer-code" type="text" placeholder="Enter answer code..." 
-									name="code" id="code" required />
-							</div>
-						</div>
-						<div class="col-md-4">
-							<label for="priority">
-								Answer Priority:
-							</label>
-							<input class="answer-priority" type="number" min="0" 
-								name="priority" placeholder="Priority" id="priority" required/>
-						</div>
-						<div class="col-md-4">
-							<label for="question">
-								Answer Type:
-							</label>
-							<g:select class="answer-type" name="answerType" 
-								from="${SurveyAnswer.SurveyAnswerType.values()}" value="${SurveyAnswer.SurveyAnswerType}"/>
-						</div>
+					<div>
+						<label for="associatedProfileTags">
+							Associated Profile Tags (Optional)
+						</label>
+						<input type="text" placeholder="Add profile tags here..." name="associatedProfileTags" id="associatedProfileTags"
+								class="survey-input" />
+						<div id="profileTagsAutocomplete"></div>
+						<ul id="associatedProfileTags-list"></ul>
+					</div>
+					<div>
+						<label for="associatedTrackingTags">
+							Associated Tracking Tags (Optional)
+						</label>
+						<input type="text" placeholder="Add tracking tags here..." name="associatedTrackingTags" id="associatedTrackingTags"
+							   class="survey-input" />
+						<div id="trackingTagsAutocomplete"></div>
+						<ul id="associatedTrackingTags-list"></ul>
+					</div>
+					<div>
+						<label for="priority">
+							Priority
+						</label>
+						<input class="survey-input" type="number" min="0" id="priority"
+							name="priority" placeholder="Priority" required/>
 					</div>
 				</div>
 				<div class="modal-footer">

@@ -16,6 +16,7 @@ import us.wearecurio.model.Identifier
 import us.wearecurio.model.Model
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.PlotData
+import us.wearecurio.model.profiletags.ProfileTag
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagProperties
@@ -28,6 +29,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.model.VerificationStatus
+import us.wearecurio.model.registration.UserRegistration
 import us.wearecurio.server.Migration
 import us.wearecurio.utility.Utils
 
@@ -1085,12 +1087,34 @@ class MigrationService {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+		tryMigration('Move all interest tags to ProfileTags') {
+			List rows = sqlRows("select * from _user_tag limit 20000")
+
+			log.debug "Total ${rows.size()} interest tags found to be migrated to ProfileTags."
+
+			rows.each {
+				Long userId = it['user_interest_tags_id']
+				Tag tag = Tag.get(it['tag_id'])
+
+				boolean flush = true
+				ProfileTag.addPublicInterestTag(tag, userId, flush)
+			}
+
+			log.debug "Successfully created ${ProfileTag.count()} ProfileTags."
+		}
+
+		tryMigration('Remove old tables related to Survey') {
+			sql('DROP TABLE survey_question_survey_answer')
+			sql('DROP TABLE survey_question')
+			sql('DROP TABLE survey_answer')
+			sql('DROP TABLE user_survey_answer')
+		}
+
 // - - - - - - - - - - - - - - - - Migrations to add admin to System group - - - - - - - - - - - - - - - - - - - - - - -
 
 		tryMigration("Add visheshd as admin to System group") {
 			UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME).addAdmin(User.findByUsername("visheshd"))
 		}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 	}
 }

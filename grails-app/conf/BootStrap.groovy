@@ -5,7 +5,9 @@ import us.wearecurio.data.DataRetriever
 import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.filters.EmailVerificationCheckFilters
 import us.wearecurio.marshaller.EnumMarshaller
+import us.wearecurio.marshaller.QuestionMarshaller
 import us.wearecurio.model.TagInputType
+import us.wearecurio.marshaller.ProfileTagMarshaller
 import us.wearecurio.model.TagStats
 import us.wearecurio.server.BackgroundTask
 import us.wearecurio.services.AlertGenerationService
@@ -33,9 +35,9 @@ class BootStrap {
 	AlertGenerationService alertGenerationService
 
 	def grailsApplication
-	
+
 	static protected initClosures = []
-	
+
 	def init = { servletContext ->
 		log.debug "Curious bootstrap started executing."
 		def current = Environment.current
@@ -55,7 +57,11 @@ class BootStrap {
 		EmailVerificationCheckFilters.populateEmailVerificationEndpoints()
 
 		migrationService.doMigrations()
+
 		JSON.registerObjectMarshaller(new EnumMarshaller())
+		JSON.registerObjectMarshaller(new ProfileTagMarshaller())
+		JSON.registerObjectMarshaller(new QuestionMarshaller())
+
 		def springContext = WebApplicationContextUtils.getWebApplicationContext( servletContext )
 		springContext.getBean( "customObjectMarshallers" ).register()
 		BackgroundTask.launch {
@@ -74,7 +80,7 @@ class BootStrap {
 		/**
 		 * This marshaller is implemented to parse date into javascript date format
 		 * when rendering response for a POST request. Default Date format in config is javascript this marshaller will override it.
-		 * Usage: 
+		 * Usage:
 		 *  JSON.use("jsonDate") {
 		 *		sampleInstance as JSON
 		 *  }

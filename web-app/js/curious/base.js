@@ -87,6 +87,8 @@ $(document).ready(function() {
 		if (e.which == 13)
 			$(this).trigger("enter");
 	});
+
+	$('[data-toggle="tooltip"]').tooltip();
 });
 
 /*

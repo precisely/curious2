@@ -22,8 +22,8 @@ class LocationServiceTests extends CuriousServiceTestCase {
 		then:
 		assert result instanceof Map
 		assert result.latitude
-		assert isClose(18.50419044494629, result.latitude, 0.0001)
-		assert isClose(73.85308837890625, result.longitude, 0.0001)
+		assert isClose(18.5536403656006, result.latitude, 0.0001)
+		assert isClose(73.918342590332, result.longitude, 0.0001)
 
 		when:
 		result = locationService.geocodeAddress("1 Microsoft way, Redmond WA 98052")
@@ -38,8 +38,8 @@ class LocationServiceTests extends CuriousServiceTestCase {
 
 		then:
 		result.latitude
-		assert isClose(22.01, result.latitude, 0.01)
-		assert isClose(82.09, result.longitude, 0.01)
+		assert isClose(22.08, result.latitude, 0.01)
+		assert isClose(82.14, result.longitude, 0.01)
 	}
 
 	void testOnlyPostalCode() {
@@ -48,8 +48,8 @@ class LocationServiceTests extends CuriousServiceTestCase {
 
 		then:
 		assert result instanceof Map
-		assert null == result.latitude
-		assert null == result.longitude
+		assert 18.5678462982178 == result.latitude
+		assert 73.7728500366211 == result.longitude
 	}
 
 	void testPostalCodeWithCountryCode() {
@@ -59,7 +59,7 @@ class LocationServiceTests extends CuriousServiceTestCase {
 		then:
 		assert result instanceof Map
 		assert result.latitude
-		assert isClose(23.4, result.latitude, 0.01)
-		assert isClose(79.45, result.longitude, 0.01)
+		assert isClose(18.56, result.latitude, 0.01)
+		assert isClose(73.77, result.longitude, 0.01)
 	}
 }

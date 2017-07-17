@@ -1,6 +1,12 @@
 package us.wearecurio.controller
 
+import us.wearecurio.model.registration.UserRegistration
+import us.wearecurio.model.survey.QuestionStatus
+import us.wearecurio.model.survey.Status
+import us.wearecurio.model.survey.Survey
+import us.wearecurio.model.survey.UserSurvey
 import us.wearecurio.security.NoAuth
+import us.wearecurio.services.SurveyService
 
 import java.text.SimpleDateFormat
 
@@ -21,6 +27,7 @@ class LoginController extends SessionController {
 
 	def HTTPBuilderService
 	EmailService emailService
+	SurveyService surveyService
 
 	static debug(str) {
 		log.debug(str)
@@ -158,13 +165,19 @@ class LoginController extends SessionController {
 			}
 
 			Map userSettings = getUserSettings(user, params)
-
 			def uuid = session.persistentSession.fetchUuid()
+			Survey surveyInstance
+
+			if (params.containsKey('mobileSessionId')) {
+				surveyInstance = surveyService.checkPromoCode(user)
+			}
+
 			debug "Logged in, persistent session ID " + uuid
 			// TODO: mobileSessionId is deprecated, will be removed eventually
-			renderJSONGet([user: user.getJSONDesc(), success:true, persistentSessionId:uuid, mobileSessionId:uuid, 
+			renderJSONGet([user: user.getJSONDesc(), success:true, persistentSessionId:uuid, mobileSessionId:uuid,
 					hasVisitedMobileApp: userSettings.hasVisitedMobileApp,
-					hasPlottedFirstChart: userSettings.hasPlottedFirstChart])
+					hasPlottedFirstChart: userSettings.hasPlottedFirstChart,
+					survey: surveyInstance?.getJSONDesc(QuestionStatus.ACTIVE)])
 		} else {
 			debug "auth failure"
 			renderJSONGet([success:false])
@@ -425,6 +438,7 @@ class LoginController extends SessionController {
 	protected static final int REGISTER_MISSING_FIELDS = 2
 	protected static final int REGISTER_DUPLICATE_EMAIL = 3
 	protected static final int REGISTER_EMAIL_AND_CONFIRM_EMAIL_DIFFERENT = 4
+	protected static final int USER_REGISTRATION_FAILED = 5
 	
 	protected Map execRegister(Map<String, Object> params) {
 		Map retVal = [:], p = [:]
@@ -466,40 +480,70 @@ class LoginController extends SessionController {
 			groups = JSON.parse(p.groups)
 		}
 
-		User user = User.create(p, groups)
-		
-		retVal['user'] = user
-		if (!user.validate()) {
-			retVal['errorCode'] = REGISTER_MISSING_FIELDS
-			retVal['validateErrors'] = ''
-		    user.errors.allErrors.each {
-				retVal['validateErrors'] += it
-		    }
-			debug "Error creating user: " + retVal['validateErrors']
-			return retVal
-		} else {
-			debug "Successful creation of new user: " + user
-			
-			if (p.metaTagName1 && p.metaTagValue1) {
-				user.addMetaTag(p.metaTagName1, p.metaTagValue1)
+		User.withTransaction { status ->
+			User user = User.create(p, groups)
+
+			retVal['user'] = user
+			if (!user.validate()) {
+				retVal['errorCode'] = REGISTER_MISSING_FIELDS
+				retVal['validateErrors'] = ''
+				user.errors.allErrors.each {
+					retVal['validateErrors'] += it
+				}
+				debug "Error creating user: " + retVal['validateErrors']
+				return retVal
+			} else {
+				String promoCode = params.promoCode ? params.promoCode.toLowerCase() : null
+				UserRegistration userRegistration = UserRegistration.create(user.id, promoCode)
+				Survey survey
+				UserSurvey userSurvey
+
+				if (promoCode) {
+					survey = Survey.findByCode(promoCode)
+					if (survey) {
+						userSurvey = new UserSurvey(user: user, survey: survey, status: Status.NOT_TAKEN)
+						Utils.save(userSurvey)
+					}
+				}
+
+				if (!userRegistration.validate()) {
+					status.setRollbackOnly()
+
+					retVal['errorCode'] = USER_REGISTRATION_FAILED
+					retVal['promoCode'] = promoCode
+					retVal['validateErrors'] = ''
+					userRegistration.errors.allErrors.each {
+						retVal['validateErrors'] += it
+					}
+					debug("Error registering user using promo code ${promoCode} for user-email ${p.email}." +
+							"Errors are: ${retVal['validateErrors']}")
+
+					return retVal
+				}
+
+				debug "Successful creation of new user: " + user
+
+				if (p.metaTagName1 && p.metaTagValue1) {
+					user.addMetaTag(p.metaTagName1, p.metaTagValue1)
+				}
+				if (p.metaTagName2 && p.metaTagValue2) {
+					user.addMetaTag(p.metaTagName2, p.metaTagValue2)
+				}
+				if (p.metaTagName3 && p.metaTagValue3) {
+					user.addMetaTag(p.metaTagName3, p.metaTagValue3)
+				}
+				setLoginUser(user)
+				execVerifyUser(user)
+				retVal['success'] = true
+				return retVal
 			}
-			if (p.metaTagName2 && p.metaTagValue2) {
-				user.addMetaTag(p.metaTagName2, p.metaTagValue2)
-			}
-			if (p.metaTagName3 && p.metaTagValue3) {
-				user.addMetaTag(p.metaTagName3, p.metaTagValue3)
-			}
-			setLoginUser(user)
-			execVerifyUser(user)
-			retVal['success'] = true
-			return retVal
 		}
 	}
 
 	@NoAuth
 	def doregister() {
 		debug "LoginController.doregister()"
-		
+
 		if (params.cancel) {
 			debug "cancel"
 			redirect(url:toUrl(controller:params.precontroller ?: 'home', action:params.preaction ?: 'index'))
@@ -524,6 +568,11 @@ class LoginController extends SessionController {
 			redirect(url:toUrl(action:"register"))
 		} else if (retVal['errorCode'] == REGISTER_EMAIL_AND_CONFIRM_EMAIL_DIFFERENT) {
 			flash.message = "Error registering user - email and confirm email fields have different values"
+			flash.user = retVal['user']
+			redirect(url: toUrl(action: "register"))
+		} else if (retVal['errorCode'] == USER_REGISTRATION_FAILED) {
+			flash.message = "Could not register using promo code ${retVal['promoCode']}. Please contact support" +
+					" and mention promo code."
 			flash.user = retVal['user']
 			redirect(url: toUrl(action: "register"))
 		} else {
@@ -572,9 +621,15 @@ class LoginController extends SessionController {
 		
 		if (retVal['success']) {
 			def uuid = session.persistentSession.fetchUuid()
+			Survey surveyInstance
+
+			if (params.containsKey('mobileSessionId')) {
+				surveyInstance = surveyService.checkPromoCode(retVal['user'])
+			}
 			renderJSONPost([success:true, persistentSessionId:uuid, mobileSessionId:uuid,
 					hasVisitedMobileApp: userSettings.hasVisitedMobileApp,
-					hasPlottedFirstChart: userSettings.hasPlottedFirstChart])
+					hasPlottedFirstChart: userSettings.hasPlottedFirstChart,
+					survey: surveyInstance?.getJSONDesc(QuestionStatus.ACTIVE)])
 		} else if (retVal['errorCode'] == REGISTER_ERROR_USER_ALREADY_EXISTS) {
 			renderJSONPost([success:false, message:"User " + params.username + " already exists"])
 		} else if (retVal['errorCode'] == REGISTER_MISSING_FIELDS) {

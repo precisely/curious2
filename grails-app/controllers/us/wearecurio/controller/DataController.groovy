@@ -1,6 +1,9 @@
 package us.wearecurio.controller
 
 import grails.converters.JSON
+import grails.gsp.PageRenderer
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.hibernate.criterion.CriteriaSpecification
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDate
@@ -13,6 +16,17 @@ import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.data.UserSettings
 import us.wearecurio.model.*
 import us.wearecurio.model.Model.Visibility
+import us.wearecurio.model.profiletags.ProfileTag
+import us.wearecurio.model.profiletags.ProfileTagStatus
+import us.wearecurio.model.survey.AnswerType
+import us.wearecurio.model.survey.Question
+import us.wearecurio.model.survey.QuestionStatus
+import us.wearecurio.model.survey.Status
+import us.wearecurio.model.survey.Survey
+import us.wearecurio.model.survey.SurveyStatus
+import us.wearecurio.model.survey.UserAnswer
+import us.wearecurio.model.survey.PossibleAnswer
+import us.wearecurio.model.survey.UserSurvey
 import us.wearecurio.security.NoAuth
 import us.wearecurio.services.EmailService
 import us.wearecurio.services.EntryParserService
@@ -29,6 +43,8 @@ class DataController extends LoginController {
 
 	EntryParserService entryParserService
 	SearchService searchService
+
+	GrailsApplication grailsApplication
 
 	static debug(str) {
 		log.debug(str)
@@ -1402,6 +1418,34 @@ class DataController extends LoginController {
 		renderJSONGet(success: true)
 	}
 
+	/**
+	 * End point to fetch tags for autocomplete while creating survey answers.
+	 *
+	 * @params searchString
+	 * @return List<Map> matching results.
+	 */
+	def getTagsForAutoComplete() {
+		log.debug "Fetching all the tags for autocomplete, params: ${params}"
+
+		String query = params.searchString
+		if (!query) {
+			renderJSONGet([success: false])
+			return
+		}
+
+		List tagsResultList = Tag.withCriteria {
+			resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
+			projections {
+				property('description', 'label')
+				property('description', 'value')
+			}
+			ilike('description', "${query}%")
+			maxResults(10)
+		}
+
+		renderJSONGet([success: true, displayNames: tagsResultList])
+	}
+
 	def getAutocompleteParticipantsData() {
 		String searchString = params.searchString
 		if (!searchString) {
@@ -1447,39 +1491,157 @@ class DataController extends LoginController {
 					   userIdList: userIdList, displayNames: displayNames])
 	}
 
-	def saveSurveyData() {
-		log.debug "Data.saveSurveyData() $params"
-		User currentUserInstance = sessionUser()
+	private Map validateAndGetSurveyAndActiveQuestions(String surveyCode) {
+		Survey surveyInstance = Survey.findByCodeAndStatus(surveyCode, SurveyStatus.ACTIVE)
 
-		if (!params.answer) {
-			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Answers"])])
+		Map result = [:]
+
+		if (!surveyInstance) {
+			renderJSONPost([success: false, message: 'Invalid Survey Code.'])
+
+			return result
+		}
+
+		User currentUserInstance = sessionUser()
+		if (UserSurvey.findByUserAndSurvey(currentUserInstance, surveyInstance)?.status == Status.TAKEN) {
+			renderJSONPost([success: false, message: 'User has already completed the survey.'])
+
+			return result
+		}
+
+		Set activeQuestions = surveyInstance.questions.findAll { it.status == QuestionStatus.ACTIVE }
+
+		if (!activeQuestions.size()) {
+			renderJSONPost([success: false, message: 'There are no active questions for this survey.'])
+
+			return result
+		}
+
+		result = [surveyInstance: surveyInstance, activeQuestions: activeQuestions, user: currentUserInstance]
+
+		return result
+	} 
+
+	/**
+	 * This action is used for getting the html response with all the slides for active questions. This response is 
+	 * directly rendered within a bootstrap modal. Refer surveySlides.gsp template for how the questions and answers 
+	 * are rendered.
+	 */
+	def getSurveyTemplateData() {
+		log.debug "Data.getSurveyTemplateData(): $params"
+
+		User user = sessionUser()
+		Survey surveyInstance = surveyService.checkPromoCode(user)
+
+		if (!surveyInstance) {
+			renderJSONPost([success: false])
+
 			return
 		}
 
-		UserSurveyAnswer.withTransaction { status ->
+		Set activeQuestions = surveyInstance.getQuestions(QuestionStatus.ACTIVE)
+
+		if (!activeQuestions) {
+			renderJSONPost([success: false])
+
+			return
+		}
+		/*
+		 * PageRenderer bean injection only works outside the scope of a web request. Hence getting the bean from the
+		 * application context.
+		 */
+		PageRenderer groovyPageRenderer = grailsApplication.mainContext.getBean('groovyPageRenderer')
+
+		renderJSONPost([success: true, htmlContent: groovyPageRenderer.render(model:
+				[questions: activeQuestions, surveyCode: surveyInstance.code],
+				template: "/survey/surveySlides")])
+	}
+
+	/**
+	 * This action is used for saving survey data from a User. This endpoint creates instances of UserAnswer and 
+	 * ProfileTag(for tags associated with PossibleAnswer). The entire transaction is rolled back incase any of the 
+	 * required question has not been answered.
+	 */
+	def saveSurveyData() {
+		log.debug "Data.saveSurveyData() $params"
+
+		Map result = validateAndGetSurveyAndActiveQuestions(params.surveyCode)
+
+		if (!result.user || !result.surveyInstance || !result.activeQuestions) {
+			return
+		}
+
+		Survey surveyInstance = result.surveyInstance
+		Set activeQuestions = result.activeQuestions
+		User currentUserInstance = result.user
+
+		int noOfActiveQuestions = activeQuestions.size()
+
+		UserAnswer.withTransaction { status ->
 			try {
-				params.answer.each({ questionAnswerMap ->
-					UserSurveyAnswer userSurveyAnswer = UserSurveyAnswer.create(currentUserInstance, questionAnswerMap.key, questionAnswerMap.value)
-					if (!userSurveyAnswer) {
-						throw new IllegalArgumentException()
+				noOfActiveQuestions.times { index ->
+					Long questionId = params.long("questionId${index}")
+
+					Question surveyQuestion = activeQuestions.find {
+						it.id == questionId
 					}
-				})
-				session.survey = null
+
+					if (!surveyQuestion) {
+						return
+					}
+
+					activeQuestions.remove(surveyQuestion)
+
+					List answerList = []
+					if (surveyQuestion.answerType.isMCQType()) {
+						List<PossibleAnswer> surveyAnswers = []
+						surveyAnswers.addAll(surveyQuestion.answers)
+
+						int noOfAnswers = surveyAnswers.size()
+
+						noOfAnswers.times { answerIndex ->
+							String answerText = params["answerText${index}${answerIndex}"]
+							Long answerId = params.long("answerId${index}${answerIndex}")
+
+							PossibleAnswer answerInstance = surveyAnswers.find {
+								it.id == answerId
+							}
+
+							if (answerInstance && answerText) {
+								answerList.add(answerInstance)
+								surveyAnswers.remove(answerInstance)
+							}
+						}
+
+						// For radio type there should be one answer, if not, the data is invalid.
+						if ((surveyQuestion.answerType == AnswerType.MCQ_RADIO) && answerList.size() > 1) {
+							throw new IllegalArgumentException('A single choice question cannot have multiple answers.')
+						}
+					} else {
+						if (params["answerText${index}"]) {
+							answerList.add(params["answerText${index}"])
+						}
+					}
+
+					// For a required question, there should be an answer.
+					if ((surveyQuestion.isRequired) && answerList.size() == 0) {
+						throw new IllegalArgumentException('A required question has not been answered.')
+					}
+					
+
+					UserAnswer.createAnswers(currentUserInstance, surveyQuestion, answerList)
+				}
+
+				UserSurvey.createOrUpdate(currentUserInstance, surveyInstance, Status.TAKEN)
+				Utils.save(currentUserInstance, true)
+
 				renderJSONPost([success: true])
 			} catch (IllegalArgumentException e) {
 				Utils.reportError("Error while saving survey data", e)
 				status.setRollbackOnly()
-				renderJSONPost([success: false, message: g.message(code: "not.saved.message", args: ["Answers"])])
+				renderJSONPost([success: false, message: g.message(code: "not.saved.message", args: ["Survey Data"])])
 			}
 		}
-	}
-
-	def getSurveyData() {
-		log.debug "Data.getSurveyData()"
-		List questions = SurveyQuestion.findAllByStatus(SurveyQuestion.QuestionStatus.ACTIVE,
-			[max: 50, sort: "priority", order: "desc"])
-		Map model = [questions: questions]
-		render template: "/survey/questions", model: model
 	}
 
 	def getSprintParticipantsData(int offset, int max) {

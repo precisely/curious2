@@ -259,6 +259,7 @@ class DiscussionController extends LoginController {
 		renderJSONPost([success: true, authenticated: true, message: g.message(code: tweetResponse.messageCode)])
 	}
 
+	// When a user follows/unfollows a discussion, the user is added/removed as a reader to that group.
 	def follow() {
 		debug("DiscussionController.follow: with params ${params}")
 		User user = sessionUser()

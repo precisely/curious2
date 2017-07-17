@@ -10,11 +10,11 @@
 <script type="text/javascript" src="/js/curious/autocomplete.js?ver=22"></script>
 <script type="text/javascript" src="/js/curious/treeview.js?ver=22"></script>
 <script type="text/javascript" src="/js/curious/taglist.js?ver=22"></script>
-<script type="text/javascript" src="/js/curious/curiosities.js?ver=22"></script>
-<script type="text/javascript" src="/js/curious/interestTagList.js?ver=22"></script>
+%{--<script type="text/javascript" src="/js/curious/curiosities.js?ver=22"></script>--}%
+<script type="text/javascript" src="/js/curious/profileTag.js?ver=23"></script>
 <script type="text/javascript" src="/js/jquery/jquery.infinite.scroll.js"></script>
 <c:jsCSRFToken keys="createHelpEntriesDataCSRF, saveSurveyDataCSRF, getPeopleDataCSRF, hideHelpDataCSRF, 
-		getGroupsList, getInterestTagsDataCSRF"/>
+		getGroupsList, getInterestTagsCSRF, getSurveyDataCSRF"/>
 </head>
 <body class="${pageProperty(name: 'body.class') ?: '' }">
 <content tag="menu">
@@ -35,7 +35,7 @@
 			<li><g:link controller='home' action="graph">Chart</g:link></li>
 			<li><a href="/home/social#all" id="social-menu">Social</a></li>
 			<li><a href="/home/sprint#all">Trackathons</a></li>
-			<li><g:link controller='home' action="curiosities">Curiosities</g:link></li>
+			%{--<li><g:link controller='home' action="curiosities">Curiosities</g:link></li>--}%
 			<c:ifAdmin>
 				<li><g:link controller="admin" action="dashboard">Admin</g:link></li>
 			</c:ifAdmin>
@@ -57,7 +57,6 @@
 	</div>
 </content>
 <script>
-	var showModal = ${(session.survey == 'compass')? true: false};
 	var showHelpModal = ${session.showHelp?: false};
 	var notificationCount;
 
@@ -99,38 +98,33 @@
 				}
 			});
 
-			if ((typeof showModal != 'undefined') && showModal) {
-				var interestTagList;
-				$.ajax({
-					url: '/home/getSurveyData',
-					success: function(data) {
-						if (data != null) {
-							$('#survey-carousel-content .carousel-inner').html(data);
-							var questionCount = $('#survey-carousel-content .carousel-inner').find('.item').length;
-							if (questionCount == 1) {
-								$('#navigate-right').html('<button type="submit" class="navigate-carousel-right">SUBMIT</button>');
-							}
-	
-							queueJSON("getting login info", "/home/getPeopleData?callback=?", function(data) { 
-								if (!checkData(data))
-									return;
-	
-								this.interestTagList = new InterestTagList("interestTagInput", "interestTagList");
-							});
-	
-							$('#takeSurveyOverlay').modal({show: true});
-						} else {
-							console.log('data error!');
-						}
-					},
-					error: function(xhr) {
-						console.log('xhr:', xhr);
+			queueJSON("Getting survey data", "/home/getSurveyTemplateData",
+					getCSRFPreventionObject('getSurveyDataCSRF'), function(data) {
+
+				if (data && data.success) {
+					var carouselInnerContent = $('#survey-carousel-content .carousel-inner');
+					carouselInnerContent.html(data.htmlContent);
+
+					var questionCount = carouselInnerContent.find('.item').length;
+					if (questionCount == 1) {
+						var submitButtonLink = $('#navigate-right');
+
+						var submitButton = submitButtonLink.find('button');
+						submitButton.text('SUBMIT');
+						submitButton.prop('type', 'submit');
+
+						submitButtonLink.prop('href', '#');
 					}
-				});
-			}
-			if (showHelpModal) {
-				$('#helpWizardOverlay').modal({show: true});
-			}
+
+					$('#takeSurveyOverlay').modal({show: true});
+				} else {
+					if (showHelpModal) {
+						$('#helpWizardOverlay').modal({show: true});
+					}
+				}
+			}, function(xhr) {
+				console.log('xhr:', xhr);
+			});
 		});
 		jQuery.curCSS = jQuery.css;
 	
@@ -165,7 +159,7 @@
 	       	<ul>
 	       	<li> <span class="ul-head">Follow</span><br></li>
 	       		<li ><a href="https://geo.itunes.apple.com/us/app/we-are-curious/id1063805457?mt=8">iOS App</a></li>
-	       		<li ><a href="#">Android Coming Soon</a></li>
+				<li ><a href="https://play.google.com/store/apps/details?id=us.wearecurio.app">Android App</a></li>
 	       		<li ><a href="http://www.wearecurio.us/blog/">Blog</a></li>
 	       		<li ><a href="https://twitter.com/wearecurious">Twitter</a> </li>
 	       		<li ><a href="https://facebook.com/wearecurious">Facebook</a> </li>
