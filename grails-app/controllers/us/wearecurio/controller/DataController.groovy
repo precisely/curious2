@@ -493,7 +493,7 @@ class DataController extends LoginController {
 		 */
 		if (params.containsKey('mobileSessionId') && params.balloonData) {
 			boolean showRemindAlertBalloon = !user.settings.hasFirstAlertEntryCountCompleted()
-			renderJSONGet([entries, showRemindAlertBalloon, TagInputType.getRecentTagsWithInputType(user.id)])
+			renderJSONGet([entries, showRemindAlertBalloon, Tag.getRecentlyUsedTags(user.id)])
 
 			return
 		}

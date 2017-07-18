@@ -1116,5 +1116,13 @@ class MigrationService {
 			UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME).addAdmin(User.findByUsername("visheshd"))
 		}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// - - - - - - - - - - - - Migrations to remove is_default column from tag_input_type table - - - - - - - - - - - - - -
+
+		tryMigration('Remove is_default column from tag_input_type') {
+			sql("ALTER TABLE tag_input_type DROP COLUMN is_default")
+		}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	}
 }
