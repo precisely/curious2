@@ -26,7 +26,7 @@
 	<div class="pull-right search-bar left-addon">
 		<g:form name="global-search" controller="search" method="GET">
 			<i class="fa fa-search"></i>
-			<input type="text" placeholder="Search Curious" name="q" value="${params.q}" >
+			<input type="text" placeholder="Search precise.ly" name="q" value="${params.q}" >
 		</g:form>
 	</div>
 	<div class="text-center clearfix">

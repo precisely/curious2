@@ -1,7 +1,7 @@
 <html>
 	<head>
 		<meta name="layout" content="menu" />
-		<title>Curious - Admin Dashboard</title>
+		<title>precise.ly - Admin Dashboard</title>
 		<meta name="description" content="A platform for health hackers" />
 	</head>
 	<body>
