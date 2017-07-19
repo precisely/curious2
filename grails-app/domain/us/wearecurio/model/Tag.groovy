@@ -103,6 +103,29 @@ class Tag implements Serializable, Comparable {
 		return this.id == other.id
 	}
 
+	/**
+	 * A method to get recently used tags by the user.
+	 *
+	 * @param userId Long Id of the User.
+	 * @param startDate Optional (Default set to 2 weeks from the current date)
+	 * @return List<Map> of result instances.
+	 */
+	static List getRecentlyUsedTags(Long userId, Date startDate = new Date() - 14) {
+		Set tags = new TreeSet<>([compare: { tagsMap1, tagsMap2 ->
+			tagsMap1.description <=> tagsMap2.description
+		}] as Comparator)
+
+		List recentTags = executeQuery("SELECT new Map(t.id as tagId, t.description as description," +
+				" ts.lastUnits as lastUnits) FROM Tag t," +
+				" TagStats ts WHERE t.id = ts.tagId AND ts.userId = :userId" +
+				" AND ts.mostRecentUsage > :startDate GROUP BY t.id ORDER BY ts.countAllTime DESC, t.description",
+				[userId: userId, startDate: startDate, max: 100]) ?: []
+
+		tags.addAll(recentTags)
+
+		return tags as List
+	}
+
 	@Override
 	public int compareTo(Object o) {
 		if (!(o instanceof Tag))

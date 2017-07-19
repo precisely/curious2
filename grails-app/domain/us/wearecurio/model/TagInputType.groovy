@@ -22,8 +22,6 @@ class TagInputType {
 	InputType inputType
 	ValueType valueType = ValueType.DISCRETE // Default ValueType
 
-	boolean isDefault
-
 	static Date cacheDate
 
 	// Cache holder to cache Tags with its InputType, id, description, min, max and numberOfLevels.
@@ -61,57 +59,6 @@ class TagInputType {
 		if (cachedTagInputTypes.values()) {
 			cacheDate = new Date() // Updating cache date.
 		}
-	}
-
-	/**
-	 * A method to get TagInputTypes for tags used in last 2 weeks. If the count is less than 8, then it adds the 
-	 * default TagInputTypes to make the count 8.
-	 *
-	 * @param userId Long Id of the User.
-	 * @return List<Map> of result instances.
-	 */
-	static List getRecentTagsWithInputType(Long userId) {
-		Set tagInputTypes = new TreeSet<>([compare: { tagInputTypeMap1, tagInputTypeMap2 ->
-			tagInputTypeMap1.description <=> tagInputTypeMap2.description
-		}] as Comparator)
-
-		List recentTagInputTypes = executeQuery("SELECT new Map(t.id as tagId, t.description as description," +
-				" tiy.inputType as inputType, tiy.min as min, tiy.max as max, tiy.noOfLevels as noOfLevels," +
-				" tiy.defaultUnit as defaultUnit, ts.lastUnits as lastUnits) FROM Tag t, TagInputType tiy," +
-				" TagStats ts WHERE t.id = tiy.tagId AND t.id = ts.tagId AND ts.userId = :userId" +
-				" AND ts.mostRecentUsage > :startDate GROUP BY t.id ORDER BY ts.countAllTime DESC, t.description",
-				[userId: userId, startDate: new Date() - 14, max: 20]) ?: []
-
-		tagInputTypes.addAll(recentTagInputTypes)
-
-		if (!tagInputTypes || tagInputTypes.size() < 8) {
-			tagInputTypes.addAll(getDefaultTagInputTypes(tagInputTypes))
-		}
-
-		return tagInputTypes as List
-	}
-
-	/*
-	 * This method returns the default TagInputTypes excluding the ones already present in recent TagInputTypes.
-	 * 
-	 * @param Set of recent TagInputTypes
-	 */
-	static List getDefaultTagInputTypes(Set recentTagInputTypes) {
-		String query = "SELECT new Map(t.id as tagId, t.description as description," +
-				" tiy.inputType as inputType, tiy.min as min, tiy.max as max, tiy.noOfLevels as noOfLevels," +
-				" tiy.defaultUnit as defaultUnit) FROM Tag t, TagInputType tiy WHERE t.id = tiy.tagId" +
-				" AND tiy.isDefault = :isDefault"
-
-		Map args = [isDefault: true, max: 8 - recentTagInputTypes.size()]
-
-		if (recentTagInputTypes) {
-			query += " AND t.id NOT IN :tagIds"
-			args.tagIds = recentTagInputTypes*.tagId*.toLong()
-		}
-
-		query += " ORDER BY t.description"
-
-		return executeQuery(query, args)
 	}
 
 	/**
