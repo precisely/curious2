@@ -1,7 +1,7 @@
 <html>
 	<head>
 		<meta name="layout" content="home" />
-		<title>Login - We Are Curious</title>
+		<title>Login - precise.ly</title>
 		<script type="text/javascript">
 		$(function() {
 			$("#curiousloginform").submit(function() {
@@ -216,7 +216,7 @@
 								<img src="/images/home/sleep-study.png" style="margin-left: 10px"/>
 							</div>
 							<div class="col-sm-10">
-								<a href="https://www.wearecurio.us/blog/">We Are Curious has launched!</a>
+								<a href="https://www.wearecurio.us/blog/">precise.ly has launched!</a>
 							</div>
 						</div>
 					</li>

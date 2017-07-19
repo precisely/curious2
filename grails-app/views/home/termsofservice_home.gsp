@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta name="layout" content="logo" />
-<title>Curious Terms of Service</title>
+<title>precise.ly Terms of Service</title>
 <style type="text/css">
 ol {
 	padding-left:20px;

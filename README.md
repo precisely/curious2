@@ -1,4 +1,4 @@
-We Are Curious
+precise.ly
 =======
 
 Developer documentation is all housed in the main GitHub wiki for this repo:

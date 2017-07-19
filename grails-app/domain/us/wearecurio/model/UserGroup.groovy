@@ -337,7 +337,7 @@ class UserGroup {
 
 			User user = User.get(userId)
 
-			user.notifyEmail("You've been invited to " + fullName, "You're now a member of " + fullName + " on We Are Curious.")
+			user.notifyEmail("You've been invited to " + fullName, "You're now a member of " + fullName + " on precise.ly.")
 		}
 
 		def invitedAdminIds = GroupMemberInvitedAdmin.lookupMemberIds(this.id)
@@ -350,7 +350,7 @@ class UserGroup {
 
 			User user = User.get(userId)
 
-			user.notifyEmail("You've been invited to be an administrator of " + fullName, "You're now an administrator of " + fullName + " on We Are Curious.")
+			user.notifyEmail("You've been invited to be an administrator of " + fullName, "You're now an administrator of " + fullName + " on precise.ly.")
 		}
 	}
 

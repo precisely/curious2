@@ -101,7 +101,7 @@ String.prototype.endsWith = function(str) { return this.length >= str.length && 
  * Helper method to convert all new line characters to <br>.
  * @returns {string} Converted string with <br>
  * @example
- *     "Welcome to\n We Are Curious".newLineToBr() == "Welcome to<br /> We Are Curious"
+ *     "Welcome to\n precise.ly".newLineToBr() == "Welcome to<br /> precise.ly"
  */
 String.prototype.newLineToBr = function() {
 	// http://stackoverflow.com/a/784547/2405040
@@ -126,7 +126,7 @@ String.prototype.indexOfRegex = function(regex) {
 }
 
 /**
- * Convert any string to sanitized string. For example: "We Are Curious".sanitizeTitle() == "we-are-curious"
+ * Convert any string to sanitized string. For example: "precise.ly".sanitizeTitle() == "we-are-curious"
  */
 String.prototype.sanitizeTitle = function(){
 	return this.trim().toLowerCase().replace(/\s/g, '-');

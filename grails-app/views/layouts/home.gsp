@@ -69,7 +69,7 @@
 			<div class="row">
 				<div class="col-sm-5 col-sm-offset-1 text-left" style="color: white;">
 					<p style="font-size: 16px;">
-						At Curious, we believe in the power of personal data and that it should be owned and
+						At precise.ly, we believe in the power of personal data and that it should be owned and
 						controlled by you. We will never intentionally expose it, share it, or sell it without your
 						explicit consent. We are the stewards of your data—we’ll hold it securely for you but also
 						make it easy to share, when you’re ready. We’re excited to take this journey of personal
