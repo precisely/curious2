@@ -180,7 +180,7 @@ to be a copyright, database rights, privacy, or trade secrets infringement. If p
 content in this way, we will attempt to contact the responsible user(s) and notify them of the decision to remove.
 Users will have the opportunity to respond as detailed below. 
 <p>To file a notice of an alleged copyright, database rights, privacy, or trade secrets infringement with us,
-you are required to provide a written communication only by email to <a href="mailto:content@wearecurio.us">content@wearecurio.us</a>.
+you are required to provide a written communication only by email to <a href="mailto:content@wearecurio.us">content@precise.ly</a>.
 Please be advised that you may be liable for damages (including costs and attorney fees) if you materially
 misrepresent that a product or activity is infringing upon your copyright, database rights, privacy, or trade secrets.
 <p><strong>Infringement Claims</strong>
@@ -303,6 +303,6 @@ construed in accordance with the law of Delaware.
 the page from time to time to take notice of any changes we made. Some of the provisions contained in
 the Privacy Policy and Terms of Service may also be superseded by provisions or notices published elsewhere on our website.
 <p><strong>Your Concerns</strong>
-<p>If you have any concerns or questions about the Privacy Policy and Terms of Service or about any material that appears on our website, please email us at: <a href="mailto:content@wearecurio.us">content@wearecurio.us</a>.
+<p>If you have any concerns or questions about the Privacy Policy and Terms of Service or about any material that appears on our website, please email us at: <a href="mailto:content@wearecurio.us">content@precise.ly</a>.
 <p>Thank you for visiting our website.
 </div>
