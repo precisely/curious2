@@ -12,7 +12,7 @@
 
 	<div class="lower-body">
 		<div class="user-description">
-			<p>{{= _.linkify(user.bio) }}</p>
+			{{= _.linkify(user.bio) }}
 			<hr>
 		</div>
 		<div class="public-interests">
