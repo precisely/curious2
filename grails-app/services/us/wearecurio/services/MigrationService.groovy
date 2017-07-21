@@ -1124,5 +1124,23 @@ class MigrationService {
 		}
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - Migration to send an email to notify about maintenance - - - - - - - - - - - - - - - - - - -
+		tryMigration('Send site maintenance email to the users') {
+			List emailList = sqlRows('SELECT email FROM curious._user where email_verified=2 and virtual=0');
+			emailList.each {
+				String email = it.email.toString();
+				EmailService.get().sendEmail {
+					to email
+					from "curious@wearecurio.us"
+					subject "[We Are Curious - Scheduled Maintenance - 11PM 24th July 2017 PST]"
+					body "Hello,\n\nWe're writing to let you know We Are Curious (www.wearecurio.us) will be down for" +
+							" scheduled maintenance for 3 hours at 11 pm PST on Monday, July 24th.\n\nSorry for any" +
+							" inconvenience--we have new features coming we hope you'll find useful (and much more in" +
+							" the works).\n\nPlease look for an announcement on August 1 of a new partnership," +
+							" too!\n\nThanks,\nWe Are Curious team"
+				}
+			}
+		}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	}
 }
