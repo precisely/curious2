@@ -558,7 +558,7 @@ log4j.main = {
 					'grails.app.jobs.us.wearecurio.jobs']
 				trace "org.scribe.model"
 			}
-			production {
+			qa {
 				appender new DailyRollingFileAppender(name: 'debugFile', datePattern: "'.'MM-dd-yyyy",
 						fileName: '/opt/jetty/logs/logFile',
 						layout: pattern(conversionPattern: '%-5p %d %c{2} %x - %m%n%n'))
