@@ -16,8 +16,8 @@ addBackToTagGroupDataCSRF, removeTagFromTagGroupDataCSRF" />
 <script type="text/javascript" src="/js/interpolate/smooth.js"></script>
 <script type="text/javascript" src="/js/interpolate/science.js"></script>
 <script type="text/javascript" src="/js/interpolate/science_loess.js"></script>
-<script type="text/javascript" src="/js/curious/queryplot.js?ver=27"></script>
-<script type="text/javascript" src="/js/curious/queryplot.web.js?ver=27"></script>
+<script type="text/javascript" src="/js/curious/queryplot.js?ver=30"></script>
+<script type="text/javascript" src="/js/curious/queryplot.web.js?ver=30"></script>
 
 <script type="text/javascript">
 
