@@ -31,32 +31,53 @@
 				return false;
 			});
 		});
+
+		$(document).ready(function() {
+		  $("#scrollBottom").on("click", function( e ) {
+			e.preventDefault();
+			$("body, html").animate({
+			  scrollTop: $( $(this).attr('href') ).offset().top
+			}, 600);
+		  });
+
+		  $("#check-other").click(function() {
+			  var isChecked = $("#check-other").attr("checked");
+			  if(isChecked){
+				$(".other-description").show();
+			  } else {
+				$(".other-description").hide();
+			  }
+		  });
+
+		  $(".other-description").hide();
+		});
 		</script>
 	</head>
 	<body>
 		<br>
 			<div class="text-right home-logo-wrapper">
 				<img class="home-logo" src="/images/home/home-logo-wide.jpg" width="583" height="88"/>
-				<p class="logo-text-1">
-					Track data, chart experience, find meaning.</p>
 				<p class="logo-text-2">
-					<strong>We’ve all got questions.</strong>
+					<strong>Precision health through personal data.</strong>
 				</p>
-				<p class="logo-text-1">
-					Join our autism, ME/CFS, or sleep tracking projects.
-				</p>
+				<a id="scrollBottom" href="#news">
+					<div class="col-sm-offset-4 ">
+						<p class="logo-text-1">Coming soon -- our genetics partnership with Helix, initially focusing on autism and ME/CFS.</p>
+					</div>
+				</a>
 				<div class="get-started-buttons">
 					<a href="http://bit.ly/curious-app-store" class="ios-app-link">
 						<img src="/images/appstore.png">
 					</a>
 					<a href='http://bit.ly/curious-play-store' class="android-app-link">
 						<img alt='Get it on Google Play' height="46"
-							 	src='/images/google-play-badge.png'/>
+								src='/images/google-play-badge.png'/>
 					</a>
 					<g:link action="register" params="${['precontroller':precontroller,'preaction':preaction]}"
 						class="btn btn-red btn-lg btn-flat">
 						Get Started
 					</g:link>
+					<p class="logo-text-3"> (formerly We Are Curious) </p>
 				</div>
 			</div>
 
@@ -67,7 +88,7 @@
 				<g:if test="${!params.login}">
 				<div class="col-sm-1 col-sm-offset-1"
 					style="color: white;">
-					<p style="font-size: 26px;">FEATURES</p>
+					<h2 style="font-size: 26px;">FEATURES</h2>
 				</div>
 				</g:if>
 				<g:else>
@@ -200,27 +221,44 @@
 		</div>
 
 		<g:if test="${params.action == 'login' && !params.login}">
-		<div class="row news">
+		<div class="row news" id="news">
 			<div class="col-sm-1 col-sm-offset-1 " style="color: white;">
-				<p style="font-size: 24px; color: #f14a42; padding-top: 30px;">NEWS</p>
+				<h2 style="font-size: 26px; color: #f14a42; padding-top: 30px;">NEWS</h2>
 			</div>
 		</div>
-		<br>
-		<br>
 		<div class="row news">
 			<div class="col-sm-7 col-sm-offset-1 text-left">
-				<ul class="">
-					<li>
-						<div class="row">
-							<div class="col-sm-2">
-								<img src="/images/home/sleep-study.png" style="margin-left: 10px"/>
-							</div>
-							<div class="col-sm-10">
-								<a href="https://www.wearecurio.us/blog/">precise.ly has launched!</a>
-							</div>
+				<form class="subscription-form">
+					<h3>Please leave your email address for updates.</h3>
+					<span class="checkbox-orange checkbox-sm survey-answer-checkbox">
+						<input type="checkbox" id="check-autism"/>
+						<label for="check-autism"></label>
+						<span class="survey-answer-checkbox-label">Autism app</span>
+					</span>
+					<span class="checkbox-orange checkbox-sm survey-answer-checkbox">
+						<input type="checkbox" id="check-me-cfs"/>
+						<label for="check-me-cfs"></label>
+						<span class="survey-answer-checkbox-label">ME/CFS app</span>
+					</span>
+					<span class="checkbox-orange checkbox-sm survey-answer-checkbox">
+						<input type="checkbox" id="check-other"/>
+						<label for="check-other"></label>
+						<span class="survey-answer-checkbox-label">Other</span>
+					</span>
+					<div id="other-description" class="other-description">
+						<p>Please tell us what you'd like us to prioritize in the future:</p>
+						<div class="form-group">
+						  <textarea class="form-control" maxlength="1000" id=""></textarea>
 						</div>
-					</li>
-				</ul>
+					</div>
+					<div class="form-group">
+					  <span class="survey-answer-checkbox-label" for="email">Email:</span>
+					  <input type="email" class="form-control" id="usr">
+					</div>
+					<div class="form-group">
+						<input class="btn" type="submit" value="Submit" />
+					</div>
+				</form>
 			</div>
 		</div>
 		</g:if>
