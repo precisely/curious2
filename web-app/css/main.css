@@ -473,13 +473,22 @@ div.graphData.has-plot-data #height-balancer {
 .logo-text-1 {
 	font-size:34px;
 	color: #f14a42;
-	margin-bottom: 0;
+}
+
+.logo-text-1:hover{
+    text-decoration: underline;
 }
 
 .logo-text-2 {
 	font-size: 31px;
 	color: #f14a42;
 	margin-bottom: 0px;
+}
+
+.logo-text-3 {
+	color: #f14a42;
+	margin-right: 22vw;
+	padding-top: 5px;
 }
 
 .home-logo-wrapper {
@@ -496,7 +505,7 @@ div.graphData.has-plot-data #height-balancer {
 }
 
 .home-logo-wrapper .get-started-buttons {
-	margin-top: 44px;
+	margin-top: 10px;
 	margin-bottom: 20px;
 }
 
@@ -5272,3 +5281,27 @@ input.cropit-image-zoom-input {
 .profile-tag-listing #public-list , .profile-tag-listing #private-list {
 	margin-top: 12px;
 }
+
+.other-description{
+    max-width: 300px;
+    margin-left: 42px;
+    padding-bottom: 15x;
+}
+
+.subscription-form{
+    color: #f14a42;
+}
+
+.subscription-form input[type=email]{
+    max-width: 345px;
+    margin-top: 10px;
+}
+
+.subscription-form .survey-answer-checkbox label {
+    border: 1px solid #ccc;
+}
+
+.subscription-form h3{
+    margin-bottom: 15px;
+}
+

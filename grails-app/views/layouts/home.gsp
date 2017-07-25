@@ -60,7 +60,7 @@
 
 			<div class="row">
 				<div class="col-sm-1 col-sm-offset-1 " style="color: white;">
-					<p style="font-size: 24px; color: white; padding-top: 30px;">ABOUT</p>
+					<h2 style="font-size: 26px; color: white; padding-top: 30px;">ABOUT</h2>
 				</div>
 			</div>
 			<br>
