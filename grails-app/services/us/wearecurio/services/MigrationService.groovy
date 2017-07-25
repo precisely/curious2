@@ -756,6 +756,12 @@ class MigrationService {
 		tryMigration('Update size of account_id column in OAuthAccount domain') {
 			sql("ALTER TABLE oauth_account MODIFY COLUMN account_id varchar(32)")
 		}
+
+		tryMigration("to rename some user_groups columns") {
+			sql('UPDATE curious.user_group SET description = REPLACE(REPLACE(REPLACE(description ,"wearecurious","precise.ly"), "curious", "precise.ly"), "Curious", "precise.ly") WHERE description LIKE "%curious%"');
+			sql('UPDATE curious.user_group SET full_name = REPLACE(REPLACE(REPLACE(full_name ,"wearecurious","precise.ly"), "curious", "precise.ly"), "Curious", "precise.ly") WHERE full_name LIKE "%curious%"');
+			sql('UPDATE curious.user_group SET name = REPLACE(REPLACE(REPLACE(name ,"wearecurious","precise.ly"), "curious", "precise.ly"), "Curious", "precise.ly") WHERE name LIKE "%curious%"');
+		}
 	}
 	
 	/**
