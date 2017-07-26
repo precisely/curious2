@@ -33,23 +33,41 @@
 		});
 
 		$(document).ready(function() {
-		  $("#scrollBottom").on("click", function( e ) {
-			e.preventDefault();
-			$("body, html").animate({
-			  scrollTop: $( $(this).attr('href') ).offset().top
+			$("#scrollBottom").on("click", function( e ) {
+				e.preventDefault();
+				$("body, html").animate({
+					scrollTop: $( $(this).attr('href') ).offset().top
 			}, 600);
-		  });
+		});
 
-		  $("#check-other").click(function() {
-			  var isChecked = $("#check-other").attr("checked");
-			  if(isChecked){
+		$("#check-other").click(function() {
+			var isChecked = $("#check-other").attr("checked");
+			if(isChecked){
 				$(".other-description").show();
-			  } else {
+			} else {
 				$(".other-description").hide();
-			  }
-		  });
+			}
+		});
 
-		  $(".other-description").hide();
+		$(".other-description").hide();
+
+		$(".subscription-form").submit(function(){
+	    var autism = $("#check-autism").attr("checked") ? $("#check-autism").val() : '';
+			var me_csf = $("#check-me-cfs").attr("checked") ? ", "+$("#check-me-cfs").val() : '';
+			var other = $("#check-other").attr("checked") ? ", "+$("#check-other").val() : '';
+			var categories = autism + me_csf + other
+			var description = $("#description").val();
+			var email = $("#email").val();
+			queueJSON("adding user subscription", "/updateSubscription/save?categories=" + autism + me_csf + other + "&" + "description=" +
+					description + "&"+"email=" + email + getCSRFPreventionURI("addUserSubscription") + "&callback=?",
+					function(data) {
+						if (data.success) {
+							alert("subscription done.");
+						} else {
+							alert("not success");
+						}
+					}.bind(this));
+			});
 		});
 		</script>
 	</head>
@@ -231,29 +249,29 @@
 				<form class="subscription-form">
 					<h3>Please leave your email address for updates.</h3>
 					<span class="checkbox-orange checkbox-sm survey-answer-checkbox">
-						<input type="checkbox" id="check-autism"/>
+						<input type="checkbox" id="check-autism" value="Autism app"/>
 						<label for="check-autism"></label>
 						<span class="survey-answer-checkbox-label">Autism app</span>
 					</span>
 					<span class="checkbox-orange checkbox-sm survey-answer-checkbox">
-						<input type="checkbox" id="check-me-cfs"/>
+						<input type="checkbox" id="check-me-cfs" value="ME/CFS app"/>
 						<label for="check-me-cfs"></label>
 						<span class="survey-answer-checkbox-label">ME/CFS app</span>
 					</span>
 					<span class="checkbox-orange checkbox-sm survey-answer-checkbox">
-						<input type="checkbox" id="check-other"/>
+						<input type="checkbox" id="check-other" value="Other"/>
 						<label for="check-other"></label>
 						<span class="survey-answer-checkbox-label">Other</span>
 					</span>
 					<div id="other-description" class="other-description">
 						<p>Please tell us what you'd like us to prioritize in the future:</p>
 						<div class="form-group">
-						  <textarea class="form-control" maxlength="1000" id=""></textarea>
+						    <textarea id="description" class="form-control" maxlength="1000" id=""></textarea>
 						</div>
 					</div>
 					<div class="form-group">
-					  <span class="survey-answer-checkbox-label" for="email">Email:</span>
-					  <input type="email" class="form-control" id="usr">
+					    <span class="survey-answer-checkbox-label" for="email">Email:</span>
+					    <input type="email" class="form-control" id="email" required>
 					</div>
 					<div class="form-group">
 						<input class="btn" type="submit" value="Submit" />
