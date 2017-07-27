@@ -1,7 +1,12 @@
 package us.wearecurio.model
 
-/**
- * Created by causecode on 26/7/17.
- */
 class UpdateSubscription {
+	String categories
+	String description
+	String email
+
+	static constraints = {
+		categories(nullable:true)
+		description(nullable:true)
+	}
 }
