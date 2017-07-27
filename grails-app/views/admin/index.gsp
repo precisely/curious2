@@ -5,13 +5,13 @@
 		<meta name="layout" content="menu">
 		<title>User Subscription</title>
 		<script type="text/javascript">
-            $(document).ready(function() {
-                $("#delete").click(function() {
-                	var id = $(this).val();
-                	queueJSON("adding user subscription", '/admin/deleteSubscription?id=' + id);
-                    location.reload();
-                });
-            });
+			$(document).ready(function() {
+				$("#delete").click(function() {
+					var id = $(this).val();
+					queueJSON("adding user subscription", '/admin/deleteSubscription?id=' + id);
+					location.reload();
+				});
+			});
 		</script>
 	</head>
 	<body>
@@ -19,10 +19,10 @@
 		<table class="table table-bordered">
 			<thead>
 				<tr>
-					<g:sortableColumn property="Email" title="${message(code: 'userGroup.name.label', default: 'Email')}" />
-					<g:sortableColumn property="Categories" title="${message(code: 'userGroup.fullName.label', default: 'Categories')}" />
-					<g:sortableColumn property="Description" title="${message(code: 'userGroup.description.label', default: 'Description')}" />
-					<g:sortableColumn property="Action" title="${message(code: 'userGroup.description.label', default: 'Action')}" />
+					<td><b>Email</b></td>
+					<td><b>Categories</b></td>
+					<td><b>Description</b></td>
+					<td><b>Action</b></td>
 				</tr>
 			</thead>
 			<tbody>
@@ -31,11 +31,12 @@
 					<td>${fieldValue(bean: userGroupInstance, field: "email")}</td>
 					<td>${fieldValue(bean: userGroupInstance, field: "categories")}</td>
 					<td>${fieldValue(bean: userGroupInstance, field: "description")}</td>
-					<td><button id='delete' value = '${userGroupInstance.id}'><i class="fa fa-trash-o delete-action" aria-hidden="true"></i></button></td>
+					<td><button id='delete' value = '${userGroupInstance.id}' style="background-color: #fff"><i class="fa fa-trash-o delete-action" aria-hidden="true"></i></button></td>
 				</tr>
 			</g:each>
 			</tbody>
 		</table>
+
 		<div class="pagination">
 			<g:paginate total="${detailInstanceTotal}" />
 		</div>

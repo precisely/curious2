@@ -2,11 +2,14 @@ package us.wearecurio.controller
 
 import us.wearecurio.model.UpdateSubscription
 
-class UpdateSubscriptionController extends LoginController {
+class UpdateSubscriptionController {
 
 	def save() {
-		UpdateSubscription subscriptionDetails = new UpdateSubscription([categories: params.categories,
-				 description: params.description, email: params.email]).save()
+		if(params.email) {
+			UpdateSubscription subscriptionDetails = new UpdateSubscription([categories : params.categories,
+					description: params.description, email: params.email]).save()
+		} else {
+			redirect uri: "home/login"
+		}
 	}
-
 }

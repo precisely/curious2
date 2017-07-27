@@ -3,85 +3,88 @@
 		<meta name="layout" content="home" />
 		<title>Login - precise.ly</title>
 		<script type="text/javascript">
-		$(function() {
-			$("#curiousloginform").submit(function() {
-				var username = $("#username").val();
-				var password = $("#password").val();
-				queueJSON("logging in",
-						makeGetUrl('dologinData'),
-						makeGetArgs({
-							username : username,
-							password : password
-						}),
-						function(data) {
-							if (!checkData(data))
-								return;
-				
-							if (data['success']) {
-								localStorage['mobileSessionId'] = data['persistentSessionId'];
-								localStorage['persistentSessionId'] = data['persistentSessionId'];
-								$("#indexformpersistentsessionid").val(localStorage['persistentSessionId']);
-								$("#curiousindexform").submit();
-							} else {
-								var message = data['message'] ? data['message'] :
-										'Username or password not correct, please try again';
-								showAlert(message);
-							}
-						});
-				return false;
+			$(function() {
+				$("#curiousloginform").submit(function() {
+					var username = $("#username").val();
+					var password = $("#password").val();
+					queueJSON("logging in",
+							makeGetUrl('dologinData'),
+							makeGetArgs({
+								username : username,
+								password : password
+							}),
+							function(data) {
+								if (!checkData(data))
+									return;
+
+								if (data['success']) {
+									localStorage['mobileSessionId'] = data['persistentSessionId'];
+									localStorage['persistentSessionId'] = data['persistentSessionId'];
+									$("#indexformpersistentsessionid").val(localStorage['persistentSessionId']);
+									$("#curiousindexform").submit();
+								} else {
+									var message = data['message'] ? data['message'] :
+											'Username or password not correct, please try again';
+									showAlert(message);
+								}
+							});
+					return false;
+				});
 			});
-		});
 
-		$(document).ready(function() {
-			$("#scrollBottom").on("click", function( e ) {
-				e.preventDefault();
-				$("body, html").animate({
-					scrollTop: $( $(this).attr('href') ).offset().top
-			}, 600);
-		});
+			$(document).ready(function() {
+				$("#scrollBottom").on("click", function( e ) {
+					e.preventDefault();
+					$("body, html").animate({
+						scrollTop: $( $(this).attr('href') ).offset().top
+					}, 600);
+				});
 
-		$("#check-other").click(function() {
-			var isChecked = $("#check-other").attr("checked");
-			if(isChecked){
-				$(".other-description").show();
-			} else {
+				$("#check-other").click(function() {
+					var isChecked = $("#check-other").attr("checked");
+					if(isChecked){
+						$(".other-description").show();
+					} else {
+						$(".other-description").hide();
+					}
+				});
+
 				$(".other-description").hide();
-			}
-		});
 
-		$(".other-description").hide();
+				$(".subscription-form").submit(function(e){
+					var categories = [];
+					var autism = ($("#check-autism").attr("checked") ? $("#check-autism").val() : false);
+					var me_cfs = ($("#check-me-cfs").attr("checked") ? " "+$("#check-me-cfs").val() : false);
+					var other = ($("#check-other").attr("checked") ? " "+$("#check-other").val() : false);
 
-		$(".subscription-form").submit(function(){
-			var categories = [];
-			var autism = ($("#check-autism").attr("checked") ? $("#check-autism").val() : false);
-			var me_cfs = ($("#check-me-cfs").attr("checked") ? " "+$("#check-me-cfs").val() : false);
-			var other = ($("#check-other").attr("checked") ? " "+$("#check-other").val() : false);
-			autism ? categories.push(autism) : '';
-			me_cfs ? categories.push(me_cfs) : '';
-			other ? categories.push(other) : '';
-			var description = $("#description").val();
-			var email = $("#email").val();
-			var emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
-			if(!email) {
-				 showAlert("Email should not be empty !");
-			} else if(!emailRegex.test(email)) {
-				 showAlert("Email is not valid !");
-			} else if(description.length>250) {
-				showAlert("Description should not be more then 250 character !");
-			} else {
-				queueJSON("adding user subscription", "/updateSubscription/save?categories=" + categories + "&" + "description=" +
-						description + "&"+"email=" + email,
-						function(data) {
-							if (data.success) {
-								alert("subscription done.");
-							} else {
-								alert("not success");
-							}
-						}.bind(this)
-				);
-			 }
+					autism ? categories.push(autism) : '';
+					me_cfs ? categories.push(me_cfs) : '';
+					other ? categories.push(other) : '';
+
+					var description = $("#description").val();
+					var email = $("#email").val();
+					var emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+
+					if(description.length>250) {
+						e.preventDefault();
+						showAlert("Email should not be empty !");
+					} else if(!email) {
+						e.preventDefault();
+						showAlert("Email is not valid !");
+					} else if(!emailRegex.test(email)) {
+						e.preventDefault();
+						showAlert("Description should not be more then 250 character !");
+					} else {
+						queueJSON("adding user subscription", "/updateSubscription/save?categories=" + categories + "&" + "description=" +
+								description + "&"+"email=" + email,
+								function(data) {
+
+									return;
+								}.bind(this)
+						);
+					}
+				});
 			});
-		});
 		</script>
 	</head>
 	<body>

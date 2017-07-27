@@ -118,4 +118,20 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		then: 'Subscription will be deleted successfully'
 		assert controller.response.status == 200
 	}
+
+	@Test
+	void "test to display all user subscription detail"(){ given: 'An instance of subscription'
+		UpdateSubscription subscription = new UpdateSubscription([categories: "Autism app, Other", description: "Aliquam lobortis",
+																  email: "dummy2@curious.test"])
+		Utils.save(subscription, true)
+
+		when: 'Action is perform for listing the user subscription details'
+		controller.params.max = 10
+		def model = controller.index()
+
+		then: 'Listing user subscription detail successfully'
+		assert model.subscriptionList
+		assert model.subscriptionList[0].email.equals("dummy2@curious.test")
+		assert controller.response.status == 200
+	}
 }
