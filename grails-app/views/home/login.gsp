@@ -52,21 +52,34 @@
 		$(".other-description").hide();
 
 		$(".subscription-form").submit(function(){
-	    var autism = $("#check-autism").attr("checked") ? $("#check-autism").val() : '';
-			var me_csf = $("#check-me-cfs").attr("checked") ? ", "+$("#check-me-cfs").val() : '';
-			var other = $("#check-other").attr("checked") ? ", "+$("#check-other").val() : '';
-			var categories = autism + me_csf + other
+			var categories = [];
+			var autism = ($("#check-autism").attr("checked") ? $("#check-autism").val() : false);
+			var me_cfs = ($("#check-me-cfs").attr("checked") ? " "+$("#check-me-cfs").val() : false);
+			var other = ($("#check-other").attr("checked") ? " "+$("#check-other").val() : false);
+			autism ? categories.push(autism) : '';
+			me_cfs ? categories.push(me_cfs) : '';
+			other ? categories.push(other) : '';
 			var description = $("#description").val();
 			var email = $("#email").val();
-			queueJSON("adding user subscription", "/updateSubscription/save?categories=" + autism + me_csf + other + "&" + "description=" +
-					description + "&"+"email=" + email + getCSRFPreventionURI("addUserSubscription") + "&callback=?",
-					function(data) {
-						if (data.success) {
-							alert("subscription done.");
-						} else {
-							alert("not success");
-						}
-					}.bind(this));
+			var emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+			if(!email) {
+				 showAlert("Email should not be empty !");
+			} else if(!emailRegex.test(email)) {
+				 showAlert("Email is not valid !");
+			} else if(description.length>250) {
+				showAlert("Description should not be more then 250 character !");
+			} else {
+				queueJSON("adding user subscription", "/updateSubscription/save?categories=" + categories + "&" + "description=" +
+						description + "&"+"email=" + email,
+						function(data) {
+							if (data.success) {
+								alert("subscription done.");
+							} else {
+								alert("not success");
+							}
+						}.bind(this)
+				);
+			 }
 			});
 		});
 		</script>
@@ -222,9 +235,8 @@
 							<g:link action="register"
 							params="${['precontroller':precontroller,'preaction':preaction]}">Create an account</g:link>
 						</div>
-
-
 					</form>
+
 					<form method="post" action="/home/index" id="curiousindexform">
 						<input type="hidden" name="precontroller" value="${precontroller.encodeAsHTML()}" />
 						<input type="hidden" name="preaction" value="${preaction.encodeAsHTML()}" />
@@ -233,7 +245,6 @@
 					</form>
 				</div>
 				</g:else>
-
 			</div>
 			<br> <br> <br> <br> <br> <br> <br> <br> <br> <br>
 		</div>
@@ -266,12 +277,12 @@
 					<div id="other-description" class="other-description">
 						<p>Please tell us what you'd like us to prioritize in the future:</p>
 						<div class="form-group">
-						    <textarea id="description" class="form-control" maxlength="1000" id=""></textarea>
+							<textarea id="description" class="form-control" maxlength="1000" id=""></textarea>
 						</div>
 					</div>
 					<div class="form-group">
-					    <span class="survey-answer-checkbox-label" for="email">Email:</span>
-					    <input type="email" class="form-control" id="email" required>
+						<span class="survey-answer-checkbox-label" for="email">Email:</span>
+						<input type="email" class="form-control" id="email">
 					</div>
 					<div class="form-group">
 						<input class="btn" type="submit" value="Submit" />

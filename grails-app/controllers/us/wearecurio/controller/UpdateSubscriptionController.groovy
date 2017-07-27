@@ -1,7 +1,12 @@
 package us.wearecurio.controller
 
-/**
- * Created by causecode on 26/7/17.
- */
-class UpdateSubscriptionController {
+import us.wearecurio.model.UpdateSubscription
+
+class UpdateSubscriptionController extends LoginController {
+
+	def save() {
+		UpdateSubscription subscriptionDetails = new UpdateSubscription([categories: params.categories,
+				 description: params.description, email: params.email]).save()
+	}
+
 }

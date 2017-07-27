@@ -1,5 +1,6 @@
 package us.wearecurio.controller
 
+import us.wearecurio.model.UpdateSubscription
 import java.text.SimpleDateFormat
 import org.springframework.web.multipart.MultipartFile
 import us.wearecurio.model.Entry
@@ -221,5 +222,42 @@ class AdminController extends LoginController {
 		}
 
 		render(view: 'csvUploadResult', model: [message: 'Successfully imported all TagInputType from CSV'])
+	}
+
+	def deleteSubscription() {
+		UpdateSubscription subscriptionDetails = UpdateSubscription.findById(params.id)
+		subscriptionDetails.delete(flush:true)
+	}
+
+	def download() {
+		response.setHeader "Content-disposition", "attachment; filename=export.csv"
+		response.contentType = 'text/csv'
+		doExportSubscriptionCSV(response.outputStream)
+		response.outputStream.flush()
+	}
+	protected def doExportSubscriptionCSV(OutputStream out) {
+		Writer writer = new OutputStreamWriter(out)
+		writeCSV(writer,"email")
+		writer.write(",")
+		writeCSV(writer,"categories")
+		writer.write(",")
+		writeCSV(writer,"Description")
+		writer.write("\n")
+
+		List subscriptionDetails = UpdateSubscription.all
+		subscriptionDetails.each { subscriptionDetail->
+			writeCSV(writer, subscriptionDetail.email)
+			writer.write(",")
+			writeCSV(writer, subscriptionDetail.categories)
+			writer.write(",")
+			writeCSV(writer, subscriptionDetail.description)
+			writer.write("\n")
+		}
+		writer.flush()
+	}
+
+	def index(Integer max) {
+		params.max = Math.min(max ?: 10, 100)
+		[subscriptionList: UpdateSubscription.list(params), detailInstanceTotal: UpdateSubscription.count()]
 	}
 }
