@@ -52,6 +52,7 @@
 				$(".other-description").hide();
 
 				$(".subscription-form").submit(function(e){
+					e.preventDefault();
 					var categories = [];
 					var autism = ($("#check-autism").attr("checked") ? $("#check-autism").val() : false);
 					var me_cfs = ($("#check-me-cfs").attr("checked") ? " "+$("#check-me-cfs").val() : false);
@@ -64,22 +65,28 @@
 					var description = $("#description").val();
 					var email = $("#email").val();
 					var emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
-
+					categories = categories.toString();
 					if(description.length>250) {
-						e.preventDefault();
-						showAlert("Email should not be empty !");
-					} else if(!email) {
-						e.preventDefault();
-						showAlert("Email is not valid !");
-					} else if(!emailRegex.test(email)) {
-						e.preventDefault();
 						showAlert("Description should not be more then 250 character !");
+					} else if(!email) {
+						showAlert("Email should not be empty !");
+					} else if(!emailRegex.test(email)) {
+						showAlert("Email is not valid !");
 					} else {
-						queueJSON("adding user subscription", "/updateSubscription/save?categories=" + categories + "&" + "description=" +
-								description + "&"+"email=" + email,
+								queueJSON("adding user subscription", "/updateSubscription/save?categories=" + categories + "&" + "description=" +
+								+description + "&"+"email=" + email+"&callback=?",
 								function(data) {
-
-									return;
+									if (data.success) {
+										$("#check-autism").attr("checked", false)
+										$("#check-me-cfs").attr("checked", false)
+										$("#check-other").attr("checked", false)
+										$("#description").val('')
+										$("#email").val('');
+										var info = "Subscription added successfully!"
+									} else {
+										var info = "Subscription not added. Please try again!"
+									}
+									showAlert(info);
 								}.bind(this)
 						);
 					}
@@ -262,17 +269,17 @@
 			<div class="col-sm-7 col-sm-offset-1 text-left">
 				<form class="subscription-form">
 					<h3>Please leave your email address for updates.</h3>
-					<span class="checkbox-orange checkbox-sm survey-answer-checkbox">
+					<span class="checkbox-orange checkbox-sm subscription-checkbox">
 						<input type="checkbox" id="check-autism" value="Autism app"/>
 						<label for="check-autism"></label>
-						<span class="survey-answer-checkbox-label">Autism app</span>
+						<span class="subscription-checkbox-label">Autism app</span>
 					</span>
-					<span class="checkbox-orange checkbox-sm survey-answer-checkbox">
+					<span class="checkbox-orange checkbox-sm subscription-checkbox">
 						<input type="checkbox" id="check-me-cfs" value="ME/CFS app"/>
 						<label for="check-me-cfs"></label>
 						<span class="survey-answer-checkbox-label">ME/CFS app</span>
 					</span>
-					<span class="checkbox-orange checkbox-sm survey-answer-checkbox">
+					<span class="checkbox-orange checkbox-sm subscription-checkbox">
 						<input type="checkbox" id="check-other" value="Other"/>
 						<label for="check-other"></label>
 						<span class="survey-answer-checkbox-label">Other</span>

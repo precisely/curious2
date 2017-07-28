@@ -29,7 +29,7 @@
 				<g:link controller="survey" action="index">Survey</g:link>
 			</li>
 			<li>
-				<g:link controller="admin" action="index" >Subscription</g:link>
+				<g:link controller="admin" action="subscriptions" >Subscription</g:link>
 			</li>
 		</ul>
 	</body>

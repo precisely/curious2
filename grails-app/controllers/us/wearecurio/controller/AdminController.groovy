@@ -9,6 +9,8 @@ import us.wearecurio.model.TagInputType
 import us.wearecurio.model.User
 import us.wearecurio.services.TagInputTypeService
 import us.wearecurio.utility.Utils
+import org.springframework.dao.DataIntegrityViolationException
+
 
 class AdminController extends LoginController {
 
@@ -224,9 +226,22 @@ class AdminController extends LoginController {
 		render(view: 'csvUploadResult', model: [message: 'Successfully imported all TagInputType from CSV'])
 	}
 
+	/**
+	 * An endpoint to delete user subscription .
+	 * @param get id as param
+	 * @return success is true or false.
+	 */
 	def deleteSubscription() {
-		UpdateSubscription subscriptionDetails = UpdateSubscription.findById(params.id)
-		subscriptionDetails.delete(flush:true)
+		try {
+			UpdateSubscription subscriptionDetails = UpdateSubscription.findById(params.id)
+			subscriptionDetails?.delete(flush: true)
+			renderJSONGet([success: true])
+			return
+		} catch (DataIntegrityViolationException e) {
+			e.message = "exception caught"
+			renderJSONGet([success: false])
+			return
+		}
 	}
 
 	def download() {
@@ -235,6 +250,7 @@ class AdminController extends LoginController {
 		doExportSubscriptionCSV(response.outputStream)
 		response.outputStream.flush()
 	}
+
 	protected def doExportSubscriptionCSV(OutputStream out) {
 		Writer writer = new OutputStreamWriter(out)
 		writeCSV(writer,"email")
@@ -256,7 +272,7 @@ class AdminController extends LoginController {
 		writer.flush()
 	}
 
-	def index(Integer max) {
+	def subscriptions(Integer max) {
 		params.max = Math.min(max ?: 10, 100)
 		[subscriptionList: UpdateSubscription.list(params), detailInstanceTotal: UpdateSubscription.count()]
 	}

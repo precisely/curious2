@@ -8,8 +8,19 @@
 			$(document).ready(function() {
 				$("#delete").click(function() {
 					var id = $(this).val();
-					queueJSON("adding user subscription", '/admin/deleteSubscription?id=' + id);
-					location.reload();
+					queueJSON("adding user subscription", '/admin/deleteSubscription?id=' + id +"&callback=?",
+								function(data) {
+									if(data.success) {
+										var info = "Subscription deleted successfully"
+										setTimeout(function() {
+											location.reload();
+										},1000);
+									} else {
+										var info = "Subscription not deleted"
+									}
+									showAlert(info);
+								}.bind(this)
+					)
 				});
 			});
 		</script>

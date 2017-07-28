@@ -105,10 +105,10 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "test for deleting the user subscription by id"(){
-		given: 'An instance of subscription'
-		UpdateSubscription subscription = new UpdateSubscription([categories: "Autism app, Other", description: "Aliquam lobortis",
-														email: "dummy2@curious.test"])
+	void "test for deleting the user subscription by id"() {
+		given: 'An instance of UpdateSubscription'
+		UpdateSubscription subscription = new UpdateSubscription([ categories: "Autism app, Other", description: "Aliquam lobortis",
+														email: "panigrahigajesh@gmail.com"])
 		Utils.save(subscription, true)
 
 		when: 'Delete action is performed on user subscription'
@@ -116,22 +116,24 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		controller.deleteSubscription()
 
 		then: 'Subscription will be deleted successfully'
-		assert controller.response.status == 200
+		controller.response.json.success == true
+		controller.response.status == 200
 	}
 
 	@Test
-	void "test to display all user subscription detail"(){ given: 'An instance of subscription'
+	void "test to display all user subscription detail"(){
+		given: 'An instance of UpdateSubscription'
 		UpdateSubscription subscription = new UpdateSubscription([categories: "Autism app, Other", description: "Aliquam lobortis",
-																  email: "dummy2@curious.test"])
+												email: "panigrahigajesh@gmail.com"])
 		Utils.save(subscription, true)
 
 		when: 'Action is perform for listing the user subscription details'
 		controller.params.max = 10
-		def model = controller.index()
+		def model = controller.subscriptions()
 
 		then: 'Listing user subscription detail successfully'
-		assert model.subscriptionList
-		assert model.subscriptionList[0].email.equals("dummy2@curious.test")
-		assert controller.response.status == 200
+		model.subscriptionList
+		model.subscriptionList[0].email.equals("panigrahigajesh@gmail.com")
+		controller.response.status == 200
 	}
 }

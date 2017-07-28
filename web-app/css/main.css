@@ -475,10 +475,6 @@ div.graphData.has-plot-data #height-balancer {
 	color: #f14a42;
 }
 
-.logo-text-1:hover{
-    text-decoration: underline;
-}
-
 .logo-text-2 {
 	font-size: 31px;
 	color: #f14a42;
@@ -5165,13 +5161,13 @@ input.cropit-image-zoom-input {
 	margin-right: 2px;
 }
 
-.survey-answer-checkbox {
+.survey-answer-checkbox, .subscription-checkbox{
 	display: flex;
 	align-items: center;
 	margin-bottom: 16px;
 }
 
-.survey-answer-checkbox label {
+.subscription-checkbox label, .survey-answer-checkbox label {
 	height: 28px;
 	width: 28px;
 	margin-right: 15px;
@@ -5179,14 +5175,14 @@ input.cropit-image-zoom-input {
 	border-color: #979797;
 }
 
-.survey-answer-checkbox label:after {
+.survey-answer-checkbox label:after, .subscription-checkbox label:after {
 	width: 15px;
 	height: 8px;
 	top: 7px;
 	left: 6px;
 }
 
-.survey-answer-checkbox-label {
+.survey-answer-checkbox-label, subscription-checkbox-label {
 	font-size: 14px;
 	font-weight: normal;
 }
