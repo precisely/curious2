@@ -73,14 +73,15 @@
 					} else if(!emailRegex.test(email)) {
 						showAlert("Email is not valid !");
 					} else {
-								queueJSON("adding user subscription", "/updateSubscription/save?categories=" + categories + "&" + "description=" +
+								queueJSON("adding user subscription", "/updateSubscription/save?categories=" + categories + "&" + "description="
 								+description + "&"+"email=" + email+"&callback=?",
 								function(data) {
 									if (data.success) {
-										$("#check-autism").attr("checked", false)
-										$("#check-me-cfs").attr("checked", false)
-										$("#check-other").attr("checked", false)
-										$("#description").val('')
+										$(".other-description").hide();
+										$("#check-autism").attr("checked", false);
+										$("#check-me-cfs").attr("checked", false);
+										$("#check-other").attr("checked", false);
+										$("#description").val('');
 										$("#email").val('');
 										var info = "Subscription added successfully!"
 									} else {
