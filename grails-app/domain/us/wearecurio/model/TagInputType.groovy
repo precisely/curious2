@@ -44,7 +44,7 @@ class TagInputType {
 	 */
 	static void cache(List tagInputTypes) {
 		if (!tagInputTypes.size()) {
-			Utils.reportError('[Curious Server] - TagInputType Cache Empty', 'Received empty list from database for ' +
+			Utils.reportError('[precise.ly Server] - TagInputType Cache Empty', 'Received empty list from database for ' +
 					'TagInputType cache.')
 
 			return

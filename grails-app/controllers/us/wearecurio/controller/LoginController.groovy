@@ -88,7 +88,7 @@ class LoginController extends SessionController {
 		else
 			render "${new JSON(data)}", contentType: "application/json"
 	}
-	
+
 	protected def renderDataGet(data) {
 		if (params.callback)
 			render "${params.callback}(${data})", contentType: "application/javascript"
@@ -220,10 +220,10 @@ class LoginController extends SessionController {
 		EmailService.get().send(user.getEmail(), "precise.ly: account verification instructions",
 				"Hello!\n\n"
 				+ "Thank you for joining precise.ly. Once you click the link below, you're welcome to participate in our community. Our goal is to connect you with others who share your questions and who seek answers based on more than just opinions and conjecture.\n\n"
-				+ "We look forward to seeing your posts! And here’s a hint -- to filter the topics you’ll see in your Social feed, go to your profile page and add a few ‘interest tags’. You can change these at any time, depending on what you’re curious about.\n\n"
+				+ "We look forward to seeing your posts! And here’s a hint -- to filter the topics you’ll see in your Social feed, go to your profile page and add a few ‘interest tags’. You can change these at any time, depending on what you’re precise.ly about.\n\n"
 				+ "Okay, click here, " + verificationLink + ", and you’re all set.\n\n"
 				+ "Happy tracking,\n\n"
-				+ "The Curious Team"
+				+ "The precise.ly Team"
 		)
 		
 		debug "Verification link: " + verificationLink
