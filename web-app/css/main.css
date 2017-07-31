@@ -480,10 +480,14 @@ div.graphData.has-plot-data #height-balancer {
 	color: #f14a42;
 	margin-bottom: 0px;
 }
+@media only screen and (min-width: 768px) {
+	.logo-text-3 {
+		margin-right: 21vw;
+	 }
+}
 
 .logo-text-3 {
 	color: #f14a42;
-	margin-right: 22vw;
 	padding-top: 5px;
 }
 
