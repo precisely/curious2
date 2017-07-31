@@ -100,7 +100,7 @@ You can simply copy the contents from this file to `nginx.conf` for this step.
  ```
  - name: letsencrypt-cert
       secret:
-         secretName: cert-wearecurio.us
+         secretName: cert-precise.ly
  ```
  and
  ```
@@ -123,7 +123,7 @@ You can simply copy the contents from this file to `nginx.conf` for this step.
  ```
 server {
                 listen 80;
-                server_name wearecurio.us;
+                server_name precise.ly;
 
                 // Add this block
                 location /.well-known/acme-challenge {
@@ -142,7 +142,7 @@ server {
  ```
 kubectl exec -it --namespace=prod-curious <LETSENCRYPT_POD_NAME> -c letsencrypt -- /bin/bash -c 'EMAIL=test@causecode
 .com
-DOMAINS=wearecurio.us ./fetch_certs.sh'
+DOMAINS=precise.ly ./fetch_certs.sh'
  ```
 It will fetch the certificate from the letsencrypt server.
 
@@ -151,10 +151,10 @@ It will fetch the certificate from the letsencrypt server.
  ```
 kubectl exec -it --namespace=prod-curious <LETSENCRYPT_POD_NAME> -c letsencrypt -- /bin/bash -c 'EMAIL=test@causecode
 .com
-DOMAINS=wearecurio.us SECRET_NAME=cert-wearecurio.us NAMESPACE=prod-curious ./save_certs.sh'
+DOMAINS=precise.ly SECRET_NAME=cert-precise.ly NAMESPACE=prod-curious ./save_certs.sh'
  ```
 
- Certificates will be stored inside secret named `cert-wearecurio.us`
+ Certificates will be stored inside secret named `cert-precise.ly`
 
 6. Now, Add the SSL configuration back, update the nginx `Deployment` with `letsencrypt-cert` volume and volumeMounts configuration. Restart the nginx Pod.
 

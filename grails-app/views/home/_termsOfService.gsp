@@ -95,7 +95,7 @@ security features to try to prevent unauthorized access.
 from our website and related documents (the "Documents") from the Site under the <a href="http://creativecommons.org/licenses/by/3.0/deed.en_GB">Creative Commons Attribution
 3.0 Unported (“CC BY 3.0”) license</a>. precise.ly, Inc. reserves the right to move to more recent versions of the CC
 BY license as they become available. Attribution should be made to precise.ly, Inc. including a link to the front
-page of the website at <a href="http://www.wearecurio.us/">www.precise.ly</a>.
+page of the website at <a href="http://www.precise.ly/">www.precise.ly</a>.
 <p><strong>Use of Web Site Data</strong>
 <p>Use of data uploaded by individual users is regulated by the level of privacy selected by the user. Each
 data set carries information indicating rights to use any data uploaded by users of precise.ly, Inc.

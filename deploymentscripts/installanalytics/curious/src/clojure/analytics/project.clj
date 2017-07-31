@@ -1,6 +1,6 @@
 (defproject analytics "0.1.2"
   :description "Analytics for Curious, Inc."
-  :url "http://wearecurio.us"
+  :url "http://precise.ly"
   :plugins [[lein-environ "0.5.0"]]
   ;:aot [us.wearecurio.analytics.Interop]
   :main us.wearecurio.analytics.core

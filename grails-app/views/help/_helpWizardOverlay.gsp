@@ -55,7 +55,7 @@
 							<div class="item sleep">
 								<h4>Let's get started with three painless questions.</h4>
 								<p class="sub-heading">
-									These will help illustrate the Curious tracking feature.
+									These will help illustrate the precise.ly tracking feature.
 								</p>
 								<hr>
 								<h3 class="questions">

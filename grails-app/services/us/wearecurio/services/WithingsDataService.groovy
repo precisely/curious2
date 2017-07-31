@@ -416,7 +416,7 @@ class WithingsDataService extends DataService {
 
 		Map queryParameters = ["action": subscription ? "subscribe" : "revoke"]
 		queryParameters.put("userid", account.accountId)
-		queryParameters.put("comment", "Notify Curious app of new data")
+		queryParameters.put("comment", "Notify precise.ly app of new data")
 		queryParameters.put("callbackurl", notifyURL)	// Not encoding url since, OAuth plugin do it.
 
 		queryParameters

@@ -174,7 +174,7 @@ class AnalyticsService {
 			prepareUser(childTask)
 			childTask.startProcessing()
 		} catch (Exception e) {
-			Utils.reportError("CURIOUS ANALYTICS ERROR", e)
+			Utils.reportError("precise.ly ANALYTICS ERROR", e)
 			return false
 		} finally {
 			AnalyticsTask.decBusy()
