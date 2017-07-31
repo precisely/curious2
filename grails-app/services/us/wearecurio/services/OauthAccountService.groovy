@@ -73,7 +73,7 @@ class OauthAccountService {
 	 * @param type Type of the provider. See ThirdParty enum.
 	 * @param accountId Account Identity for current provider.
 	 * @param tokenInstance Instance of scribe token.
-	 * @param userId Identity of curious user.
+	 * @param userId Identity of precise.ly user.
 	 * @param timeZoneId Identity of TimeZoneId domain. Default Null.
 	 * @return OAuthAccount instance for given parameters.
 	 */
