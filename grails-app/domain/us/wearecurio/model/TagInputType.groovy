@@ -105,7 +105,7 @@ class TagInputType {
 		int totalCount = resultInstanceList.size()
 
 		if (totalCount > 35000) {
-			String title = '[Curious] - TagInputType Total Count'
+				String title = '[precise.ly] - TagInputType Total Count'
 			String message = "TagInputType cache size has increased significantly, current size is ${totalCount}. " +
 					'Please take necessary steps to prevent cache from blowing up.'
 

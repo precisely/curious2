@@ -103,7 +103,7 @@ class Utils {
 		}
 		try {
 			if (!obj.save(flush: flush)) {
-				def messageBody = "Error saving while executing Curious app:\n" + obj.errors + "\n" + Arrays.toString(new Exception().getStackTrace())
+				def messageBody = "Error saving while executing precise.ly app:\n" + obj.errors + "\n" + Arrays.toString(new Exception().getStackTrace())
 				reportError("CURIOUS SERVER SAVE ERROR", messageBody)
 				
 				return null
@@ -116,7 +116,7 @@ class Utils {
 			def merged = obj.merge() // avoid hibernate errors - we don't care about transactions in our app
 			try {
 				if (!merged.save(flush: flush)) {
-					def messageBody = "Error saving while executing Curious app:\n" + merged.errors + "\n" + Arrays.toString(new Exception().getStackTrace())
+					def messageBody = "Error saving while executing precise.ly app:\n" + merged.errors + "\n" + Arrays.toString(new Exception().getStackTrace())
 					reportError("CURIOUS SERVER SAVE ERROR", messageBody)
 					
 					return null

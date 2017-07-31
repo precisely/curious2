@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
 	<meta name="layout" content="menu" />
-	<title>Curious - CSV Upload</title>
+	<title>precise.ly - CSV Upload</title>
 	<meta name="description" content="A platform for health hackers" />
 </head>
 

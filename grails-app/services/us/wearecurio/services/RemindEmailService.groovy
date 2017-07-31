@@ -32,7 +32,7 @@ class RemindEmailService {
 			if (email != null && email.length() > 1) {
 				try {
 					log.debug "Trying to send reminder email " + alert + " to " + email
-					def messageBody = "https://www.wearecurio.us/home/index"
+					def messageBody = "https://www.precise.ly/home/index"
 					def messageSubject = "Reminder to track: " + alert.text
 					emailService.send(email, messageSubject, messageBody)
 				} catch (Throwable t) {
@@ -91,7 +91,7 @@ class RemindEmailService {
 				def email = user[1]
 				def u = User.get(userId)
 				def devices = PushNotificationDevice.findAllByUserId(userId)
-				def url = "https://dev.wearecurio.us/home/index"
+				def url = "https://dev.precise.ly/home/index"
 				
 				if (userId == 1L)
 					userId = userId

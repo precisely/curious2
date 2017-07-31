@@ -39,7 +39,7 @@ class BootStrap {
 	static protected initClosures = []
 
 	def init = { servletContext ->
-		log.debug "Curious bootstrap started executing."
+		log.debug "precise.ly bootstrap started executing."
 		def current = Environment.current
 
 		DatabaseService.set(databaseService)
@@ -107,7 +107,7 @@ class BootStrap {
 			}
 		}
 
-		log.debug "Curious bootstrap finished executing."
+		log.debug "precise.ly bootstrap finished executing."
 	}
 
 	def destroy = {

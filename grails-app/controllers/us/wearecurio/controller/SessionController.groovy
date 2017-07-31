@@ -23,7 +23,7 @@ class SessionController {
 	private static def log = LogFactory.getLog(this)
 	
 	static final String AUTH_ERROR_MESSAGE = 'You have logged into a different account in another window. Please refresh the browser window.'
-	static final String SYNTAX_ERROR_MESSAGE = 'Internal error in application. Please update your application or contact Curious.'
+	static final String SYNTAX_ERROR_MESSAGE = 'Internal error in application. Please update your application or contact precise.ly.'
 
 	static debug(str) {
 		log.debug(str)

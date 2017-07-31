@@ -36,8 +36,8 @@
 		<div class="headLinks">
 			<ul class="mainLinks headerLinks">
 				<li><a href="/home/login">HOME</a></li>
-				<li><a href="https://www.wearecurio.us/home/login/#features">FEATURES</a></li>
-				<li><a href="https://www.wearecurio.us/blog">BLOG</a></li>
+				<li><a href="https://www.precise.ly/home/login/#features">FEATURES</a></li>
+				<li><a href="https://www.precise.ly/blog">BLOG</a></li>
 				<li style="display: none;"><a href="#">LEARN</a></li>
 				<li>
 					<g:form url="[controller: 'home', action: 'login']">
@@ -101,10 +101,10 @@
 								<img alt='Get it on Google Play' height="23"
 									 src='/images/google-play-badge.png'/>
 							</a>
-							<a href="https://twitter.com/wearecurious">
+							<a href="https://twitter.com/preciselywell">
 								<i class="fa fa-twitter" style="color: white; font-size: 30px; margin-right: 15px"></i>
 							</a>
-							<a href="https://facebook.com/wearecurious" class="facebook">
+							<a href="https://facebook.com/precise.ly" class="facebook">
 								<i class="fa fa-facebook" style="color: white; font-size: 27px; margin-right: 15px"></i>
 							</a>
 						</div>

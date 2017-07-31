@@ -171,7 +171,7 @@ class AuthenticationController extends SessionController {
 				if (urlService.template(request) == "lhp") {
 					groups = ["announce", "lhp", "lhp announce"]
 				} else {
-					groups = ["announce", "curious", "curious announce"]
+					groups = ["announce", "precise.ly", "precise.ly announce"]
 				}
 
 				user = User.create(signupData, groups)

@@ -4,7 +4,7 @@ chmod +x ~/deploymentbin/*
 #!/bin/bash
 echo "MUST COPY DEPLOYMENT APACHE CERTS TO ~/deploymentcerts
 
-echo "Enter the hostname of this server, i.e., 'www.wearecurio.us'"
+echo "Enter the hostname of this server, i.e., 'www.precise.ly'"
 
 read APPHOSTNAME
 
