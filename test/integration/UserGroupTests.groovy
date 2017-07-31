@@ -19,8 +19,8 @@ class UserGroupTests extends CuriousTestCase {
 	User anon
 	User schmoe
 	User bloo
-	UserGroup curious
-	UserGroup curious2
+	UserGroup precisely
+	UserGroup precisely2
 	UserGroup announce
 
 	static def createUser(name, email) {
@@ -44,12 +44,12 @@ class UserGroupTests extends CuriousTestCase {
 		anon = createUser('anon', 'anon@user.com')
 		schmoe = createUser('schmoe', 'schmoe@user.com')
 		bloo = createUser('bloo', 'bloo@user.com')
-		
-		curious = UserGroup.create("curious", "Curious Discussions", "Discussion topics for Curious users",
+
+		precisely = UserGroup.create("precise.ly", "precise.ly Discussions", "Discussion topics for precise.ly users",
 				[isReadOnly:false, defaultNotify:false])
-		curious2 = UserGroup.create("curious2", "Curious Discussions 2", "Discussion topics for Curious users 2",
+		precisely2 = UserGroup.create("precise.ly2", "precise.ly Discussions 2", "Discussion topics for precise.ly users 2",
 				[isReadOnly:false, defaultNotify:false])
-		announce = UserGroup.create("announce", "Curious Announcements", "Announcements for Curious users",
+		announce = UserGroup.create("announce", "precise.ly Announcements", "Announcements for precise.ly users",
 				[isReadOnly:true, defaultNotify:true])
 		EmailService.set(emailService)
 	}
@@ -77,7 +77,7 @@ class UserGroupTests extends CuriousTestCase {
 		assert !announce.hasWriter(user)
 		assert !announce.hasNotified(user)
 		assert !announce.hasAdmin(user)
-		assert UserGroup.getDefaultGroupForUser(user) == curious
+		assert UserGroup.getDefaultGroupForUser(user) == precisely
 
 		announce.addDefaultFor(user)
 
@@ -94,14 +94,14 @@ class UserGroupTests extends CuriousTestCase {
 		assert !announce.hasNotified(anon)
 		assert !announce.hasAdmin(anon)
 
-		curious.addAdmin(admin)
-		curious.addDefaultFor(admin)
+		precisely.addAdmin(admin)
+		precisely.addDefaultFor(admin)
 
-		assert curious.hasReader(admin)
-		assert curious.hasWriter(admin)
-		assert !curious.hasNotified(admin)
-		assert curious.hasAdmin(admin)
-		assert UserGroup.getDefaultGroupForUser(admin) == curious
+		assert precisely.hasReader(admin)
+		assert precisely.hasWriter(admin)
+		assert !precisely.hasNotified(admin)
+		assert precisely.hasAdmin(admin)
+		assert UserGroup.getDefaultGroupForUser(admin) == precisely
 		
 		announce.addAdmin(admin)
 
@@ -109,26 +109,26 @@ class UserGroupTests extends CuriousTestCase {
 		assert announce.hasWriter(admin)
 		assert announce.hasNotified(admin)
 		assert announce.hasAdmin(admin)
-		assert UserGroup.getDefaultGroupForUser(admin) == curious
+		assert UserGroup.getDefaultGroupForUser(admin) == precisely
 
 		announce.addAdmin(admin2)
 
-		curious.addMember(admin2)
-		curious.addDefaultFor(admin2)
+		precisely.addMember(admin2)
+		precisely.addDefaultFor(admin2)
 
 		assert announce.hasReader(admin2)
 		assert announce.hasWriter(admin2)
 		assert announce.hasNotified(admin2)
 		assert announce.hasAdmin(admin2)
-		assert UserGroup.getDefaultGroupForUser(admin2) == curious
+		assert UserGroup.getDefaultGroupForUser(admin2) == precisely
 
 		Discussion discussion = Discussion.create(user, "Discussion name")
 
-		curious.addDiscussion(discussion)
+		precisely.addDiscussion(discussion)
 
 		discussion.createPost(user, null, "comment")
 
-		assert curious.hasDiscussion(discussion)
+		assert precisely.hasDiscussion(discussion)
 
 		assert UserGroup.canReadDiscussion(user, discussion)
 		assert UserGroup.canReadDiscussion(admin, discussion)
@@ -166,20 +166,20 @@ class UserGroupTests extends CuriousTestCase {
 
 		assert !UserGroup.canReadDiscussion(anon, announcement)
 		
-		curious.addMember(bloo)
+		precisely.addMember(bloo)
 		Thread.sleep(1000)
-		curious2.addMember(bloo)
+		precisely2.addMember(bloo)
 		
 		def userGroups = UserGroup.getConcreteGroupsForWriter(bloo)
-		assert userGroups[1].id == curious.id
-		assert userGroups[0].id == curious2.id
+		assert userGroups[1].id == precisely.id
+		assert userGroups[0].id == precisely2.id
 		
 		Thread.sleep(1000)
-		curious.updateWriter(bloo)
+		precisely.updateWriter(bloo)
 		
 		userGroups = UserGroup.getConcreteGroupsForWriter(bloo)
-		assert userGroups[0].id == curious.id
-		assert userGroups[1].id == curious2.id
+		assert userGroups[0].id == precisely.id
+		assert userGroups[1].id == precisely2.id
 	}
 
 /*	@Test
