@@ -100,7 +100,7 @@
 							<input type="hidden" name="groups" value="['announce','lhp','lhp announce']">
 						</g:if>
 						<g:else>
-							<input type="hidden" name="groups" value="['announce','curious','curious announce']">
+							<input type="hidden" name="groups" value="['announce','precise.ly','precise.ly announce']">
 						</g:else>
 
 						<div class="clearfix">

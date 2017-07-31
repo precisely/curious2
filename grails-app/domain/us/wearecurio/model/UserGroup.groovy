@@ -800,12 +800,12 @@ class UserGroup {
 	static UserGroup getDefaultGroupForUser(User user) {
 		def defaultGroup = GroupMemberDefaultFor.lookupGroup(user)
 		if (!defaultGroup) {
-			UserGroup curious = UserGroup.findByName("precise.ly")
-			if (!curious) {
+			UserGroup precisely = UserGroup.findByName("precise.ly")
+			if (!precisely) {
 				curious = UserGroup.create("precise.ly", "precise.ly Discussions", "Discussion topics for precise.ly users",
 								[isReadOnly:false, defaultNotify:false])
 			}
-			defaultGroup = curious
+			defaultGroup = precisely
 			defaultGroup.addMember(user)
 			defaultGroup.addDefaultFor(user)
 			defaultGroup.addWriter(user)

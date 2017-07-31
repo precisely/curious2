@@ -11,7 +11,7 @@ class ThirdPartyNotificationJob extends us.wearecurio.utility.TimerJob {
 		simple startDelay: 10 * MINUTE, repeatInterval: 5 * MINUTE
 	}
 
-	def group = "curious"
+	def group = "precise.ly"
 	def concurrent = false
 
 	def fitBitDataService
