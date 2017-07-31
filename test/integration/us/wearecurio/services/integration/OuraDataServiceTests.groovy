@@ -428,7 +428,7 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 
 		then: "Emails will be sent"
 		mailCount == 3
-		subject == '[Curious] - Oura Sync Issue'
+		subject == '[precise.ly] - Oura Sync Issue'
 		messageBody == 'Not a single sync happened in the last 24 hours.'
 	}
 }
