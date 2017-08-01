@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-svc
+  name: nginx-svc-precisely
   namespace: prod-curious
   labels:
-    app: nginx
+    app: nginx-precisely
 spec:
   type: LoadBalancer
-  loadBalancerIP: 104.154.134.125
+  loadBalancerIP: 104.154.138.166        # Pointing to precise.ly
   ports:
     - name: http
       protocol: TCP
@@ -16,4 +16,4 @@ spec:
       protocol: TCP
       port: 443
   selector:
-    app: nginx
+    app: nginx-precisely

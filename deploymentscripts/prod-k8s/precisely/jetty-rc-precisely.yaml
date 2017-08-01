@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: ReplicationController
 metadata:
-  name: jetty
+  name: jetty-precisely
   namespace: prod-curious
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: jetty
+        app: jetty-precisely
         tier: backend
     spec:
       volumes:
@@ -48,24 +48,24 @@ spec:
               mountPath: /cloudsql
           ports:
           - containerPort: 3306
-        - name: jetty
+        - name: jetty-precisely
           image: jetty:9.4.4-jre8-alpine
           env:
             - name: CURIOUSCONFIGHOME
-              value: '/home/curious/localconfig'
+              value: '/home/precisely/localconfig'
           ports:
             - containerPort: 8080
-              name: 'default-server'
+              name: 'precise-server'     # Only 15 chars allowed.
           volumeMounts:
             - name: jetty
               mountPath: /opt/jetty/logs
-              subPath: jetty/logs
+              subPath: jetty/logs/precisely
             - name: jetty
               mountPath: /var/lib/jetty/webapps
-              subPath: jetty/webapps/curious
+              subPath: jetty/webapps/precisely
             - name: jetty
-              mountPath: /home/curious/localconfig
-              subPath: jetty/localconfig
+              mountPath: /home/precisely/localconfig
+              subPath: jetty/localconfig/precisely
             - name: jetty
-              mountPath: /home/curious/ios-cert
+              mountPath: /home/precisely/ios-cert
               subPath: jetty/ios-cert

@@ -3,18 +3,18 @@
 kind: ReplicationController
 apiVersion: v1
 metadata:
-  name: letsencrypt
+  name: letsencrypt-precisely
   namespace: prod-curious
 spec:
   replicas: 1
   selector:
-    name: letsencrypt
+    name: letsencrypt-precisely
     role: cert-app
   template:
       metadata:
-        name: letsencrypt-rc
+        name: letsencrypt-rc-precisely
         labels:
-          name: letsencrypt
+          name: letsencrypt-precisely
           role: cert-app
       spec:
         containers:
@@ -31,12 +31,12 @@ spec:
           - name: EMAIL
             value: developers@causecode.com
           - name: DOMAINS
-            value: wearecurio.us
+            value: precise.ly
           - name: DEPLOYMENTS
-            value: nginx
+            value: nginx-precisely
           - name: NAMESPACE
             value: prod-curious
           - name: SECRET_NAME # Name of the Secret in which certificate key information will be stored.
-            value: cert-wearecurio.us
+            value: cert-precise.ly
           ports:
             - containerPort: 80

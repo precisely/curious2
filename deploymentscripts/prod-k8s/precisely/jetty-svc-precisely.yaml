@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: jetty-svc-precisely
+  namespace: prod-curious
+  labels:
+    app: jetty-precisely
+spec:
+  ports:
+    - port: 8080
+      name: 'default-server'
+  selector:
+    app: jetty-precisely

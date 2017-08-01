@@ -29,19 +29,19 @@ grails.project.groupId = appName // change this to alter the default package nam
 // The ACCEPT header will not be used for content negotiation for user agents containing the following strings (defaults to the 4 major rendering engines)
 grails.mime.disable.accept.header.userAgents = ['Gecko', 'WebKit', 'Presto', 'Trident']
 grails.mime.types = [ // the first one is the default format
-    all:           '*/*', // 'all' maps to '*' or the first available format in withFormat
-    atom:          'application/atom+xml',
-    css:           'text/css',
-    csv:           'text/csv',
-    form:          'application/x-www-form-urlencoded',
-    html:          ['text/html','application/xhtml+xml'],
-    js:            'text/javascript',
-    json:          ['application/json', 'text/json'],
-    multipartForm: 'multipart/form-data',
-    rss:           'application/rss+xml',
-    text:          'text/plain',
-    hal:           ['application/hal+json','application/hal+xml'],
-    xml:           ['text/xml', 'application/xml']
+	all:           '*/*', // 'all' maps to '*' or the first available format in withFormat
+	atom:          'application/atom+xml',
+	css:           'text/css',
+	csv:           'text/csv',
+	form:          'application/x-www-form-urlencoded',
+	html:          ['text/html','application/xhtml+xml'],
+	js:            'text/javascript',
+	json:          ['application/json', 'text/json'],
+	multipartForm: 'multipart/form-data',
+	rss:           'application/rss+xml',
+	text:          'text/plain',
+	hal:           ['application/hal+json','application/hal+xml'],
+	xml:           ['text/xml', 'application/xml']
 ]
 
 // URL Mapping Cache Max Size, defaults to 5000
@@ -76,20 +76,20 @@ grails.views.gsp.sitemesh.preprocess = true
 
 // GSP settings
 grails {
-    views {
-        gsp {
-            encoding = 'UTF-8'
-            htmlcodec = 'xml' // use xml escaping instead of HTML4 escaping
-            codecs {
-                expression = 'html' // escapes values inside ${}
-                scriptlet = 'html' // escapes output from scriptlets in GSPs
-                taglib = 'none' // escapes output from taglibs
-                staticparts = 'none' // escapes output from static template parts
-            }
-        }
-        // escapes all not-encoded output at final stage of outputting
-        // filteringCodecForContentType.'text/html' = 'html'
-    }
+	views {
+		gsp {
+			encoding = 'UTF-8'
+			htmlcodec = 'xml' // use xml escaping instead of HTML4 escaping
+			codecs {
+				expression = 'html' // escapes values inside ${}
+				scriptlet = 'html' // escapes output from scriptlets in GSPs
+				taglib = 'none' // escapes output from taglibs
+				staticparts = 'none' // escapes output from static template parts
+			}
+		}
+		// escapes all not-encoded output at final stage of outputting
+		// filteringCodecForContentType.'text/html' = 'html'
+	}
 }
 
 grails.converters.encoding = "UTF-8"
@@ -159,11 +159,11 @@ elasticSearch {
 }
 
 environments {
-    development {
+	development {
 		grails.mail.disabled=true
 
-        grails.logging.jul.usebridge = false
-        grails.serverURL = "http://127.0.0.1:8080/"	/** If last `/` is removed, modify url's in oauth provider configurations **/
+		grails.logging.jul.usebridge = false
+		grails.serverURL = "http://127.0.0.1:8080/"	/** If last `/` is removed, modify url's in oauth provider configurations **/
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
 		facebookAppId = "714092418734227"
@@ -178,7 +178,7 @@ environments {
 		elasticSearch.client.mode = 'transport'
 		
 		elasticSearch.client.hosts = [
-		       [host:'127.0.0.1', port:9300]
+			   [host:'127.0.0.1', port:9300]
 		]
 		*/
 		elasticSearch.client.mode = 'local'
@@ -244,13 +244,13 @@ environments {
 				shared = true
 			}
 		}
-    }
-    qa {
+	}
+	qa {
 		grails.mail.disabled=true
 		
-        grails.logging.jul.usebridge = false
+		grails.logging.jul.usebridge = false
 		// serverUrl now must be specified in LocalConfig.groovy
-        //grails.serverURL = "https://qa.precise.ly/"
+		//grails.serverURL = "https://qa.precise.ly/"
 		grails.serverURLProtocol = "https"
 		facebookAppId = "174406919567104"
 		
@@ -261,18 +261,18 @@ environments {
 		/*elasticSearch.client.mode = 'node'
 
 		elasticSearch.client.hosts = [
-		       [host:'127.0.0.1', port:9300],
+			   [host:'127.0.0.1', port:9300],
 		]*/
 		
 		grails.serverURLProtocol = "https"
 		def extConfig = System.properties.getProperty('CURIOUSCONFIGHOME');
-		if (!extConfig) extConfig = "/home/curious/localconfig"
+		if (!extConfig) extConfig = "/home/precisely/localconfig"
 		grails.config.locations = [ "file:${extConfig}/LocalConfig.groovy" ]
 
 		elasticSearch.client.mode = 'transport'
 		
 		elasticSearch.client.hosts = [
-		       [host:'elasticsearch-svc.qa-curious', port:9300],
+			   [host:'elasticsearch-svc.qa-curious', port:9300],
 		]
 		
 		api {
@@ -392,26 +392,25 @@ environments {
 				senderID = "AIzaSyCcKBWFkLYNu-lsJ1lRHNfa0QLV_HTX2Qk"
 			}
 		}*/
-    }
-    production {
+	}
+	production {
 		grails.mail.disabled=false
-        grails.logging.jul.usebridge = false
-        grails.serverURL = "https://www.precise.ly/"
+		grails.logging.jul.usebridge = false
+		grails.serverURL = "https://www.precise.ly/"
 		grails.serverURLProtocol = "https"
 		def extConfig = System.properties.getProperty('CURIOUSCONFIGHOME');
-		if (!extConfig) extConfig = "/home/curious/localconfig"
+		if (!extConfig) extConfig = "/home/precisely/localconfig"
 		grails.config.locations = [ "file:${extConfig}/LocalConfig.groovy" ]
 		facebookAppId = "164274177247045"
 
 		curiousanalytics.servers = [
-			'http://curiousanalytics:8090',
-			'http://curiousanalytics:8091'
+				'http://analytics-svc.prod-curious:8090'
 		]
 		
 		elasticSearch.client.mode = 'transport'
 		
 		elasticSearch.client.hosts = [
-		       [host:'curiouselastic', port:9300],
+				[host:'elasticsearch-svc.prod-curious', port:9300],
 		]
 		
 		api {
@@ -458,7 +457,7 @@ environments {
 		
 		pushNotification {
 			apns {
-				pathToCertificate = "${userHome}/ios-cert/iphone_prod.p12"
+				pathToCertificate = "/home/precisely/ios-cert/iphone_prod.p12"
 				password = "causecode.11"
 				environment = "production"
 			}
@@ -467,9 +466,9 @@ environments {
 				senderID = "AIzaSyCcKBWFkLYNu-lsJ1lRHNfa0QLV_HTX2Qk"
 			}
 		}
-    }
-    test {
-        grails.serverURL = "http://127.0.0.1:8080/"
+	}
+	test {
+		grails.serverURL = "http://127.0.0.1:8080/"
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
 		facebookAppId = "714092418734227"
@@ -529,7 +528,7 @@ environments {
 				}
 			}
 		}
-    }
+	}
 }
 
 // log4j configuration

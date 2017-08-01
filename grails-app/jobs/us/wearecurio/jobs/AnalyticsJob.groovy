@@ -22,7 +22,7 @@ class AnalyticsJob extends us.wearecurio.utility.TimerJob {
 		}
 		if (Environment.current != Environment.DEVELOPMENT) {
 			log.debug "analyticsJob launched."
-			analyticsService.processUsers()
+//			analyticsService.processUsers()
 		}
 	}
 }

@@ -1,0 +1,47 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nginx-precisely
+  namespace: prod-curious
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx-precisely
+    spec:
+      volumes:
+      - name: configmap-volume
+        configMap:
+          name: nginx-config-precisely
+      - name: static-files
+        persistentVolumeClaim:
+          claimName: curious-pvc-nfs
+      - name: letsencrypt-cert
+        secret:
+          secretName: cert-precise.ly
+      containers:
+      - name: nginx
+        image: nginx:1.11.12-alpine
+        resources:
+          requests:
+            cpu: 0.2
+            memory: 500Mi
+          limits: # Pod cannot obtain resources more than the limits specified.
+            cpu: 0.5
+            memory: 0.5Gi
+        ports:
+          - containerPort: 80
+          - containerPort: 443
+        volumeMounts:
+          - name: configmap-volume
+            mountPath: /etc/nginx/conf.d
+            readOnly: true
+          - name: static-files
+            mountPath: /home/curious/www
+            subPath: jetty/www
+          - name: static-files
+            mountPath: /home/precisely/logs/nginx
+            subPath: nginx/logs/precisely
+          - name: letsencrypt-cert
+            mountPath: /etc/nginx/nginx-ssl

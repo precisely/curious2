@@ -802,7 +802,7 @@ class UserGroup {
 		if (!defaultGroup) {
 			UserGroup precisely = UserGroup.findByName("precise.ly")
 			if (!precisely) {
-				curious = UserGroup.create("precise.ly", "precise.ly Discussions", "Discussion topics for precise.ly users",
+				precisely = UserGroup.create("precise.ly", "precise.ly Discussions", "Discussion topics for precise.ly users",
 								[isReadOnly:false, defaultNotify:false])
 			}
 			defaultGroup = precisely

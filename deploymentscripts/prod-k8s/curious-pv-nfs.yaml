@@ -13,4 +13,4 @@ spec:
     name: curious-pvc-nfs
   nfs:
     path: "/"
-    server: 10.51.251.6  # Cluster IP of nfs-service
+    server: 10.51.245.206  # Cluster IP of nfs-service
