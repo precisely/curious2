@@ -36,8 +36,8 @@
 		<div class="headLinks">
 			<ul class="mainLinks headerLinks">
 				<li><a href="/home/login">HOME</a></li>
-				<li><a href="https://www.wearecurio.us/home/login/#features">FEATURES</a></li>
-				<li><a href="https://www.wearecurio.us/blog">BLOG</a></li>
+				<li><a href="https://www.precise.ly/home/login/#features">FEATURES</a></li>
+				<li><a href="https://www.precise.ly/blog">BLOG</a></li>
 				<li style="display: none;"><a href="#">LEARN</a></li>
 				<li>
 					<g:form url="[controller: 'home', action: 'login']">
@@ -60,7 +60,7 @@
 
 			<div class="row">
 				<div class="col-sm-1 col-sm-offset-1 " style="color: white;">
-					<p style="font-size: 24px; color: white; padding-top: 30px;">ABOUT</p>
+					<h2 style="font-size: 26px; color: white; padding-top: 30px;">ABOUT</h2>
 				</div>
 			</div>
 			<br>
@@ -69,7 +69,7 @@
 			<div class="row">
 				<div class="col-sm-5 col-sm-offset-1 text-left" style="color: white;">
 					<p style="font-size: 16px;">
-						At Curious, we believe in the power of personal data and that it should be owned and
+						At precise.ly, we believe in the power of personal data and that it should be owned and
 						controlled by you. We will never intentionally expose it, share it, or sell it without your
 						explicit consent. We are the stewards of your data—we’ll hold it securely for you but also
 						make it easy to share, when you’re ready. We’re excited to take this journey of personal
@@ -101,10 +101,10 @@
 								<img alt='Get it on Google Play' height="23"
 									 src='/images/google-play-badge.png'/>
 							</a>
-							<a href="https://twitter.com/wearecurious">
+							<a href="https://twitter.com/preciselywell">
 								<i class="fa fa-twitter" style="color: white; font-size: 30px; margin-right: 15px"></i>
 							</a>
-							<a href="https://facebook.com/wearecurious" class="facebook">
+							<a href="https://facebook.com/precise.ly" class="facebook">
 								<i class="fa fa-facebook" style="color: white; font-size: 27px; margin-right: 15px"></i>
 							</a>
 						</div>

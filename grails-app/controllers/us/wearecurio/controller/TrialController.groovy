@@ -245,7 +245,7 @@ class TrialController extends LoginController {
 			sendMail {
 				to user.getEmail()
 				from "contact@wearecurio.us"
-				subject "Instructions for Curious coffee"
+				subject "Instructions for precise.ly coffee"
 				html g.render(template:"instructions")
 			}
 		}

@@ -52,7 +52,7 @@ class User {
 	static transients = ['avatarURL']
 
 	static constraints = {
-		bio(nullable: true)
+		bio(nullable: true, maxSize:250)
 		username(maxSize:70, unique:true)
 		// This needs to be uncommented after migrations have run on all the systems
 		hash(/*blank: false, unique: true,*/ nullable: true)

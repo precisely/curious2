@@ -7,6 +7,7 @@ import org.junit.Test
 import org.springframework.web.multipart.commons.CommonsMultipartFile
 import us.wearecurio.controller.AdminController
 import us.wearecurio.model.TagInputType
+import us.wearecurio.model.UpdateSubscription
 import us.wearecurio.model.User
 import us.wearecurio.services.SecurityService
 import us.wearecurio.services.TagInputTypeService
@@ -101,5 +102,38 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		assert TagInputType.count() == 4 // sleep gets overridden
 		file.delete()
 		fileItem.delete()
+	}
+
+	@Test
+	void "test for deleting the user subscription by id"() {
+		given: 'An instance of UpdateSubscription'
+		UpdateSubscription subscription = new UpdateSubscription([ categories: "Autism app, Other", description: "Aliquam lobortis",
+														email: "panigrahigajesh@gmail.com"])
+		Utils.save(subscription, true)
+
+		when: 'Delete action is performed on user subscription'
+		controller.params.id = 1
+		controller.deleteSubscription()
+
+		then: 'Subscription will be deleted successfully'
+		controller.response.json.success == true
+		controller.response.status == 200
+	}
+
+	@Test
+	void "test to display all user subscription detail"(){
+		given: 'An instance of UpdateSubscription'
+		UpdateSubscription subscription = new UpdateSubscription([categories: "Autism app, Other", description: "Aliquam lobortis",
+												email: "panigrahigajesh@gmail.com"])
+		Utils.save(subscription, true)
+
+		when: 'Action is perform for listing the user subscription details'
+		controller.params.max = 10
+		def model = controller.subscriptions()
+
+		then: 'Listing user subscription detail successfully'
+		model.subscriptionList
+		model.subscriptionList[0].email.equals("panigrahigajesh@gmail.com")
+		controller.response.status == 200
 	}
 }

@@ -124,7 +124,7 @@ class TwitterDataService extends DataService {
 	}
 
 	/**
-	 * Second stage in OAuth verification. Once the user grants permission to Curious,
+	 * Second stage in OAuth verification. Once the user grants permission to precise.ly,
 	 * we record their Twitter username and auto-follow the user as well.
 	 */
 	def usernameFromAuthTokens(def authToken, def authVerifier) {

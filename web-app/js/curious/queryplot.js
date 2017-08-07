@@ -1330,8 +1330,8 @@ function PlotLine(p) {
 		return save;
 	};
 
-	this.displayTag = function(tag) {
-		if (!this.snapshot && typeof tag == 'string') {
+        this.displayTag = function(tag) {
+	    if (!this.snapshot && typeof tag == 'string') {
 			var div = $("#plotline" + this.plot.id + this.id + 'list').append('<div class="plotLine" style="color:' + this.color + '"/>').children().last()
 					.append('<a href="" style="color:' + this.color + '"/>');
 			div.append(escapehtml(tag)).append('<span class="plotLine"><a href="#" style="padding-left:8px;color:#999999" onclick="removeTagNameFromLine(\'' + this.plot.id + "','" + this.id + '\', \'' + addslashes(tag) + '\')"><img height="12" width="12" src="/images/x.gif"/></a></span>');

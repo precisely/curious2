@@ -337,7 +337,7 @@ class UserGroup {
 
 			User user = User.get(userId)
 
-			user.notifyEmail("You've been invited to " + fullName, "You're now a member of " + fullName + " on We Are Curious.")
+			user.notifyEmail("You've been invited to " + fullName, "You're now a member of " + fullName + " on precise.ly.")
 		}
 
 		def invitedAdminIds = GroupMemberInvitedAdmin.lookupMemberIds(this.id)
@@ -350,7 +350,7 @@ class UserGroup {
 
 			User user = User.get(userId)
 
-			user.notifyEmail("You've been invited to be an administrator of " + fullName, "You're now an administrator of " + fullName + " on We Are Curious.")
+			user.notifyEmail("You've been invited to be an administrator of " + fullName, "You're now an administrator of " + fullName + " on precise.ly.")
 		}
 	}
 
@@ -800,12 +800,12 @@ class UserGroup {
 	static UserGroup getDefaultGroupForUser(User user) {
 		def defaultGroup = GroupMemberDefaultFor.lookupGroup(user)
 		if (!defaultGroup) {
-			UserGroup curious = UserGroup.findByName("curious")
-			if (!curious) {
-				curious = UserGroup.create("curious", "Curious Discussions", "Discussion topics for Curious users",
+			UserGroup precisely = UserGroup.findByName("precise.ly")
+			if (!precisely) {
+				curious = UserGroup.create("precise.ly", "precise.ly Discussions", "Discussion topics for precise.ly users",
 								[isReadOnly:false, defaultNotify:false])
 			}
-			defaultGroup = curious
+			defaultGroup = precisely
 			defaultGroup.addMember(user)
 			defaultGroup.addDefaultFor(user)
 			defaultGroup.addWriter(user)

@@ -103,8 +103,8 @@ class Utils {
 		}
 		try {
 			if (!obj.save(flush: flush)) {
-				def messageBody = "Error saving while executing Curious app:\n" + obj.errors + "\n" + Arrays.toString(new Exception().getStackTrace())
-				reportError("CURIOUS SERVER SAVE ERROR", messageBody)
+				def messageBody = "Error saving while executing precise.ly app:\n" + obj.errors + "\n" + Arrays.toString(new Exception().getStackTrace())
+				reportError("precise.ly SERVER SAVE ERROR", messageBody)
 				
 				return null
 			} else {
@@ -116,8 +116,8 @@ class Utils {
 			def merged = obj.merge() // avoid hibernate errors - we don't care about transactions in our app
 			try {
 				if (!merged.save(flush: flush)) {
-					def messageBody = "Error saving while executing Curious app:\n" + merged.errors + "\n" + Arrays.toString(new Exception().getStackTrace())
-					reportError("CURIOUS SERVER SAVE ERROR", messageBody)
+					def messageBody = "Error saving while executing precise.ly app:\n" + merged.errors + "\n" + Arrays.toString(new Exception().getStackTrace())
+					reportError("precise.ly SERVER SAVE ERROR", messageBody)
 					
 					return null
 				} else {
@@ -125,7 +125,7 @@ class Utils {
 					SearchService.get()?.index(merged)
 				}
 			} catch (org.springframework.dao.DuplicateKeyException t) {
-				reportError("CURIOUS SERVER FINAL SAVE ERROR", t)
+				reportError("precise.ly SERVER FINAL SAVE ERROR", t)
 			}
 			return merged
 		}

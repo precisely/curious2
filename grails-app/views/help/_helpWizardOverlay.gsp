@@ -16,9 +16,9 @@
 							<div>
 								<small>Welcome to</small>
 							</div>
-							<h4 class="company-name">We Are Curious!</h4>
+							<h4 class="company-name">precise.ly!</h4>
 							<div>
-								We Are Curious helps you investigate <strong>questions</strong> about yourself.
+								precise.ly helps you investigate <strong>questions</strong> about yourself.
 								For example,<br><br>
 								<ul class="ul-fix">
 									<li>Does caffeine affect my sleep?</li>
@@ -55,7 +55,7 @@
 							<div class="item sleep">
 								<h4>Let's get started with three painless questions.</h4>
 								<p class="sub-heading">
-									These will help illustrate the Curious tracking feature.
+									These will help illustrate the precise.ly tracking feature.
 								</p>
 								<hr>
 								<h3 class="questions">

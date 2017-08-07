@@ -250,7 +250,7 @@ environments {
 		
         grails.logging.jul.usebridge = false
 		// serverUrl now must be specified in LocalConfig.groovy
-        //grails.serverURL = "https://qa.wearecurio.us/"
+        //grails.serverURL = "https://qa.precise.ly/"
 		grails.serverURLProtocol = "https"
 		facebookAppId = "174406919567104"
 		
@@ -396,7 +396,7 @@ environments {
     production {
 		grails.mail.disabled=false
         grails.logging.jul.usebridge = false
-        grails.serverURL = "https://www.wearecurio.us/"
+        grails.serverURL = "https://www.precise.ly/"
 		grails.serverURLProtocol = "https"
 		def extConfig = System.properties.getProperty('CURIOUSCONFIGHOME');
 		if (!extConfig) extConfig = "/home/curious/localconfig"

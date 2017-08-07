@@ -105,7 +105,7 @@ $(function(){
 
 <hgroup>
 <h1 id="project_desc">Project Description</a></h1>
-<p id = "who_is_curious">Curious Inc. is currently developing a platform for gathering and visualizing personal data, especially as it relates to health and well-being. As part of a collaborative project with the <a href="http://www.lgmd2ifund.org/">LGMD2I Research Fund</a>, we are inviting you to explore this platform as part of our ongoing software user experience studies. </p>
+<p id = "who_is_curious">Precise.ly Inc. is currently developing a platform for gathering and visualizing personal data, especially as it relates to health and well-being. As part of a collaborative project with the <a href="http://www.lgmd2ifund.org/">LGMD2I Research Fund</a>, we are inviting you to explore this platform as part of our ongoing software user experience studies. </p>
 <p id = "what_is_the_project">
 As a research participant, you will be interacting with an early version of the platform. You may be asked to track health-related issues (e.g. sleep or rest), exercise habits, or health-related events. We will refer to these health-related issues as "tags" in the instructions. In addition, you will be urged to use the platform’s data visualization features, such as the graphing tool.  During interviews with our researcher, you will be encouraged to give candid feedback about features, screens, and basic functionality. </p>
 
@@ -113,7 +113,7 @@ As a research participant, you will be interacting with an early version of the 
 
 
 <p id = "thank_you">
-The Curious software team and the LGMD2i fund would like to thank you in advance for your time. We deeply appreciate your taking part in this program, and we genuinely value your commentary throughout the process-- not just during the interviews. If you have questions or want to discuss anything about the project, please do not hesitate to contact us. 
+The precise.ly software team and the LGMD2i fund would like to thank you in advance for your time. We deeply appreciate your taking part in this program, and we genuinely value your commentary throughout the process-- not just during the interviews. If you have questions or want to discuss anything about the project, please do not hesitate to contact us.
 </p>
 
 <div class="section">
@@ -141,7 +141,7 @@ The goals of our collaborative effort are the following:
  </p>
  
 <p id = "walk_thru">
-The researcher may ask you to perform a set of tasks using the Curious platform.  It's very important that you keep talking, even as you are performing these tasks, especially when you become stuck. We call this process "thinking aloud." When you remember to think aloud, you play a crucial role in the software development. We get quality information from participants that helps us improve the product.</p>
+The researcher may ask you to perform a set of tasks using the precise.ly platform.  It's very important that you keep talking, even as you are performing these tasks, especially when you become stuck. We call this process "thinking aloud." When you remember to think aloud, you play a crucial role in the software development. We get quality information from participants that helps us improve the product.</p>
 
 
 <p id = "exit_interview">You will use the product by entering (i.e. tracking) your tags daily. After you have used the product for a period of time, the researchers will schedule an exit interview. This interview helps us understand your experience using the software. Please remember that throughout this process there are <b>NO WRONG ANSWERS</b>. You are not being evaluated-- the software is. You can be as candid as you prefer. We don't mind. In fact, we encourage it!</p>

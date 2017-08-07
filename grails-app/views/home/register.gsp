@@ -1,7 +1,7 @@
 <html>
 	<head>
 		<meta name="layout" content="home" />
-		<title>Signup - We Are Curious</title>
+		<title>Signup - precise.ly</title>
 		<script type="text/javascript" src="/js/jquery/jquery.validate.min.js"></script>
 		<script type="text/javascript" src="/js/jquery/signup.form.js"></script>
 		<c:jsCSRFToken keys="requestTrackingProjectDataCSRF"/>
@@ -100,7 +100,7 @@
 							<input type="hidden" name="groups" value="['announce','lhp','lhp announce']">
 						</g:if>
 						<g:else>
-							<input type="hidden" name="groups" value="['announce','curious','curious announce']">
+							<input type="hidden" name="groups" value="['announce','precise.ly','precise.ly announce']">
 						</g:else>
 
 						<div class="clearfix">

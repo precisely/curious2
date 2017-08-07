@@ -1,7 +1,7 @@
 <html>
 <head>
     <meta name="layout" content="home" />
-    <title>Recover Password - We Are Curious</title>
+    <title>Recover Password - precise.ly</title>
 </head>
 <body>
     <br>

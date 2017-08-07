@@ -109,7 +109,7 @@ class OAuthAccount {
 		if (!user) return
 		String email = user.email
 		log.debug "Trying to send notification email for OAuthAccount failure to " + email
-		def messageBody = "Your " + typeId.getTextName() + " account has had a synchronization failure. Please log into your We Are Curious account and re-link your external account from your user profile to resume data synchronization."
+		def messageBody = "Your " + typeId.getTextName() + " account has had a synchronization failure. Please log into your precise.ly account and re-link your external account from your user profile to resume data synchronization."
 		
 		def messageSubject = "Your " + typeId.getTextName() + " external account needs to be re-linked"
 		EmailService.get().send(email, messageSubject, messageBody)

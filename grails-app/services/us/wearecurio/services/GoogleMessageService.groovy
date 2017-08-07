@@ -26,7 +26,7 @@ class GoogleMessageService {
 		Sender sender = new Sender(gcmConfig.senderID)
 
 		customPayLoad.message = messageTxt
-		customPayLoad.title = "We Are Curious"
+		customPayLoad.title = "precise.ly"
 		customPayLoad.image = 'www/content/images/notification-icon.png'
 		customPayLoad["content-available"] = "1"
 

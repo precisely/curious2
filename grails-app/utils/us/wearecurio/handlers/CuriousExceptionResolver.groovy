@@ -34,7 +34,7 @@ class CuriousExceptionResolver extends GrailsExceptionResolver {
 		log.error("INTERCEPTED EXCEPTION")
 		log.error(output)
 	   
-	   	def messageBody = "Error while executing Curious app:\n" + output
+	   	def messageBody = "Error while executing precise.ly app:\n" + output
 		def messageSubject = "CURIOUS SERVER ERROR: " + GrailsUtil.environment
 		EmailService.get().sendEmail {
 			to "server@wearecurio.us"

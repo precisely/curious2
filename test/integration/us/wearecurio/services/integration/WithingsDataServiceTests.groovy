@@ -325,7 +325,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		assert result.callbackurl.contains("http://") == true
 
 		when:
-		grailsApplication.config.grails.serverURL = "https://dev.wearecurio.us/"
+		grailsApplication.config.grails.serverURL = "https://dev.precise.ly/"
 		result = withingsDataService.getSubscriptionParameters(account, false)
 
 		then:

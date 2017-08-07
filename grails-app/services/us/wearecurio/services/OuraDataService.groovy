@@ -418,7 +418,7 @@ class OuraDataService extends DataService {
 		log.warn warnMessage
 
 		['vishesh@causecode.com', 'mitsu@wearecurio.us', 'developers@causecode.com'].each { String toEmail ->
-			emailService.send(toEmail, '[Curious] - Oura Sync Issue', warnMessage)
+			emailService.send(toEmail, '[precise.ly] - Oura Sync Issue', warnMessage)
 		}
 	}
 
