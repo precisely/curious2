@@ -4691,7 +4691,8 @@ input[type = "number"] {
 }
 
 .user-description {
-    word-wrap: break-word;
+	word-wrap: break-word;
+
 	color: #696969;
 	font-weight: 300;
 	text-align: center;

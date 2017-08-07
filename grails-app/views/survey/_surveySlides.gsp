@@ -44,3 +44,9 @@
 
 	</div>
 </g:each>
+<script type = "text/javascript">
+	$("input[type=radio]").click(function(){
+		$("input[type=radio]").attr('checked', false);
+		$(this).attr('checked', true);
+	});
+</script>
