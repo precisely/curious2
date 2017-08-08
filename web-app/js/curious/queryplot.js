@@ -602,6 +602,12 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 
 		var maxId = -1;
 
+		var minMin = undefined;
+		var maxMax = undefined;
+        var minScale = undefined;
+        var maxScale = undefined;
+		var maxRange = 0;
+
 		for (i in this.lines) {
 			var line = this.lines[i];
 
@@ -649,7 +655,61 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 					line.scaleMin = 0;
 				}
 			}
+
+			if (minMin == undefined) {
+			    minMin = line.minTotal;
+			    maxMax = line.maxTotal;
+			    minScale = line.scaleMin;
+			    maxScale = line.scaleMax;
+            } else {
+			    if (minMin > line.minTotal)
+			        minMin = line.minTotal;
+			    if (maxMax < line.maxTotal)
+			        maxMax = line.maxTotal;
+			    if (minScale > line.scaleMin)
+			        minScale = line.scaleMin;
+			    if (maxScale < line.scaleMax)
+			        maxScale = line.scaleMax;
+            }
+
+            var range = line.maxTotal - line.minTotal;
+            if (maxRange < range)
+                maxRange = range;
 		}
+
+		// ad hoc rules for determining if we use the same scale for all lines, or a different scale for all lines
+		var sameScale = true;
+
+        for (i in this.lines) {
+            var line = this.lines[i];
+            var range = line.maxTotal - line.minTotal;
+
+            // if there's no variation in the line, or if the line has only a couple of data points, don't use it to determine scale
+            if (range == 0 || line.plotData.length < 3)
+                continue;
+
+            // if there are many points in the line and the variation is much smaller than the max, use different scales per line
+            if (line.plotData.length > 6) {
+                if (range < maxRange / 20) {
+                    sameScale = false;
+                    break;
+                }
+            }
+
+            // if there are several points in the line the variation must be very tiny to disrupt the same scale rule
+            if (range < maxRange / 40) {
+                sameScale = false;
+                break;
+            }
+        }
+
+        if (sameScale) {
+            for (i in this.lines) {
+                var line = this.lines[i];
+                line.scaleMin = minScale;
+                line.scaleMax = maxScale;
+            }
+        }
 
 		for (i in this.lines) {
 			var line = this.lines[i];
@@ -667,7 +727,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			var rangeLine = line.isSmoothLine() ? line.parentLine : line;
 			yaxes[line.id] = { show: line.yAxisVisible(),
 				position: 'left', tickDecimals: 1 };
-			if (!rangeLine.isContinuous) {
+			if ((!rangeLine.isContinuous) || (sameScale)) {
 				var min = rangeLine.scaleMin;
 				yaxes[line.id]['min'] = min;
 				yaxes[line.id]['max'] = (rangeLine.scaleMax - min) * 1.1 + min + 0.5;
