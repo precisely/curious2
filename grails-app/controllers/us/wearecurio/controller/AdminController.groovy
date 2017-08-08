@@ -1,5 +1,6 @@
 package us.wearecurio.controller
 
+import org.grails.plugins.elasticsearch.ElasticSearchService
 import us.wearecurio.model.UpdateSubscription
 import java.text.SimpleDateFormat
 import org.springframework.web.multipart.MultipartFile
@@ -16,6 +17,7 @@ class AdminController extends LoginController {
 
 	def databaseService
 	TagInputTypeService tagInputTypeService
+	ElasticSearchService elasticSearchService
 
 	def dashboard() {
 	}
@@ -152,6 +154,26 @@ class AdminController extends LoginController {
 
 	def uploadTagInputTypeCSV() {
 		render(view: 'uploadTagInputTypeCSV')
+	}
+
+	def esReindex() {
+		log.debug("Elastic Search Reindexing..")
+
+		Thread.start {
+			/**
+			 * Unindexes all searchable instances of the specified class.
+			 * If call without arguments, unindex ALL searchable instances.
+			 */
+			elasticSearchService.unindex()
+
+			/**
+			 * Indexes all searchable instances of the specified class.
+			 * If call without arguments, index ALL searchable instances.
+			 */
+			elasticSearchService.index()
+		}
+
+		render "Reindexing in progress.."
 	}
 
 	/**

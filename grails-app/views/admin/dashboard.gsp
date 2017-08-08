@@ -31,6 +31,9 @@
 			<li>
 				<g:link controller="admin" action="subscriptions" >Subscription</g:link>
 			</li>
+			<li>
+				<g:link controller="admin" action="esReindex">Elastic Search Reindex</g:link>
+			</li>
 		</ul>
 	</body>
 </html>
