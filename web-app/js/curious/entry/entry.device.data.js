@@ -48,10 +48,10 @@ function EntryDeviceData(deviceEntries, savedStates) {
 				return;
 			}
 
-			//Below is the code to round off the values to 2 decimal places if the value is not a whole number.
+			//Below is the code to round off the values to 1 decimal places if the value is not a whole number.
 			for (let key in entry.amounts) {
 				if (Math.floor(entry.amounts[key].amount) !== entry.amounts[key].amount) {
-					entry.amounts[key].amount = entry.amounts[key].amount.toFixed(2);
+					entry.amounts[key].amount = entry.amounts[key].amount.toFixed(1);
 				}
 			}
 
