@@ -1130,6 +1130,7 @@ class MigrationService {
 		}
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 // - - - - - - - - - - - - Migration to send an email to notify about maintenance - - - - - - - - - - - - - - - - - - -
 		tryMigration('Send site maintenance email to the users') {
 			List emailList = sqlRows('SELECT email FROM curious._user where email_verified=2 and virtual=0');
@@ -1146,6 +1147,14 @@ class MigrationService {
 							" too!\n\nThanks,\nWe Are Curious team"
 				}
 			}
+		}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// - - - - - - - - - - - Migrations to update tag, baseTag and unit for Oura lowest heart rate entries - - - - - - - - -
+
+		tryMigration("Update Oura lowest heart rate entries") {
+			sql("UPDATE entry set base_tag_id = 25853, tag_id = 25854, units = 'bpm sleep' where base_tag_id = 2 and " +
+					"tag_id = 24982 and units = 'bpm lowest'")
 		}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	}

@@ -135,12 +135,12 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		String mockedResponseData = """{sleep: [
 				{summary_date: "2015-11-04", timezone: "60",
 				bedtime_start: "2016-09-03T23:50:09+01:00", score: 86, awake: 52, rem: 78, light: 220,
-				deep: 160, hr_low_duration: 1170, hypnogram_5min: '42441112424444422222211', rmssd: 54, score_total:
+				deep: 160, hr_low_duration: 1170, hypnogram_5min: '42441112424444422222211', rmssd: 52, score_total:
 				82, score_alignment: 38, score_efficiency: 98, got_up_count: 1, hr_10min: [255, 75, 54, 54, 56, 56,
 				57, 56, 55], "temperature_max_delta": 103, score_disturbances: 76, total: 23820, rmssd_5min:
 				[50, 62, 51, 55, 69, 68, 63, 53], bedtime_end: "2016-09-04T08:39:57+01:00", restless: 43,
 				duration: 25680, hr_5min: [60, 60, 55, 55, 53, 54, 54], score_rem: 93, period_id: 0,
-				wake_up_count: 1, hr_average: 56.875, onset_latency: 630, hr_lowest: 52, is_longest: 1, rem_rmssd: 44,
+				wake_up_count: 1, hr_average: 56.875, onset_latency: 630, hr_lowest: 51, is_longest: 1, rem_rmssd: 44,
 				nrem_rmssd: 56, midpoint_time: 7, score_deep: 49, score_latency: 93, efficiency: 93},
 
 				{summary_date: "2015-11-03", timezone: "330", bedtime_start: "2016-09-02T23:50:09+05:30", score: 80,
@@ -150,7 +150,7 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 				score_disturbances: 76, total: 33823, rmssd_5min: [50, 62, 51, 55, 69, 68, 63, 53], bedtime_end:
 				"2016-09-03T08:39:57+01:00", restless: 43, duration: 25680, hr_5min: [60, 60, 55, 55, 53, 54, 54],
 				score_rem: 95, period_id: 0, wake_up_count: 2, hr_average: 56.875, onset_latency: 630,
-				hr_lowest: 54, is_longest: 1, rem_rmssd: 44, nrem_rmssd: 56, midpoint_time: 7, score_deep: 49,
+				hr_lowest: 53, is_longest: 1, rem_rmssd: 44, nrem_rmssd: 56, midpoint_time: 7, score_deep: 49,
 				score_latency: 93, efficiency: 93}
 				]}"""
 
@@ -196,7 +196,7 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList[0].setIdentifier.value == "Oura"
 
 		entryList[15].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList[15].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList[15].amount == new BigDecimal(53).setScale(9, BigDecimal.ROUND_HALF_EVEN)   // hr_lowest
 		entryList[15].units == 'bpm sleep'
 		entryList[15].baseTag == Tag.findByDescription('heart rate lowest')
 
@@ -207,10 +207,13 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList[16].setIdentifier.value == "Oura"
 
 		entryList[17].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList[17].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList[17].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)   // rmssd
 		entryList[17].units == 'bpm sleep'
 		entryList[17].baseTag == Tag.findByDescription('heart rate variability')
 		entryList[17].setIdentifier.value == "Oura"
+
+		entryList[6].amount != entryList[8].amount        // hr_lowest and rmssd are not equal
+		entryList[15].amount != entryList[17].amount      // hr_lowest and rmssd are not equal
 
 		when: 'The same data with same DataRequestContext is re-imported.'
 		// Reset the lastData and lastPolled to same state.
@@ -234,7 +237,7 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList1[0].setIdentifier.value == "Oura"
 
 		entryList1[15].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList1[15].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[15].amount == new BigDecimal(53).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList1[15].units == 'bpm sleep'
 		entryList1[15].baseTag == Tag.findByDescription('heart rate lowest')
 		entryList1[15].setIdentifier.value == "Oura"
@@ -246,6 +249,9 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList1[17].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList1[17].units == 'bpm sleep'
 		entryList1[17].baseTag == Tag.findByDescription('heart rate variability')
+
+		entryList[6].amount != entryList[8].amount
+		entryList[15].amount != entryList[17].amount
 
 		when: 'The same data with same DataRequestContext but updated lastData and lastPolled is re-imported.'
 		ouraDataService.getDataSleep(account, mockDate, false, dataRequestContext)
@@ -263,7 +269,7 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList2[0].setIdentifier.value == "Oura"
 
 		entryList2[15].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList2[15].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList2[15].amount == new BigDecimal(53).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList2[15].units == 'bpm sleep'
 		entryList2[15].baseTag == Tag.findByDescription('heart rate lowest')
 		entryList2[15].setIdentifier.value == "Oura"
@@ -275,6 +281,9 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList2[17].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList2[17].units == 'bpm sleep'
 		entryList2[17].baseTag == Tag.findByDescription('heart rate variability')
+
+		entryList[6].amount != entryList[8].amount
+		entryList[15].amount != entryList[17].amount
 
 		when: 'The same data with new DataRequestContext is re-imported.'
 		// Reset the lastData and lastPolled to same state.
@@ -298,10 +307,13 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		entryList3[0].setIdentifier.value == "Oura"
 
 		entryList3[15].timeZoneId == TimeZoneId.look("+05:30").id
-		entryList[15].amount == new BigDecimal(54).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList[15].amount == new BigDecimal(53).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList[15].units == 'bpm sleep'
 		entryList[15].baseTag == Tag.findByDescription('heart rate lowest')
 		entryList[15].setIdentifier.value == "Oura"
+
+		entryList[6].amount != entryList[8].amount
+		entryList[15].amount != entryList[17].amount
 	}
 
 	void "Test getDataActivity method to successfully create entries for activity data"() {
