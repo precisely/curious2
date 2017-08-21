@@ -177,7 +177,7 @@ abstract class TagUnitMap {
 
 		parsedEntry.putAll(args)
 
-		Entry e = context?.entryAlreadyExists(parsedEntry, tag.id)
+		Entry e = context?.entryAlreadyExists(parsedEntry)
 
 		if (!e) {
 			e = Entry.updatePartialOrCreate(userId, parsedEntry, creationMap.groupForDate(date, baseTag?.description), stats)
