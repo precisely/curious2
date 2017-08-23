@@ -1157,5 +1157,12 @@ class MigrationService {
 					"tag_id = 24982 and units = 'bpm lowest'")
 		}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// - - - - - - - - - - - - - - - - Migrations to add Linda as admin to System group - - - - - - - - - - - - - - - - - -
+
+		tryMigration("Add Linda as admin to System group") {
+			UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME).addAdmin(User.findByUsername("linda"))
+		}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	}
 }
