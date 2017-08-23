@@ -158,6 +158,10 @@ class WithingsDataService extends DataService {
 							tagKey = "heartRate"
 							break
 
+						case 71: // temperature
+							tagKey = "temperature"
+							break
+
 						default:
 							continue
 					}

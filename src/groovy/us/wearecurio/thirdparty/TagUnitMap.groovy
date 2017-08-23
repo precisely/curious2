@@ -93,6 +93,7 @@ abstract class TagUnitMap {
 			height: [tag: "height", unit: "feet", amountPrecision: 5, convert: true, from: "meters"],
 			steps: [tag: "$ACTIVITY", unit: "steps"],	// @Deprecated. Use `activitySteps` instead.
 			weight: [tag: "total weight", unit: "lbs", amountPrecision: 2, convert: true, from: "kg"],
+			temperature: [tag: "temperature", unit: "celsius", amountPrecision: 2],
 		]
 	}
 

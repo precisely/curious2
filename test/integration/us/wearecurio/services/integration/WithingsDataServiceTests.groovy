@@ -369,17 +369,18 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 				"grpid": 2909, "attrib": 0, "date": 1222930968, "category": 1, "measures": [{ "value": 79300, 
 				"type": 1, "unit": -3 }, { "value": 652, "type": 5, "unit": -1 }, { "value": 178, "type": 6, 
 				"unit": -1 }, { "value": 14125, "type": 8, "unit": -3 }, { "value": 80808, "type": 1, "unit": -3 }, 
-				{ "value": 15436, "type": 8, "unit": -3 } ]} ]} }"""
+				{ "value": 15436, "type": 8, "unit": -3 } ]}, {"grpid": 885340177,"date": 1503466680,"measures": [{
+				"unit": -2,"type": 71,"value": 3600}],"attrib": 2,"category": 1} ]} }"""
 
 		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(newMockedResponseData))
 		setWithingsResourceRepsone(new MockedHttpURLConnection(newMockedResponseData))
 		withingsDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
 
 		then: 'More entries should be created and existing entries should not be modified'
-		assert Entry.count() == 4
+		assert Entry.count() == 5
 
 		List<Entry> entryList1 = Entry.getAll()
-		entryList1.size() == 4
+		entryList1.size() == 5
 
 		entryList1[0].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
 		entryList1[0].setIdentifier.value == "Withings"
@@ -405,6 +406,12 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		entryList1[3].amount == new BigDecimal(122510.09718 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
 		entryList1[3].units == 'lbs'
 
+		entryList1[4].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList1[4].setIdentifier.value == "Withings"
+		entryList1[4].description == "temperature celsius"
+		entryList1[4].amount == new BigDecimal(36).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[4].units == 'celsius'
+
 		when: 'Data is re-polled with updated values for previous data'
 		String updatedMockedResponseData = """{
 				"status": 0, "body": { "updatetime": 1249409679, "timezone": "Europe/Paris", "measuregrps": [{ 
@@ -419,10 +426,10 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		withingsDataService.getDataDefault(account, entryList1[0].date, null, false, dataRequestContext)
 
 		then: 'Entries should be updated'
-		assert Entry.count() == 4
+		assert Entry.count() == 5
 
 		List<Entry> entryList2 = Entry.getAll()
-		entryList2.size() == 4
+		entryList2.size() == 5
 
 		entryList2[0].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
 		entryList2[0].setIdentifier.value == "Withings"
