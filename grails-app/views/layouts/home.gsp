@@ -37,7 +37,6 @@
 			<ul class="mainLinks headerLinks">
 				<li><a href="/home/login">HOME</a></li>
 				<li><a href="https://www.precise.ly/home/login/#features">FEATURES</a></li>
-				<li><a href="https://www.precise.ly/blog">BLOG</a></li>
 				<li style="display: none;"><a href="#">LEARN</a></li>
 				<li>
 					<g:form url="[controller: 'home', action: 'login']">

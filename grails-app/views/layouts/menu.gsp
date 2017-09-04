@@ -160,7 +160,6 @@
 	       	<li> <span class="ul-head">Follow</span><br></li>
 	       		<li ><a href="https://geo.itunes.apple.com/us/app/we-are-curious/id1063805457?mt=8">iOS App</a></li>
 				<li ><a href="https://play.google.com/store/apps/details?id=us.wearecurio.app">Android App</a></li>
-	       		<li ><a href="http://www.precise.ly/blog/">Blog</a></li>
 	       		<li ><a href="https://twitter.com/preciselywell">Twitter</a> </li>
 	       		<li ><a href="https://facebook.com/precise.ly">Facebook</a> </li>
 	       	</ul>
