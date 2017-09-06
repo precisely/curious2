@@ -134,7 +134,7 @@ InterestTagList.prototype.refresh = function() {
 };
 
 InterestTagList.prototype.addInterestTag = function(tagName, tagStatus) {
-	queueJSON("adding new interest tag", "/profileTag/addInterestTag?tagName=" + tagName + "&" + "tagStatus=" +
+	queueJSON("adding new interest tag", "/profileTag/addInterestTag?tagNames=" + tagName + "&" + "tagStatus=" +
 			tagStatus + "&" + getCSRFPreventionURI("addInterestTagCSRF") + "&callback=?",
 			function(data) {
 				if (data.success) {
@@ -144,7 +144,7 @@ InterestTagList.prototype.addInterestTag = function(tagName, tagStatus) {
 						this.publicInterestTags.push(data.profileTag);
 					}
 
-					this.addTag(data.profileTag);
+					this.addTag(data.profileTag[0]);
 				}
 			}.bind(this)
 	);

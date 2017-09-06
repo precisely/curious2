@@ -3374,7 +3374,7 @@ body {
 	font-weight: 700;
 }
 
-.discussion-topic a:hover {
+.discussion-topic a span:hover {
 	text-decoration: underline;
 }
 

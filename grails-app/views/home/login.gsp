@@ -296,7 +296,7 @@
 						<input type="email" class="form-control" id="email">
 					</div>
 					<div class="form-group">
-						<input class="btn" type="submit" value="Submit" />
+						<input class="btn btn-red btn-flat" type="submit" value="Submit" />
 					</div>
 				</form>
 			</div>

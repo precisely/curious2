@@ -45,8 +45,9 @@ class ProfileTagController extends LoginController {
 		ProfileTagStatus status = params.tagStatus as ProfileTagStatus
 		List<String> errorTagsList = []
 		List<ProfileTag> newProfileTags = []
+		List<String> tagNames = params.tagNames.split(',')
 
-		params.tagNames.each { tagName ->
+		tagNames.each { tagName ->
 			Tag newTag = Tag.look(tagName.toLowerCase().trim())
 
 			ProfileTag newProfileTag = ProfileTag.addInterestTag(newTag, user.id, status, true)
