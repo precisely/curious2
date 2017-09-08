@@ -1164,5 +1164,26 @@ class MigrationService {
 			UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME).addAdmin(User.findByUsername("linda"))
 		}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// - - - - - - - - - - - Migrations to update tag and base tag ids for weight and fat mass entries - - - - - - - - - - -
+
+		tryMigration("Update tag and base tag ids for weight and fat mass entries") {
+			Long weightBaseTagId = Tag.look("weight").id
+			Long weightTagId = Tag.look("weight [amount]").id
+			Long totalWeightBaseTagId = Tag.look("total weight").id
+			Long totalWeightTagId = Tag.look("total weight [amount]").id
+
+			Long fatMassBaseTagId = Tag.look("fat mass").id
+			Long fatMassTagId = Tag.look("fat mass [amount]").id
+			Long fatWeightBaseTagId = Tag.look("fat weight").id
+			Long fatWeightTagId = Tag.look("fat weight [amount]").id
+
+			sql("UPDATE entry set base_tag_id = ${totalWeightBaseTagId}, tag_id = ${totalWeightTagId} " +
+					"where base_tag_id = ${weightBaseTagId} and tag_id = ${weightTagId} and units = 'lbs'")
+
+			sql("UPDATE entry set base_tag_id = ${fatWeightBaseTagId}, tag_id = ${fatWeightTagId} " +
+					"where base_tag_id = ${fatMassBaseTagId} and tag_id = ${fatMassTagId} and units = 'lbs'")
+		}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	}
 }

@@ -129,6 +129,7 @@ class WithingsDataService extends DataService {
 				JSONArray measures = group.measures
 
 				for (measure in measures) {
+					// Unit is a negative number indicating scale of the value.
 					BigDecimal value = new BigDecimal(measure.value * 10.power(measure.unit))
 					log.debug "type: " + measure.type + " value: " + value
 					String tagKey
