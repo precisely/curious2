@@ -6,7 +6,6 @@ import groovy.transform.Synchronized
 import us.wearecurio.datetime.DateUtils
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
-
 import javax.annotation.PostConstruct
 
 import org.apache.commons.logging.LogFactory
@@ -103,7 +102,7 @@ abstract class DataService {
 			if (entriesAvailableInPollRange) {
 				entry = entriesInPollRange.find {
 					(it.units == entryMap.amount["units"] && !it.date.compareTo(entryMap.date) &&
-							it.setIdentifier.toString() == entryMap.setName)
+							it.setIdentifier.toString() == entryMap.setName && it.tag == entryMap.amount.tag)
 				}
 			}
 			return entry
