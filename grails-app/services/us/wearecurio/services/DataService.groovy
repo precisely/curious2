@@ -6,7 +6,6 @@ import groovy.transform.Synchronized
 import us.wearecurio.datetime.DateUtils
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
-
 import javax.annotation.PostConstruct
 
 import org.apache.commons.logging.LogFactory

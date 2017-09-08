@@ -101,8 +101,8 @@ function EntryDeviceDataSummary(deviceTagEntries) {
 
 			// If there is decimal value
 			if ((calculatedAmount.amount % 1) !== 0) {
-				// Then only round to 2 decimal
-				calculatedAmount.amount = calculatedAmount.amount.toFixed(2);
+				// Then only round to 1 decimal
+				calculatedAmount.amount = calculatedAmount.amount.toFixed(1);
 			}
 			aggregateIndex++;
 		}

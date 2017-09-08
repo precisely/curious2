@@ -129,7 +129,7 @@ class WithingsDataService extends DataService {
 				JSONArray measures = group.measures
 
 				for (measure in measures) {
-					BigDecimal value = new BigDecimal(measure.value, -measure.unit)
+					BigDecimal value = new BigDecimal(measure.value * 10.power(measure.unit))
 					log.debug "type: " + measure.type + " value: " + value
 					String tagKey
 
@@ -140,14 +140,6 @@ class WithingsDataService extends DataService {
 
 						case 4: // height (m)
 							tagKey = "height"
-							break
-
-						case 5: // fat free mass (kg)
-							tagKey = "fatFreeMass"
-							break
-
-						case 6: // fat ratio (%)
-							tagKey = "fatRatio"
 							break
 
 						case 8: // fat mass weight (kg)
@@ -165,6 +157,13 @@ class WithingsDataService extends DataService {
 						case 11: // pulse (bpm)
 							tagKey = "heartRate"
 							break
+
+						case 71: // temperature
+							tagKey = "temperature"
+							break
+
+						default:
+							continue
 					}
 					tagUnitMap.buildEntry(creationMap, stats, tagKey, value, userId, timeZoneId, date, COMMENT,
 							setName, context)
