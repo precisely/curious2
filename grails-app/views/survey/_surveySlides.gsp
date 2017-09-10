@@ -37,7 +37,7 @@
 		</g:if>
 		<g:else>
 			<div>
-				<textarea name="answerText${index}" id="descriptiveArea"maxlength="2000" value=" " ${questionInstance.isRequired ? 'required' : ''}>
+				<textarea name="answerText${index}" id="descriptiveArea" maxlength="2000" ${questionInstance.isRequired ? 'required' : ''}/>>
 				</textarea>
 			</div>
 		</g:else>
@@ -48,9 +48,5 @@
 	$("input[type=radio]").click(function(){
 		$("input[type=radio]").attr('checked', false);
 		$(this).attr('checked', true);
-	});
-
-	$("#descriptiveArea").click(function(){
-		$(this).val('');
 	});
 </script>
