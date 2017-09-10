@@ -129,8 +129,17 @@ class WithingsDataService extends DataService {
 				JSONArray measures = group.measures
 
 				for (measure in measures) {
+					int unit = measure.unit
+
+					if (unit.compareTo(0) >= 0) {
+						log.debug("Error creating Withings data entry for UserId ${userId}. Found positive value of" +
+								" unit in polled data - " + measure)
+
+						continue
+					}
+
 					// Unit is a negative number indicating scale of the value.
-					BigDecimal value = new BigDecimal(measure.value * 10.power(measure.unit))
+					BigDecimal value = new BigDecimal(measure.value * 10.power(unit))
 					log.debug "type: " + measure.type + " value: " + value
 					String tagKey
 

@@ -337,8 +337,9 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		given: 'API response data'
 		String mockedResponseData = """{
 				"status": 0, "body": { "updatetime": 1249409679, "timezone": "Europe/Paris", "measuregrps": [{ 
-				"grpid": 2909, "attrib": 0, "date": 1222930968, "category": 1, "measures": [{ "value": 79300, 				"type":1, "unit": -3 }, { "value": 652, "type": 5, "unit": -1 }, { "value": 178, "type": 6, 
-				"unit": -1 }, { "value": 14125, "type": 8, "unit": -3 } ]} ]} }"""
+				"grpid": 2909, "attrib": 0, "date": 1222930968, "category": 1, "measures": [{ "value": 79300,
+				"type":1, "unit": -3 }, { "value": 23142, "type": 4, "unit": 2 }, { "value": 652, "type": 5, "unit":
+				 -1 }, { "value": 178, "type": 6, "unit": -1 }, { "value": 14125, "type": 8, "unit": -3 } ]} ]} }"""
 
 		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(mockedResponseData))
 		setWithingsResourceRepsone(new MockedHttpURLConnection(mockedResponseData))
@@ -349,7 +350,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 
 		then: 'Entries should be created successfully'
 		List<Entry> entryList = Entry.getAll()
-		entryList.size() == 2
+		entryList.size() == 2  // Entry won't be created for height (type = 4) since unit is positive.
 
 		entryList[0].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
 		entryList[0].setIdentifier.value == "Withings"
@@ -415,7 +416,8 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		when: 'Data is re-polled with updated values for previous data'
 		String updatedMockedResponseData = """{
 				"status": 0, "body": { "updatetime": 1249409679, "timezone": "Europe/Paris", "measuregrps": [{ 
-				"grpid": 2909, "attrib": 0, "date": 1222930968, "category": 1, "measures": [{ "value": 84300, "type":1,                "unit": -3 }, { "value": 652, "type": 5, "unit": -1 }, { "value": 178, "type": 6, "unit": -1 }, { 
+				"grpid": 2909, "attrib": 0, "date": 1222930968, "category": 1, "measures": [{ "value": 84300, "type":1,
+				"unit": -3 }, { "value": 652, "type": 5, "unit": -1 }, { "value": 178, "type": 6, "unit": -1 }, {
 				"value": 19225, "type": 8, "unit": -3 } ]} ]} }"""
 
 		DataRequestContext dataRequestContext = new DataRequestContext(entryList1[0].date, null,
