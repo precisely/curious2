@@ -4,6 +4,7 @@ import org.apache.commons.logging.LogFactory
 import org.scribe.model.Response
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Entry
+import us.wearecurio.model.Identifier
 import us.wearecurio.model.IntraDayQueueItem
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
@@ -23,7 +24,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	static transactional = true
 	
 	private static def log = LogFactory.getLog(this)
-	
+
 	UrlService urlService
 	WithingsDataService withingsDataService
 	User user2
@@ -35,7 +36,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	MockedHttpURLConnection mockedConnectionWithParams = new MockedHttpURLConnection()
 	
 	def grailsApplication
-	
+
 	void setup() {
 
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
@@ -330,5 +331,130 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 
 		then:
 		assert result.callbackurl.contains("http://") == true
-	}	
+	}
+
+	void "test getDataDefault method to create entries for Withings data" () {
+		given: 'API response data'
+		String mockedResponseData = """{
+				"status": 0, "body": { "updatetime": 1249409679, "timezone": "Europe/Paris", "measuregrps": [{ 
+				"grpid": 2909, "attrib": 0, "date": 1222930968, "category": 1, "measures": [{ "value": 79300,
+				"type":1, "unit": -3 }, { "value": 23142, "type": 4, "unit": 2 }, { "value": 652, "type": 5, "unit":
+				 -1 }, { "value": 178, "type": 6, "unit": -1 }, { "value": 14125, "type": 8, "unit": -3 } ]} ]} }"""
+
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(mockedResponseData))
+		setWithingsResourceRepsone(new MockedHttpURLConnection(mockedResponseData))
+		assert Entry.count() == 0
+
+		when: 'Data is polled for the first time'
+		withingsDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
+
+		then: 'Entries should be created successfully'
+		List<Entry> entryList = Entry.getAll()
+		entryList.size() == 2  // Entry won't be created for height (type = 4) since unit is positive.
+
+		entryList[0].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList[0].setIdentifier.value == "Withings"
+		entryList[0].description == "total weight [amount]"
+		entryList[0].amount == new BigDecimal(629376.1794756 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList[0].units == 'lbs'
+
+		entryList[1].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList[1].setIdentifier.value == "Withings"
+		entryList[1].description == "fat weight [amount]"
+		entryList[1].amount == new BigDecimal(112105.151766 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList[1].units == 'lbs'
+
+		when: 'Data is re-polled with different data and same date'
+		String newMockedResponseData = """{
+				"status": 0, "body": { "updatetime": 1249409679, "timezone": "Europe/Paris", "measuregrps": [{ 
+				"grpid": 2909, "attrib": 0, "date": 1222930968, "category": 1, "measures": [{ "value": 79300, 
+				"type": 1, "unit": -3 }, { "value": 652, "type": 5, "unit": -1 }, { "value": 178, "type": 6, 
+				"unit": -1 }, { "value": 14125, "type": 8, "unit": -3 }, { "value": 80808, "type": 1, "unit": -3 }, 
+				{ "value": 15436, "type": 8, "unit": -3 } ]}, {"grpid": 885340177,"date": 1503466680,"measures": [{
+				"unit": -2,"type": 71,"value": 3600}],"attrib": 2,"category": 1} ]} }"""
+
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(newMockedResponseData))
+		setWithingsResourceRepsone(new MockedHttpURLConnection(newMockedResponseData))
+		withingsDataService.getDataDefault(account, new Date(), null, false, new DataRequestContext())
+
+		then: 'More entries should be created and existing entries should not be modified'
+		assert Entry.count() == 5
+
+		List<Entry> entryList1 = Entry.getAll()
+		entryList1.size() == 5
+
+		entryList1[0].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList1[0].setIdentifier.value == "Withings"
+		entryList1[0].description == "total weight [amount]"
+		entryList1[0].amount == new BigDecimal(629376.1794756 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[0].units == 'lbs'
+
+		entryList1[1].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList1[1].setIdentifier.value == "Withings"
+		entryList1[1].description == "fat weight [amount]"
+		entryList1[1].amount == new BigDecimal(112105.151766 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[1].units == 'lbs'
+
+		entryList1[2].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList1[2].setIdentifier.value == "Withings"
+		entryList1[2].description == "total weight [amount]"
+		entryList1[2].amount == new BigDecimal(641344.6445256 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[2].units == 'lbs'
+
+		entryList1[3].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList1[3].setIdentifier.value == "Withings"
+		entryList1[3].description == "fat weight [amount]"
+		entryList1[3].amount == new BigDecimal(122510.09718 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[3].units == 'lbs'
+
+		entryList1[4].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList1[4].setIdentifier.value == "Withings"
+		entryList1[4].description == "temperature fahrenheit"
+		entryList1[4].amount == new BigDecimal((36 * 1.8) + 32).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[4].units == 'fahrenheit'
+
+		when: 'Data is re-polled with updated values for previous data'
+		String updatedMockedResponseData = """{
+				"status": 0, "body": { "updatetime": 1249409679, "timezone": "Europe/Paris", "measuregrps": [{ 
+				"grpid": 2909, "attrib": 0, "date": 1222930968, "category": 1, "measures": [{ "value": 84300, "type":1,
+				"unit": -3 }, { "value": 652, "type": 5, "unit": -1 }, { "value": 178, "type": 6, "unit": -1 }, {
+				"value": 19225, "type": 8, "unit": -3 } ]} ]} }"""
+
+		DataRequestContext dataRequestContext = new DataRequestContext(entryList1[0].date, null,
+				[Identifier.look("Withings")], account.userId)
+
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(updatedMockedResponseData))
+		setWithingsResourceRepsone(new MockedHttpURLConnection(updatedMockedResponseData))
+		withingsDataService.getDataDefault(account, entryList1[0].date, null, false, dataRequestContext)
+
+		then: 'Entries should be updated'
+		assert Entry.count() == 5
+
+		List<Entry> entryList2 = Entry.getAll()
+		entryList2.size() == 5
+
+		entryList2[0].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList2[0].setIdentifier.value == "Withings"
+		entryList2[0].description == "total weight [amount]"
+		entryList2[0].amount == new BigDecimal(669059.4190356 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList2[0].units == 'lbs'
+
+		entryList2[1].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList2[1].setIdentifier.value == "Withings"
+		entryList2[1].description == "fat weight [amount]"
+		entryList2[1].amount == new BigDecimal(152582.0561208 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList2[1].units == 'lbs'
+
+		entryList1[2].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList1[2].setIdentifier.value == "Withings"
+		entryList1[2].description == "total weight [amount]"
+		entryList1[2].amount == new BigDecimal(641344.6445256 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[2].units == 'lbs'
+
+		entryList1[3].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
+		entryList1[3].setIdentifier.value == "Withings"
+		entryList1[3].description == "fat weight [amount]"
+		entryList1[3].amount == new BigDecimal(122510.09718 / 3600).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[3].units == 'lbs'
+	}
 }

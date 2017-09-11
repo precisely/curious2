@@ -133,17 +133,17 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 	void "Test getDataSleep method to successfully create entries for sleep data"() {
 		given: 'API response data'
 		String mockedResponseData = """{sleep: [
-				{summary_date: "2015-11-04", timezone: "60",
+				{summary_date: "2016-09-04", timezone: "60",
 				bedtime_start: "2016-09-03T23:50:09+01:00", score: 86, awake: 52, rem: 78, light: 220,
 				deep: 160, hr_low_duration: 1170, hypnogram_5min: '42441112424444422222211', rmssd: 52, score_total:
 				82, score_alignment: 38, score_efficiency: 98, got_up_count: 1, hr_10min: [255, 75, 54, 54, 56, 56,
 				57, 56, 55], "temperature_max_delta": 103, score_disturbances: 76, total: 23820, rmssd_5min:
 				[50, 62, 51, 55, 69, 68, 63, 53], bedtime_end: "2016-09-04T08:39:57+01:00", restless: 43,
 				duration: 25680, hr_5min: [60, 60, 55, 55, 53, 54, 54], score_rem: 93, period_id: 0,
-				wake_up_count: 1, hr_average: 56.875, onset_latency: 630, hr_lowest: 51, is_longest: 1, rem_rmssd: 44,
+				wake_up_count: 1, hr_average: 58, onset_latency: 630, hr_lowest: 51, is_longest: 1, rem_rmssd: 44,
 				nrem_rmssd: 56, midpoint_time: 7, score_deep: 49, score_latency: 93, efficiency: 93},
 
-				{summary_date: "2015-11-03", timezone: "330", bedtime_start: "2016-09-02T23:50:09+05:30", score: 80,
+				{summary_date: "2016-09-03", timezone: "330", bedtime_start: "2016-09-02T23:50:09+05:30", score: 80,
 				awake: 51, rem: 68, light: 210, deep: 163, hr_low_duration: 1170, hypnogram_5min:
 				'42441112424444422222211', rmssd: 54, score_total: 82, score_alignment: 38, score_efficiency: 98,
 				got_up_count: 2, hr_10min: [255, 75, 54, 54, 56, 56, 57, 56, 55], "temperature_max_delta": 102,
@@ -171,12 +171,12 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 		DataRequestContext dataRequestContext = new DataRequestContext(mockDate, null, [Identifier.look("Oura")],
 				account.userId)
 		/*
-		 * Setting the max size to 5, so that during re-import only 5 entries will be available for duplicate 
-		 * matching in the DataRequestContext, rest 7 entries will be matched by the hasDuplicate() method call in 
+		 * Setting the max size to 9, so that during re-import only 9 entries will be available for duplicate
+		 * matching in the DataRequestContext, rest 9 entries will be matched by the hasDuplicate() method call in
 		 * Entry.groovy. Thus DataRequestContext and hasDuplicate() both will be tested for preventing 
 		 * duplicate entry creation during re-import.
 		 */
-		dataRequestContext.max = 5
+		dataRequestContext.max = 9
 
 		// Keeping the Entry count zero before first poll.
 		Entry.list()*.delete(flush: true)
