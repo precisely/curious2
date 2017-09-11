@@ -409,9 +409,9 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 
 		entryList1[4].timeZoneId == TimeZoneId.look("America/Los_Angeles").id
 		entryList1[4].setIdentifier.value == "Withings"
-		entryList1[4].description == "temperature celsius"
-		entryList1[4].amount == new BigDecimal(36).setScale(9, BigDecimal.ROUND_HALF_EVEN)
-		entryList1[4].units == 'celsius'
+		entryList1[4].description == "temperature fahrenheit"
+		entryList1[4].amount == new BigDecimal((36 * 1.8) + 32).setScale(9, BigDecimal.ROUND_HALF_EVEN)
+		entryList1[4].units == 'fahrenheit'
 
 		when: 'Data is re-polled with updated values for previous data'
 		String updatedMockedResponseData = """{

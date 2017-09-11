@@ -93,7 +93,7 @@ abstract class TagUnitMap {
 			height: [tag: "height", unit: "feet", amountPrecision: 5, convert: true, from: "meters"],
 			steps: [tag: "$ACTIVITY", unit: "steps"],	// @Deprecated. Use `activitySteps` instead.
 			weight: [tag: "total weight", unit: "lbs", amountPrecision: 2, convert: true, from: "kg"],
-			temperature: [tag: "temperature", unit: "celsius", amountPrecision: 2],
+			temperature: [tag: "temperature", unit: "fahrenheit", amountPrecision: 2, convert: true, from: "celsius"],
 		]
 	}
 
@@ -138,7 +138,15 @@ abstract class TagUnitMap {
 		log.debug "TagUnitMap.buildEntry() The tag map is: $currentMapping"
 
 		if (currentMapping.convert) {
-			amount = convert(amount, currentMapping.ratio)
+			/*
+			 * Fahrenheit and Celsius do not scale linearly. There is a conversion factor, but it isn't just a
+			 * multiplication. 32 is added to account for the difference in freezing points.
+			 */
+			if (currentMapping.from == 'celsius' && currentMapping.unit == 'fahrenheit') {
+				amount = ((amount * 1.8) + 32).setScale(100, BigDecimal.ROUND_HALF_UP)
+			} else {
+				amount = convert(amount, currentMapping.ratio)
+			}
 		}
 		if (currentMapping.bucketKey) {
 			log.debug "Adding to bucket: " + getBuckets()[currentMapping.bucketKey]
