@@ -1191,9 +1191,10 @@ class MigrationService {
 		tryMigration("Fix entry date for readiness data from Oura") {
 			Long readinessBaseTagId = Tag.look("readiness").id
 			Long readinessScoreTagId = Tag.look("readiness score").id
+			Long ouraIdentifierId = Identifier.look("Oura").id
 
-			sql("UPDATE entry set date = DATE_ADD(date , INTERVAL 1 DAY) where comment = '(OURA)' and " +
-					"base_tag_id = ${readinessBaseTagId} and tag_id = ${readinessScoreTagId} and units = 'score'")
+			sql("UPDATE entry set date = DATE_ADD(date , INTERVAL 1 DAY) where set_identifier = ${ouraIdentifierId} " +
+					"and base_tag_id = ${readinessBaseTagId} and tag_id = ${readinessScoreTagId} and units = 'score'")
 		}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	}
