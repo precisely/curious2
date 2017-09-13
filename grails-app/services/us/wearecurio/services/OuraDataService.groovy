@@ -298,20 +298,23 @@ class OuraDataService extends DataService {
 
 			// Summary Date received in yyyy-MM-dd format.
 			String dateString = readinessEntry['summary_date']
-			Date entryDate
+			Date summaryDate
 			if (dateString) {
 				try {
-					entryDate = Date.parse('yyyy-MM-dd', dateString, TimeZoneId.getTimeZoneInstance(timeZoneIdNumber))
+					summaryDate = Date.parse('yyyy-MM-dd', dateString, TimeZoneId.getTimeZoneInstance(timeZoneIdNumber))
 				} catch (ParseException e) {
 					log.warn "Could not parse date [$dateString]", e
 				}
 			}
 
-			if (!entryDate) {
+			if (!summaryDate) {
 				log.warn 'Response does not contain data to calculate entry date.'
 
 				return
 			}
+
+			// The score entry gets created for a day ahead of summary date.
+			Date entryDate = summaryDate + 1
 
 			if (readinessEntry['score']) {
 				tagUnitMap.buildEntry(creationMap, stats, 'readiness_score',

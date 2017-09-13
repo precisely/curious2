@@ -395,9 +395,11 @@ class OuraDataServiceTests extends CuriousServiceTestCase {
 
 		entry1.amount == 77
 		entry1.units == 'score'
+		entry1.date.clearTime() == Date.parse('yyyy-MM-dd', '2017-02-14') // score entry will be created for a day ahead of summary_date
 
 		entry2.amount == 82
 		entry2.units == 'score'
+		entry2.date.clearTime() == Date.parse('yyyy-MM-dd', '2017-02-16') // score entry will be created for a day ahead of summary_date
 	}
 
 	void '''Test checkSyncHealth method to send email if there are no OAuthAccounts for oura with lastData greater

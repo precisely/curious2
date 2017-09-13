@@ -1185,5 +1185,17 @@ class MigrationService {
 					"where base_tag_id = ${oldFatMassBaseTagId} and tag_id = ${oldFatMassTagId} and units = 'lbs'")
 		}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// - - - - - - - - - - - - - - - - Migrations to fix entry date of readiness data from Oura - - - - - - - - - - - - - -
+
+		tryMigration("Fix entry date for readiness data from Oura") {
+			Long readinessBaseTagId = Tag.look("readiness").id
+			Long readinessScoreTagId = Tag.look("readiness score").id
+			Long ouraIdentifierId = Identifier.look("Oura").id
+
+			sql("UPDATE entry set date = DATE_ADD(date , INTERVAL 1 DAY) where set_identifier = ${ouraIdentifierId} " +
+					"and base_tag_id = ${readinessBaseTagId} and tag_id = ${readinessScoreTagId} and units = 'score'")
+		}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	}
 }
