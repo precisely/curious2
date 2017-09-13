@@ -27,6 +27,13 @@ spec:
         - name: mysql-database
           image: gcr.io/cloudsql-docker/gce-proxy:1.09
           command: ["/cloud_sql_proxy", "--dir=/cloudsql", "-instances=we-are-curious:us-central1:curious-mysql-qa=tcp:3306", "-credential_file=/secrets/cloudsql/credentials.json"]
+          resources:
+            requests:
+              cpu: 1
+              memory: 2Gi
+            limits:
+              cpu: 1
+              memory: 2Gi
           env:
             - name: DB_USER
               valueFrom:
@@ -50,6 +57,13 @@ spec:
           - containerPort: 3306
         - name: jetty-precisely
           image: jetty:9.4.4-jre8-alpine
+          resources:
+            requests:
+              cpu: 2.5
+              memory: 5Gi
+            limits:
+              cpu: 2.5
+              memory: 5Gi
           env:
             - name: CURIOUSCONFIGHOME
               value: '/home/precisely/localconfig'
