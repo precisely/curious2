@@ -48,17 +48,4 @@
 			</g:each>
 		</tbody>
 	</table>
-	<g:if test="${questionInstance.answerType != AnswerType.DESCRIPTIVE}">
-		<div class="margin-top">
-			<button type="button" class="btn btn-default">
-				<g:link controller="survey" action="surveyDetails" id="${questionInstance.survey.id}"
-						class="cancel-button-link">
-					Cancel
-				</g:link>
-			</button>
-			<button type="submit" class="btn btn-default margin-left" id="addAnswers">
-				Save Answers
-			</button>
-		</div>
-	</g:if>
 </div>

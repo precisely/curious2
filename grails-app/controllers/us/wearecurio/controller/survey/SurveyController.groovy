@@ -145,14 +145,41 @@ class SurveyController extends LoginController {
 			return
 		}
 
-		surveyInstance.addToQuestions(params)
+		Survey.withTransaction { status ->
+			Question questionInstance = new Question(params)
 
-		if (!Utils.save(surveyInstance, true)) {
-			flash.message = 'Could not add question.'
-			flash.messageType = 'danger'
-			redirect(uri: 'survey/index')
+			surveyInstance.addToQuestions(questionInstance)
 
-			return
+			if (!Utils.save(surveyInstance, true)) {
+				flash.message = 'Could not add question.'
+				flash.messageType = 'danger'
+				redirect(uri: 'survey/index')
+
+				return
+			}
+
+			List possibleAnswersList = []
+
+			try {
+				possibleAnswersList = JSON.parse(params.possibleAnswers) as List
+			} catch (ConverterException e) {
+				log.error "Could not parse possible answers from request.", e
+				renderJSONPost([success: false, message: 'Invalid Data'])
+
+				return
+			}
+
+			questionInstance.addOrUpdateAnswers(possibleAnswersList)
+
+			if (!Utils.save(questionInstance, true)) {
+				status.setRollbackOnly()
+
+				flash.message = 'Error occurred while adding answers.'
+				flash.messageType = 'danger'
+				redirect(uri: 'survey/index')
+
+				return
+			}
 		}
 
 		flash.message = 'Question added successfully.'
@@ -186,6 +213,19 @@ class SurveyController extends LoginController {
 
 		bindData(questionInstance, params)
 
+		List possibleAnswersList = []
+
+		try {
+			possibleAnswersList = JSON.parse(params.possibleAnswers) as List
+		} catch (ConverterException e) {
+			log.error "Could not parse possible answers from request.", e
+			renderJSONPost([success: false, message: 'Invalid Data'])
+
+			return
+		}
+
+		questionInstance.addOrUpdateAnswers(possibleAnswersList)
+
 		if (!Utils.save(questionInstance)) {
 			flash.message = 'Could not update question.'
 			flash.messageType = 'danger'
@@ -198,36 +238,6 @@ class SurveyController extends LoginController {
 		flash.messageType = 'success'
 
 		render model: [surveyInstance: questionInstance.survey], view: 'surveyDetails'
-	}
-
-	def addAnswers(Question questionInstance) {
-		log.debug "Add Answers: $params"
-
-		if (!questionInstance) {
-			renderJSONPost([success: false, message: g.message(code: "default.not.found.message",
-					args: ["Question", params.id])])
-
-			return
-		}
-
-		List possibleAnswersList = []
-
-		try {
-			possibleAnswersList = JSON.parse(params.possibleAnswers) as List
-		} catch(ConverterException e) {
-			log.error "Could not parse possible answers from request.", e
-			renderJSONPost([success: false, message: 'Invalid Data'])
-
-			return
-		}
-
-		questionInstance.addOrUpdateAnswers(possibleAnswersList)
-
-		if (Utils.save(questionInstance, true)) {
-			renderJSONPost([success: true, message: 'Answers added successfully'])
-		} else {
-			renderJSONPost([success: false, message: 'Could not add answers'])
-		}
 	}
 
 	def deleteAnswer(PossibleAnswer possibleAnswerInstance, Question questionInstance) {
