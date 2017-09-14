@@ -52,6 +52,7 @@ class ProfileTagController extends LoginController {
 				debug ("Found empty tagName in params.")
 				return
 			}
+
 			Tag newTag = Tag.look(tagName.toLowerCase().trim())
 
 			ProfileTag newProfileTag = ProfileTag.addInterestTag(newTag, user.id, status, true)

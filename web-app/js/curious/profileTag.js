@@ -143,11 +143,11 @@ InterestTagList.prototype.addInterestTag = function(tagName, tagStatus) {
 					} else {
 						this.publicInterestTags.push(data.profileTag);
 					}
-                    data.profileTag.forEach(function(interestTag) {
-                        this.addTag(interestTag);
-                    }.bind(this));
+					data.profileTag.forEach(function(interestTag) {
+						this.addTag(interestTag);
+					}.bind(this));
 				} else {
-				    showAlert('Tag field should not be empty !');
+					showAlert('Please add a valid tag.');
 				}
 			}.bind(this)
 	);

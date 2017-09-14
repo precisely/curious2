@@ -93,18 +93,20 @@ class ProfileTagControllerSpec extends IntegrationSpec {
 		'sleep'   | ''        | "'No tag status specified'"
 	}
 
-	void "test addInterestTag for preventing duplicates"() {
+	void "test addInterestTag for preventing duplicates and invalid tag"() {
 		given: 'A ProfileTag instance'
 		ProfileTag.addPublicInterestTag(Tag.look('tea'), user.id)
+		assert ProfileTag.count() == 1
 
 		when: 'The addInterestTag action is hit for this user with same tagName and status'
 		controller.session.userId = user.id
-		controller.params.tagNames = 'tea'
+		controller.params.tagNames = 'tea, ,run,walk'
 		controller.params.tagStatus = 'PUBLIC'
 		controller.addInterestTag()
 
 		then: 'The request should to add new tag'
 		controller.response.text == "'Error adding interest tag for tags [tea]'"
+		ProfileTag.count() == 3 // 2 new valid tags are added
 	}
 
 	void "test deleteInterestTag to successfully delete profile tags"() {
@@ -132,26 +134,5 @@ class ProfileTagControllerSpec extends IntegrationSpec {
 
 		then: 'The request should delete the profile tag'
 		controller.response.text == "'No profile tag id specified'"
-	}
-
-	@Unroll
-	void "test addInterestTag when profiletag have coma(,)"() {
-		when: 'The addInterestTag action is hit for this user with tagName and status'
-		controller.session.userId = user.id
-		controller.params.tagNames = tagNames
-		controller.params.tagStatus = tagStatus
-		controller.addInterestTag()
-
-		then: 'The newly created profiletag should be present in the response'
-		JSONElement json = JSON.parse(controller.response.text)
-		json.success == true
-		ProfileTag.count() == count
-
-		where:
-		tagNames  | tagStatus | count
-		'sleep,walk,run' | 'PUBLIC' | 3
-		' , walk, run'   | 'PUBLIC' | 2
-		' ,  , bear'     | 'PUBLIC' | 1
-		' ,  '           | 'PUBLIC' | 0
 	}
 }
