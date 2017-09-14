@@ -49,7 +49,7 @@ class ProfileTagControllerSpec extends IntegrationSpec {
 	void "test addInterestTag for adding public and private tags"() {
 		when: 'The addInterestTag action is hit for this user with tagName and status'
 		controller.session.userId = user.id
-		controller.params.tagNames = [tagName1, tagName2]
+		controller.params.tagNames = tagName1 + ',' + tagName2
 		controller.params.tagStatus = tagStatus
 		controller.addInterestTag()
 
@@ -89,8 +89,8 @@ class ProfileTagControllerSpec extends IntegrationSpec {
 
 		where:
 		tagNames  | tagStatus | errorText
-		[]        | 'PUBLIC'  | "'No tag names specified'"
-		['sleep'] | ''        | "'No tag status specified'"
+		''        | 'PUBLIC'  | "'No tag names specified'"
+		'sleep'   | ''        | "'No tag status specified'"
 	}
 
 	void "test addInterestTag for preventing duplicates"() {
@@ -99,7 +99,7 @@ class ProfileTagControllerSpec extends IntegrationSpec {
 
 		when: 'The addInterestTag action is hit for this user with same tagName and status'
 		controller.session.userId = user.id
-		controller.params.tagNames = ['tea']
+		controller.params.tagNames = 'tea'
 		controller.params.tagStatus = 'PUBLIC'
 		controller.addInterestTag()
 
@@ -132,5 +132,26 @@ class ProfileTagControllerSpec extends IntegrationSpec {
 
 		then: 'The request should delete the profile tag'
 		controller.response.text == "'No profile tag id specified'"
+	}
+
+	@Unroll
+	void "test addInterestTag when profiletag have coma(,)"() {
+		when: 'The addInterestTag action is hit for this user with tagName and status'
+		controller.session.userId = user.id
+		controller.params.tagNames = tagNames
+		controller.params.tagStatus = tagStatus
+		controller.addInterestTag()
+
+		then: 'The newly created profiletag should be present in the response'
+		JSONElement json = JSON.parse(controller.response.text)
+		json.success == true
+		ProfileTag.count() == count
+
+		where:
+		tagNames  | tagStatus | count
+		'sleep,walk,run' | 'PUBLIC' | 3
+		' , walk, run'   | 'PUBLIC' | 2
+		' ,  , bear'     | 'PUBLIC' | 1
+		' ,  '           | 'PUBLIC' | 0
 	}
 }
