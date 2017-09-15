@@ -10,10 +10,13 @@
 		<script type="text/javascript">
 
 			var rowIdInEditMode;
-			var questionId = ${questionInstance.id ?: null}
 
 			$(document).ready(function() {
 				var rowNumber = ${(questionInstance.answers.size() ?: -1) + 1};
+
+				if (${!questionInstance.id || questionInstance.answerType == AnswerType.DESCRIPTIVE}) {
+					$('#answerListContainer').attr("style", "display:none");
+				}
 
 				createAutocompleteForTags('associatedProfileTags', 'profileTagsAutocomplete');
 				createAutocompleteForTags('associatedTrackingTags', 'trackingTagsAutocomplete');
@@ -146,7 +149,6 @@
 
 				$('#addOrUpdateQuestion').click(function() {
 					var possibleAnswersList = [];
-					var id = $('#id').val();
 					var question = $('#question').val();
 					var priority = $('#priority').val();
 					var status = $('#status').val();
@@ -171,11 +173,18 @@
 						possibleAnswersList.push(possibleAnswer);
 					});
 
-					var params = {id: id, question: question, priority: priority, status: status,
+					var params = {question: question, priority: priority, status: status,
 						answerType: answerType, isRequired: isRequired,
 						possibleAnswers: JSON.stringify(possibleAnswersList)};
 
-					if (questionId) {
+					if (${questionInstance.id != null}) {
+						if (answerType == 'DESCRIPTIVE' && $('#answerInputAffordance  > tr')[0]) {
+							alert("Please remove all the answers first.");
+
+							return;
+						}
+
+						params.id = ${questionInstance.id}
 						queuePostJSON('Updating question', '/survey/updateQuestion',
 								getCSRFPreventionObject('updateQuestionCSRF', params),
 								function(data) {
@@ -187,6 +196,7 @@
 								}
 						);
 					} else {
+						params.id = ${surveyId};
 						queuePostJSON('Adding question to survey', '/survey/saveQuestion',
 								getCSRFPreventionObject('addQuestionCSRF', params),
 								function(data) {
@@ -199,11 +209,21 @@
 						);
 					}
 				});
+
+				$("#answerType").change(function() {
+					var answerType = $('#answerType').val();
+					if (answerType == "DESCRIPTIVE" && !$('#answerInputAffordance  > tr')[0]) {
+						$('#answerListContainer').attr("style", "display:none");
+					} else {
+						$('#answerListContainer').attr("style", "display:block");
+					}
+				});
 			});
 
 			function deleteAnswer(rowId, answerId) {
-				if (answerId && questionId) {
-					var params = {'possibleAnswerInstance.id': answerId, 'questionInstance.id': questionId};
+				if (answerId) {
+					var params = {'possibleAnswerInstance.id': answerId};
+					params.id = ${questionInstance.id}
 					queuePostJSON('Deleting answer from survey question', '/survey/deleteAnswer',
 							getCSRFPreventionObject('deleteAnswerCSRF', params),
 							function(data) {
@@ -268,7 +288,7 @@
 
 		<div class="main container-fluid survey-factory">
 			<g:form>
-				<input hidden name="id" id="id" value="${questionInstance.id ?: surveyId}" />
+				<input hidden name="id" id="id" value="${questionInstance.id}" />
 				<div>
 					<label for="question">
 						Question

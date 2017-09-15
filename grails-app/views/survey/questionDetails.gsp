@@ -4,6 +4,14 @@
 	<head>
 		<meta name="layout" content="menu">
 		<title>Question</title>
+
+		<script type="text/javascript">
+			$(document).ready(function() {
+				if (${questionInstance.answerType == AnswerType.DESCRIPTIVE}) {
+					$('#answerListContainer').attr("style", "display:none");
+				}
+			});
+		</script>
 	</head>
 	<body>
 		<div class="red-header">
