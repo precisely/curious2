@@ -60,7 +60,7 @@
 				</tbody>
 			</table>
 
-			<g:render template="answerList" />
+			<g:render template="answerList" model="[isViewOnly: true]" />
 
 		</div>
 

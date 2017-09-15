@@ -4,14 +4,14 @@
 		<h2 class="display-inline">
 			Survey Answers
 		</h2>
-		<g:if test="${questionInstance.answerType != AnswerType.DESCRIPTIVE}">
+		<g:if test="${questionInstance.answerType != AnswerType.DESCRIPTIVE && !isViewOnly}">
 			<a href="#" class="btn btn-default add-survey-button pull-right" data-toggle="modal" data-target="#addAnswerOverlay">
 				<i class="fa fa-plus-circle survey-add-icon"></i> Add Answer
 			</a>
 		</g:if>
-		<g:else>
+		<g:if test="${questionInstance.answerType == AnswerType.DESCRIPTIVE}">
 			( The AnswerType is descriptive. )
-		</g:else>
+		</g:if>
 	</div>
 	<table class="table table-bordered table-hover table-striped remove-margin-bottom">
 		<thead>
@@ -20,7 +20,9 @@
 				<th>Priority</th>
 				<th>AssociatedProfileTags</th>
 				<th>AssociatedTrackingTags</th>
-				<th>Actions</th>
+				<g:if test="${!isViewOnly}">
+					<th>Actions</th>
+				</g:if>
 			</tr>
 		</thead>
 		<tbody id="answerInputAffordance">
@@ -35,15 +37,17 @@
 					<td id="trackingTags${index}"><g:each in="${answerInstance.associatedTrackingTags}" var="tagsInstance">
 						${tagsInstance.description},
 					</g:each> </td>
-					<td>
-						<a href="#" data-toggle="tooltip" title="Edit Answer" data-placement="top">
-							<i class="fa fa-pencil action-icon" onclick="editAnswer(${index})"></i>
-						</a>
-						<a href="#" class="margin-left" data-toggle="tooltip" title="Delete Answer" 
-								data-placement="top">
-							<i class="fa fa-trash action-icon" onclick="deleteAnswer(${index}, ${answerInstance.id})"></i>
-						</a>
-					</td>
+					<g:if test="${!isViewOnly}">
+						<td>
+							<a href="#" data-toggle="tooltip" title="Edit Answer" data-placement="top">
+								<i class="fa fa-pencil action-icon" onclick="editAnswer(${index})"></i>
+							</a>
+							<a href="#" class="margin-left" data-toggle="tooltip" title="Delete Answer"
+									data-placement="top">
+								<i class="fa fa-trash action-icon" onclick="deleteAnswer(${index}, ${answerInstance.id})"></i>
+							</a>
+						</td>
+					</g:if>
 				</tr>
 			</g:each>
 		</tbody>

@@ -10,11 +10,10 @@
 		<script type="text/javascript">
 
 			var rowIdInEditMode;
-			var questionId = ${questionInstance.id}
+			var questionId = ${questionInstance.id ?: null}
 
 			$(document).ready(function() {
 				var rowNumber = ${(questionInstance.answers.size() ?: -1) + 1};
-				%{--var answerType = ${questionInstance.answerType ?: AnswerType.values()[0]};--}%
 
 				createAutocompleteForTags('associatedProfileTags', 'profileTagsAutocomplete');
 				createAutocompleteForTags('associatedTrackingTags', 'trackingTagsAutocomplete');
@@ -305,7 +304,7 @@
 					<g:checkBox name="isRequired" id="isRequired" value="${questionInstance.isRequired}" />
 				</div>
 
-				<g:render template="answerList" />
+				<g:render template="answerList" model="[isViewOnly: false]" />
 
 				<div class="margin-top">
 					<button type="button" class="btn btn-default">
