@@ -163,8 +163,12 @@ class SurveyController extends LoginController {
 			try {
 				possibleAnswersList = JSON.parse(params.possibleAnswers) as List
 			} catch (ConverterException e) {
+				status.setRollbackOnly()
+
 				log.error "Could not parse possible answers from request.", e
-				renderJSONPost([success: false, message: 'Invalid Data'])
+				flash.message = 'Could not add question.'
+				flash.messageType = 'danger'
+				redirect(uri: 'survey/index')
 
 				return
 			}
@@ -180,10 +184,10 @@ class SurveyController extends LoginController {
 
 				return
 			}
-		}
 
-		flash.message = 'Question added successfully.'
-		flash.messageType = 'success'
+			flash.message = 'Question added successfully.'
+			flash.messageType = 'success'
+		}
 
 		render model: [surveyInstance: surveyInstance], view: 'surveyDetails'
 	}

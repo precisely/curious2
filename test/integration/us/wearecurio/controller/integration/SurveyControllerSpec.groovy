@@ -206,7 +206,7 @@ class SurveyControllerSpec extends IntegrationSpec {
 		controller.response.redirectedUrl == 'survey/index'
 	}
 
-	void "test saveQuestion action for successfully adding question to survey"() {
+	void "test saveQuestion action for successfully adding question and answers to survey"() {
 		given: 'A Survey instance'
 		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
 				status: SurveyStatus.ACTIVE)
@@ -222,6 +222,9 @@ class SurveyControllerSpec extends IntegrationSpec {
 		controller.params.status = 'INACTIVE'
 		controller.params.answerType = 'MCQ_RADIO'
 		controller.params.isRequired = false
+		controller.params.possibleAnswers = ([[profileTags: ['run'], priority: '2',
+				answer: 'This is the first answer.'],
+				[profileTags: ['mood'], priority: '3', answer: 'This is the second answer']] as JSON).toString()
 
 		controller.saveQuestion()
 
@@ -241,6 +244,17 @@ class SurveyControllerSpec extends IntegrationSpec {
 		questionInstance.status == QuestionStatus.INACTIVE
 		questionInstance.answerType == AnswerType.MCQ_RADIO
 		questionInstance.isRequired == false
+
+		questionInstance.answers.size() == 2
+		PossibleAnswer possibleAnswer1 = questionInstance.answers.first()
+		possibleAnswer1.answer == 'This is the first answer.'
+		possibleAnswer1.associatedProfileTags[0].description == 'run'
+		possibleAnswer1.priority == 2
+
+		PossibleAnswer possibleAnswer2 = questionInstance.answers.last()
+		possibleAnswer2.answer == 'This is the second answer'
+		possibleAnswer2.associatedProfileTags[0].description == 'mood'
+		possibleAnswer2.priority == 3
 	}
 
 	@Unroll
@@ -259,6 +273,7 @@ class SurveyControllerSpec extends IntegrationSpec {
 		controller.params.priority = priority
 		controller.params.status = status
 		controller.params.answerType = answerType
+		controller.params.possibleAnswers = possibleAnswers
 
 		controller.saveQuestion()
 
@@ -269,14 +284,14 @@ class SurveyControllerSpec extends IntegrationSpec {
 		Question.count() == 0
 
 		where:
-		question   | priority | status    | answerType 
-		''         | '1'      | 'ACTIVE'  | 'MCQ_RADIO'
-		'question' | ''       | 'ACTIVE'  | 'MCQ_RADIO'
-		'question' | '1'      | ''        | 'MCQ_RADIO'
-		'question' | '1'      | 'ACTIVE'  | ''
-		'question' | '1'      | 'INVALID' | 'MCQ_RADIO'
-		'question' | '1'      | 'ACTIVE'  | 'INVALID'
-		null       | null     | null      | null
+		question   | priority | status    | answerType   | possibleAnswers
+		''         | '1'      | 'ACTIVE'  | 'MCQ_RADIO'  | ""
+		'question' | ''       | 'ACTIVE'  | 'MCQ_RADIO'  | ""
+		'question' | '1'      | ''        | 'MCQ_RADIO'  | ""
+		'question' | '1'      | 'ACTIVE'  | ''           | ""
+		'question' | '1'      | 'INVALID' | 'MCQ_RADIO'  | ""
+		'question' | '1'      | 'ACTIVE'  | 'INVALID'    | ""
+		null       | null     | null      | null         | ""
 	}
 
 	void "test updateQuestion action when the question instance with id is not found"() {
@@ -290,7 +305,7 @@ class SurveyControllerSpec extends IntegrationSpec {
 		controller.flash.messageType == 'danger'
 	}
 
-	void "test updateQuestion action for successfully updating a question"() {
+	void "test updateQuestion action for successfully updating a question and answers"() {
 		given: 'A Survey instance with added question'
 		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
 				status: SurveyStatus.ACTIVE)
@@ -298,8 +313,13 @@ class SurveyControllerSpec extends IntegrationSpec {
 				answerType: 'MCQ_RADIO')
 		surveyInstance.save(flush: true)
 
+		PossibleAnswer possibleAnswer = new PossibleAnswer(answer: "This is the first answer.", priority: 1)
+		surveyInstance.questions[0].addToAnswers(possibleAnswer)
+		surveyInstance.questions[0].save(flush: true)
+
 		assert Survey.count() == 1
 		assert Question.count() == 1
+		assert PossibleAnswer.count() == 1
 
 		when: 'The updateQuestion action is hit with updated params'
 		controller.params.id = surveyInstance.questions[0].id
@@ -307,6 +327,9 @@ class SurveyControllerSpec extends IntegrationSpec {
 		controller.params.question = 'This is the first question updated'
 		controller.params.status = 'ACTIVE'
 		controller.params.answerType = 'MCQ_CHECKBOX'
+		controller.params.possibleAnswers = ([[profileTags: ['run'], priority: '2',
+				answer: 'This is the first answer updated', answerId: possibleAnswer.id],
+				[profileTags: ['mood'], priority: '3', answer: 'This is the second answer']] as JSON).toString()
 
 		controller.updateQuestion()
 
@@ -317,111 +340,16 @@ class SurveyControllerSpec extends IntegrationSpec {
 		controller.modelAndView.model['surveyInstance'] == surveyInstance
 		controller.flash.message == 'Question updated successfully.'
 
-		surveyInstance.questions[0].question == 'This is the first question updated'
-		surveyInstance.questions[0].priority == 2
-		surveyInstance.questions[0].status == QuestionStatus.ACTIVE
-		surveyInstance.questions[0].answerType == AnswerType.MCQ_CHECKBOX
-	}
+		Question questionInstance = surveyInstance.questions[0]
+		questionInstance.question == 'This is the first question updated'
+		questionInstance.priority == 2
+		questionInstance.status == QuestionStatus.ACTIVE
+		questionInstance.answerType == AnswerType.MCQ_CHECKBOX
 
-	void "test addAnswers action when the question instance with id is not found"() {
-		when: 'The addAnswers action is hit with random id'
-		controller.params.id = 1
-		controller.addAnswers()
-
-		then: 'The response fails with respective message'
-		JSONElement json = JSON.parse(controller.response.text)
-		json.success == false
-		json.message == 'Question not found with id 1'
-		PossibleAnswer.count() == 0
-	}
-
-	void "test addAnswers action when the possibleAnswers is invalid JSON"() {
-		given: 'A Survey instance with added question'
-		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
-				status: SurveyStatus.ACTIVE)
-		surveyInstance.addToQuestions(question: 'This is the first question.', priority: '1', status: 'INACTIVE',
-				answerType: 'MCQ_RADIO')
-		surveyInstance.save(flush: true)
-
-		assert Survey.count() == 1
-		assert Question.count() == 1
-
-		when: 'The addAnswers action is hit with invalid JSON'
-		controller.params.id = surveyInstance.questions[0].id
-		controller.params.possibleAnswers = "[{tagDescription: sleep]"
-		controller.addAnswers()
-
-		then: 'The response fails with respective message'
-		JSONElement json = JSON.parse(controller.response.text)
-		json.success == false
-		json.message == 'Invalid Data'
-		PossibleAnswer.count() == 0
-	}
-
-	void "test addAnswers action for successfully adding answers"() {
-		given: 'A Survey instance with added question'
-		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
-				status: SurveyStatus.ACTIVE)
-		surveyInstance.addToQuestions(question: 'This is the first question.', priority: '1', status: 'INACTIVE',
-				answerType: 'MCQ_RADIO')
-		surveyInstance.save(flush: true)
-
-		assert Survey.count() == 1
-		assert Question.count() == 1
-
-		when: 'The addAnswers action is hit with valid JSON answer list'
-		controller.response.reset()
-		controller.params.id = surveyInstance.questions[0].id
-		controller.params.possibleAnswers = ([[profileTags: ['sleep'], priority: '1',
-				answer: 'This is the first answer']] as JSON).toString()
-		controller.addAnswers()
-
-		then: 'The response succeeds with respective message'
-		JSONElement json1 = JSON.parse(controller.response.text)
-		json1.success == true
-		json1.message == 'Answers added successfully'
-
-		surveyInstance.questions[0].answers.size() == 1
-		PossibleAnswer possibleAnswer = PossibleAnswer.first()
-		possibleAnswer.answer == 'This is the first answer'
-		possibleAnswer.associatedProfileTags[0].description == 'sleep'
-		possibleAnswer.priority == 1
-
-		when: 'The answer list has answerId key, then the answer should be updated'
-		controller.response.reset()
-		controller.params.id = surveyInstance.questions[0].id
-		controller.params.possibleAnswers = ([[profileTags: ['run'], priority: '2',
-				answer: 'This is the first answer updated', answerId: possibleAnswer.id],
-				[profileTags: ['mood'], priority: '3', answer: 'This is the second answer']] as JSON).toString()
-		controller.addAnswers()
-
-		then: 'The response succeeds with respective message'
-		JSONElement json2 = JSON.parse(controller.response.text)
-		json2.success == true
-		json2.message == 'Answers added successfully'
-
-		surveyInstance.questions[0].answers.size() == 2
-		PossibleAnswer possibleAnswer1 = PossibleAnswer.first()
-		possibleAnswer1.answer == 'This is the first answer updated'
-		possibleAnswer1.associatedProfileTags[0].description == 'sleep'
-		possibleAnswer1.priority == 2
-
-		PossibleAnswer possibleAnswer2 = PossibleAnswer.last()
-		possibleAnswer2.answer == 'This is the second answer'
-		possibleAnswer2.associatedProfileTags[0].description == 'mood'
-		possibleAnswer2.priority == 3
-
-		when: 'The addAnswers action is hit with incomplete params'
-		controller.response.reset()
-		controller.params.id = surveyInstance.questions[0].id
-		controller.params.possibleAnswers = ([[profileTags: ['sleep'], answer: 'This is the first answer'],
-				[profileTags: ['sleep'], priority: '2']] as JSON).toString()
-		controller.addAnswers()
-
-		then: 'The response fails with respective message'
-		JSONElement json = JSON.parse(controller.response.text)
-		json.success == false
-		json.message == 'Could not add answers'
+		questionInstance.answers.size() == 2
+		questionInstance.answers.first().answer == 'This is the first answer updated'
+		questionInstance.answers.first().priority == 2
+		questionInstance.answers.last().answer == "This is the second answer"
 	}
 
 	void "test deleteAnswer action deleting answer from a question instance"() {

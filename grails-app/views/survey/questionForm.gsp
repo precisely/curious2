@@ -153,7 +153,7 @@
 					var priority = $('#priority').val();
 					var status = $('#status').val();
 					var answerType = $('#answerType').val();
-					var isRequired = $('#isRequired').val();
+					var isRequired = $('#isRequired').prop('checked');
 
 					$('#answerInputAffordance  > tr').each(function() {
 						var answerRow = $(this).find('td');
@@ -186,27 +186,11 @@
 
 						params.id = ${questionInstance.id}
 						queuePostJSON('Updating question', '/survey/updateQuestion',
-								getCSRFPreventionObject('updateQuestionCSRF', params),
-								function(data) {
-									if (checkData(data)) {
-										showBootstrapAlert($('.alert'), data.message);
-									}
-								}, function(xhr) {
-									console.log('error: ', xhr);
-								}
-						);
+								getCSRFPreventionObject('updateQuestionCSRF', params));
 					} else {
 						params.id = ${surveyId};
 						queuePostJSON('Adding question to survey', '/survey/saveQuestion',
-								getCSRFPreventionObject('addQuestionCSRF', params),
-								function(data) {
-									if (checkData(data)) {
-										showBootstrapAlert($('.alert'), data.message);
-									}
-								}, function(xhr) {
-									console.log('error: ', xhr);
-								}
-						);
+								getCSRFPreventionObject('addQuestionCSRF', params));
 					}
 				});
 
