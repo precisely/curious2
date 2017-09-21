@@ -7,6 +7,8 @@
 		<title>Survey Question</title>
 
 		<c:jsCSRFToken keys="addQuestionCSRF, updateQuestionCSRF, deleteAnswerCSRF, autocompleteDataCSRF"/>
+		<script type="text/javascript" src="/js/jquery/jquery.tokeninput.js"></script>
+		<link rel="stylesheet" type="text/css" href="/css/token-input.css" />
 		<script type="text/javascript">
 
 			var rowIdInEditMode;
@@ -16,10 +18,15 @@
 
 				if (${!questionInstance.id || questionInstance.answerType == AnswerType.DESCRIPTIVE}) {
 					$('#answerListContainer').attr("style", "display:none");
+					$('#answerContainer').attr("style", "display:none");
 				}
 
-				createAutocompleteForTags('associatedProfileTags', 'profileTagsAutocomplete');
-				createAutocompleteForTags('associatedTrackingTags', 'trackingTagsAutocomplete');
+				$(document).on("keyup", ".associated-tracking-tags", function() {
+					$(".associated-tracking-tags").tokenInput("/data/getTagsForAutoComplete");
+				});
+				$(document).on("keyup", ".associated-profile-tags", function() {
+					$(".associated-profile-tags").tokenInput("/data/getTagsForAutoComplete");
+				});
 
 				$(document).on("click", ".deleteProfileTags", function() {
 					var parentLi = $(this).parents('li');
@@ -76,75 +83,40 @@
 					return false;
 				});
 
-				$("#addAnswerOverlay").on("hidden.bs.modal",function() {
-					$(this).find('form').trigger('reset');
-				});
+				$('#addAnswerRow').click(function() {
+					var innerHTMLContent =
+							'<tr id=answerRow' + rowNumber + '>' +
 
-				$('#addSurveyAnswerForm').submit(function() {
-					// Defined in base.js file.
-					var params = $(this).serializeObject();
-					var profileTags = [];
-					var trackingTags = [];
+							'<td id=answerId' + rowNumber + ' class="hidden">' +
+							'</td>' +
 
-					$('#associatedProfileTags-list li').each(function () {
-						profileTags.push($(this).context.firstChild.data);
-					});
-					$('#associatedTrackingTags-list li').each(function () {
-						trackingTags.push($(this).context.firstChild.data);
-					});
+							'<td><textarea id=answerText' + rowNumber + ' placeholder="Add answer text..." ' +
+							'maxlength="1000" required></textarea></td>' +
 
-					if (rowIdInEditMode != null) {
-						var rowInEditMode = $('#answerRow' + rowIdInEditMode);
-						rowInEditMode.find('#answerText' + rowIdInEditMode).text(params.answer);
-						rowInEditMode.find('#priorityNumber' + rowIdInEditMode).text(params.priority);
-						rowInEditMode.find('#profileTags' + rowIdInEditMode).text(profileTags);
-						rowInEditMode.find('#trackingTags' + rowIdInEditMode).text(trackingTags);
+							'<td><input id=priorityNumber' + rowNumber + ' class="survey-input" type="number" ' +
+							'min="0" required/></td>' +
 
-						rowIdInEditMode = null;
-					} else {
-						var innerHTMLContent =
-								'<tr id=answerRow' + rowNumber + '>' +
+							'<td><input type="text" placeholder="Add profile tags here..." name="associatedProfileTags"' +
+							' class="survey-input associated-profile-tags" id=profileTags' + rowNumber + '>' +
+							'<div class="profile-tag-autocomplete"></div>' +
+							'</td>' +
 
-								'<td id=answerId' + rowNumber + ' class="hidden">' +
-								(params.answerId ? params.answerId : '') +
-								'</td>' +
+							'<td><input type="text" placeholder="Add tracking tags here..." name="associatedTrackingTags"' +
+							' class="survey-input associated-tracking-tags" id=trackingTags' + rowNumber + '>' +
+							'<div class="tracking-tag-autocomplete"></div>' +
+							'</td>' +
 
-								'<td id=answerText' + rowNumber + '>' +
-								params.answer +
-								'</td>' +
+							'<td>' +
+							'<a href=# class="margin-left">' +
+							'<i class="fa fa-trash action-icon"' +
+							'onclick="deleteAnswer(' + rowNumber + ')"></i>' +
+							'</a>' +
+							'</td>' +
 
-								'<td id=priorityNumber' + rowNumber + '>' +
-								params.priority +
-								'</td>' +
+							'</tr>';
 
-								'<td id=profileTags' + rowNumber + '>' +
-								profileTags +
-								'</td>' +
-
-								'<td id=trackingTags' + rowNumber + '>' +
-								trackingTags +
-								'</td>' +
-
-								'<td>' +
-								'<a href=#>' +
-								'<i class="fa fa-pencil action-icon"' +
-								'onclick="editAnswer(' + rowNumber + ')"></i>' +
-								'</a>' +
-								'<a href=# class="margin-left">' +
-								'<i class="fa fa-trash action-icon"' +
-								'onclick="deleteAnswer(' + rowNumber + ')"></i>' +
-								'</a>' +
-								'</td>' +
-
-								'</tr>';
-
-						$('#answerInputAffordance').append(innerHTMLContent);
-						rowNumber += 1;
-					}
-
-					$('#addAnswerOverlay').modal('toggle');
-
-					return false;
+					$('#answerInputAffordance').append(innerHTMLContent);
+					rowNumber += 1;
 				});
 
 				$('#addOrUpdateQuestion').click(function() {
@@ -159,10 +131,10 @@
 						var answerRow = $(this).find('td');
 
 						var possibleAnswer = {
-							answer: $(answerRow[1]).text(),
-							priority: $(answerRow[2]).text(),
-							profileTags: $(answerRow[3]).text() ? $(answerRow[3]).text().split(',') : [],
-							trackingTags: $(answerRow[4]).text() ? $(answerRow[4]).text().split(',') : [],
+							answer: $(answerRow[1]).find('textarea').val(),
+							priority: $(answerRow[2]).find('input').val(),
+							profileTags: $($(answerRow[3])[0]).find('input').val() ? $($(answerRow[3])[0]).find('input').val().split(',') : [],
+							trackingTags: $($(answerRow[4])[0]).find('input').val() ? $($(answerRow[4])[0]).find('input').val().split(',') : [],
 						};
 
 						var answerId = $(answerRow[0]).text();
@@ -198,8 +170,10 @@
 					var answerType = $('#answerType').val();
 					if (answerType == "DESCRIPTIVE" && !$('#answerInputAffordance  > tr')[0]) {
 						$('#answerListContainer').attr("style", "display:none");
+						$('#answerContainer').attr("style", "display:none");
 					} else {
 						$('#answerListContainer').attr("style", "display:block");
+						$('#answerContainer').attr("style", "display:block");
 					}
 				});
 			});
@@ -226,34 +200,6 @@
 				}
 			}
 
-			function editAnswer(rowId) {
-				rowIdInEditMode = rowId;
-
-				var rowInEditMode = '#answerRow' + rowId;
-				var answerModal = $('#addAnswerOverlay');
-				var answerId = answerModal.find('#answerId').val($(rowInEditMode).find('#answerId' + rowId).text());
-				if (answerId[0].value) {
-					var profileTagsList = $("#profileTags" + rowId).html().split(',');
-					for (var i = 0; i < profileTagsList.length; i++) {
-						var tagDescription = profileTagsList[i];
-						if (tagDescription.trim() != '') {
-							addProfileOrTrackingTagsToList($("#associatedProfileTags-list"), 'deleteProfileTags', tagDescription.trim());
-						}
-					}
-					var trackingTagsList = $("#trackingTags" + rowId).html().split(',');
-					for (var i = 0; i < trackingTagsList.length; i++) {
-						var tagDescription = trackingTagsList[i];
-						if (tagDescription.trim() != '') {
-							addProfileOrTrackingTagsToList($("#associatedTrackingTags-list"), 'deleteTrackingTags', tagDescription.trim());
-						}
-					}
-				}
-				answerModal.find('#answer').val($(rowInEditMode).find('#answerText' + rowId).text());
-				answerModal.find('#priority').val($(rowInEditMode).find('#priorityNumber' + rowId).text());
-				answerModal.find('.add-answer').text('Save');
-				answerModal.find('h4').text('Edit PossibleAnswer');
-				answerModal.modal('toggle');
-			}
 		</script>
 	</head>
 	<body>
@@ -301,14 +247,25 @@
 					<g:select class="survey-input" name="answerType" id="answerType" from="${AnswerType.values()}"
 							optionValue="displayText" value="${questionInstance.answerType ?: AnswerType.values()[0]}"/>
 				</div>
+				<div id="answerContainer">
+					<label>
+						Answers
+					</label>
+					<g>
+						<button type="button" class="btn btn-default add-survey-button" id="addAnswerRow">
+							<i class="fa fa-plus-circle survey-add-icon"></i> Add Answer
+						</button>
+					</g>
+
+					<g:render template="answerList" model="[isViewOnly: false]" />
+
+				</div>
 				<div>
 					<label for="isRequired">
 						Required
 					</label>
 					<g:checkBox name="isRequired" id="isRequired" value="${questionInstance.isRequired}" />
 				</div>
-
-				<g:render template="answerList" model="[isViewOnly: false]" />
 
 				<div class="margin-top">
 					<button type="button" class="btn btn-default">
@@ -324,8 +281,5 @@
 
 			</g:form>
 		</div>
-
-		<g:render template="addAnswersModal" />
-
 	</body>
 </html>

@@ -1539,7 +1539,7 @@ body.tags-displayed .floating-column {
 	color: #a4a4a4;
 }
 
-#addAnswerOverlay .modal-body label {
+.modal-body label {
 	margin-bottom: 5px;
 	font-size: 14px;
 }

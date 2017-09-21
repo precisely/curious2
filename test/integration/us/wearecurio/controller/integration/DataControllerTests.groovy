@@ -1384,7 +1384,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		when: 'getTagsForAutoComplete action is hit with empty searchString'
 		controller.request.method = 'GET'
-		controller.params.searchString = ''
+		controller.params.q = ''
 		controller.getTagsForAutoComplete()
 
 		then: 'The server returns false'
@@ -1394,26 +1394,24 @@ class DataControllerTests extends CuriousControllerTestCase {
 		when: 'getTagsForAutoComplete action is hit and no results are found for the given searchString'
 		controller.response.reset()
 		controller.params.clear()
-		controller.params.searchString = 'zxcvbnm'
+		controller.params.q = 'zxcvbnm'
 		controller.getTagsForAutoComplete()
 
 		then: 'Server returns empty list in response'
 		assert controller.response.status == 200
-		assert controller.response.json.success == true
-		assert controller.response.json.displayNames == []
+		assert controller.response.json.size() == 0
 
 		when: 'getTagsForAutoComplete action is hit and results are found for the given searchString'
 		controller.response.reset()
 		controller.params.clear()
-		controller.params.searchString = 'e'
+		controller.params.q = 'e'
 		controller.getTagsForAutoComplete()
 
 		then: 'Server returns list of matching results'
 		assert controller.response.status == 200
-		assert controller.response.json.success == true
-		assert controller.response.json.displayNames.size() != null
-		controller.response.json.displayNames.each {
-			assert it.value.contains('e')
+		assert controller.response.json.size() != null
+		controller.response.json.each {
+			assert it.name.contains('e')
 		}
 	}
 }

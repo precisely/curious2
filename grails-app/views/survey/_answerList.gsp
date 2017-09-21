@@ -1,16 +1,6 @@
 <%@ page import="us.wearecurio.model.survey.AnswerType" %>
 <div class="main container-fluid survey-factory survey-factory-container" id="answerListContainer">
-	<div>
-		<h2 class="display-inline">
-			Survey Answers
-		</h2>
-		<g:if test="${!isViewOnly}">
-			<a href="#" class="btn btn-default add-survey-button pull-right" data-toggle="modal" data-target="#addAnswerOverlay">
-				<i class="fa fa-plus-circle survey-add-icon"></i> Add Answer
-			</a>
-		</g:if>
-	</div>
-	<table class="table table-bordered table-hover table-striped remove-margin-bottom">
+	<table class="table table-bordered table-hover table-striped remove-margin-bottom margin-top">
 		<thead>
 			<tr>
 				<th>Answer</th>
@@ -25,26 +15,34 @@
 		<tbody id="answerInputAffordance">
 			<g:each in="${questionInstance.answers}" var="answerInstance" status="index">
 				<tr id="answerRow${index}">
-					<td id="answerId${index}" class="hidden">${answerInstance.id}</td>
-					<td id="answerText${index}">${answerInstance.answer}</td>
-					<td id="priorityNumber${index}">${answerInstance.priority}</td>
-					<td id="profileTags${index}"><g:each in="${answerInstance.associatedProfileTags}" var="tagsInstance">
-						${tagsInstance.description},
-					</g:each> </td>
-					<td id="trackingTags${index}"><g:each in="${answerInstance.associatedTrackingTags}" var="tagsInstance">
-						${tagsInstance.description},
-					</g:each> </td>
 					<g:if test="${!isViewOnly}">
+						<td id="answerId${index}" class="hidden">${answerInstance.id}</td>
+						<td><textarea id="answerText${index}" maxlength="1000" required>${answerInstance.answer}</textarea></td>
+						<td><input id="priorityNumber${index}" class="survey-input" type="number" required min="0" value="${answerInstance.priority}"></td>
+						<td id="profileTags${index}"><g:each in="${answerInstance.associatedProfileTags}" var="tagsInstance">
+							${tagsInstance.description},
+						</g:each> </td>
+						<td id="trackingTags${index}"><g:each in="${answerInstance.associatedTrackingTags}" var="tagsInstance">
+							${tagsInstance.description},
+						</g:each> </td>
 						<td>
-							<a href="#" data-toggle="tooltip" title="Edit Answer" data-placement="top">
-								<i class="fa fa-pencil action-icon" onclick="editAnswer(${index})"></i>
-							</a>
 							<a href="#" class="margin-left" data-toggle="tooltip" title="Delete Answer"
 									data-placement="top">
 								<i class="fa fa-trash action-icon" onclick="deleteAnswer(${index}, ${answerInstance.id})"></i>
 							</a>
 						</td>
 					</g:if>
+					<g:else>
+						<td id="answerId${index}" class="hidden">${answerInstance.id}</td>
+						<td id="answerText${index}">${answerInstance.answer}</td>
+						<td id="priorityNumber${index}">${answerInstance.priority}</td>
+						<td id="profileTags${index}"><g:each in="${answerInstance.associatedProfileTags}" var="tagsInstance">
+							${tagsInstance.description},
+						</g:each> </td>
+						<td id="trackingTags${index}"><g:each in="${answerInstance.associatedTrackingTags}" var="tagsInstance">
+							${tagsInstance.description},
+						</g:each> </td>
+					</g:else>
 				</tr>
 			</g:each>
 		</tbody>

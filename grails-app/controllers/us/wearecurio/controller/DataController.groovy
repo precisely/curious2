@@ -1427,7 +1427,7 @@ class DataController extends LoginController {
 	def getTagsForAutoComplete() {
 		log.debug "Fetching all the tags for autocomplete, params: ${params}"
 
-		String query = params.searchString
+		String query = params.q
 		if (!query) {
 			renderJSONGet([success: false])
 			return
@@ -1436,14 +1436,14 @@ class DataController extends LoginController {
 		List tagsResultList = Tag.withCriteria {
 			resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
 			projections {
-				property('description', 'label')
-				property('description', 'value')
+				property('id', 'id')
+				property('description', 'name')
 			}
 			ilike('description', "${query}%")
 			maxResults(10)
 		}
 
-		renderJSONGet([success: true, displayNames: tagsResultList])
+		renderJSONGet(tagsResultList)
 	}
 
 	def getAutocompleteParticipantsData() {
