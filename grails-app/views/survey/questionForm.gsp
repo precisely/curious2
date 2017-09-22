@@ -8,7 +8,8 @@
 
 		<c:jsCSRFToken keys="addQuestionCSRF, updateQuestionCSRF, deleteAnswerCSRF, autocompleteDataCSRF"/>
 		<script type="text/javascript" src="/js/jquery/jquery.tokeninput.js"></script>
-		<link rel="stylesheet" type="text/css" href="/css/token-input.css" />
+		<link rel="stylesheet" type="text/css" href="/css/token-input/token-input.css" />
+		<link rel="stylesheet" type="text/css" href="/css/token-input/token-input-facebook.css" />
 		<script type="text/javascript">
 
 			var rowIdInEditMode;
@@ -20,13 +21,6 @@
 					$('#answerListContainer').attr("style", "display:none");
 					$('#answerContainer').attr("style", "display:none");
 				}
-
-				$(document).on("keyup", ".associated-tracking-tags", function() {
-					$(".associated-tracking-tags").tokenInput("/data/getTagsForAutoComplete");
-				});
-				$(document).on("keyup", ".associated-profile-tags", function() {
-					$(".associated-profile-tags").tokenInput("/data/getTagsForAutoComplete");
-				});
 
 				$(document).on("click", ".deleteProfileTags", function() {
 					var parentLi = $(this).parents('li');
@@ -84,6 +78,8 @@
 				});
 
 				$('#addAnswerRow').click(function() {
+					var profileTagRowId = "profileTags" + rowNumber;
+					var trackingTagRowId = "trackingTags" + rowNumber;
 					var innerHTMLContent =
 							'<tr id=answerRow' + rowNumber + '>' +
 
@@ -91,22 +87,20 @@
 							'</td>' +
 
 							'<td><textarea id=answerText' + rowNumber + ' placeholder="Add answer text..." ' +
-							'maxlength="1000" required></textarea></td>' +
+							'maxlength="1000" class="answer-input" required></textarea></td>' +
 
-							'<td><input id=priorityNumber' + rowNumber + ' class="survey-input" type="number" ' +
+							'<td width="10px"><input id=priorityNumber' + rowNumber + ' class="answer-input" type="number" ' +
 							'min="0" required/></td>' +
 
-							'<td><input type="text" placeholder="Add profile tags here..." name="associatedProfileTags"' +
-							' class="survey-input associated-profile-tags" id=profileTags' + rowNumber + '>' +
-							'<div class="profile-tag-autocomplete"></div>' +
+							'<td width="300px"><input type="text" placeholder="Add profile tags here..." name="associatedProfileTags"' +
+							' class="answer-input associated-profile-tags" id=' + profileTagRowId + '>' +
 							'</td>' +
 
-							'<td><input type="text" placeholder="Add tracking tags here..." name="associatedTrackingTags"' +
-							' class="survey-input associated-tracking-tags" id=trackingTags' + rowNumber + '>' +
-							'<div class="tracking-tag-autocomplete"></div>' +
+							'<td width="300px"><input type="text" placeholder="Add tracking tags here..." name="associatedTrackingTags"' +
+							' class="answer-input associated-tracking-tags" id=' + trackingTagRowId + '>' +
 							'</td>' +
 
-							'<td>' +
+							'<td style="width: 10px;">' +
 							'<a href=# class="margin-left">' +
 							'<i class="fa fa-trash action-icon"' +
 							'onclick="deleteAnswer(' + rowNumber + ')"></i>' +
@@ -117,6 +111,9 @@
 
 					$('#answerInputAffordance').append(innerHTMLContent);
 					rowNumber += 1;
+
+					$("#" + profileTagRowId).tokenInput("/data/getTagsForAutoComplete", {theme: "facebook", preventDuplicates: true});
+					$("#" + trackingTagRowId).tokenInput("/data/getTagsForAutoComplete", {theme: "facebook", preventDuplicates: true});
 				});
 
 				$('#addOrUpdateQuestion').click(function() {
@@ -129,12 +126,14 @@
 
 					$('#answerInputAffordance  > tr').each(function() {
 						var answerRow = $(this).find('td');
+						var profileTags = $(answerRow[3]).text().indexOf('×') >= 0 ? $(answerRow[3]).text().split('×') : $(answerRow[3]).text().split(',');
+						var trackingTags = $(answerRow[4]).text().indexOf('×') >= 0 ? $(answerRow[4]).text().split('×') : $(answerRow[4]).text().split(',');
 
 						var possibleAnswer = {
 							answer: $(answerRow[1]).find('textarea').val(),
 							priority: $(answerRow[2]).find('input').val(),
-							profileTags: $($(answerRow[3])[0]).find('input').val() ? $($(answerRow[3])[0]).find('input').val().split(',') : [],
-							trackingTags: $($(answerRow[4])[0]).find('input').val() ? $($(answerRow[4])[0]).find('input').val().split(',') : [],
+							profileTags: profileTags,
+							trackingTags: trackingTags,
 						};
 
 						var answerId = $(answerRow[0]).text();

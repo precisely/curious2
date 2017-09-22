@@ -17,15 +17,15 @@
 				<tr id="answerRow${index}">
 					<g:if test="${!isViewOnly}">
 						<td id="answerId${index}" class="hidden">${answerInstance.id}</td>
-						<td><textarea id="answerText${index}" maxlength="1000" required>${answerInstance.answer}</textarea></td>
-						<td><input id="priorityNumber${index}" class="survey-input" type="number" required min="0" value="${answerInstance.priority}"></td>
-						<td id="profileTags${index}"><g:each in="${answerInstance.associatedProfileTags}" var="tagsInstance">
+						<td><textarea id="answerText${index}" class="answer-input" maxlength="1000" required>${answerInstance.answer}</textarea></td>
+						<td style="width: 10px"><input id="priorityNumber${index}" class="answer-input" type="number" required min="0" value="${answerInstance.priority}"></td>
+						<td width="300px" id="profileTags${index}"><g:each in="${answerInstance.associatedProfileTags}" var="tagsInstance">
 							${tagsInstance.description},
 						</g:each> </td>
-						<td id="trackingTags${index}"><g:each in="${answerInstance.associatedTrackingTags}" var="tagsInstance">
+						<td width="300px" id="trackingTags${index}"><g:each in="${answerInstance.associatedTrackingTags}" var="tagsInstance">
 							${tagsInstance.description},
 						</g:each> </td>
-						<td>
+						<td style="width: 10px">
 							<a href="#" class="margin-left" data-toggle="tooltip" title="Delete Answer"
 									data-placement="top">
 								<i class="fa fa-trash action-icon" onclick="deleteAnswer(${index}, ${answerInstance.id})"></i>
