@@ -17,9 +17,13 @@
 			$(document).ready(function() {
 				var rowNumber = ${(questionInstance.answers.size() ?: -1) + 1};
 
-				if (${!questionInstance.id || questionInstance.answerType == AnswerType.DESCRIPTIVE}) {
-					$('#answerListContainer').attr("style", "display:none");
-					$('#answerContainer').attr("style", "display:none");
+				if (${questionInstance.id}) {
+					if (${questionInstance.answerType == AnswerType.DESCRIPTIVE}) {
+						$('#answerListContainer').attr("style", "display:none");
+						$('#answerContainer').attr("style", "display:none");
+					} else if (!$('#answerInputAffordance  > tr')[0]) {
+						$('#answerListContainer').attr("style", "display:none");
+					}
 				}
 
 				$('#addAnswerRow').click(function() {
@@ -190,21 +194,23 @@
 
 			function deleteAnswer(rowId, answerId) {
 				if (answerId) {
-					var params = {'possibleAnswerInstance.id': answerId};
-					params.id = ${questionInstance.id}
-					queuePostJSON('Deleting answer from survey question', '/survey/deleteAnswer',
-							getCSRFPreventionObject('deleteAnswerCSRF', params),
-							function(data) {
-								if (checkData(data)) {
-									if (data.success) {
-										$('#answerRow' + rowId).remove();
+					showYesNo("The answer will be deleted permanently. Do you want to continue?", function() {
+						var params = {'possibleAnswerInstance.id': answerId};
+						params.id = ${questionInstance.id}
+						queuePostJSON('Deleting answer from survey question', '/survey/deleteAnswer',
+								getCSRFPreventionObject('deleteAnswerCSRF', params),
+								function (data) {
+									if (checkData(data)) {
+										if (data.success) {
+											$('#answerRow' + rowId).remove();
+										}
+										showBootstrapAlert($('.alert'), data.message);
 									}
-									showBootstrapAlert($('.alert'), data.message);
+								}, function (xhr) {
+									console.log('error: ', xhr);
 								}
-							}, function(xhr) {
-								console.log('error: ', xhr);
-							}
-					);
+						);
+					});
 				} else {
 					$('#answerRow' + rowId).remove();
 				}
@@ -241,26 +247,32 @@
 							id="question" class="question-input" required>${questionInstance.question}</textarea>
 				</div>
 				<div class="row">
-					<div class="col-md-4">
+					<div class="col-md-3">
 						<label for="priority">
 							Priority
 						</label>
 						<input class="survey-input" type="number" min="0" value="${questionInstance.priority}"
 								name="priority" placeholder="Priority" id="priority" required/>
 					</div>
-					<div class="col-md-4">
+					<div class="col-md-3">
 						<label for="status">
 							Status
 						</label>
 						<g:select class="survey-input" name="status" id="status" from="${QuestionStatus.values()}"
 								optionValue="displayText" value="${questionInstance.status ?: QuestionStatus.values()[1]}"/>
 					</div>
-					<div class="col-md-4">
+					<div class="col-md-3">
 						<label for="answerType">
 							Answer Type
 						</label>
 						<g:select class="survey-input" name="answerType" id="answerType" from="${AnswerType.values()}"
 								optionValue="displayText" value="${questionInstance.answerType ?: AnswerType.values()[0]}"/>
+					</div>
+					<div class="col-md-1">
+						<label for="isRequired">
+							Required
+						</label>
+						<g:checkBox class="survey-input" name="isRequired" id="isRequired" value="${questionInstance.isRequired}" />
 					</div>
 				</div>
 				<div id="answerContainer">
@@ -275,12 +287,6 @@
 
 					<g:render template="answerList" model="[isViewOnly: false]" />
 
-				</div>
-				<div>
-					<label for="isRequired">
-						Required
-					</label>
-					<g:checkBox name="isRequired" id="isRequired" value="${questionInstance.isRequired}" />
 				</div>
 
 				<div class="margin-top">
