@@ -1,5 +1,5 @@
 <%@ page import="us.wearecurio.model.survey.AnswerType" %>
-<div class="main container-fluid survey-factory survey-factory-container" id="answerListContainer">
+<div class="main container-fluid survey-factory survey-factory-container margin-bottom" id="answerListContainer">
 	<table class="table table-bordered table-hover table-striped remove-margin-bottom margin-top">
 		<thead>
 			<tr>

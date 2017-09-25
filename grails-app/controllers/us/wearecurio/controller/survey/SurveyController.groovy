@@ -8,6 +8,7 @@ import us.wearecurio.model.Tag
 import us.wearecurio.model.User
 import us.wearecurio.model.survey.PossibleAnswer
 import us.wearecurio.model.survey.Question
+import us.wearecurio.model.survey.QuestionStatus
 import us.wearecurio.model.survey.Status
 import us.wearecurio.model.survey.SurveyStatus
 import us.wearecurio.model.survey.UserAnswer
@@ -132,6 +133,19 @@ class SurveyController extends LoginController {
 		}
 
 		[questionInstance: questionInstance, surveyId: params.surveyId]
+	}
+
+	def toggleQuestionStatus(Question questionInstance) {
+		log.debug "toggleQuestionStatus params: $params"
+
+		if (questionInstance) {
+			QuestionStatus status = questionInstance.status
+
+			questionInstance.status = status == QuestionStatus.ACTIVE ? QuestionStatus.INACTIVE : QuestionStatus.ACTIVE
+			Utils.save(questionInstance)
+		}
+
+		redirect(uri: "survey/surveyDetails/${params.surveyId}")
 	}
 
 	def saveQuestion(Survey surveyInstance) {

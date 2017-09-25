@@ -22,62 +22,8 @@
 					$('#answerContainer').attr("style", "display:none");
 				}
 
-				$(document).on("click", ".deleteProfileTags", function() {
-					var parentLi = $(this).parents('li');
-					var answerId = $('#answerId').val();
-					var tagDescription = $(this).parents('li')[0].textContent;
-					if (answerId) {
-						queueJSON('Removing tracking tag', '/survey/removeAssociatedTagFromPossibleAnswer',
-								{answerId: answerId, tagDescription: tagDescription.trim(), tagType: 'profileTag'},
-								function (data) {
-									if (!checkData(data)) {
-										return;
-									}
-
-									if (data.success) {
-										parentLi.remove();
-										showAlert('Tag removed successfully from answer.');
-									} else {
-										showAlert('Could not remove Tag from answer.')
-									}
-								}, function (xhr) {
-									console.log('error: ', xhr);
-								});
-					} else {
-						parentLi.remove();
-					}
-					return false;
-				});
-
-				// Deleting Tag from Possible Answer
-				$(document).on("click", ".deleteTrackingTags", function() {
-					var parentLi = $(this).parents('li');
-					var answerId = $('#answerId').val();
-					var tagDescription = $(this).parents('li')[0].textContent;
-					if (answerId) {
-						queueJSON('Removing tracking tag', '/survey/removeAssociatedTagFromPossibleAnswer',
-								{answerId: answerId, tagDescription: tagDescription.trim(), tagType: 'trackingTag'},
-								function (data) {
-									if (!checkData(data)) {
-										return;
-									}
-
-									if (data.success) {
-										parentLi.remove();
-										showAlert('Tag removed successfully from answer.');
-									} else {
-										showAlert('Could not remove Tag from answer.')
-									}
-								}, function (xhr) {
-									console.log('error: ', xhr);
-								});
-					} else {
-						parentLi.remove();
-					}
-					return false;
-				});
-
 				$('#addAnswerRow').click(function() {
+					$('#answerListContainer').attr("style", "display:block");
 					var profileTagRowId = "profileTags" + rowNumber;
 					var trackingTagRowId = "trackingTags" + rowNumber;
 					var innerHTMLContent =
@@ -116,7 +62,7 @@
 					$("#" + trackingTagRowId).tokenInput("/data/getTagsForAutoComplete", {theme: "facebook", preventDuplicates: true});
 				});
 
-				$('#addOrUpdateQuestion').click(function() {
+				$('#addOrUpdateQuestion').click(function(e) {
 					var possibleAnswersList = [];
 					var question = $('#question').val();
 					var priority = $('#priority').val();
@@ -150,7 +96,10 @@
 
 					if (${questionInstance.id != null}) {
 						if (answerType == 'DESCRIPTIVE' && $('#answerInputAffordance  > tr')[0]) {
-							alert("Please remove all the answers first.");
+							alert("This is a Descriptive question, please remove all the answers first.");
+							$('#answerListContainer').attr("style", "display:block");
+							$('#answerContainer').attr("style", "display:block");
+							e.preventDefault();
 
 							return;
 						}
@@ -167,11 +116,13 @@
 
 				$("#answerType").change(function() {
 					var answerType = $('#answerType').val();
-					if (answerType == "DESCRIPTIVE" && !$('#answerInputAffordance  > tr')[0]) {
+					if (answerType == "DESCRIPTIVE") {
 						$('#answerListContainer').attr("style", "display:none");
 						$('#answerContainer').attr("style", "display:none");
 					} else {
-						$('#answerListContainer').attr("style", "display:block");
+						if ($('#answerInputAffordance  > tr')[0]) {
+							$('#answerListContainer').attr("style", "display:block");
+						}
 						$('#answerContainer').attr("style", "display:block");
 					}
 				});
@@ -196,6 +147,10 @@
 					);
 				} else {
 					$('#answerRow' + rowId).remove();
+				}
+
+				if (!$('#answerInputAffordance  > tr')[0]) {
+					$('#answerListContainer').attr("style", "display:none");
 				}
 			}
 
@@ -223,28 +178,30 @@
 						Question
 					</label>
 					<textarea placeholder="Add question text..." maxlength="1000" name="question"
-							id="question" required>${questionInstance.question}</textarea>
+							id="question" class="question-input" required>${questionInstance.question}</textarea>
 				</div>
-				<div>
-					<label for="priority">
-						Priority
-					</label>
-					<input class="survey-input" type="number" min="0" value="${questionInstance.priority}"
-							name="priority" placeholder="Priority" id="priority" required/>
-				</div>
-				<div>
-					<label for="status">
-						Status
-					</label>
-					<g:select class="survey-input" name="status" id="status" from="${QuestionStatus.values()}"
-							optionValue="displayText" value="${questionInstance.status ?: QuestionStatus.values()[1]}"/>
-				</div>
-				<div>
-					<label for="answerType">
-						Answer Type
-					</label>
-					<g:select class="survey-input" name="answerType" id="answerType" from="${AnswerType.values()}"
-							optionValue="displayText" value="${questionInstance.answerType ?: AnswerType.values()[0]}"/>
+				<div class="row">
+					<div class="col-md-4">
+						<label for="priority">
+							Priority
+						</label>
+						<input class="survey-input" type="number" min="0" value="${questionInstance.priority}"
+								name="priority" placeholder="Priority" id="priority" required/>
+					</div>
+					<div class="col-md-4">
+						<label for="status">
+							Status
+						</label>
+						<g:select class="survey-input" name="status" id="status" from="${QuestionStatus.values()}"
+								optionValue="displayText" value="${questionInstance.status ?: QuestionStatus.values()[1]}"/>
+					</div>
+					<div class="col-md-4">
+						<label for="answerType">
+							Answer Type
+						</label>
+						<g:select class="survey-input" name="answerType" id="answerType" from="${AnswerType.values()}"
+								optionValue="displayText" value="${questionInstance.answerType ?: AnswerType.values()[0]}"/>
+					</div>
 				</div>
 				<div id="answerContainer">
 					<label>
