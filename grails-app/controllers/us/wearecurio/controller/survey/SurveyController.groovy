@@ -135,6 +135,11 @@ class SurveyController extends LoginController {
 		[questionInstance: questionInstance, surveyId: params.surveyId]
 	}
 
+	/**
+	 * This endpoint can be used to toggle a question's status.
+	 *
+	 * @params questionInstance: Instance of the Question to change status.
+	 */
 	def toggleQuestionStatus(Question questionInstance) {
 		log.debug "toggleQuestionStatus params: $params"
 
@@ -152,9 +157,7 @@ class SurveyController extends LoginController {
 		log.debug "Save survey question: $params"
 
 		if (!surveyInstance) {
-			flash.message = g.message(code: "default.not.found.message", args: ['Survey', params.id])
-			flash.messageType = 'danger'
-			redirect(uri: 'survey/index')
+			renderJSONPost([success: false, message: 'Survey does not exist.'])
 
 			return
 		}
@@ -165,9 +168,7 @@ class SurveyController extends LoginController {
 			surveyInstance.addToQuestions(questionInstance)
 
 			if (!Utils.save(surveyInstance, true)) {
-				flash.message = 'Could not add question.'
-				flash.messageType = 'danger'
-				redirect(uri: 'survey/index')
+				renderJSONPost([success: false, message: 'Could not add question.'])
 
 				return
 			}
@@ -180,9 +181,7 @@ class SurveyController extends LoginController {
 				status.setRollbackOnly()
 
 				log.error "Could not parse possible answers from request.", e
-				flash.message = 'Could not add question.'
-				flash.messageType = 'danger'
-				redirect(uri: 'survey/index')
+				renderJSONPost([success: false, message: 'Invalid data.'])
 
 				return
 			}
@@ -192,18 +191,13 @@ class SurveyController extends LoginController {
 			if (!Utils.save(questionInstance, true)) {
 				status.setRollbackOnly()
 
-				flash.message = 'Error occurred while adding answers.'
-				flash.messageType = 'danger'
-				redirect(uri: 'survey/index')
+				renderJSONPost([success: false, message: 'Could not add answers.'])
 
 				return
 			}
-
-			flash.message = 'Question added successfully.'
-			flash.messageType = 'success'
 		}
 
-		render model: [surveyInstance: surveyInstance], view: 'surveyDetails'
+		renderJSONPost([success: true, message: 'Question added successfully.'])
 	}
 
 	def editQuestion(Question questionInstance) {
@@ -222,9 +216,7 @@ class SurveyController extends LoginController {
 		log.debug "Update Question: $params"
 
 		if (!questionInstance) {
-			flash.message = g.message(code: "default.not.found.message", args: ['Question', params.id])
-			flash.messageType = 'danger'
-			redirect(uri: 'survey/index')
+			renderJSONPost([success: false, message: 'Question does not exist.'])
 
 			return
 		}
@@ -237,7 +229,7 @@ class SurveyController extends LoginController {
 			possibleAnswersList = JSON.parse(params.possibleAnswers) as List
 		} catch (ConverterException e) {
 			log.error "Could not parse possible answers from request.", e
-			renderJSONPost([success: false, message: 'Invalid Data'])
+			renderJSONPost([success: false, message: 'Invalid data.'])
 
 			return
 		}
@@ -245,17 +237,12 @@ class SurveyController extends LoginController {
 		questionInstance.addOrUpdateAnswers(possibleAnswersList)
 
 		if (!Utils.save(questionInstance)) {
-			flash.message = 'Could not update question.'
-			flash.messageType = 'danger'
-			redirect(uri: 'survey/index')
+			renderJSONPost([success: false, message: 'Could not update question.'])
 
 			return
 		}
 
-		flash.message = 'Question updated successfully.'
-		flash.messageType = 'success'
-
-		render model: [surveyInstance: questionInstance.survey], view: 'surveyDetails'
+		renderJSONPost([success: true, message: 'Question updated successfully.'])
 	}
 
 	def deleteAnswer(PossibleAnswer possibleAnswerInstance, Question questionInstance) {

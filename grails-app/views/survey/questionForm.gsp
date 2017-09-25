@@ -38,8 +38,14 @@
 							'<td width="10px"><input id=priorityNumber' + rowNumber + ' class="answer-input" type="number" ' +
 							'min="0" required/></td>' +
 
+							'<td id=profileTagsData' + rowNumber + ' class="hidden">' +
+							'</td>' +
+
 							'<td width="300px"><input type="text" placeholder="Add profile tags here..." name="associatedProfileTags"' +
 							' class="answer-input associated-profile-tags" id=' + profileTagRowId + '>' +
+							'</td>' +
+
+							'<td id=trackingTagsData' + rowNumber + ' class="hidden">' +
 							'</td>' +
 
 							'<td width="300px"><input type="text" placeholder="Add tracking tags here..." name="associatedTrackingTags"' +
@@ -62,6 +68,14 @@
 					$("#" + trackingTagRowId).tokenInput("/data/getTagsForAutoComplete", {theme: "facebook", preventDuplicates: true});
 				});
 
+				// To prepopulate tags in saved answers.
+				var answerCount = ${questionInstance.answers.size()};
+
+				for (var answerRow = 0; answerRow < answerCount; answerRow ++) {
+					prePopulateTags('profileTags', answerRow);
+					prePopulateTags('trackingTags', answerRow);
+				}
+
 				$('#addOrUpdateQuestion').click(function(e) {
 					var possibleAnswersList = [];
 					var question = $('#question').val();
@@ -72,8 +86,8 @@
 
 					$('#answerInputAffordance  > tr').each(function() {
 						var answerRow = $(this).find('td');
-						var profileTags = $(answerRow[3]).text().indexOf('×') >= 0 ? $(answerRow[3]).text().split('×') : $(answerRow[3]).text().split(',');
-						var trackingTags = $(answerRow[4]).text().indexOf('×') >= 0 ? $(answerRow[4]).text().split('×') : $(answerRow[4]).text().split(',');
+						var profileTags = $(answerRow[4]).text().indexOf('×') >= 0 ? $(answerRow[4]).text().split('×') : $(answerRow[4]).text().split(',');
+						var trackingTags = $(answerRow[6]).text().indexOf('×') >= 0 ? $(answerRow[6]).text().split('×') : $(answerRow[6]).text().split(',');
 
 						var possibleAnswer = {
 							answer: $(answerRow[1]).find('textarea').val(),
@@ -96,7 +110,7 @@
 
 					if (${questionInstance.id != null}) {
 						if (answerType == 'DESCRIPTIVE' && $('#answerInputAffordance  > tr')[0]) {
-							alert("This is a Descriptive question, please remove all the answers first.");
+							alert("To change the answer type to Descriptive, please remove all the answers first.");
 							$('#answerListContainer').attr("style", "display:block");
 							$('#answerContainer').attr("style", "display:block");
 							e.preventDefault();
@@ -106,11 +120,32 @@
 
 						params.id = ${questionInstance.id}
 						queuePostJSON('Updating question', '/survey/updateQuestion',
-								getCSRFPreventionObject('updateQuestionCSRF', params));
+								getCSRFPreventionObject('updateQuestionCSRF', params), function(data) {
+									if (checkData(data)) {
+										if(data.success) {
+											window.location = "/survey/surveyDetails/${surveyId}";
+										}
+									}
+									showBootstrapAlert($('.alert'), data.message);
+								}, function(xhr) {
+									window.location = "/survey/surveyDetails/${surveyId}";
+									showBootstrapAlert($('.alert'), data.message);
+								}
+						);
 					} else {
 						params.id = ${surveyId};
 						queuePostJSON('Adding question to survey', '/survey/saveQuestion',
-								getCSRFPreventionObject('addQuestionCSRF', params));
+								getCSRFPreventionObject('addQuestionCSRF', params), function(data) {
+									if (checkData(data)) {
+										if(data.success) {
+											window.location = "/survey/surveyDetails/${surveyId}";
+										}
+									}
+									showBootstrapAlert($('.alert'), data.message);
+								}, function(xhr) {
+									window.location = "/survey/surveyDetails/${surveyId}";
+									showBootstrapAlert($('.alert'), data.message);
+								});
 					}
 				});
 
@@ -127,6 +162,31 @@
 					}
 				});
 			});
+
+			// Function to prepopulate Tags data in answers row.
+			function prePopulateTags(tagType, rowIndex) {
+				var index = rowIndex;
+				var tagsList = [];
+				var tagDataSelector = tagType == 'profileTags' ? $("#profileTagsData" + index) : $("#trackingTagsData" + index);
+				var tagDescriptionsList = tagDataSelector.text() ? tagDataSelector.text().split(",") : [];
+
+				for (var i = 0; i < tagDescriptionsList.length; i++) {
+					if (tagDescriptionsList[i].trim()) {
+						var tagObject = new Object();
+						tagObject.name = tagDescriptionsList[i].trim();
+
+						tagsList.push(tagObject)
+					}
+				}
+
+				var associatedTagsSelector = tagType == 'profileTags' ? $("#profileTags" + index) : $("#trackingTags" + index);
+
+				associatedTagsSelector.tokenInput("/data/getTagsForAutoComplete", {
+					theme: "facebook",
+					preventDuplicates: true,
+					prePopulate: tagsList
+				});
+			}
 
 			function deleteAnswer(rowId, answerId) {
 				if (answerId) {

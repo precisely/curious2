@@ -19,12 +19,27 @@
 						<td id="answerId${index}" class="hidden">${answerInstance.id}</td>
 						<td><textarea id="answerText${index}" class="answer-input" maxlength="1000" required>${answerInstance.answer}</textarea></td>
 						<td style="width: 10px"><input id="priorityNumber${index}" class="answer-input" type="number" required min="0" value="${answerInstance.priority}"></td>
-						<td width="300px" id="profileTags${index}"><g:each in="${answerInstance.associatedProfileTags}" var="tagsInstance">
-							${tagsInstance.description},
-						</g:each> </td>
-						<td width="300px" id="trackingTags${index}"><g:each in="${answerInstance.associatedTrackingTags}" var="tagsInstance">
-							${tagsInstance.description},
-						</g:each> </td>
+
+						<td class="hidden" id="profileTagsData${index}">
+							<g:each in="${answerInstance.associatedProfileTags}" var="tagsInstance">
+								${tagsInstance.description},
+							</g:each>
+						</td>
+						<td width="300px"><input type="text" id="profileTags${index}" placeholder="Add
+								profile tags here..." name="associatedProfileTags" class="answer-input
+								associated-profile-tags">
+						</td>
+
+						<td class="hidden" id="trackingTagsData${index}">
+							<g:each in="${answerInstance.associatedTrackingTags}" var="tagsInstance">
+								${tagsInstance.description},
+							</g:each>
+						</td>
+						<td width="300px"><input type="text" id="trackingTags${index}" placeholder="Add
+								tracking tags here..." name="associatedTrackingTags" class="answer-input
+								associated-tracking-tags">
+						</td>
+
 						<td style="width: 10px">
 							<a href="#" class="margin-left" data-toggle="tooltip" title="Delete Answer"
 									data-placement="top">

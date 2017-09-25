@@ -69,6 +69,8 @@ class PossibleAnswer {
 	PossibleAnswer update(Map args) {
 		this.answer = args.answer
 		this.priority = args.priority?.toInteger()
+		this.associatedProfileTags.clear()
+		this.associatedTrackingTags.clear()
 		getAssociatedTags(args.profileTags).each { Tag tag ->
 			this.addToAssociatedProfileTags(tag)
 		}
