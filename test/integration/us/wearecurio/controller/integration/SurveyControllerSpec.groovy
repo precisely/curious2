@@ -4,6 +4,7 @@ import grails.converters.JSON
 import grails.test.mixin.TestFor
 import grails.test.spock.IntegrationSpec
 import org.codehaus.groovy.grails.web.json.JSONElement
+import org.springframework.context.MessageSource
 import spock.lang.Specification
 import spock.lang.Unroll
 import us.wearecurio.controller.survey.SurveyController
@@ -21,6 +22,7 @@ import us.wearecurio.model.survey.UserSurvey
 class SurveyControllerSpec extends IntegrationSpec {
 
 	SurveyController controller
+	MessageSource messageSource
 
 	void setup() {
 		controller = new SurveyController()
@@ -201,9 +203,9 @@ class SurveyControllerSpec extends IntegrationSpec {
 		controller.params.id = 1
 		controller.saveQuestion()
 
-		then: 'The request should redirect to index action'
-		controller.flash.message == 'Survey not found with id 1'
-		controller.response.redirectedUrl == 'survey/index'
+		then: 'Server responds with appropriate error message'
+		controller.response.json.success == false
+		controller.response.json.message == "Survey does not exist."
 	}
 
 	void "test saveQuestion action for successfully adding question and answers to survey"() {
@@ -228,12 +230,11 @@ class SurveyControllerSpec extends IntegrationSpec {
 
 		controller.saveQuestion()
 
-		then: 'The surveyDetails view should be rendered with survey instance as model'
+		then: 'The server responds with success message and questions are added to Survey'
 		Survey.count() == 1
 
-		controller.modelAndView.viewName == '/survey/surveyDetails'
-		controller.modelAndView.model['surveyInstance'] == surveyInstance
-		controller.flash.message == 'Question added successfully.'
+		controller.response.json.success == true
+		controller.response.json.message == 'Question added successfully.'
 
 		surveyInstance.status == SurveyStatus.ACTIVE
 		surveyInstance.questions.size() == 1
@@ -277,9 +278,9 @@ class SurveyControllerSpec extends IntegrationSpec {
 
 		controller.saveQuestion()
 
-		then: 'The request should redirect to index action due to failure'
-		controller.flash.message == 'Could not add question.'
-		controller.response.redirectedUrl == 'survey/index'
+		then: 'The server responds with appropriate error message and question does not get saved.'
+		controller.response.json.success == false
+		controller.response.json.message == 'Could not add question.'
 		Survey.count() == 1
 		Question.count() == 0
 
@@ -299,10 +300,9 @@ class SurveyControllerSpec extends IntegrationSpec {
 		controller.params.id = 1
 		controller.updateQuestion()
 
-		then: 'The request should redirect to index action due to failure'
-		controller.response.redirectedUrl == 'survey/index'
-		controller.flash.message == 'Question not found with id 1'
-		controller.flash.messageType == 'danger'
+		then: 'The server responds with appropriate message'
+		controller.response.json.success == false
+		controller.response.json.message == 'Question does not exist.'
 	}
 
 	void "test updateQuestion action for successfully updating a question and answers"() {
@@ -333,12 +333,11 @@ class SurveyControllerSpec extends IntegrationSpec {
 
 		controller.updateQuestion()
 
-		then: 'The surveyDetails view should be rendered with survey instance as model'
+		then: 'Question gets updated successfully.'
 		Survey.count() == 1
 
-		controller.modelAndView.viewName == '/survey/surveyDetails'
-		controller.modelAndView.model['surveyInstance'] == surveyInstance
-		controller.flash.message == 'Question updated successfully.'
+		controller.response.json.success == true
+		controller.response.json.message == 'Question updated successfully.'
 
 		Question questionInstance = surveyInstance.questions[0]
 		questionInstance.question == 'This is the first question updated'
@@ -504,5 +503,43 @@ class SurveyControllerSpec extends IntegrationSpec {
 		controller.response.status == 200
 		controller.response.json.success == true
 		possibleAnswer.associatedProfileTags.size() == 1
+	}
+
+	void 'test toggleQuestionStatus endpoint for various cases'() {
+		given: 'Survey and a User instance'
+		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
+				status: SurveyStatus.ACTIVE)
+		surveyInstance.save(flush: true)
+		surveyInstance.addToQuestions(question: 'This is the first question.', priority: 1, status: 'ACTIVE',
+				answerType: 'MCQ_RADIO')
+		surveyInstance.save(flush: true)
+
+		Question questionInstance = surveyInstance.questions[0]
+
+		assert Survey.count() == 1
+		assert surveyInstance.questions.size() == 1
+		assert questionInstance.status == QuestionStatus.ACTIVE
+
+		when: 'The toggleQuestionStatus endpoint is hit with for invalid question'
+		controller.request.method = 'GET'
+		controller.params.id = null
+		controller.params.surveyId = surveyInstance.id
+		controller.toggleQuestionStatus()
+
+		then: 'Server should respond with error message'
+		questionInstance.status == QuestionStatus.ACTIVE
+		controller.response.redirectedUrl == "survey/surveyDetails/${surveyInstance.id}"
+		controller.flash.message == "Question not found with id null"
+
+		when: 'The toggleQuestionStatus endpoint is hit with valid questionInstance'
+		controller.params.clear()
+		controller.response.reset()
+		controller.params.id = questionInstance.id
+		controller.params.surveyId = surveyInstance.id
+		controller.toggleQuestionStatus()
+
+		then: 'The question status gets toggled and User is redirected to Survey details page'
+		questionInstance.status == QuestionStatus.INACTIVE
+		controller.response.redirectedUrl == "survey/surveyDetails/${surveyInstance.id}"
 	}
 }

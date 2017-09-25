@@ -232,7 +232,7 @@
 
 		<div class="main container-fluid survey-factory">
 			<g:form>
-				<input hidden name="id" id="id" value="${questionInstance.id}" />
+				<input hidden name="questionId" id="questionId" value="${questionInstance.id}" />
 				<div>
 					<label for="question">
 						Question

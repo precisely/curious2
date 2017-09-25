@@ -143,11 +143,23 @@ class SurveyController extends LoginController {
 	def toggleQuestionStatus(Question questionInstance) {
 		log.debug "toggleQuestionStatus params: $params"
 
-		if (questionInstance) {
-			QuestionStatus status = questionInstance.status
+		if (!questionInstance) {
+			flash.message = g.message(code: "default.not.found.message", args: ['Question', params.id])
+			flash.messageType = 'danger'
+			redirect(uri: "survey/surveyDetails/${params.surveyId}")
 
-			questionInstance.status = status == QuestionStatus.ACTIVE ? QuestionStatus.INACTIVE : QuestionStatus.ACTIVE
-			Utils.save(questionInstance)
+			return
+		}
+
+		QuestionStatus status = questionInstance.status
+		questionInstance.status = status == QuestionStatus.ACTIVE ? QuestionStatus.INACTIVE : QuestionStatus.ACTIVE
+
+		if (!Utils.save(questionInstance)) {
+			flash.message = 'Could not update question status.'
+			flash.messageType = 'danger'
+			redirect(uri: "survey/surveyDetails/${params.surveyId}")
+
+			return
 		}
 
 		redirect(uri: "survey/surveyDetails/${params.surveyId}")
