@@ -1197,5 +1197,17 @@ class MigrationService {
 					"and base_tag_id = ${readinessBaseTagId} and tag_id = ${readinessScoreTagId} and units = 'score'")
 		}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// - - - - - - - - - - - - - - - - Migrations to delete average heart rate Oura entries - - - - - - - - - - - - - - - -
+
+		tryMigration("Delete average heart rate Oura entries") {
+			Long hrAverageBaseTagId = Tag.look("heart rate").id
+			Long hrAverageTagId = Tag.look("heart rate [frequency: sleep]").id
+			Long ouraIdentifierId = Identifier.look("Oura").id
+
+			sql("DELETE from entry where base_tag_id = ${hrAverageBaseTagId} and tag_id = ${hrAverageTagId} and " +
+					"set_identifier = ${ouraIdentifierId} and units = 'bpm sleep'")
+		}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	}
 }
