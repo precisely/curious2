@@ -506,7 +506,7 @@ class SurveyControllerSpec extends IntegrationSpec {
 	}
 
 	void 'test toggleQuestionStatus endpoint for various cases'() {
-		given: 'Survey and a User instance'
+		given: 'Survey, Question and a User instance'
 		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
 				status: SurveyStatus.ACTIVE)
 		surveyInstance.save(flush: true)
@@ -520,7 +520,7 @@ class SurveyControllerSpec extends IntegrationSpec {
 		assert surveyInstance.questions.size() == 1
 		assert questionInstance.status == QuestionStatus.ACTIVE
 
-		when: 'The toggleQuestionStatus endpoint is hit with for invalid question'
+		when: 'The toggleQuestionStatus endpoint is hit with invalid question'
 		controller.request.method = 'GET'
 		controller.params.id = null
 		controller.params.surveyId = surveyInstance.id

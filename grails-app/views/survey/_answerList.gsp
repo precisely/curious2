@@ -51,12 +51,16 @@
 						<td id="answerId${index}" class="hidden">${answerInstance.id}</td>
 						<td id="answerText${index}">${answerInstance.answer}</td>
 						<td id="priorityNumber${index}">${answerInstance.priority}</td>
-						<td id="profileTags${index}"><g:each in="${answerInstance.associatedProfileTags}" var="tagsInstance">
-							${tagsInstance.description},
-						</g:each> </td>
-						<td id="trackingTags${index}"><g:each in="${answerInstance.associatedTrackingTags}" var="tagsInstance">
-							${tagsInstance.description},
-						</g:each> </td>
+						<td id="profileTags${index}">
+							<g:each in="${answerInstance.associatedProfileTags}" var="tagsInstance">
+								${tagsInstance.description},
+							</g:each>
+						</td>
+						<td id="trackingTags${index}">
+							<g:each in="${answerInstance.associatedTrackingTags}" var="tagsInstance">
+								${tagsInstance.description},
+							</g:each>
+						</td>
 					</g:else>
 				</tr>
 			</g:each>

@@ -17,13 +17,13 @@
 			$(document).ready(function() {
 				var rowNumber = ${(questionInstance.answers.size() ?: -1) + 1};
 
-				if (${questionInstance.id}) {
-					if (${questionInstance.answerType == AnswerType.DESCRIPTIVE}) {
-						$('#answerListContainer').attr("style", "display:none");
-						$('#answerContainer').attr("style", "display:none");
-					} else if (!$('#answerInputAffordance  > tr')[0]) {
-						$('#answerListContainer').attr("style", "display:none");
-					}
+				if (${questionInstance.id == null || questionInstance.answerType == AnswerType.DESCRIPTIVE}) {
+					$('#answerListContainer').attr("style", "display:none");
+					$('#answerContainer').attr("style", "display:none");
+				}
+
+				if (!$('#answerInputAffordance  > tr')[0]) {
+					$('#answerListContainer').attr("style", "display:none");
 				}
 
 				$('#addAnswerRow').click(function() {
@@ -68,8 +68,8 @@
 					$('#answerInputAffordance').append(innerHTMLContent);
 					rowNumber += 1;
 
-					$("#" + profileTagRowId).tokenInput("/data/getTagsForAutoComplete", {theme: "facebook", preventDuplicates: true});
-					$("#" + trackingTagRowId).tokenInput("/data/getTagsForAutoComplete", {theme: "facebook", preventDuplicates: true});
+					addTheme(profileTagRowId);
+					addTheme(trackingTagRowId);
 				});
 
 				// To prepopulate tags in saved answers.
@@ -90,8 +90,8 @@
 
 					$('#answerInputAffordance  > tr').each(function() {
 						var answerRow = $(this).find('td');
-						var profileTags = $(answerRow[4]).text().indexOf('×') >= 0 ? $(answerRow[4]).text().split('×') : $(answerRow[4]).text().split(',');
-						var trackingTags = $(answerRow[6]).text().indexOf('×') >= 0 ? $(answerRow[6]).text().split('×') : $(answerRow[6]).text().split(',');
+						var profileTags = $(answerRow[4]).text().split('×');
+						var trackingTags = $(answerRow[6]).text().split('×');
 
 						var possibleAnswer = {
 							answer: $(answerRow[1]).find('textarea').val(),
@@ -114,7 +114,7 @@
 
 					if (${questionInstance.id != null}) {
 						if (answerType == 'DESCRIPTIVE' && $('#answerInputAffordance  > tr')[0]) {
-							alert("To change the answer type to Descriptive, please remove all the answers first.");
+							showAlert("To change the answer type to Descriptive, please remove all the answers first.");
 							$('#answerListContainer').attr("style", "display:block");
 							$('#answerContainer').attr("style", "display:block");
 							e.preventDefault();
@@ -125,10 +125,8 @@
 						params.id = ${questionInstance.id}
 						queuePostJSON('Updating question', '/survey/updateQuestion',
 								getCSRFPreventionObject('updateQuestionCSRF', params), function(data) {
-									if (checkData(data)) {
-										if(data.success) {
-											window.location = "/survey/surveyDetails/${surveyId}";
-										}
+									if (checkData(data) && data.success) {
+										window.location = "/survey/surveyDetails/${surveyId}";
 									}
 									showBootstrapAlert($('.alert'), data.message);
 								}, function(xhr) {
@@ -140,10 +138,8 @@
 						params.id = ${surveyId};
 						queuePostJSON('Adding question to survey', '/survey/saveQuestion',
 								getCSRFPreventionObject('addQuestionCSRF', params), function(data) {
-									if (checkData(data)) {
-										if(data.success) {
+									if (checkData(data) && data.success) {
 											window.location = "/survey/surveyDetails/${surveyId}";
-										}
 									}
 									showBootstrapAlert($('.alert'), data.message);
 								}, function(xhr) {
@@ -155,7 +151,7 @@
 
 				$("#answerType").change(function() {
 					var answerType = $('#answerType').val();
-					if (answerType == "DESCRIPTIVE") {
+					if (answerType === "DESCRIPTIVE") {
 						$('#answerListContainer').attr("style", "display:none");
 						$('#answerContainer').attr("style", "display:none");
 					} else {
@@ -167,23 +163,27 @@
 				});
 			});
 
+			function addTheme(id) {
+				$("#" + id).tokenInput("/data/getTagsForAutoComplete", {theme: "facebook", preventDuplicates: true});
+			}
+
 			// Function to prepopulate Tags data in answers row.
 			function prePopulateTags(tagType, rowIndex) {
 				var index = rowIndex;
 				var tagsList = [];
-				var tagDataSelector = tagType == 'profileTags' ? $("#profileTagsData" + index) : $("#trackingTagsData" + index);
+				var tagDataSelector = tagType === 'profileTags' ? $("#profileTagsData" + index) : $("#trackingTagsData" + index);
 				var tagDescriptionsList = tagDataSelector.text() ? tagDataSelector.text().split(",") : [];
 
-				for (var i = 0; i < tagDescriptionsList.length; i++) {
-					if (tagDescriptionsList[i].trim()) {
+				tagDescriptionsList.forEach(function (tagDescription) {
+					if (tagDescription.trim()) {
 						var tagObject = new Object();
-						tagObject.name = tagDescriptionsList[i].trim();
+						tagObject.name = tagDescription.trim();
 
 						tagsList.push(tagObject)
 					}
-				}
+				});
 
-				var associatedTagsSelector = tagType == 'profileTags' ? $("#profileTags" + index) : $("#trackingTags" + index);
+				var associatedTagsSelector = tagType === 'profileTags' ? $("#profileTags" + index) : $("#trackingTags" + index);
 
 				associatedTagsSelector.tokenInput("/data/getTagsForAutoComplete", {
 					theme: "facebook",
@@ -206,8 +206,6 @@
 										}
 										showBootstrapAlert($('.alert'), data.message);
 									}
-								}, function (xhr) {
-									console.log('error: ', xhr);
 								}
 						);
 					});
@@ -268,7 +266,7 @@
 						<g:select class="survey-input" name="answerType" id="answerType" from="${AnswerType.values()}"
 								optionValue="displayText" value="${questionInstance.answerType ?: AnswerType.values()[0]}"/>
 					</div>
-					<div class="col-md-1">
+					<div class="col-md-3">
 						<label for="isRequired">
 							Required
 						</label>
