@@ -8,6 +8,7 @@
 
 		<c:jsCSRFToken keys="addQuestionCSRF, updateQuestionCSRF, deleteAnswerCSRF, autocompleteDataCSRF"/>
 		<script type="text/javascript" src="/js/jquery/jquery.tokeninput.min.js"></script>
+		<script type="text/javascript" src="/js/curious/answerRow.js"></script>
 		<link rel="stylesheet" type="text/css" href="/css/token-input/token-input.css" />
 		<link rel="stylesheet" type="text/css" href="/css/token-input/token-input-facebook.css" />
 		<script type="text/javascript">
@@ -30,40 +31,7 @@
 					$('#answerListContainer').attr("style", "display:block");
 					var profileTagRowId = "profileTags" + rowNumber;
 					var trackingTagRowId = "trackingTags" + rowNumber;
-					var innerHTMLContent =
-							'<tr id=answerRow' + rowNumber + '>' +
-
-							'<td id=answerId' + rowNumber + ' class="hidden">' +
-							'</td>' +
-
-							'<td><textarea id=answerText' + rowNumber + ' placeholder="Add answer text..." ' +
-							'maxlength="1000" class="answer-input" required></textarea></td>' +
-
-							'<td width="10px"><input id=priorityNumber' + rowNumber + ' class="answer-input" type="number" ' +
-							'min="0" required/></td>' +
-
-							'<td id=profileTagsData' + rowNumber + ' class="hidden">' +
-							'</td>' +
-
-							'<td width="300px"><input type="text" placeholder="Add profile tags here..." name="associatedProfileTags"' +
-							' class="answer-input associated-profile-tags" id=' + profileTagRowId + '>' +
-							'</td>' +
-
-							'<td id=trackingTagsData' + rowNumber + ' class="hidden">' +
-							'</td>' +
-
-							'<td width="300px"><input type="text" placeholder="Add tracking tags here..." name="associatedTrackingTags"' +
-							' class="answer-input associated-tracking-tags" id=' + trackingTagRowId + '>' +
-							'</td>' +
-
-							'<td style="width: 10px;">' +
-							'<a href=# class="margin-left">' +
-							'<i class="fa fa-trash action-icon"' +
-							'onclick="deleteAnswer(' + rowNumber + ')"></i>' +
-							'</a>' +
-							'</td>' +
-
-							'</tr>';
+					var innerHTMLContent = getAnswerRow(rowNumber, profileTagRowId, trackingTagRowId);
 
 					$('#answerInputAffordance').append(innerHTMLContent);
 					rowNumber += 1;
