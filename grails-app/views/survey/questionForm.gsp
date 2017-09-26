@@ -7,7 +7,7 @@
 		<title>Survey Question</title>
 
 		<c:jsCSRFToken keys="addQuestionCSRF, updateQuestionCSRF, deleteAnswerCSRF, autocompleteDataCSRF"/>
-		<script type="text/javascript" src="/js/jquery/jquery.tokeninput.js"></script>
+		<script type="text/javascript" src="/js/jquery/jquery.tokeninput.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="/css/token-input/token-input.css" />
 		<link rel="stylesheet" type="text/css" href="/css/token-input/token-input-facebook.css" />
 		<script type="text/javascript">

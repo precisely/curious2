@@ -1577,7 +1577,7 @@ body.tags-displayed .floating-column {
 	text-align: center;
 }
 
-.col {
+.saved-survey-answers .col {
 	background-color: white;
 	height: 30px;
 	border-left: 1px rgb(221, 221, 221) solid;
