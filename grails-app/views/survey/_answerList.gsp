@@ -43,7 +43,7 @@
 						<td style="width: 10px">
 							<a href="#" class="margin-left" data-toggle="tooltip" title="Delete Answer"
 									data-placement="top">
-								<i class="fa fa-trash action-icon" onclick="deleteAnswer(${index}, ${answerInstance.id})"></i>
+								<i class="fa fa-trash action-icon" onclick="deleteAnswer(${index}, ${answerInstance.id}, ${questionInstance.id ?: null})"></i>
 							</a>
 						</td>
 					</g:if>
