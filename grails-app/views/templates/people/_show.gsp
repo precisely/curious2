@@ -11,10 +11,12 @@
 	</div>
 
 	<div class="lower-body">
-		<div class="user-description">
-			{{= _.linkify(user.bio) }}
-			<hr>
-		</div>
+		{{ if (user.bio) { }}
+			<div class="user-description">
+				{{= _.linkify(user.bio) }}
+				<hr>
+			</div>
+		{{ } }}
 		<div class="public-interests">
 			<label class="people-label">
 				PUBLIC INTEREST TAGS

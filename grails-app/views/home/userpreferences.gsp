@@ -23,7 +23,7 @@ function triggerChooseImageWindow() {
 }
 
 $(window).load(function() {
-	$('#image-cropper').cropit({ 
+	$('#image-cropper').cropit({
 		imageBackground: true,
 		smallImage: 'stretch',
 		maxZoom: 3,
@@ -51,7 +51,7 @@ $(window).load(function() {
 		formData.append(App.CSRF.SyncTokenKeyName, App.CSRF.updateAvatarCSRF);
 		formData.append(App.CSRF.SyncTokenUriName, 'updateAvatarCSRF');
 
-		queueJSONAll('updating avatar', '/user/saveAvatar', 
+		queueJSONAll('updating avatar', '/user/saveAvatar',
 				formData, function(data) {
 			if (data.success) {
 				console.log(data);
@@ -109,7 +109,7 @@ function editUserDetails() {
 	if (newPw.length > 0 && newPw != $("#verify_password").val()) {
 		showAlert("New password and verification do not match");
 		return false;
-	} 
+	}
 	document.getElementById("updateUserPreferences").submit();
 }
 </script>
@@ -132,16 +132,16 @@ function editUserDetails() {
 		padding-right: 10px;
 		text-transform: uppercase;
 		font-size: 14px;
-		color: #B6B6B6;
-		font-weight: 300;
+		color: #b1b1b1;
+		font-weight: 400;
 		margin-left: -7px;
 	}
 	#user-name-label{
 		padding-right: 10px;
 		text-transform: uppercase;
 		font-size: 14px;
-		color: #B6B6B6;
-		font-weight: 300;
+		color: #b1b1b1;
+		font-weight: 400;
 		margin-top: 4px;
 		margin-left: 8px;
 		padding-bottom: 5px;
