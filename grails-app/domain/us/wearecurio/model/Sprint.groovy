@@ -349,6 +349,8 @@ class Sprint {
 
 		Long participantsCount = User.createCriteria().count {
 				'in'("id", participantsIdList ?: [0l])
+			    eq("deleted", false)
+
 				or {
 					isNull("virtual")
 					ne("virtual", true)
@@ -748,6 +750,8 @@ class Sprint {
 					property "id", "userId"
 				}
 				'in'("id", participantIdsList ?: [0l])
+			    eq("deleted", false)
+
 				or {
 					isNull("virtual")
 					ne("virtual", true)

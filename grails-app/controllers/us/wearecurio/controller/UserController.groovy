@@ -3,10 +3,17 @@ package us.wearecurio.controller
 import com.causecode.fileuploader.FileUploaderService
 import com.causecode.fileuploader.UFile
 import com.causecode.fileuploader.UFileMoveHistory
+import us.wearecurio.model.Discussion
+import us.wearecurio.model.DiscussionPost
 import us.wearecurio.model.Entry
+import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.PlotData
+import us.wearecurio.model.PushNotificationDevice
+import us.wearecurio.model.Sprint
 import us.wearecurio.model.Tag
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
+import us.wearecurio.model.profiletags.ProfileTag
 import us.wearecurio.services.SearchService
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
@@ -235,5 +242,61 @@ class UserController extends LoginController {
 		List groups = UserGroup.getConcreteGroupsForWriter(user)
 		
 		renderJSONGet([groups: groups.findAll { it.id != defaultGroup.id }, success: true])
+	}
+
+	def deleteAccount() {
+		User user = sessionUser()
+		debug "Delete User account with username ${user.username}"
+
+		User.withTransaction { status ->
+			try {
+				// To disable polling.
+				OAuthAccount.executeUpdate("DELETE FROM OAuthAccount account where account.userId = :userId",
+						[userId: user.id]);
+
+				// Remove user devices for Push notificaiton.
+				PushNotificationDevice.executeUpdate("DELETE FROM PushNotificationDevice device where " +
+						"device.userId = :userId", [userId: user.id])
+
+				// Remove User's profile tags
+				ProfileTag.executeUpdate("DELETE FROM ProfileTag profileTag where profileTag.userId = :userId",
+						[userId: user.id])
+
+				PlotData.executeUpdate("DELETE FROM PlotData plot where plot.userId = :userId and " +
+						"plot.isSnapshot = false", [userId: user.id])
+
+				// Delete all trackathons created by User.
+				List sprintList = Sprint.findAllByUserId(user.id)
+
+				sprintList.each { Sprint sprint ->
+					Sprint.delete(sprint)
+				}
+
+				// Delete Discussions started by User
+				List discussionList = Discussion.findAllByUserId(user.id)
+
+				discussionList.each { Discussion discussion ->
+					Discussion.delete(discussion)
+				}
+
+				// Delete discussion posts by the User
+				DiscussionPost.executeUpdate("DELETE FROM DiscussionPost p where p.authorUserId = :userId", [userId: user.id]);
+
+				// Delete Entry.
+				Entry.executeUpdate("DELETE FROM Entry entry where entry.userId = :userId", [userId: user.id]);
+
+				User.delete(user)
+				SearchService.get().deindex(user)
+			} catch (Exception e) {
+				log.error "Error while deleting user account", e
+
+				status.setRollbackOnly()
+
+				renderJSONGet([success: false])
+				return
+			}
+		}
+
+		renderJSONGet([success: true])
 	}
 }
