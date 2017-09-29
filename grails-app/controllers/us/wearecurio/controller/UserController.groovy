@@ -11,6 +11,8 @@ import us.wearecurio.model.PlotData
 import us.wearecurio.model.PushNotificationDevice
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.Tag
+import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.Twenty3AndMeData
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.model.profiletags.ProfileTag
@@ -250,6 +252,12 @@ class UserController extends LoginController {
 
 		User.withTransaction { status ->
 			try {
+				OAuthAccount oAuthAccount = OAuthAccount.findByUserIdAndTypeId(user.id, ThirdParty.TWENTY_THREE_AND_ME)
+
+				// Remove Twenty3AndMeData.
+				Twenty3AndMeData.executeUpdate("DELETE FROM Twenty3AndMeData twenty3AndMeData where" +
+						" twenty3AndMeData.account = :account", [account: oAuthAccount])
+
 				// To disable polling.
 				OAuthAccount.executeUpdate("DELETE FROM OAuthAccount account where account.userId = :userId",
 						[userId: user.id]);
@@ -280,13 +288,13 @@ class UserController extends LoginController {
 				}
 
 				// Delete discussion posts by the User
-				DiscussionPost.executeUpdate("DELETE FROM DiscussionPost p where p.authorUserId = :userId", [userId: user.id]);
+				DiscussionPost.executeUpdate("DELETE FROM DiscussionPost p where p.authorUserId = :userId",
+						[userId: user.id]);
 
 				// Delete Entry.
 				Entry.executeUpdate("DELETE FROM Entry entry where entry.userId = :userId", [userId: user.id]);
 
 				User.delete(user)
-				SearchService.get().deindex(user)
 			} catch (Exception e) {
 				log.error "Error while deleting user account", e
 
@@ -297,6 +305,7 @@ class UserController extends LoginController {
 			}
 		}
 
+		SearchService.get().deindex(user)
 		renderJSONGet([success: true])
 	}
 }

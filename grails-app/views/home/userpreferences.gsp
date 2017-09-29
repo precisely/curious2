@@ -105,15 +105,17 @@ function deleteUserAccount() {
 		queuePostJSON('Deleting User Account.', '/user/deleteAccount',
 				getCSRFPreventionObject('deleteUserAccountCSRF'),
 				function (data) {
-						if (checkData(data)) {
-								if (data.success) {
-									doLogout();
-									window.location = "/home/logout";
-								} else {
-									showAlert("We have encountered an error while deleting the account. Please contact support.");
-								}
-							}
+					if (checkData(data)) {
+						if (data.success) {
+							doLogout();
+							window.location = "/home/logout";
+						} else {
+							showAlert("We have encountered an error while deleting the account. Please contact support.");
+						}
 					}
+				}, function (xhr) {
+					showAlert("We have encountered an error while deleting the account. Please contact support.");
+				}
 			);
 	});
 }

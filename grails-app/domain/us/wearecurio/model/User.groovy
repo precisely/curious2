@@ -284,7 +284,7 @@ class User {
 		user.deleted = true
 		Utils.save(user)
 		UserActivity.create(UserActivity.ActivityType.DELETE, UserActivity.ObjectType.USER, userId)
-        SearchService.get().deindex(user)
+		SearchService.get().deindex(user)
 	}
 
     void addOwnedDiscussion(Long ownedDiscussionId) {

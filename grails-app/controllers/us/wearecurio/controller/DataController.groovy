@@ -1471,7 +1471,7 @@ class DataController extends LoginController {
 					isNull("virtual")
 				}
 
-                eq("deleted", false)
+				eq("deleted", false)
 
 				maxResults(params.max)
 			}
