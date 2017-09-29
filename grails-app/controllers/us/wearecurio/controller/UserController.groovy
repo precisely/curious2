@@ -20,6 +20,8 @@ import us.wearecurio.services.SearchService
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
 
+import java.sql.SQLException
+
 class UserController extends LoginController {
 
 	static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
@@ -246,6 +248,12 @@ class UserController extends LoginController {
 		renderJSONGet([groups: groups.findAll { it.id != defaultGroup.id }, success: true])
 	}
 
+	/**
+	 * An endpoint to delete User Account. The account is marked as deleted and all the user data like
+	 * entries, oAuthAccounts, devices registered for push notification, profile tags, posts and discussions etc
+	 * are deleted.
+	 * @return success: true/false based on result.
+     */
 	def deleteAccount() {
 		User user = sessionUser()
 		debug "Delete User account with username ${user.username}"
