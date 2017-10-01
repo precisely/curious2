@@ -182,7 +182,7 @@ class OuraDataService extends DataService {
 
 			log.debug "Total bedtime ${sleepEntry['duration']} seconds, Sleep end ${sleepEnd}, "
 
-			["duration", "score", "awake", "rem", "light", "deep", 'hr_lowest', 'hr_average', 'rmssd'].each { key ->
+			["duration", "score", "awake", "rem", "light", "deep", 'hr_lowest', 'rmssd'].each { key ->
 				if (sleepEntry[key]) {
 					tagUnitMap.buildEntry(creationMap, stats, key, new BigDecimal(sleepEntry[key].toString()),
 							userId, timeZoneIdNumber, sleepEnd, COMMENT, setName, context)
