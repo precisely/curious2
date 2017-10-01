@@ -8,6 +8,7 @@ import us.wearecurio.model.Tag
 import us.wearecurio.model.User
 import us.wearecurio.model.survey.PossibleAnswer
 import us.wearecurio.model.survey.Question
+import us.wearecurio.model.survey.QuestionStatus
 import us.wearecurio.model.survey.Status
 import us.wearecurio.model.survey.SurveyStatus
 import us.wearecurio.model.survey.UserAnswer
@@ -134,31 +135,81 @@ class SurveyController extends LoginController {
 		[questionInstance: questionInstance, surveyId: params.surveyId]
 	}
 
+	/**
+	 * This endpoint can be used to toggle a question's status.
+	 *
+	 * @params questionInstance: Instance of the Question to change status.
+	 */
+	def toggleQuestionStatus(Question questionInstance) {
+		log.debug "toggleQuestionStatus params: $params"
+
+		if (!questionInstance) {
+			flash.message = g.message(code: "default.not.found.message", args: ['Question', params.id])
+			flash.messageType = 'danger'
+			redirect(uri: "survey/surveyDetails/${params.surveyId}")
+
+			return
+		}
+
+		QuestionStatus status = questionInstance.status
+		questionInstance.status = status == QuestionStatus.ACTIVE ? QuestionStatus.INACTIVE : QuestionStatus.ACTIVE
+
+		if (!Utils.save(questionInstance)) {
+			flash.message = 'Could not update question status.'
+			flash.messageType = 'danger'
+			redirect(uri: "survey/surveyDetails/${params.surveyId}")
+
+			return
+		}
+
+		redirect(uri: "survey/surveyDetails/${params.surveyId}")
+	}
+
 	def saveQuestion(Survey surveyInstance) {
 		log.debug "Save survey question: $params"
 
 		if (!surveyInstance) {
-			flash.message = g.message(code: "default.not.found.message", args: ['Survey', params.id])
-			flash.messageType = 'danger'
-			redirect(uri: 'survey/index')
+			renderJSONPost([success: false, message: 'Survey does not exist.'])
 
 			return
 		}
 
-		surveyInstance.addToQuestions(params)
+		Survey.withTransaction { status ->
+			Question questionInstance = new Question(params)
 
-		if (!Utils.save(surveyInstance, true)) {
-			flash.message = 'Could not add question.'
-			flash.messageType = 'danger'
-			redirect(uri: 'survey/index')
+			surveyInstance.addToQuestions(questionInstance)
 
-			return
+			if (!Utils.save(surveyInstance, true)) {
+				renderJSONPost([success: false, message: 'Could not add question.'])
+
+				return
+			}
+
+			List possibleAnswersList = []
+
+			try {
+				possibleAnswersList = JSON.parse(params.possibleAnswers) as List
+			} catch (ConverterException e) {
+				status.setRollbackOnly()
+
+				log.error "Could not parse possible answers from request.", e
+				renderJSONPost([success: false, message: 'Invalid data.'])
+
+				return
+			}
+
+			questionInstance.addOrUpdateAnswers(possibleAnswersList)
+
+			if (!Utils.save(questionInstance, true)) {
+				status.setRollbackOnly()
+
+				renderJSONPost([success: false, message: 'Could not add answers.'])
+
+				return
+			}
 		}
 
-		flash.message = 'Question added successfully.'
-		flash.messageType = 'success'
-
-		render model: [surveyInstance: surveyInstance], view: 'surveyDetails'
+		renderJSONPost([success: true, message: 'Question added successfully.'])
 	}
 
 	def editQuestion(Question questionInstance) {
@@ -177,57 +228,33 @@ class SurveyController extends LoginController {
 		log.debug "Update Question: $params"
 
 		if (!questionInstance) {
-			flash.message = g.message(code: "default.not.found.message", args: ['Question', params.id])
-			flash.messageType = 'danger'
-			redirect(uri: 'survey/index')
+			renderJSONPost([success: false, message: 'Question does not exist.'])
 
 			return
 		}
 
 		bindData(questionInstance, params)
 
-		if (!Utils.save(questionInstance)) {
-			flash.message = 'Could not update question.'
-			flash.messageType = 'danger'
-			redirect(uri: 'survey/index')
-
-			return
-		}
-
-		flash.message = 'Question updated successfully.'
-		flash.messageType = 'success'
-
-		render model: [surveyInstance: questionInstance.survey], view: 'surveyDetails'
-	}
-
-	def addAnswers(Question questionInstance) {
-		log.debug "Add Answers: $params"
-
-		if (!questionInstance) {
-			renderJSONPost([success: false, message: g.message(code: "default.not.found.message",
-					args: ["Question", params.id])])
-
-			return
-		}
-
 		List possibleAnswersList = []
 
 		try {
 			possibleAnswersList = JSON.parse(params.possibleAnswers) as List
-		} catch(ConverterException e) {
+		} catch (ConverterException e) {
 			log.error "Could not parse possible answers from request.", e
-			renderJSONPost([success: false, message: 'Invalid Data'])
+			renderJSONPost([success: false, message: 'Invalid data.'])
 
 			return
 		}
 
 		questionInstance.addOrUpdateAnswers(possibleAnswersList)
 
-		if (Utils.save(questionInstance, true)) {
-			renderJSONPost([success: true, message: 'Answers added successfully'])
-		} else {
-			renderJSONPost([success: false, message: 'Could not add answers'])
+		if (!Utils.save(questionInstance)) {
+			renderJSONPost([success: false, message: 'Could not update question.'])
+
+			return
 		}
+
+		renderJSONPost([success: true, message: 'Question updated successfully.'])
 	}
 
 	def deleteAnswer(PossibleAnswer possibleAnswerInstance, Question questionInstance) {

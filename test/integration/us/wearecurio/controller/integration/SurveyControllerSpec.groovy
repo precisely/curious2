@@ -4,6 +4,7 @@ import grails.converters.JSON
 import grails.test.mixin.TestFor
 import grails.test.spock.IntegrationSpec
 import org.codehaus.groovy.grails.web.json.JSONElement
+import org.springframework.context.MessageSource
 import spock.lang.Specification
 import spock.lang.Unroll
 import us.wearecurio.controller.survey.SurveyController
@@ -21,6 +22,7 @@ import us.wearecurio.model.survey.UserSurvey
 class SurveyControllerSpec extends IntegrationSpec {
 
 	SurveyController controller
+	MessageSource messageSource
 
 	void setup() {
 		controller = new SurveyController()
@@ -201,12 +203,12 @@ class SurveyControllerSpec extends IntegrationSpec {
 		controller.params.id = 1
 		controller.saveQuestion()
 
-		then: 'The request should redirect to index action'
-		controller.flash.message == 'Survey not found with id 1'
-		controller.response.redirectedUrl == 'survey/index'
+		then: 'Server responds with appropriate error message'
+		controller.response.json.success == false
+		controller.response.json.message == "Survey does not exist."
 	}
 
-	void "test saveQuestion action for successfully adding question to survey"() {
+	void "test saveQuestion action for successfully adding question and answers to survey"() {
 		given: 'A Survey instance'
 		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
 				status: SurveyStatus.ACTIVE)
@@ -222,15 +224,17 @@ class SurveyControllerSpec extends IntegrationSpec {
 		controller.params.status = 'INACTIVE'
 		controller.params.answerType = 'MCQ_RADIO'
 		controller.params.isRequired = false
+		controller.params.possibleAnswers = ([[profileTags: ['run'], priority: '2',
+				answer: 'This is the first answer.'],
+				[profileTags: ['mood'], priority: '3', answer: 'This is the second answer']] as JSON).toString()
 
 		controller.saveQuestion()
 
-		then: 'The surveyDetails view should be rendered with survey instance as model'
+		then: 'The server responds with success message and questions are added to Survey'
 		Survey.count() == 1
 
-		controller.modelAndView.viewName == '/survey/surveyDetails'
-		controller.modelAndView.model['surveyInstance'] == surveyInstance
-		controller.flash.message == 'Question added successfully.'
+		controller.response.json.success == true
+		controller.response.json.message == 'Question added successfully.'
 
 		surveyInstance.status == SurveyStatus.ACTIVE
 		surveyInstance.questions.size() == 1
@@ -241,6 +245,17 @@ class SurveyControllerSpec extends IntegrationSpec {
 		questionInstance.status == QuestionStatus.INACTIVE
 		questionInstance.answerType == AnswerType.MCQ_RADIO
 		questionInstance.isRequired == false
+
+		questionInstance.answers.size() == 2
+		PossibleAnswer possibleAnswer1 = questionInstance.answers.first()
+		possibleAnswer1.answer == 'This is the first answer.'
+		possibleAnswer1.associatedProfileTags[0].description == 'run'
+		possibleAnswer1.priority == 2
+
+		PossibleAnswer possibleAnswer2 = questionInstance.answers.last()
+		possibleAnswer2.answer == 'This is the second answer'
+		possibleAnswer2.associatedProfileTags[0].description == 'mood'
+		possibleAnswer2.priority == 3
 	}
 
 	@Unroll
@@ -259,24 +274,25 @@ class SurveyControllerSpec extends IntegrationSpec {
 		controller.params.priority = priority
 		controller.params.status = status
 		controller.params.answerType = answerType
+		controller.params.possibleAnswers = possibleAnswers
 
 		controller.saveQuestion()
 
-		then: 'The request should redirect to index action due to failure'
-		controller.flash.message == 'Could not add question.'
-		controller.response.redirectedUrl == 'survey/index'
+		then: 'The server responds with appropriate error message and question does not get saved.'
+		controller.response.json.success == false
+		controller.response.json.message == 'Could not add question.'
 		Survey.count() == 1
 		Question.count() == 0
 
 		where:
-		question   | priority | status    | answerType 
-		''         | '1'      | 'ACTIVE'  | 'MCQ_RADIO'
-		'question' | ''       | 'ACTIVE'  | 'MCQ_RADIO'
-		'question' | '1'      | ''        | 'MCQ_RADIO'
-		'question' | '1'      | 'ACTIVE'  | ''
-		'question' | '1'      | 'INVALID' | 'MCQ_RADIO'
-		'question' | '1'      | 'ACTIVE'  | 'INVALID'
-		null       | null     | null      | null
+		question   | priority | status    | answerType   | possibleAnswers
+		''         | '1'      | 'ACTIVE'  | 'MCQ_RADIO'  | ""
+		'question' | ''       | 'ACTIVE'  | 'MCQ_RADIO'  | ""
+		'question' | '1'      | ''        | 'MCQ_RADIO'  | ""
+		'question' | '1'      | 'ACTIVE'  | ''           | ""
+		'question' | '1'      | 'INVALID' | 'MCQ_RADIO'  | ""
+		'question' | '1'      | 'ACTIVE'  | 'INVALID'    | ""
+		null       | null     | null      | null         | ""
 	}
 
 	void "test updateQuestion action when the question instance with id is not found"() {
@@ -284,13 +300,12 @@ class SurveyControllerSpec extends IntegrationSpec {
 		controller.params.id = 1
 		controller.updateQuestion()
 
-		then: 'The request should redirect to index action due to failure'
-		controller.response.redirectedUrl == 'survey/index'
-		controller.flash.message == 'Question not found with id 1'
-		controller.flash.messageType == 'danger'
+		then: 'The server responds with appropriate message'
+		controller.response.json.success == false
+		controller.response.json.message == 'Question does not exist.'
 	}
 
-	void "test updateQuestion action for successfully updating a question"() {
+	void "test updateQuestion action for successfully updating a question and answers"() {
 		given: 'A Survey instance with added question'
 		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
 				status: SurveyStatus.ACTIVE)
@@ -298,8 +313,13 @@ class SurveyControllerSpec extends IntegrationSpec {
 				answerType: 'MCQ_RADIO')
 		surveyInstance.save(flush: true)
 
+		PossibleAnswer possibleAnswer = new PossibleAnswer(answer: "This is the first answer.", priority: 1)
+		surveyInstance.questions[0].addToAnswers(possibleAnswer)
+		surveyInstance.questions[0].save(flush: true)
+
 		assert Survey.count() == 1
 		assert Question.count() == 1
+		assert PossibleAnswer.count() == 1
 
 		when: 'The updateQuestion action is hit with updated params'
 		controller.params.id = surveyInstance.questions[0].id
@@ -307,121 +327,28 @@ class SurveyControllerSpec extends IntegrationSpec {
 		controller.params.question = 'This is the first question updated'
 		controller.params.status = 'ACTIVE'
 		controller.params.answerType = 'MCQ_CHECKBOX'
-
-		controller.updateQuestion()
-
-		then: 'The surveyDetails view should be rendered with survey instance as model'
-		Survey.count() == 1
-
-		controller.modelAndView.viewName == '/survey/surveyDetails'
-		controller.modelAndView.model['surveyInstance'] == surveyInstance
-		controller.flash.message == 'Question updated successfully.'
-
-		surveyInstance.questions[0].question == 'This is the first question updated'
-		surveyInstance.questions[0].priority == 2
-		surveyInstance.questions[0].status == QuestionStatus.ACTIVE
-		surveyInstance.questions[0].answerType == AnswerType.MCQ_CHECKBOX
-	}
-
-	void "test addAnswers action when the question instance with id is not found"() {
-		when: 'The addAnswers action is hit with random id'
-		controller.params.id = 1
-		controller.addAnswers()
-
-		then: 'The response fails with respective message'
-		JSONElement json = JSON.parse(controller.response.text)
-		json.success == false
-		json.message == 'Question not found with id 1'
-		PossibleAnswer.count() == 0
-	}
-
-	void "test addAnswers action when the possibleAnswers is invalid JSON"() {
-		given: 'A Survey instance with added question'
-		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
-				status: SurveyStatus.ACTIVE)
-		surveyInstance.addToQuestions(question: 'This is the first question.', priority: '1', status: 'INACTIVE',
-				answerType: 'MCQ_RADIO')
-		surveyInstance.save(flush: true)
-
-		assert Survey.count() == 1
-		assert Question.count() == 1
-
-		when: 'The addAnswers action is hit with invalid JSON'
-		controller.params.id = surveyInstance.questions[0].id
-		controller.params.possibleAnswers = "[{tagDescription: sleep]"
-		controller.addAnswers()
-
-		then: 'The response fails with respective message'
-		JSONElement json = JSON.parse(controller.response.text)
-		json.success == false
-		json.message == 'Invalid Data'
-		PossibleAnswer.count() == 0
-	}
-
-	void "test addAnswers action for successfully adding answers"() {
-		given: 'A Survey instance with added question'
-		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
-				status: SurveyStatus.ACTIVE)
-		surveyInstance.addToQuestions(question: 'This is the first question.', priority: '1', status: 'INACTIVE',
-				answerType: 'MCQ_RADIO')
-		surveyInstance.save(flush: true)
-
-		assert Survey.count() == 1
-		assert Question.count() == 1
-
-		when: 'The addAnswers action is hit with valid JSON answer list'
-		controller.response.reset()
-		controller.params.id = surveyInstance.questions[0].id
-		controller.params.possibleAnswers = ([[profileTags: ['sleep'], priority: '1',
-				answer: 'This is the first answer']] as JSON).toString()
-		controller.addAnswers()
-
-		then: 'The response succeeds with respective message'
-		JSONElement json1 = JSON.parse(controller.response.text)
-		json1.success == true
-		json1.message == 'Answers added successfully'
-
-		surveyInstance.questions[0].answers.size() == 1
-		PossibleAnswer possibleAnswer = PossibleAnswer.first()
-		possibleAnswer.answer == 'This is the first answer'
-		possibleAnswer.associatedProfileTags[0].description == 'sleep'
-		possibleAnswer.priority == 1
-
-		when: 'The answer list has answerId key, then the answer should be updated'
-		controller.response.reset()
-		controller.params.id = surveyInstance.questions[0].id
 		controller.params.possibleAnswers = ([[profileTags: ['run'], priority: '2',
 				answer: 'This is the first answer updated', answerId: possibleAnswer.id],
 				[profileTags: ['mood'], priority: '3', answer: 'This is the second answer']] as JSON).toString()
-		controller.addAnswers()
 
-		then: 'The response succeeds with respective message'
-		JSONElement json2 = JSON.parse(controller.response.text)
-		json2.success == true
-		json2.message == 'Answers added successfully'
+		controller.updateQuestion()
 
-		surveyInstance.questions[0].answers.size() == 2
-		PossibleAnswer possibleAnswer1 = PossibleAnswer.first()
-		possibleAnswer1.answer == 'This is the first answer updated'
-		possibleAnswer1.associatedProfileTags[0].description == 'sleep'
-		possibleAnswer1.priority == 2
+		then: 'Question gets updated successfully.'
+		Survey.count() == 1
 
-		PossibleAnswer possibleAnswer2 = PossibleAnswer.last()
-		possibleAnswer2.answer == 'This is the second answer'
-		possibleAnswer2.associatedProfileTags[0].description == 'mood'
-		possibleAnswer2.priority == 3
+		controller.response.json.success == true
+		controller.response.json.message == 'Question updated successfully.'
 
-		when: 'The addAnswers action is hit with incomplete params'
-		controller.response.reset()
-		controller.params.id = surveyInstance.questions[0].id
-		controller.params.possibleAnswers = ([[profileTags: ['sleep'], answer: 'This is the first answer'],
-				[profileTags: ['sleep'], priority: '2']] as JSON).toString()
-		controller.addAnswers()
+		Question questionInstance = surveyInstance.questions[0]
+		questionInstance.question == 'This is the first question updated'
+		questionInstance.priority == 2
+		questionInstance.status == QuestionStatus.ACTIVE
+		questionInstance.answerType == AnswerType.MCQ_CHECKBOX
 
-		then: 'The response fails with respective message'
-		JSONElement json = JSON.parse(controller.response.text)
-		json.success == false
-		json.message == 'Could not add answers'
+		questionInstance.answers.size() == 2
+		questionInstance.answers.first().answer == 'This is the first answer updated'
+		questionInstance.answers.first().priority == 2
+		questionInstance.answers.last().answer == "This is the second answer"
 	}
 
 	void "test deleteAnswer action deleting answer from a question instance"() {
@@ -576,5 +503,43 @@ class SurveyControllerSpec extends IntegrationSpec {
 		controller.response.status == 200
 		controller.response.json.success == true
 		possibleAnswer.associatedProfileTags.size() == 1
+	}
+
+	void 'test toggleQuestionStatus endpoint for various cases'() {
+		given: 'Survey, Question and a User instance'
+		Survey surveyInstance = new Survey(code: 's001', title: 'This is the first survey title.',
+				status: SurveyStatus.ACTIVE)
+		surveyInstance.save(flush: true)
+		surveyInstance.addToQuestions(question: 'This is the first question.', priority: 1, status: 'ACTIVE',
+				answerType: 'MCQ_RADIO')
+		surveyInstance.save(flush: true)
+
+		Question questionInstance = surveyInstance.questions[0]
+
+		assert Survey.count() == 1
+		assert surveyInstance.questions.size() == 1
+		assert questionInstance.status == QuestionStatus.ACTIVE
+
+		when: 'The toggleQuestionStatus endpoint is hit with invalid question'
+		controller.request.method = 'GET'
+		controller.params.id = null
+		controller.params.surveyId = surveyInstance.id
+		controller.toggleQuestionStatus()
+
+		then: 'Server should respond with error message'
+		questionInstance.status == QuestionStatus.ACTIVE
+		controller.response.redirectedUrl == "survey/surveyDetails/${surveyInstance.id}"
+		controller.flash.message == "Question not found with id null"
+
+		when: 'The toggleQuestionStatus endpoint is hit with valid questionInstance'
+		controller.params.clear()
+		controller.response.reset()
+		controller.params.id = questionInstance.id
+		controller.params.surveyId = surveyInstance.id
+		controller.toggleQuestionStatus()
+
+		then: 'The question status gets toggled and User is redirected to Survey details page'
+		questionInstance.status == QuestionStatus.INACTIVE
+		controller.response.redirectedUrl == "survey/surveyDetails/${surveyInstance.id}"
 	}
 }

@@ -39,6 +39,10 @@ class Question {
 	}
 
 	void addOrUpdateAnswers(List possibleAnswersList) {
+		if (this.answerType == AnswerType.DESCRIPTIVE) {
+			return
+		}
+
 		possibleAnswersList.each { Map args ->
 			PossibleAnswer possibleAnswerInstance
 

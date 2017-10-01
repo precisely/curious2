@@ -46,10 +46,11 @@
 								title="Edit Question" data-placement="top">
 							<i class="fa fa-pencil action-icon"></i>
 						</g:link>
-						<g:link controller="survey" action="questionDetails" id="${questionInstance.id}"
+						<g:link controller="survey" action="toggleQuestionStatus" id="${questionInstance.id}"
 								params="[surveyId: surveyInstance.id]" class="margin-left" data-toggle="tooltip"
-								title="Click to see details" data-placement="top">
-							<i class="fa fa-clipboard action-icon"></i>
+								title="${questionInstance.status.displayText == 'Active' ? 'Mark inactive' : 'Mark active'}"
+								data-placement="top">
+							<i class="fa ${questionInstance.status.displayText == 'Active' ? 'fa-toggle-off' : 'fa-toggle-on'} action-icon"></i>
 						</g:link>
 					</td>
 				</tr>

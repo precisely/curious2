@@ -1461,6 +1461,10 @@ body.tags-displayed .floating-column {
 	margin-bottom: 10px;
 }
 
+.question-input {
+	height: 100px !important;
+}
+
 .survey-answers #answer {
 	width: 100%;
 	height: 40px;
@@ -1475,7 +1479,7 @@ body.tags-displayed .floating-column {
 	border-radius: 0;
 	padding: 15px;
 	border: none;
-	color: #a4a4a4;;
+	color: #000;
 	margin-bottom: 10px;
 	background-color: #f7f7f7;
 	margin-left: 0;
@@ -1520,6 +1524,16 @@ body.tags-displayed .floating-column {
 	width: 100%;
 }
 
+.answer-input {
+	color: black;
+	background-color: white;
+	text-align: left;
+	margin-top: 5px;
+	padding-left: 5px;
+	height: 40px;
+	width: 100%;
+}
+
 .modal-body #code {
 	background-color: #f7f7f7;
 }
@@ -1539,7 +1553,7 @@ body.tags-displayed .floating-column {
 	color: #a4a4a4;
 }
 
-#addAnswerOverlay .modal-body label {
+.modal-body label {
 	margin-bottom: 5px;
 	font-size: 14px;
 }
@@ -1563,16 +1577,6 @@ body.tags-displayed .floating-column {
 	text-align: center;
 }
 
-.survey-answers {
-	background-color: white;
-	margin: 10px;
-	border-bottom: 1px rgb(221, 221, 221) solid;
-}
-
-.saved-survey-answers {
-	margin: 0 10px;
-}
-
 .saved-survey-answers .col {
 	background-color: white;
 	height: 30px;
@@ -1580,11 +1584,11 @@ body.tags-displayed .floating-column {
 	border-bottom: 1px rgb(221, 221, 221) solid;
 }
 
-.saved-survey-answers .col:last-child {
+.col:last-child {
 	border-right: 1px rgb(221, 221, 221) solid;
 }
 
-.survey-answers .answer-type {
+.answer-type {
 	color: #a4a4a4;
 	background-color: white;
 }
@@ -5186,7 +5190,7 @@ input.cropit-image-zoom-input {
 	left: 6px;
 }
 
-.survey-answer-checkbox-label, subscription-checkbox-label {
+.survey-answer-checkbox-label, .subscription-checkbox-label {
 	font-size: 14px;
 	font-weight: normal;
 }
