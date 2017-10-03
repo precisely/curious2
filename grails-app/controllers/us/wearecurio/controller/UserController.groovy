@@ -253,7 +253,7 @@ class UserController extends LoginController {
 	 * entries, oAuthAccounts, devices registered for push notification, profile tags, posts and discussions etc
 	 * are deleted.
 	 * @return success: true/false based on result.
-     */
+	 */
 	def deleteAccount() {
 		User user = sessionUser()
 		debug "Delete User account with username ${user.username}"
@@ -267,14 +267,17 @@ class UserController extends LoginController {
 						" twenty3AndMeData.account = :account", [account: oAuthAccount])
 
 				// To disable polling.
+				debug "Removing OAuthAccounts..."
 				OAuthAccount.executeUpdate("DELETE FROM OAuthAccount account where account.userId = :userId",
 						[userId: user.id]);
 
 				// Remove user devices for Push notificaiton.
+				debug "Removing registered devices for push notification..."
 				PushNotificationDevice.executeUpdate("DELETE FROM PushNotificationDevice device where " +
 						"device.userId = :userId", [userId: user.id])
 
 				// Remove User's profile tags
+				debug "Removing profile tags..."
 				ProfileTag.executeUpdate("DELETE FROM ProfileTag profileTag where profileTag.userId = :userId",
 						[userId: user.id])
 
@@ -282,6 +285,7 @@ class UserController extends LoginController {
 						"plot.isSnapshot = false", [userId: user.id])
 
 				// Delete all trackathons created by User.
+				debug "Removing sprints, discussions and posts..."
 				List sprintList = Sprint.findAllByUserId(user.id)
 
 				sprintList.each { Sprint sprint ->
@@ -300,6 +304,7 @@ class UserController extends LoginController {
 						[userId: user.id]);
 
 				// Delete Entry.
+				debug "Removing user entries..."
 				Entry.executeUpdate("DELETE FROM Entry entry where entry.userId = :userId", [userId: user.id]);
 
 				User.delete(user)
@@ -307,6 +312,7 @@ class UserController extends LoginController {
 				log.error "Error while deleting user account", e
 
 				status.setRollbackOnly()
+				Utils.reportError("Error while deleting ${user.username}'s account", e)
 
 				renderJSONGet([success: false])
 				return

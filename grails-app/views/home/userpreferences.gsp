@@ -104,7 +104,7 @@ function deleteUserAccount() {
 	showYesNo("The account will be deleted permanently. Do you want to continue?", function() {
 		queuePostJSON('Deleting User Account.', '/user/deleteAccount',
 				getCSRFPreventionObject('deleteUserAccountCSRF'),
-				function (data) {
+				function(data) {
 					if (checkData(data)) {
 						if (data.success) {
 							doLogout();
@@ -113,7 +113,7 @@ function deleteUserAccount() {
 							showAlert("We have encountered an error while deleting the account. Please contact support.");
 						}
 					}
-				}, function (xhr) {
+				}, function(xhr) {
 					showAlert("We have encountered an error while deleting the account. Please contact support.");
 				}
 			);
