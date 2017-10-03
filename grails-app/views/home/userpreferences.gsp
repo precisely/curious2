@@ -132,7 +132,7 @@ function editUserDetails() {
 		padding-right: 10px;
 		text-transform: uppercase;
 		font-size: 14px;
-		color: #b1b1b1;
+		color: #787878;
 		font-weight: 400;
 		margin-left: -7px;
 	}
@@ -140,7 +140,7 @@ function editUserDetails() {
 		padding-right: 10px;
 		text-transform: uppercase;
 		font-size: 14px;
-		color: #b1b1b1;
+		color: #787878;
 		font-weight: 400;
 		margin-top: 4px;
 		margin-left: 8px;
