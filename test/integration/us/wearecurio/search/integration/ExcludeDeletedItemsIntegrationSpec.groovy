@@ -392,4 +392,48 @@ class ExcludeDeletedItemsIntegrationSpec extends SearchServiceIntegrationSpecBas
 		results.success
 		results.listItems.size == 0
     }
+
+	//@spock.lang.Ignore
+	void "Test deleted users not included in search results after elastic search indexed"() {
+		given: "a search term"
+		def searchTerm = "magnesium"
+
+		and: "a new public sprint"
+		User u = User.create(
+			[	username:'magnesium44',
+				sex:'M',
+				name:'robert mckee',
+				email:'robert@story.com',
+				birthdate:'01/01/1940',
+				password:'robxyz',
+				action:'doregister',
+				controller:'home'	]
+		)
+
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+
+		and: "search is performed"
+		def results = searchService.search(user1, searchTerm)
+
+		then: "single user is found"
+		results.success
+		results.listItems.size == 1
+		results.listItems[0].hash == u.hash
+
+		when: "sprint is deleted"
+		User.delete(u)
+
+		and: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+
+		and: "search is performed"
+		results = searchService.search(user1, searchTerm)
+
+		then: "user not in results"
+		results.success
+		results.listItems.size == 0
+	}
 }

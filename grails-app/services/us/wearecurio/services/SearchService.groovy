@@ -361,7 +361,8 @@ class SearchService {
 			queries << "(_type:sprint AND visibility:PUBLIC AND _exists_:description AND ((NOT _exists_:deleted) OR deleted:false))"
 		}
 		if ((type & USER_TYPE) > 0) {
-			queries << "(_type:user AND _id:(NOT $user.id) AND virtual:false)"
+			queries << "(_type:user AND _id:(NOT $user.id) AND virtual:false AND" +
+					" ((NOT _exists_:deleted) OR deleted:false))"
 		}
 		
 		def tags = user.getInterestTags()
@@ -374,7 +375,9 @@ class SearchService {
 				filters << "(_type:sprint AND visibility:PUBLIC AND _exists_:description AND ((NOT _exists_:deleted) OR deleted:false) AND ((name:$tagsOr) OR (description:$tagsOr)))"
 			}
 			if ((type & USER_TYPE) > 0) {
-				filters << "(_type:user AND _id:(NOT $user.id) AND virtual:false AND ((publicName:$tagsOr) OR (publicBio:$tagsOr) OR (publicInterestTagsString:$tagsOr)))"
+				filters << "(_type:user AND _id:(NOT $user.id) AND virtual:false AND" +
+						" ((NOT _exists_:deleted) OR deleted:false) AND ((publicName:$tagsOr) OR (publicBio:$tagsOr)" +
+						" OR (publicInterestTagsString:$tagsOr)))"
 			}
 		}
 		
