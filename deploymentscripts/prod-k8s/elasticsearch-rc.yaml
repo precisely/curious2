@@ -20,11 +20,11 @@ spec:
         image: elasticsearch:1.7-alpine
         resources:
           requests:
+            cpu: 0.5
+            memory: 0.5Gi
+          limits:
             cpu: 1
             memory: 1Gi
-          limits:
-            cpu: 2
-            memory: 2Gi
         env:
         - name: HTTP_ENABLE
           value: "true"
