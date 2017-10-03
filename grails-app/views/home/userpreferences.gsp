@@ -110,11 +110,13 @@ function deleteUserAccount() {
 							doLogout();
 							window.location = "/home/logout";
 						} else {
-							showAlert("We have encountered an error while deleting the account. Please contact support.");
+							showAlert("We have encountered an error while deleting the account. Please contact" +
+									"support@precise.ly for further details.");
 						}
 					}
 				}, function(xhr) {
-					showAlert("We have encountered an error while deleting the account. Please contact support.");
+					showAlert("We have encountered an error while deleting the account. Please contact" +
+							"support@precise.ly for further details.");
 				}
 			);
 	});
