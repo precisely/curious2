@@ -482,7 +482,7 @@ div.graphData.has-plot-data #height-balancer {
 }
 @media only screen and (min-width: 768px) {
 	.logo-text-3 {
-		margin-right: 21vw;
+		margin-right: 305px;
 	 }
 }
 
@@ -3378,7 +3378,7 @@ body {
 	font-weight: 700;
 }
 
-.discussion-topic a:hover {
+.discussion-topic a span:hover {
 	text-decoration: underline;
 }
 

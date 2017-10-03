@@ -49,7 +49,7 @@ class ProfileTagControllerSpec extends IntegrationSpec {
 	void "test addInterestTag for adding public and private tags"() {
 		when: 'The addInterestTag action is hit for this user with tagName and status'
 		controller.session.userId = user.id
-		controller.params.tagNames = [tagName1, tagName2]
+		controller.params.tagNames = tagName1 + ',' + tagName2
 		controller.params.tagStatus = tagStatus
 		controller.addInterestTag()
 
@@ -89,22 +89,24 @@ class ProfileTagControllerSpec extends IntegrationSpec {
 
 		where:
 		tagNames  | tagStatus | errorText
-		[]        | 'PUBLIC'  | "'No tag names specified'"
-		['sleep'] | ''        | "'No tag status specified'"
+		''        | 'PUBLIC'  | "'No tag names specified'"
+		'sleep'   | ''        | "'No tag status specified'"
 	}
 
-	void "test addInterestTag for preventing duplicates"() {
+	void "test addInterestTag for preventing duplicates and invalid tag"() {
 		given: 'A ProfileTag instance'
 		ProfileTag.addPublicInterestTag(Tag.look('tea'), user.id)
+		assert ProfileTag.count() == 1
 
 		when: 'The addInterestTag action is hit for this user with same tagName and status'
 		controller.session.userId = user.id
-		controller.params.tagNames = ['tea']
+		controller.params.tagNames = 'tea, ,run,walk'
 		controller.params.tagStatus = 'PUBLIC'
 		controller.addInterestTag()
 
 		then: 'The request should to add new tag'
 		controller.response.text == "'Error adding interest tag for tags [tea]'"
+		ProfileTag.count() == 3 // 2 new valid tags are added
 	}
 
 	void "test deleteInterestTag to successfully delete profile tags"() {

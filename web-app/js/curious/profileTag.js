@@ -122,10 +122,10 @@ InterestTagList.prototype.refresh = function() {
 			getCSRFPreventionObject("getInterestTagsCSRF"), function(profileTags) {
 				if (checkData(profileTags)) {
 					this.setText('');
-	
+
 					this.publicInterestTags = profileTags.publicInterestTags;
 					this.privateInterestTags = profileTags.privateInterestTags;
-	
+
 					this.refreshPublicTags(this.publicInterestTags);
 					this.refreshPrivateTags(this.privateInterestTags);
 				}
@@ -134,17 +134,20 @@ InterestTagList.prototype.refresh = function() {
 };
 
 InterestTagList.prototype.addInterestTag = function(tagName, tagStatus) {
-	queueJSON("adding new interest tag", "/profileTag/addInterestTag?tagName=" + tagName + "&" + "tagStatus=" +
+	queueJSON("adding new interest tag", "/profileTag/addInterestTag?tagNames=" + tagName + "&" + "tagStatus=" +
 			tagStatus + "&" + getCSRFPreventionURI("addInterestTagCSRF") + "&callback=?",
 			function(data) {
-				if (data.success) {
+				if (data.success && data.profileTag.length) {
 					if (data.profileTag.status === 'PRIVATE') {
 						this.privateInterestTags.push(data.profileTag);
 					} else {
 						this.publicInterestTags.push(data.profileTag);
 					}
-
-					this.addTag(data.profileTag);
+					data.profileTag.forEach(function(interestTag) {
+						this.addTag(interestTag);
+					}.bind(this));
+				} else {
+					showAlert('Please add a valid tag.');
 				}
 			}.bind(this)
 	);

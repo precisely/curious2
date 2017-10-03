@@ -371,6 +371,8 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 	this.clearGraphs = function () {
 		if (confirm("Are you sure you want to clear the graph and start over?")) {
 			this.clear();
+			this.properties.setStartDate()
+			this.properties.setEndDate()
 		}
 	};
 
