@@ -135,6 +135,9 @@ class UserControllerTests extends CuriousControllerTestCase {
 
 		assert userInstance.id
 
+		Entry.list()*.delete(flush: true)
+		assert Entry.count() == 0
+
 		controller.session.userId = userInstance.id
 		Date currentTime = new Date()
 		dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
@@ -146,6 +149,7 @@ class UserControllerTests extends CuriousControllerTestCase {
 				"headache pinned", null, null, baseDate, true), stats)
 		stats.finish()
 		assert entry.id
+		assert Entry.count() == 1
 
 		OAuthAccount account = new OAuthAccount([typeId: ThirdParty.TWENTY_THREE_AND_ME, userId: userInstance.id,
 				accessToken: "Dummy-token", accessSecret: "Dummy-secret", accountId: userId,
@@ -162,5 +166,6 @@ class UserControllerTests extends CuriousControllerTestCase {
 		assert Sprint.findByUserId(userInstance.id) == null
 		assert userInstance.deleted
 		assert controller.response.json.success
+		assert Entry.findByUserId(0L).id == entry.id
 	}
 }

@@ -262,21 +262,23 @@ class UserController extends LoginController {
 			try {
 				OAuthAccount oAuthAccount = OAuthAccount.findByUserIdAndTypeId(user.id, ThirdParty.TWENTY_THREE_AND_ME)
 
-				// Remove Twenty3AndMeData.
-				Twenty3AndMeData.executeUpdate("DELETE FROM Twenty3AndMeData twenty3AndMeData where" +
-						" twenty3AndMeData.account = :account", [account: oAuthAccount])
+				if (oAuthAccount) {
+					// Remove Twenty3AndMeData as there is a foreign key reference with the OAuthAccount.
+					Twenty3AndMeData.executeUpdate("DELETE FROM Twenty3AndMeData twenty3AndMeData where" +
+							" twenty3AndMeData.account = :account", [account: oAuthAccount])
+				}
 
 				// To disable polling.
 				debug "Removing OAuthAccounts..."
 				OAuthAccount.executeUpdate("DELETE FROM OAuthAccount account where account.userId = :userId",
 						[userId: user.id]);
 
-				// Remove user devices for Push notificaiton.
+				// Remove user devices for Push notification.
 				debug "Removing registered devices for push notification..."
 				PushNotificationDevice.executeUpdate("DELETE FROM PushNotificationDevice device where " +
 						"device.userId = :userId", [userId: user.id])
 
-				// Remove User's profile tags
+				// Remove User's profile tags.
 				debug "Removing profile tags..."
 				ProfileTag.executeUpdate("DELETE FROM ProfileTag profileTag where profileTag.userId = :userId",
 						[userId: user.id])
@@ -284,7 +286,7 @@ class UserController extends LoginController {
 				PlotData.executeUpdate("DELETE FROM PlotData plot where plot.userId = :userId and " +
 						"plot.isSnapshot = false", [userId: user.id])
 
-				// Delete all trackathons created by User.
+				// Mark all trackathons created by User as deleted.
 				debug "Removing sprints, discussions and posts..."
 				List sprintList = Sprint.findAllByUserId(user.id)
 
@@ -305,7 +307,7 @@ class UserController extends LoginController {
 
 				// Delete Entry.
 				debug "Removing user entries..."
-				Entry.executeUpdate("DELETE FROM Entry entry where entry.userId = :userId", [userId: user.id]);
+				Entry.deleteUserEntries(user.id)
 
 				User.delete(user)
 			} catch (Exception e) {

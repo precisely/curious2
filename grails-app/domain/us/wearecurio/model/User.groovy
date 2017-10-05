@@ -653,6 +653,13 @@ class User {
 		}
 	}
 
+	// Remove the cached tags for a User.
+	static void removeTagIdCache(Long userId) {
+		if (tagIdCache[userId]) {
+			tagIdCache[userId].clear()
+		}
+	}
+
 	static void addToCache(Long userId, GenericTagGroup tagInstance) {
 		if (tagGroupIdCache[userId]) {
 			tagGroupIdCache[userId].add(tagInstance.id)
