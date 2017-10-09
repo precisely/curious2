@@ -630,7 +630,7 @@ ul.ui-autocomplete {
 	padding-right: 0;
 }
 #addData label {
-	font-size:.9em;
+	font-size: .9em;
 	padding:8px 0 10px 0;
 	color:#999999;
 	display:inline-block;
@@ -1264,7 +1264,7 @@ body.tags-displayed .floating-column {
  */
 
 .auto-link-color {
-	color:#0b6cb2 !important;
+	color: #0b6cb2 !important;
 }
 
 .red-header {
@@ -3647,7 +3647,7 @@ a.comment-buttons:hover {
 .discussion-comment .posting-time {
 	margin: 12px 0 0 10px;
 	font-size: 11px;
-	color:#828282;
+	color: #828282;
 }
 
 .discussion-comment .avatar {
