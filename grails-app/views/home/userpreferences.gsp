@@ -339,10 +339,9 @@ function editUserDetails() {
 									<g:link action="dosendverify" class="basic-text">Resend verification email</g:link>
 								</div>
 								<div class="form-group">
-									<a href="#" style="color: #ff0000" onclick="deleteUserAccount()"
-											class="basic-text">
+									<button type="button" class="delete_user_account" onclick="deleteUserAccount()">
 										Delete Account
-									</a>
+									</button>
 								</div>
 							</div>
 						</div>
