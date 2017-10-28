@@ -217,7 +217,7 @@ class LoginController extends SessionController {
 		
 		def verificationLink = toUrl(controller:'home', action:'verify', params:[code:verification.getCode()])
 		
-		EmailService.get().send(user.getEmail(), "precise.ly: account verification instructions",
+		EmailService.get().send("newuser@precise.ly", user.getEmail(), "precise.ly: account verification instructions",
 				"Hello!\n\n"
 				+ "Thank you for joining precise.ly. Once you click the link below, you're welcome to participate in our community. Our goal is to connect you with others who share your questions and who seek answers based on more than just opinions and conjecture.\n\n"
 				+ "We look forward to seeing your posts! And here’s a hint -- to filter the topics you’ll see in your Social feed, go to your profile page and add a few ‘interest tags’. You can change these at any time, depending on what you’re precise.ly about.\n\n"

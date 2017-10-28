@@ -7,7 +7,8 @@
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
 showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, pingDataCSRF,
-excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getInterestTagsCSRF, addInterestTagCSRF, deleteInterestTagCSRF, updateAvatarCSRF" />
+excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getInterestTagsCSRF, addInterestTagCSRF, deleteInterestTagCSRF,
+updateAvatarCSRF, deleteUserAccountCSRF" />
 
 <script type="text/javascript" src="/js/curious/profileTag.js?ver=23"></script>
 <script src="/js/jquery/jquery.cropit.min.js"></script>
@@ -98,6 +99,28 @@ $(function() {
 		interestTagList.processInput();
 	});
 });
+
+function deleteUserAccount() {
+	showYesNo("The account will be deleted permanently. Do you want to continue?", function() {
+		queuePostJSON('Deleting User Account.', '/user/deleteAccount',
+				getCSRFPreventionObject('deleteUserAccountCSRF'),
+				function(data) {
+					if (checkData(data)) {
+						if (data.success) {
+							doLogout();
+							window.location = "/home/logout";
+						} else {
+							showAlert("We have encountered an error while deleting the account. Please contact " +
+									"support@precise.ly for further details.");
+						}
+					}
+				}, function(xhr) {
+					showAlert("We have encountered an error while deleting the account. Please contact " +
+							"support@precise.ly for further details.");
+				}
+			);
+	});
+}
 
 function editUserDetails() {
 	var newUsername = $("#username").val();
@@ -314,6 +337,12 @@ function editUserDetails() {
 								</div>
 								<div class="form-group">
 									<g:link action="dosendverify" class="basic-text">Resend verification email</g:link>
+								</div>
+								<div class="form-group">
+									<a href="#" style="color: #ff0000" onclick="deleteUserAccount()"
+											class="basic-text">
+										Delete Account
+									</a>
 								</div>
 							</div>
 						</div>

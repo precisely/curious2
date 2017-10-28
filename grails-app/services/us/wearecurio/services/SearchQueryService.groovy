@@ -336,7 +336,9 @@ class SearchQueryService {
         }
 
 		if (followedAndUser.size > 0) {
-			return "(((publicName:($query)) OR (publicBio:($query)) OR (publicInterestTagsString:($query)) OR (username:($query))) AND _type:user AND _id:${Utils.orifyList(followedAndUser)} AND virtual:false)"
+			return "(((publicName:($query)) OR (publicBio:($query)) OR (publicInterestTagsString:($query)) OR" +
+					" (username:($query))) AND _type:user AND _id:${Utils.orifyList(followedAndUser)} AND" +
+					" virtual:false AND ((NOT _exists_:deleted) OR deleted:false))"
 		} else {
 			return ""
 		}
@@ -416,7 +418,9 @@ class SearchQueryService {
 			ignoreUserIds << userId
 		}
 		
-		return "(((publicName:($query)) OR (publicBio:($query)) OR (publicInterestTagsString:($query)) OR (username:($query)))  AND virtual:false AND _type:user AND NOT (_id:${Utils.orifyList(ignoreUserIds)}))"
+		return "(((publicName:($query)) OR (publicBio:($query)) OR (publicInterestTagsString:($query)) OR" +
+				" (username:($query))) AND ((NOT _exists_:deleted) OR deleted:false) AND virtual:false AND _type:user" +
+				" AND NOT (_id:${Utils.orifyList(ignoreUserIds)}))"
 	}
 			
 	static String getSearchQuery(

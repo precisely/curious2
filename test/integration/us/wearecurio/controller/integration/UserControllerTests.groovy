@@ -5,15 +5,27 @@ import org.junit.Before
 import org.junit.Test
 import us.wearecurio.controller.UserController
 import us.wearecurio.model.Entry
+import us.wearecurio.model.Model
+import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.Sprint
 import us.wearecurio.model.Tag
+import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
+import us.wearecurio.services.EntryParserService
+import us.wearecurio.services.SearchService
+import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
+import java.text.DateFormat
 
 class UserControllerTests extends CuriousControllerTestCase {
 	static transactional = true
 
 	UserController controller
 	User dummyUser2
+	EntryParserService entryParserService
+	DateFormat dateFormat
+	SearchService searchService
 
 	@Before
 	void setUp() {
@@ -111,5 +123,49 @@ class UserControllerTests extends CuriousControllerTestCase {
 		controller.markFirstChartPlotted()
 
 		assert dummyUser2.settings.get(FIRST_CHART_PLOT)
+	}
+
+	@Test
+	void "test deleteAccount endpoint for deleting User account"() {
+		given: "User and some random data for this User"
+		Map params = [username: "testuser", sex: "M", last: "last", email: "a@a.com", birthdate: "01/01/2001",
+				name: "a", password: "y"]
+		User userInstance = User.create(params)
+		Utils.save(userInstance, true)
+
+		assert userInstance.id
+
+		Entry.list()*.delete(flush: true)
+		assert Entry.count() == 0
+
+		controller.session.userId = userInstance.id
+		Date currentTime = new Date()
+		dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+		Date baseDate = dateFormat.parse("July 1, 2010 12:00 am")
+		EntryStats stats = new EntryStats(userInstance.id)
+		Sprint.create(currentTime, userInstance, "Caffeine + Sugar", Model.Visibility.PUBLIC)
+
+		Entry entry = Entry.create(userInstance.id, entryParserService.parse(currentTime, "America/Los_Angeles",
+				"headache pinned", null, null, baseDate, true), stats)
+		stats.finish()
+		assert entry.id
+		assert Entry.count() == 1
+
+		OAuthAccount account = new OAuthAccount([typeId: ThirdParty.TWENTY_THREE_AND_ME, userId: userInstance.id,
+				accessToken: "Dummy-token", accessSecret: "Dummy-secret", accountId: userId,
+				timeZoneId: TimeZoneId.look("America/Los_Angeles").id])
+		Utils.save(account, true)
+		assert account.id
+
+		when: "the deleteAccount endpoint is hit and Operation is successful"
+		controller.deleteAccount()
+
+		then: "All user data gets deleted, user is marked deleted."
+		assert Entry.findByUserId(userInstance.id) == null
+		assert OAuthAccount.findByUserId(userInstance.id) == null
+		assert Sprint.findByUserId(userInstance.id) == null
+		assert userInstance.deleted
+		assert controller.response.json.success
+		assert Entry.findByUserId(0L).id == entry.id
 	}
 }

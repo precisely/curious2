@@ -49,6 +49,8 @@ class User {
 	private String avatarURL
 	VerificationStatus emailVerified = VerificationStatus.UNVERIFIED
 
+	boolean deleted
+
 	static transients = ['avatarURL']
 
 	static constraints = {
@@ -107,7 +109,8 @@ class User {
 			'publicInterestTagsString',
 			'publicBio',
 			'publicName',
-			'website'
+			'website',
+			'deleted'
 		]
 	}
 
@@ -277,10 +280,11 @@ class User {
 
 	static void delete(User user) {
 		Long userId = user.getId()
-		log.debug "UserGroup.delete() userId:" + userId
-		user.delete(flush:true)
+		log.debug "User.delete() userId:" + userId
+		user.deleted = true
+		Utils.save(user)
 		UserActivity.create(UserActivity.ActivityType.DELETE, UserActivity.ObjectType.USER, userId)
-        SearchService.get().deindex(user)
+		SearchService.get().deindex(user)
 	}
 
     void addOwnedDiscussion(Long ownedDiscussionId) {
@@ -521,6 +525,7 @@ class User {
 					ne("virtual", true)
 				}
 			}
+			eq("deleted", false)
 		}[0]
 
 		return user
@@ -645,6 +650,13 @@ class User {
 	static void removeFromCache(Long userId, Tag tagInstance) {
 		if (tagIdCache[userId]) {
 			tagIdCache[userId].remove(tagInstance.id)
+		}
+	}
+
+	// Remove the cached tags for a User.
+	static void removeTagIdCache(Long userId) {
+		if (tagIdCache[userId]) {
+			tagIdCache[userId].clear()
 		}
 	}
 
@@ -847,6 +859,7 @@ class User {
 
 		List usersList = User.withCriteria {
 			ne('id', excludedUserId)
+			eq("deleted", false)
 			or {
 				isNull("virtual")
 				ne("virtual", true)

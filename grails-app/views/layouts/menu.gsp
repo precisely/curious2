@@ -152,7 +152,7 @@
 		<a data-toggle="modal" href="#" data-target="#helpWizardOverlay">Tracking Tutorial</a>
 	</li>
 	</c:ifLoggedin>
-	       		<li><a href="mailto:support@wearecurio.us">Contact Support</a> </li>
+	       		<li><a href="mailto:support@precise.ly">Contact Support</a> </li>
 	       	</ul>
 	       </div>
 	       <div class="col-xs-3">

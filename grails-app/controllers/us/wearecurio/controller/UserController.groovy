@@ -3,13 +3,24 @@ package us.wearecurio.controller
 import com.causecode.fileuploader.FileUploaderService
 import com.causecode.fileuploader.UFile
 import com.causecode.fileuploader.UFileMoveHistory
+import us.wearecurio.model.Discussion
+import us.wearecurio.model.DiscussionPost
 import us.wearecurio.model.Entry
+import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.PlotData
+import us.wearecurio.model.PushNotificationDevice
+import us.wearecurio.model.Sprint
 import us.wearecurio.model.Tag
+import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.Twenty3AndMeData
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
+import us.wearecurio.model.profiletags.ProfileTag
 import us.wearecurio.services.SearchService
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
+
+import java.sql.SQLException
 
 class UserController extends LoginController {
 
@@ -235,5 +246,82 @@ class UserController extends LoginController {
 		List groups = UserGroup.getConcreteGroupsForWriter(user)
 		
 		renderJSONGet([groups: groups.findAll { it.id != defaultGroup.id }, success: true])
+	}
+
+	/**
+	 * An endpoint to delete User Account. The account is marked as deleted and all the user data like
+	 * entries, oAuthAccounts, devices registered for push notification, profile tags, posts and discussions etc
+	 * are deleted.
+	 * @return success: true/false based on result.
+	 */
+	def deleteAccount() {
+		User user = sessionUser()
+		debug "Delete User account with username ${user.username}"
+
+		User.withTransaction { status ->
+			try {
+				OAuthAccount oAuthAccount = OAuthAccount.findByUserIdAndTypeId(user.id, ThirdParty.TWENTY_THREE_AND_ME)
+
+				if (oAuthAccount) {
+					// Remove Twenty3AndMeData as there is a foreign key reference with the OAuthAccount.
+					Twenty3AndMeData.executeUpdate("DELETE FROM Twenty3AndMeData twenty3AndMeData where" +
+							" twenty3AndMeData.account = :account", [account: oAuthAccount])
+				}
+
+				// To disable polling.
+				debug "Removing OAuthAccounts..."
+				OAuthAccount.executeUpdate("DELETE FROM OAuthAccount account where account.userId = :userId",
+						[userId: user.id]);
+
+				// Remove user devices for Push notification.
+				debug "Removing registered devices for push notification..."
+				PushNotificationDevice.executeUpdate("DELETE FROM PushNotificationDevice device where " +
+						"device.userId = :userId", [userId: user.id])
+
+				// Remove User's profile tags.
+				debug "Removing profile tags..."
+				ProfileTag.executeUpdate("DELETE FROM ProfileTag profileTag where profileTag.userId = :userId",
+						[userId: user.id])
+
+				PlotData.executeUpdate("DELETE FROM PlotData plot where plot.userId = :userId and " +
+						"plot.isSnapshot = false", [userId: user.id])
+
+				// Mark all trackathons created by User as deleted.
+				debug "Removing sprints, discussions and posts..."
+				List sprintList = Sprint.findAllByUserId(user.id)
+
+				sprintList.each { Sprint sprint ->
+					Sprint.delete(sprint)
+				}
+
+				// Delete Discussions started by User
+				List discussionList = Discussion.findAllByUserId(user.id)
+
+				discussionList.each { Discussion discussion ->
+					Discussion.delete(discussion)
+				}
+
+				// Delete discussion posts by the User
+				DiscussionPost.executeUpdate("DELETE FROM DiscussionPost p where p.authorUserId = :userId",
+						[userId: user.id]);
+
+				// Delete Entry.
+				debug "Removing user entries..."
+				Entry.deleteUserEntries(user.id)
+
+				User.delete(user)
+			} catch (Exception e) {
+				log.error "Error while deleting user account", e
+
+				status.setRollbackOnly()
+				Utils.reportError("Error while deleting ${user.username}'s account", e)
+
+				renderJSONGet([success: false])
+				return
+			}
+		}
+
+		SearchService.get().deindex(user)
+		renderJSONGet([success: true])
 	}
 }

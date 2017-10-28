@@ -14,6 +14,7 @@ import us.wearecurio.data.RepeatType
 import us.wearecurio.data.TagUnitStatsInterface
 import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.datetime.IncrementingDateTime
+import us.wearecurio.exception.InstanceNotFoundException
 import us.wearecurio.parse.EntryCommaSegmenter
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.services.EntryParserService
@@ -1080,6 +1081,24 @@ class Entry implements Comparable {
 		if (!entry.tag.hasEntry(oldUserId)) {
 			User.removeFromCache(oldUserId, entry.tag)
 		}
+	}
+
+	/**
+	 * This is a bulk delete operation where all the entries of a particular User is marked deleted.
+	 * Delete actually just hides the entries, rather than deleting them
+	 */
+	static void deleteUserEntries(Long userId) {
+		if (!userId) {
+			throw new InstanceNotFoundException()
+		}
+
+		Entry.executeUpdate("UPDATE Entry entry set entry.group = null, entry.userId = 0 where entry.userId = :userId",
+				[userId: userId])
+
+		TagStats.executeUpdate("UPDATE TagStats stats set stats.userId = 0 where stats.userId = :userId",
+				[userId: userId])
+
+		User.removeTagIdCache(userId)
 	}
 
 	/**

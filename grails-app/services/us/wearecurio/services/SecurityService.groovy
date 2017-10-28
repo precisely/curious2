@@ -253,6 +253,10 @@ class SecurityService {
 			} else if (user.checkPassword(password)) {
 				authorized = true
 			}
+
+			if (user.deleted) {
+				authorized = false
+			}
 		}
 		if (authorized) {
 			log.debug "auth success user:" + user

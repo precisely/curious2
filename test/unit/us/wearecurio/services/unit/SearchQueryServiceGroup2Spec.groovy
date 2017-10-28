@@ -87,12 +87,15 @@ class SearchQueryServiceGroup2Spec extends Specification {
 		userId	| query	| followedUsersIds	| 
 		expected
 		34		| "foo"	| []				|
-		"(((publicName:(foo)) OR (publicBio:(foo)) OR (publicInterestTagsString:(foo)) OR (username:(foo)))  AND virtual:false AND _type:user AND NOT (_id:34))"
+		"(((publicName:(foo)) OR (publicBio:(foo)) OR (publicInterestTagsString:(foo)) OR (username:(foo))) AND" +
+				" ((NOT _exists_:deleted) OR deleted:false) AND virtual:false AND _type:user AND NOT (_id:34))"
 		
 		578		| "foo"	| [3]				|
-		"(((publicName:(foo)) OR (publicBio:(foo)) OR (publicInterestTagsString:(foo)) OR (username:(foo)))  AND virtual:false AND _type:user AND NOT (_id:(3 OR 578)))"
+		"(((publicName:(foo)) OR (publicBio:(foo)) OR (publicInterestTagsString:(foo)) OR (username:(foo))) AND" +
+				" ((NOT _exists_:deleted) OR deleted:false) AND virtual:false AND _type:user AND NOT (_id:(3 OR 578)))"
 		
 		4637	| "foo" | [6]				|
-		"(((publicName:(foo)) OR (publicBio:(foo)) OR (publicInterestTagsString:(foo)) OR (username:(foo)))  AND virtual:false AND _type:user AND NOT (_id:(6 OR 4637)))"
+		"(((publicName:(foo)) OR (publicBio:(foo)) OR (publicInterestTagsString:(foo)) OR (username:(foo))) AND" +
+				" ((NOT _exists_:deleted) OR deleted:false) AND virtual:false AND _type:user AND NOT (_id:(6 OR 4637)))"
 	}	
 }
