@@ -224,15 +224,15 @@ input {
 }
 
 #input0::-webkit-input-placeholder {
-	color: #d9adbf !important;
+	color: rgba(193, 84, 131, 0.6) !important;
 }
 
 #input0::-moz-placeholder {
-	color: #d9adbf !important;
+	color: rgba(193, 84, 131, 0.6) !important;
 }
 
 #input0:-ms-input-placeholder {
-	color: #d9adbf !important;
+	color: rgba(193, 84, 131, 0.6) !important;
 }
 
 a, a:link,a:hover, a:visited {
@@ -630,7 +630,7 @@ ul.ui-autocomplete {
 	padding-right: 0;
 }
 #addData label {
-	font-size:.8em;
+	font-size: .9em;
 	padding:8px 0 10px 0;
 	color:#999999;
 	display:inline-block;
@@ -1074,10 +1074,11 @@ body.tags-displayed .floating-column {
 }
 
 .entry-container .sort-lable {
-	color: #afafaf;
+	color: #999999;
 	text-transform: uppercase;
 	margin-right: 20px;
 	font-size: 12px;
+	font-weight: bold;
 }
 
 .entry-container hr {
@@ -1263,7 +1264,7 @@ body.tags-displayed .floating-column {
  */
 
 .auto-link-color {
-	color:#428bca !important;
+	color: #0b6cb2 !important;
 }
 
 .red-header {
@@ -2239,6 +2240,7 @@ body.track-page ol#entry0 li button.save, body.track-page ol#entry0 li button.ed
 
 body.track-page ol#entry0 li button.edit {
 	color: #8b8b8b;
+	font-weight: bold;
 	background-color: #f3f3f3;
 }
 
@@ -2868,7 +2870,7 @@ body.load-graph #graphList .summary .close {
 }
 .sort-entry {
 	margin-right: 30px;
-	color: #999999 !important;
+	color: #888888 !important;
 	font-size: 12px;
 	font-weight: 600;
 }
@@ -3441,13 +3443,14 @@ body {
 }
 
 .discussion-topic .posting-time, .feed-item.sprint .posting-time {
-	font-size: 11px;
-	color: #a8a8a8;
+	font-size: 12px;
+	color: #505050;
 }
 
 .discussion .first-post-message {
 	display: block;
 	margin-bottom: 10px;
+	font-size: 15px;
 }
 
 .discussion .first-post-container {
@@ -3648,7 +3651,7 @@ a.comment-buttons:hover {
 .discussion-comment .posting-time {
 	margin: 12px 0 0 10px;
 	font-size: 11px;
-	color: #a8a8a8;
+	color: #828282;
 }
 
 .discussion-comment .avatar {
@@ -3659,7 +3662,7 @@ a.comment-buttons:hover {
 .discussion-comment .message {
 	margin-top: 5px;
 	text-align: justify;
-	font-size: 13px;
+	font-size: 15px;
 	color: #2d2d2d;
 }
 
@@ -3678,15 +3681,17 @@ a.comment-buttons:hover {
 
 .discuss-page .discussion-topic .username {
 	font-size: 16px;
+	font-weight: 600;
 }
 
 .feed-item .username {
 	color: #c04f7f;
 	font-size: 13px;
+	font-weight: 500;
 }
 
 .footer-items {
-	font-size: 10px;
+	font-size: 12px;
 }
 
 .footer-items .col-md-3 {
@@ -3728,7 +3733,7 @@ a.comment-buttons:hover {
 }
 
 .search-bar input {
-	padding: 10px 10px 10px 45px;
+	padding: 10px 10px 10px 40px;
 	height: 41px;
 	width: 136px;
 	color: rgb(45, 45, 45);
@@ -4531,11 +4536,11 @@ body .modal-header button {
 .user-details-content {
 	margin: 5px 0;
 	font-size: 12px;
-	color: #cacaca;
+	color: #5d5d5d;
 }
 
 .user-details-content .label-value {
-	color: #7e7e7e;
+	color: #4e4e4e;
 	font-weight: 500;
 }
 
@@ -4689,7 +4694,7 @@ input[type = "number"] {
 }
 
 .people-detail p {
-	color: #a0a0a0;
+	color: #8a8a8a;
 	display: inline;
 	font-weight: 300;
 }
@@ -4793,8 +4798,8 @@ input[type = "number"] {
 .interest-list-label, .profile-tag-list-heading {
 	text-transform: uppercase;
 	font-size: 14px;
-	color: #B6B6B6;
-	font-weight: 300;
+	color: #787878;
+	font-weight: 400;
 }
 
 .interest-tags-container {
@@ -5169,7 +5174,7 @@ input.cropit-image-zoom-input {
 	margin-right: 2px;
 }
 
-.survey-answer-checkbox, .subscription-checkbox{
+.survey-answer-checkbox, .subscription-checkbox {
 	display: flex;
 	align-items: center;
 	margin-bottom: 16px;
