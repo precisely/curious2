@@ -1,0 +1,44 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: blogs-wordpress
+  namespace: prod-curious
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: blogs-wordpress
+        tier: backend
+    spec:
+      volumes:
+        - name: blogs-wordpress-data
+          gcePersistentDisk:
+            pdName: precisely-blogs-wordpress-data
+            fsType: ext4
+      containers:
+        - name: blogs-wordpress-server
+          image: wordpress:latest
+          env:
+          - name: WORDPRESS_DB_HOST
+            value: "precisely-blogs-mysql-svc.prod-curious:3306"
+          - name: WORDPRESS_DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: blogs-db-creds
+                key: username
+          - name: WORDPRESS_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: blogs-db-creds
+                key: password
+          - name: WORDPRESS_DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: blogs-db-creds
+                key: database
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - name: blogs-wordpress-data
+              mountPath: /var/www/html/

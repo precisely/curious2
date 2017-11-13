@@ -1,0 +1,36 @@
+# Refer to the Github Repo: https://github.com/ployst/docker-letsencrypt
+
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: letsencrypt-precisely-blogs
+  namespace: prod-curious
+spec:
+  replicas: 1
+  selector:
+    matchLabels:                  # selector field won't work - https://stackoverflow.com/questions/37351504/kubernetes-why-does-selector-field-fail-to-validate-for-deployment
+      name: letsencrypt-precisely-blogs
+      role: cert-app
+  template:
+      metadata:
+        name: letsencrypt-rc-precisely-blogs
+        labels:
+          name: letsencrypt-precisely-blogs
+          role: cert-app
+      spec:
+        containers:
+        - name: letsencrypt
+          image: ployst/letsencrypt:0.3.0
+          env:
+          - name: EMAIL
+            value: developers@causecode.com
+          - name: DOMAINS
+            value: blog.precise.ly
+          - name: DEPLOYMENTS
+            value: precisely-nginx-blogs
+          - name: NAMESPACE
+            value: prod-curious
+          - name: SECRET_NAME # Name of the Secret in which certificate key information will be stored.
+            value: cert-blog.precise.ly
+          ports:
+            - containerPort: 80

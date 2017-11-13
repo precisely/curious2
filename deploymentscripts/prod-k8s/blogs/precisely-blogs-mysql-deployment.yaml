@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: blogs-mysql
+  namespace: prod-curious
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: blogs-mysql
+        tier: backend
+    spec:
+      volumes:
+        - name: blogs-mysql-data
+          gcePersistentDisk:
+            pdName: precisely-blogs-mysql-data
+            fsType: ext4
+      containers:
+        - name: blogs-mysql-database
+          image: mysql:5.5
+          env:
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: blogs-db-creds
+                key: username
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: blogs-db-creds
+                key: password
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: blogs-db-creds
+                key: database
+          ports:
+          - containerPort: 3306
+          volumeMounts:
+            - name: blogs-mysql-data
+              mountPath: /var/lib/mysql/

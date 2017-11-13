@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: precisely-blogs-wordpress-svc
+  namespace: prod-curious
+  labels:
+    app: blogs-wordpress
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: blogs-wordpress

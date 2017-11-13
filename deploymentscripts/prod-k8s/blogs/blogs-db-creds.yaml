@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: blogs-db-creds
+  namespace: prod-curious
+type: Opaque
+data:
+  username: cm9vdA==
+  password: d0ttNjQ3QlQ2NzB2ek95NFh2bXo1VVhl
+  database: cHJlY2lzZWx5X2Jsb2dz
