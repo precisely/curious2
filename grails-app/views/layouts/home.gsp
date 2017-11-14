@@ -36,6 +36,7 @@
 		<div class="headLinks">
 			<ul class="mainLinks headerLinks">
 				<li><a href="/home/login">HOME</a></li>
+				<li><a href="http://blog.precise.ly">BLOG</a></li>
 				<li><a href="https://www.precise.ly/home/login/#features">FEATURES</a></li>
 				<li style="display: none;"><a href="#">LEARN</a></li>
 				<li>
@@ -88,6 +89,9 @@
 							<ul class="mainLinks footerLinks">
 								<li style="font-size: 16px;">
 									<g:link controller="home" action="termsofservice_home">PRIVACY / TERMS</g:link>
+								</li>
+								<li style="font-size: 14px;">
+									<a href="http://blog.precise.ly/wp-login.php">Blog Login</a>
 								</li>
 							</ul>
 						</div>
