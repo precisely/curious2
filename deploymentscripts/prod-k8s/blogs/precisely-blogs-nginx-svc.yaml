@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: precisely-blogs-nginx-svc
+  namespace: prod-curious
+  labels:
+    app: blogs-nginx
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 35.202.219.114
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+    - name: https
+      protocol: TCP
+      port: 443
+  selector:
+    app: blogs-nginx
